@@ -1,0 +1,141 @@
+name: snapshot
+
+# Mirrors LezWatch.TV + TVmaze, builds snapshot.v1.json, and publishes it to
+# one static URL the app fetches. No users, no telemetry: this workflow's own
+# logs contain request/byte counts against the two sources and nothing else.
+#
+# Publishing target: GitHub Pages (source: this workflow), because the repo
+# is private and a Release asset would need an authenticated download -- Pages
+# on a paid plan serves a public static file from a private repo, which is
+# what a no-account app fetching one URL needs. See pipeline/README.md
+# "Publishing" for the full rationale. The rolling GitHub Release
+# `snapshot-latest` is kept alongside it for the mirror cache and for
+# `gh release download` during development; it is not the app's URL.
+
+on:
+  schedule:
+    - cron: "17 9 * * *" # ~02:17 Pacific standard time; off the hour to avoid the scheduler herd
+  workflow_dispatch: {}
+
+permissions:
+  contents: write # upload release assets
+  pages: write # deploy to Pages
+  id-token: write # required by actions/deploy-pages
+
+concurrency:
+  group: qtv-snapshot
+  cancel-in-progress: false # never cancel a run mid-mirror; queue instead, respect the crawl budget
+
+env:
+  RELEASE_TAG: snapshot-latest
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90 # a full mirror is ~55 min (README "Crawl budget"); leave real headroom
+    outputs:
+      digest: ${{ steps.build.outputs.digest }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          version: "0.12.9"
+
+      - name: install
+        working-directory: pipeline
+        run: uv sync --all-groups
+
+      - name: lint + offline tests
+        working-directory: pipeline
+        run: |
+          uv run ruff check src tests
+          uv run pytest
+
+      - name: restore mirror cache from the rolling release
+        working-directory: pipeline
+        run: |
+          if gh release view "$RELEASE_TAG" >/dev/null 2>&1 && \
+             gh release download "$RELEASE_TAG" --pattern mirror-cache.tar.gz --output mirror-cache.tar.gz 2>/dev/null; then
+            tar xzf mirror-cache.tar.gz
+            echo "restored existing mirror cache -> incremental fetch"
+          else
+            echo "no prior mirror cache -> this run does a full mirror"
+          fi
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      - name: fetch (network; respects each source's published rate limit)
+        working-directory: pipeline
+        run: uv run qtv fetch --cache .cache
+
+      - name: build (offline; validates against schema/snapshot.v1.json)
+        id: build
+        working-directory: pipeline
+        run: |
+          uv run qtv build --cache .cache --out out
+          digest=$(python3 -c "import json; print(json.load(open('out/snapshot.v1.json'))['content_digest'])")
+          echo "digest=$digest" >> "$GITHUB_OUTPUT"
+
+      - name: repack mirror cache
+        working-directory: pipeline
+        run: tar czf mirror-cache.tar.gz .cache
+
+      - name: publish release assets (mirror cache + snapshot copy for gh release download)
+        working-directory: pipeline
+        run: |
+          if ! gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
+            gh release create "$RELEASE_TAG" \
+              --title "snapshot (rolling)" \
+              --notes "Nightly LezWatch.TV + TVmaze mirror. Not the app's fetch URL -- see pipeline/README.md Publishing. Assets are replaced on every run."
+          fi
+          gh release upload "$RELEASE_TAG" \
+            out/snapshot.v1.json out/snapshot.v1.json.sha256 out/coverage.json mirror-cache.tar.gz \
+            --clobber
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      - name: assemble the Pages site (the app's actual fetch URL)
+        working-directory: pipeline
+        run: |
+          mkdir -p site
+          cp out/snapshot.v1.json site/
+          cp out/snapshot.v1.json.sha256 site/
+          python3 - <<'PY'
+          import json
+          doc = json.load(open("out/snapshot.v1.json"))
+          cov = doc["coverage"]
+          lw = cov["lezwatch"]
+          tv = cov["tvmaze"]
+          html = f"""<!doctype html><meta charset="utf-8">
+          <title>queer-tv-guide snapshot</title>
+          <p>{doc['licence']['notice']}</p>
+          <ul>
+          <li>generated_at: {doc['generated_at']}</li>
+          <li>content_digest: {doc['content_digest']}</li>
+          <li>shows: {lw['shows']['fetched']} / {lw['shows']['available']} available</li>
+          <li>characters: {lw['characters']['fetched']} / {lw['characters']['available']} available</li>
+          <li>TVmaze joined: {tv['joined']} / {tv['shows_total']} ({tv['join_rate']*100:.1f}%)</li>
+          </ul>
+          <ul>
+          <li><a href="snapshot.v1.json">snapshot.v1.json</a></li>
+          <li><a href="snapshot.v1.json.sha256">snapshot.v1.json.sha256</a></li>
+          </ul>
+          """
+          open("site/index.html", "w").write(html)
+          PY
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: pipeline/site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

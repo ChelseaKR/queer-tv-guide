@@ -1,0 +1,78 @@
+{
+ "id": 30001,
+ "slug": "no-key-show",
+ "link": "https://lezwatchtv.com/show/no-key-show/",
+ "modified_gmt": "2026-09-10T12:00:00",
+ "status": "publish",
+ "title": {
+  "rendered": "No Key Show"
+ },
+ "meta": {
+  "lezshows_char_count": [
+   "0"
+  ],
+  "lezshows_dead_count": [
+   "0"
+  ],
+  "lezshows_imdb": [
+   ""
+  ],
+  "lezshows_tmdb_id": [
+   ""
+  ],
+  "lezshows_tvmaze_id": [
+   ""
+  ],
+  "lezshows_episodes": [
+   ""
+  ],
+  "lezshows_on_air": [
+   "no"
+  ]
+ },
+ "station": [],
+ "trope": [],
+ "genre": [],
+ "country": [],
+ "star": [],
+ "trigger": [],
+ "intersection": [],
+ "format": [
+  382
+ ],
+ "acf": {
+  "excerpt": "No Key Show excerpt.",
+  "lezshows_airdates_start": "2020",
+  "lezshows_airdates_finish": "",
+  "lezshows_seasons": 1,
+  "lezshows_tvstations": [],
+  "lezshows_tvnations": [],
+  "lezshows_tvtype": 382,
+  "lezshows_imdb": "",
+  "lezshows_tvgenre": [],
+  "lezshows_tvgenre_primary": "",
+  "lezshows_stars": false,
+  "lezshows_intersectional": false,
+  "lezshows_triggerwarning": false,
+  "lezshows_tropes": [],
+  "lezshows_waystowatch": [],
+  "lezshows_show_names": null,
+  "lezshows_similar_shows": [],
+  "lezshows_worthit_rating": "",
+  "lezshows_worthit_details": "",
+  "lezshows_quality_rating": 0,
+  "lezshows_quality_details": "",
+  "lezshows_realness_rating": 0,
+  "lezshows_realness_details": "",
+  "lezshows_screentime_rating": 0,
+  "lezshows_screentime_details": "",
+  "lezshows_ships": "",
+  "lezshows_plots": "",
+  "lezshows_episodes": "",
+  "lezshows_worthit_show_we_love": false,
+  "lezshows_no_chars": false,
+  "lezshows_tvmaze_ignore": false,
+  "lezshows_tvmaze_id_manual": "",
+  "lezshows_byq_override": false
+ }
+}

@@ -1,0 +1,42 @@
+{
+ "id": 99029,
+ "slug": "camille-5",
+ "link": "https://lezwatchtv.com/character/camille-5/",
+ "modified_gmt": "2026-09-12T18:09:00",
+ "status": "publish",
+ "title": {
+  "rendered": "Camille"
+ },
+ "acf": {
+  "lezchars_gender": 209,
+  "lezchars_sexuality": 217,
+  "lezchars_romantic": false,
+  "lezchars_cliches": [
+   194
+  ],
+  "lezchars_death_year": null,
+  "lezchars_actor": [
+   78146
+  ],
+  "lezchars_character_image_group": "",
+  "lezchars_show_group": [
+   {
+    "show": 25206,
+    "type": "guest",
+    "appears": [
+     "2026"
+    ]
+   }
+  ]
+ },
+ "cliche": [
+  194
+ ],
+ "gender": [
+  209
+ ],
+ "sexuality": [
+  217
+ ],
+ "romantic": []
+}

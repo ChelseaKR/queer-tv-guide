@@ -1,0 +1,143 @@
+{
+ "id": 25206,
+ "slug": "derry-girls",
+ "link": "https://lezwatchtv.com/show/derry-girls/",
+ "modified_gmt": "2026-09-13T00:22:27",
+ "status": "publish",
+ "title": {
+  "rendered": "Derry Girls"
+ },
+ "acf": {
+  "excerpt": "The personal exploits of a 16 year old girl, her family and friends in Northern Ireland during the Troubles in the early 90s.",
+  "lezshows_airdates_start": "2018",
+  "lezshows_airdates_finish": "2022",
+  "lezshows_seasons": 3,
+  "lezshows_tvstations": [
+   102
+  ],
+  "lezshows_tvnations": [
+   3441
+  ],
+  "lezshows_tvtype": 382,
+  "lezshows_imdb": "tt7120662",
+  "lezshows_tvgenre": [
+   1185
+  ],
+  "lezshows_tvgenre_primary": "",
+  "lezshows_stars": false,
+  "lezshows_triggerwarning": false,
+  "lezshows_intersectional": false,
+  "lezshows_tropes": [
+   41
+  ],
+  "lezshows_waystowatch": [
+   {
+    "url": "https://www.netflix.com/title/80238565"
+   }
+  ],
+  "lezshows_show_names": null,
+  "lezshows_similar_shows": [
+   61,
+   21696
+  ],
+  "lezshows_worthit_rating": "Yes",
+  "lezshows_worthit_details": "The show pulls off being a brilliant comedy while maintaining a realistic portrayal of troubled times.",
+  "lezshows_quality_rating": 4,
+  "lezshows_quality_details": "",
+  "lezshows_realness_rating": 3,
+  "lezshows_realness_details": "",
+  "lezshows_screentime_rating": 4,
+  "lezshows_screentime_details": "",
+  "lezshows_ships": "",
+  "lezshows_plots": "The lesbian reveal is not until the last episode of season one.\r\n\r\nLousia Harland (who plays Orla McCool) played Orla as non-binary, but that has not been canonically confirmed.",
+  "lezshows_episodes": "<ul>\r\n \t<li><strong>Season 1, Episode 6 - \"Episode Six\"</strong> Erin becomes the new editor of the school newspaper, and while desperate for a decent story to publish, raids the \"Searching for Myself\" writing contest entries and finds a student coming out story. She publishes it as \"The Secret Life of a Lesbian\" - despite Sister Michael forbidding her to. It turns out a member of Erin's core group of friends wrote the entry.</li>\r\n</ul>",
+  "lezshows_worthit_show_we_love": false,
+  "lezshows_no_chars": false,
+  "lezshows_tvmaze_ignore": false,
+  "lezshows_tvmaze_id_manual": "",
+  "lezshows_byq_override": false
+ },
+ "meta": {
+  "_acf_changed": false,
+  "_monsterinsights_skip_tracking": false,
+  "lezshows_char_count": [
+   "2"
+  ],
+  "lezshows_dead_count": [
+   "0"
+  ],
+  "lezshows_imdb": [
+   "tt7120662"
+  ],
+  "lezshows_tmdb_id": [
+   "76148"
+  ],
+  "lezshows_tvmaze_id": [
+   "33320"
+  ],
+  "lezshows_episodes": [
+   "<ul>\r\n \t<li><strong>Season 1, Episode 6 - \"Episode Six\"</strong> Erin becomes the new editor of the school newspaper, and while desperate for a decent story to publish, raids the \"Searching for Myself\" writing contest entries and finds a student coming out story. She publishes it as \"The Secret Life of a Lesbian\" - despite Sister Michael forbidding her to. It turns out a member of Erin's core group of friends wrote the entry.</li>\r\n</ul>"
+  ],
+  "lezshows_on_air": [
+   "no"
+  ],
+  "lezshows_plots": [
+   "The lesbian reveal is not until the last episode of season one.\r\n\r\nLousia Harland (who plays Orla McCool) played Orla as non-binary, but that has not been canonically confirmed."
+  ],
+  "lezshows_genres_primary": [],
+  "lezshows_quality_details": [
+   ""
+  ],
+  "lezshows_quality_rating": [
+   "4"
+  ],
+  "lezshows_realness_details": [
+   ""
+  ],
+  "lezshows_realness_rating": [
+   "3"
+  ],
+  "lezshows_screentime_rating": [
+   "4"
+  ],
+  "lezshows_screentime_details": [
+   ""
+  ],
+  "lezshows_seasons": [
+   "3"
+  ],
+  "lezshows_ships": [
+   ""
+  ],
+  "lezshows_the_score": [
+   "68.984970326057"
+  ],
+  "lezshows_worthit_rating": [
+   "Yes"
+  ],
+  "lezshows_worthit_details": [
+   "The show pulls off being a brilliant comedy while maintaining a realistic portrayal of troubled times."
+  ],
+  "lezshows_worthit_show_we_love": [],
+  "lwtv_has_new_char": [],
+  "footnotes": ""
+ },
+ "station": [
+  102
+ ],
+ "trope": [
+  41
+ ],
+ "genre": [
+  1185
+ ],
+ "country": [
+  3441
+ ],
+ "star": [],
+ "trigger": [],
+ "intersection": [],
+ "format": [
+  382
+ ]
+}

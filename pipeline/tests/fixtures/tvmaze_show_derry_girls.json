@@ -1,0 +1,87 @@
+{
+ "id": 33320,
+ "url": "https://www.tvmaze.com/shows/33320/derry-girls",
+ "name": "Derry Girls",
+ "type": "Scripted",
+ "language": "English",
+ "genres": [
+  "Comedy"
+ ],
+ "status": "Ended",
+ "runtime": null,
+ "averageRuntime": 31,
+ "premiered": "2018-01-04",
+ "ended": "2022-05-18",
+ "officialSite": "http://www.channel4.com/programmes/derry-girls",
+ "schedule": {
+  "time": "",
+  "days": []
+ },
+ "rating": {
+  "average": 7.8
+ },
+ "weight": 98,
+ "network": {
+  "id": 45,
+  "name": "Channel 4",
+  "country": {
+   "name": "United Kingdom",
+   "code": "GB",
+   "timezone": "Europe/London"
+  },
+  "officialSite": "https://www.channel4.com/"
+ },
+ "webChannel": null,
+ "dvdCountry": null,
+ "externals": {
+  "tvrage": null,
+  "thetvdb": 338903,
+  "imdb": "tt7120662"
+ },
+ "image": {
+  "medium": "https://static.tvmaze.com/uploads/images/medium_portrait/402/1007479.jpg",
+  "original": "https://static.tvmaze.com/uploads/images/original_untouched/402/1007479.jpg"
+ },
+ "summary": "<p>16-year-old Erin Quinn lives with her uncompromising mother, her long-suffering father and the fearsome ‘Granda Joe', a man whose love for his daughters and granddaughters is surpassed only by his contempt for his son-in-law.</p><p>It's the early 90s, and Erin is used to seeing her country on the nightly news and speaking in acronyms (The IRA, The UDA, The RUC). This is a time of armed police in armoured Land Rovers and British Army check points. But it's also the time of Murder She Wrote, The Cranberries, MJ and Lisa Marie, Doc Martens, bomber jackets, The X Files, Nirvana and Wayne's World. And while The Troubles may hang over her home town, Erin has troubles of her own</p>",
+ "updated": 1767952534,
+ "_links": {
+  "self": {
+   "href": "https://api.tvmaze.com/shows/33320"
+  },
+  "previousepisode": {
+   "href": "https://api.tvmaze.com/episodes/2323336",
+   "name": "The Agreement"
+  }
+ },
+ "_embedded": {
+  "previousepisode": {
+   "id": 2323336,
+   "url": "https://www.tvmaze.com/episodes/2323336/derry-girls-3x07-the-agreement",
+   "name": "The Agreement",
+   "season": 3,
+   "number": 7,
+   "type": "regular",
+   "airdate": "2022-05-18",
+   "airtime": "21:00",
+   "airstamp": "2022-05-18T20:00:00+00:00",
+   "runtime": 50,
+   "rating": {
+    "average": 8.1
+   },
+   "image": {
+    "medium": "https://static.tvmaze.com/uploads/images/medium_landscape/409/1023345.jpg",
+    "original": "https://static.tvmaze.com/uploads/images/original_untouched/409/1023345.jpg"
+   },
+   "summary": "<p>The gang bows out in this special extended episode which returns to Derry one year on, as the friends are preparing for their final year of school. It's the week of the referendum on the Good Friday Agreement but the timing could not be any worse as the highlight of the year, Erin and Orla's joint 18th birthday, threatens to be overshadowed. While the family try to get their heads around the possible outcome of the vote, the friends realise they may not be ready for what the future holds. </p>",
+   "_links": {
+    "self": {
+     "href": "https://api.tvmaze.com/episodes/2323336"
+    },
+    "show": {
+     "href": "https://api.tvmaze.com/shows/33320",
+     "name": "Derry Girls"
+    }
+   }
+  }
+ }
+}

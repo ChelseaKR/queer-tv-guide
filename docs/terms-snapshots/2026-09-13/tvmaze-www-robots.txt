@@ -1,0 +1,12 @@
+Sitemap: https://www.tvmaze.com/sitemaps/recaps.xml
+Sitemap: https://www.tvmaze.com/sitemaps/shows.xml
+Sitemap: https://www.tvmaze.com/sitemaps/networks.xml
+Sitemap: https://www.tvmaze.com/sitemaps/characters.xml
+Sitemap: https://www.tvmaze.com/sitemaps/episodes.xml
+Sitemap: https://www.tvmaze.com/sitemaps/people.xml
+
+User-agent: *
+Disallow: /stats
+Disallow: /offer
+Disallow: /users/*/*/followed
+Disallow: /users/*/*/watched

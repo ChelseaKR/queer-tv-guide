@@ -1,0 +1,20 @@
+ API Documentation
+ The public API at LezWatchTV is available for anyone anywhere to consume and reproduce the data found on this site. Improvements and additions are made regularly. If there is a specific type of data you’re looking for, please contact us and we’ll do our best to write it up.
+ There is currently no key required to use this API, but there is a rate limit of a 100 requests per IP every 10 minutes.
+ Style Guide 
+ API Endpoints 
+ Administration 
+ Endpoints
+ Global Endpoints 
+ Export 
+ On This Day 
+ … Of The Day 
+ Last Death 
+ What Happened 
+ What’s On 
+ Statistics 
+ Actors 
+ Characters 
+ Shows 
+ Death 
+ This Year 

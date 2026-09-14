@@ -1,0 +1,49 @@
+User-agent: *
+Disallow: /wp-admin/
+Allow: /wp-admin/admin-ajax.php
+Crawl-delay: 10
+Allow: /wp-content/uploads/
+Disallow: /wp-content/plugins/
+Disallow: /wp-content/themes/
+Disallow: /wp-includes/
+
+User-agent: Googlebot
+Disallow: /feed/
+Disallow: /rss/
+Disallow: /wp-includes/
+Disallow: /?s=
+Disallow: /search/
+Disallow: /page/
+Disallow: /author/
+Disallow: /tag/
+
+User-agent: Googlebot-Image
+Disallow: /
+
+User-agent: AhrefsBot
+Crawl-delay: 30
+Disallow: /
+
+User-agent: SemrushBot
+Crawl-delay: 30
+Disallow: /
+
+User-agent: MJ12bot
+Crawl-delay: 20
+Disallow: /
+
+User-agent: DotBot
+Crawl-delay: 20
+
+User-agent: BLEXBot
+Crawl-delay: 20
+
+User-agent: bingbot
+Crawl-delay: 10
+
+User-agent: Yandex
+Crawl-delay: 10
+
+Sitemap: https://lezwatchtv.com/news-sitemap.xml
+Sitemap: https://lezwatchtv.com/sitemap.xml
+Sitemap: https://lezwatchtv.com/sitemap.rss

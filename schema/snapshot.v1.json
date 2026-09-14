@@ -1,0 +1,489 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/ChelseaKR/queer-tv-guide/schema/snapshot.v1.json",
+  "title": "queer-tv-guide snapshot v1",
+  "description": "The offline dataset the iOS app renders. Built nightly by pipeline/ from LezWatch.TV (shows, characters, deaths, ratings, tropes, where-to-watch links) and TVmaze (episode schedule). Absence is always explicit: a field the source did not record is null (or an empty list) and, where it matters, is paired with a *_known boolean. The app must never render null as \"no\".",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "generated_at",
+    "content_digest",
+    "build",
+    "licence",
+    "attribution",
+    "sources",
+    "coverage",
+    "taxonomies",
+    "shows",
+    "characters"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1",
+      "description": "Major version of this contract. The app rejects any other value."
+    },
+    "generated_at": {
+      "$ref": "#/$defs/datetime",
+      "description": "UTC time the snapshot was built. The only top-level field excluded from content_digest."
+    },
+    "content_digest": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "description": "SHA-256 of the canonical JSON of this document with generated_at and build.run removed. Two builds over the same mirror produce the same digest; the app may use it to skip re-parsing."
+    },
+    "build": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["pipeline_version", "run"],
+      "properties": {
+        "pipeline_version": { "type": "string" },
+        "run": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["git_sha", "workflow_run_id"],
+          "properties": {
+            "git_sha": { "type": ["string", "null"] },
+            "workflow_run_id": { "type": ["string", "null"] }
+          },
+          "description": "Excluded from content_digest."
+        }
+      }
+    },
+    "licence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["snapshot", "notice"],
+      "properties": {
+        "snapshot": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["spdx", "name", "url"],
+          "properties": {
+            "spdx": { "const": "CC-BY-SA-4.0" },
+            "name": { "const": "Creative Commons Attribution-ShareAlike 4.0 International" },
+            "url": { "const": "https://creativecommons.org/licenses/by-sa/4.0/" }
+          },
+          "description": "The licence this snapshot file is published under. ShareAlike attaches to the file (a database that incorporates TVmaze data, CC BY-SA 4.0 s.4(b)); it does not attach to the app code that reads it."
+        },
+        "notice": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Plain-language licence notice the app must show on its attribution screen, verbatim."
+        }
+      }
+    },
+    "attribution": {
+      "type": "array",
+      "minItems": 2,
+      "items": { "$ref": "#/$defs/attribution_item" },
+      "description": "One entry per source. The app must display every entry's text and link on an attribution screen reachable from the main navigation, and must link each show and character to its source_url."
+    },
+    "sources": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["lezwatch", "tvmaze"],
+      "properties": {
+        "lezwatch": { "$ref": "#/$defs/source_run" },
+        "tvmaze": { "$ref": "#/$defs/source_run" }
+      }
+    },
+    "coverage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["lezwatch", "tvmaze", "fields"],
+      "properties": {
+        "lezwatch": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["shows", "characters", "actors"],
+          "properties": {
+            "shows": { "$ref": "#/$defs/fetched_vs_available" },
+            "characters": { "$ref": "#/$defs/fetched_vs_available" },
+            "actors": { "$ref": "#/$defs/fetched_vs_available" }
+          }
+        },
+        "tvmaze": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["shows_total", "with_join_key", "joined", "join_rate", "misses"],
+          "properties": {
+            "shows_total": { "type": "integer", "minimum": 0 },
+            "with_join_key": { "type": "integer", "minimum": 0, "description": "Shows carrying a LezWatch tvmaze id, a manual tvmaze id, or an IMDb id." },
+            "joined": { "type": "integer", "minimum": 0, "description": "Shows for which TVmaze returned a show record." },
+            "join_rate": { "type": "number", "minimum": 0, "maximum": 1, "description": "joined / shows_total." },
+            "misses": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["no_key", "ignored_by_source", "not_found", "other"],
+              "properties": {
+                "no_key": { "type": "integer", "minimum": 0 },
+                "ignored_by_source": { "type": "integer", "minimum": 0, "description": "LezWatch set lezshows_tvmaze_ignore." },
+                "not_found": { "type": "integer", "minimum": 0, "description": "TVmaze answered 404 for every key we had." },
+                "other": { "type": "integer", "minimum": 0 }
+              }
+            }
+          }
+        },
+        "fields": {
+          "type": "object",
+          "additionalProperties": { "$ref": "#/$defs/present_vs_absent" },
+          "description": "Keyed by dotted field path, e.g. \"shows.watch_links\", \"characters.death\". Two numbers for every field whose absence the app might otherwise read as a value."
+        }
+      }
+    },
+    "taxonomies": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["tropes", "cliches", "genders", "sexualities", "romantic", "stations", "genres", "countries", "formats", "triggers", "intersections", "stars"],
+      "properties": {
+        "tropes": { "$ref": "#/$defs/term_list" },
+        "cliches": { "$ref": "#/$defs/term_list" },
+        "genders": { "$ref": "#/$defs/term_list" },
+        "sexualities": { "$ref": "#/$defs/term_list" },
+        "romantic": { "$ref": "#/$defs/term_list" },
+        "stations": { "$ref": "#/$defs/term_list" },
+        "genres": { "$ref": "#/$defs/term_list" },
+        "countries": { "$ref": "#/$defs/term_list" },
+        "formats": { "$ref": "#/$defs/term_list" },
+        "triggers": { "$ref": "#/$defs/term_list" },
+        "intersections": { "$ref": "#/$defs/term_list" },
+        "stars": { "$ref": "#/$defs/term_list" }
+      },
+      "description": "Every term LezWatch defines, for browse/filter screens. Records embed {slug, name} copies of the terms they carry, so the app does not need to join."
+    },
+    "shows": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/show" },
+      "description": "Sorted by lwtv_id ascending."
+    },
+    "characters": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/character" },
+      "description": "Sorted by lwtv_id ascending."
+    }
+  },
+  "$defs": {
+    "datetime": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
+      "description": "UTC, second precision, RFC 3339 with a literal Z."
+    },
+    "date": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "url": {
+      "type": "string",
+      "pattern": "^https?://",
+      "maxLength": 2048
+    },
+    "show_id": {
+      "type": "string",
+      "pattern": "^lwtv:show:[0-9]+$",
+      "description": "Stable id: LezWatch's WordPress post id. Post ids never change; slugs and titles can."
+    },
+    "character_id": {
+      "type": "string",
+      "pattern": "^lwtv:character:[0-9]+$"
+    },
+    "term": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["slug", "name"],
+      "properties": {
+        "slug": { "type": "string", "minLength": 1 },
+        "name": { "type": "string", "minLength": 1 }
+      }
+    },
+    "term_list": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["lwtv_id", "slug", "name", "count"],
+        "properties": {
+          "lwtv_id": { "type": "integer" },
+          "slug": { "type": "string", "minLength": 1 },
+          "name": { "type": "string", "minLength": 1 },
+          "count": { "type": ["integer", "null"], "description": "LezWatch's own usage count for the term, null if it did not report one." }
+        }
+      }
+    },
+    "fetched_vs_available": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["available", "fetched"],
+      "properties": {
+        "available": { "type": ["integer", "null"], "minimum": 0, "description": "What the source said it has (X-WP-Total). null if the source did not say." },
+        "fetched": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "present_vs_absent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["present", "absent"],
+      "properties": {
+        "present": { "type": "integer", "minimum": 0 },
+        "absent": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "source_run": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "base_url", "fetched_at", "requests", "bytes", "mode"],
+      "properties": {
+        "name": { "type": "string" },
+        "base_url": { "$ref": "#/$defs/url" },
+        "fetched_at": { "$ref": "#/$defs/datetime", "description": "When the most recent fetch from this source finished. Excluded from content_digest." },
+        "requests": { "type": "integer", "minimum": 0, "description": "HTTP requests made to this source in the run that produced this snapshot. Excluded from content_digest." },
+        "bytes": { "type": "integer", "minimum": 0, "description": "Response bytes received in that run. Excluded from content_digest." },
+        "mode": { "enum": ["full", "incremental"], "description": "Excluded from content_digest." }
+      }
+    },
+    "attribution_item": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source", "name", "url", "text", "licence_name", "licence_url", "terms_url", "terms_read_on"],
+      "properties": {
+        "source": { "enum": ["lezwatch", "tvmaze"] },
+        "name": { "type": "string" },
+        "url": { "$ref": "#/$defs/url" },
+        "text": { "type": "string", "minLength": 1, "description": "Display verbatim." },
+        "licence_name": { "type": "string" },
+        "licence_url": { "$ref": "#/$defs/url" },
+        "terms_url": { "$ref": "#/$defs/url" },
+        "terms_read_on": { "$ref": "#/$defs/date" }
+      }
+    },
+    "years": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["start", "end", "on_air"],
+      "properties": {
+        "start": { "type": ["integer", "null"] },
+        "end": { "type": ["integer", "null"], "description": "null when the source gave no finish year, whether the show is ongoing or the field is simply blank; read on_air for the distinction." },
+        "on_air": { "enum": ["yes", "no", "unknown"], "description": "LezWatch's lezshows_on_air flag as recorded; \"unknown\" when the field is absent." }
+      }
+    },
+    "ratings": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["worth_it", "worth_it_details", "quality", "realness", "screentime", "score", "show_we_love"],
+      "properties": {
+        "worth_it": { "type": ["string", "null"], "description": "LezWatch's verdict as recorded (observed values: \"Yes\", \"Meh\", \"No\", \"TBD\"). null when not rated." },
+        "worth_it_details": { "type": ["string", "null"] },
+        "quality": { "type": ["integer", "null"], "minimum": 1, "maximum": 5, "description": "null when unrated (LezWatch stores 0 for unrated; the pipeline maps 0 to null)." },
+        "realness": { "type": ["integer", "null"], "minimum": 1, "maximum": 5 },
+        "screentime": { "type": ["integer", "null"], "minimum": 1, "maximum": 5 },
+        "score": { "type": ["number", "null"], "description": "LezWatch's computed show score (lezshows_the_score). Its formula changed 2026-08-31; treat as an ordinal, not a percentage." },
+        "show_we_love": { "type": "boolean" }
+      }
+    },
+    "episode": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["tvmaze_id", "season", "number", "name", "airdate", "airtime", "airstamp", "runtime", "url"],
+      "properties": {
+        "tvmaze_id": { "type": "integer" },
+        "season": { "type": ["integer", "null"] },
+        "number": { "type": ["integer", "null"], "description": "null for specials." },
+        "name": { "type": ["string", "null"] },
+        "airdate": { "oneOf": [ { "$ref": "#/$defs/date" }, { "type": "null" } ] },
+        "airtime": { "type": ["string", "null"], "description": "Local broadcast time as TVmaze records it, \"HH:MM\" or empty." },
+        "airstamp": { "type": ["string", "null"], "description": "RFC 3339 with offset, as TVmaze records it." },
+        "runtime": { "type": ["integer", "null"] },
+        "url": { "$ref": "#/$defs/url", "description": "TVmaze episode page; satisfies TVmaze attribution when linked." }
+      }
+    },
+    "channel": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "country_code"],
+      "properties": {
+        "name": { "type": "string" },
+        "country_code": { "type": ["string", "null"] }
+      }
+    },
+    "schedule": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schedule_known", "join", "tvmaze_id", "tvmaze_url", "status", "premiered", "ended", "network", "web_channel", "next_episode", "previous_episode"],
+      "properties": {
+        "schedule_known": {
+          "type": "boolean",
+          "description": "true iff TVmaze returned a show record for this show. When false every other field here is null and the app must say \"schedule unknown\", not \"no upcoming episode\"."
+        },
+        "join": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["method", "matched"],
+          "properties": {
+            "method": { "enum": ["lwtv_tvmaze_id", "lwtv_tvmaze_id_manual", "imdb_lookup", "none"], "description": "Which key produced the match (or was tried last)." },
+            "matched": { "type": "boolean" }
+          }
+        },
+        "tvmaze_id": { "type": ["integer", "null"] },
+        "tvmaze_url": { "oneOf": [ { "$ref": "#/$defs/url" }, { "type": "null" } ] },
+        "status": { "type": ["string", "null"], "description": "TVmaze status verbatim (observed: \"Running\", \"Ended\", \"To Be Determined\", \"In Development\")." },
+        "premiered": { "oneOf": [ { "$ref": "#/$defs/date" }, { "type": "null" } ] },
+        "ended": { "oneOf": [ { "$ref": "#/$defs/date" }, { "type": "null" } ] },
+        "network": { "oneOf": [ { "$ref": "#/$defs/channel" }, { "type": "null" } ] },
+        "web_channel": { "oneOf": [ { "$ref": "#/$defs/channel" }, { "type": "null" } ] },
+        "next_episode": {
+          "oneOf": [ { "$ref": "#/$defs/episode" }, { "type": "null" } ],
+          "description": "null with schedule_known=true means TVmaze lists no upcoming episode (a positive statement). null with schedule_known=false means unknown."
+        },
+        "previous_episode": { "oneOf": [ { "$ref": "#/$defs/episode" }, { "type": "null" } ] }
+      }
+    },
+    "show": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id", "lwtv_id", "slug", "title", "alternate_names", "source_url", "summary",
+        "years", "seasons", "format", "networks", "countries", "genres", "tropes", "triggers", "intersections", "stars",
+        "ratings", "counts", "external_ids", "watch_links", "similar_show_ids", "notes", "schedule", "source_modified_at"
+      ],
+      "properties": {
+        "id": { "$ref": "#/$defs/show_id" },
+        "lwtv_id": { "type": "integer" },
+        "slug": { "type": "string", "minLength": 1 },
+        "title": { "type": "string", "minLength": 1, "description": "HTML entities decoded." },
+        "alternate_names": { "type": "array", "items": { "type": "string" } },
+        "source_url": { "$ref": "#/$defs/url", "description": "The LezWatch.TV page. Link it: LezWatch asks for a link back." },
+        "summary": { "type": ["string", "null"], "description": "LezWatch's excerpt, plain text." },
+        "years": { "$ref": "#/$defs/years" },
+        "seasons": { "type": ["integer", "null"] },
+        "format": { "oneOf": [ { "$ref": "#/$defs/term" }, { "type": "null" } ], "description": "LezWatch lez_formats term, e.g. \"TV Show\", \"Web Series\"." },
+        "networks": { "type": "array", "items": { "$ref": "#/$defs/term" }, "description": "LezWatch stations. Empty when none recorded." },
+        "countries": { "type": "array", "items": { "$ref": "#/$defs/term" } },
+        "genres": { "type": "array", "items": { "$ref": "#/$defs/term" } },
+        "tropes": { "type": "array", "items": { "$ref": "#/$defs/term" } },
+        "triggers": { "type": "array", "items": { "$ref": "#/$defs/term" }, "description": "LezWatch trigger warnings. Empty means none recorded, not none present." },
+        "intersections": { "type": "array", "items": { "$ref": "#/$defs/term" } },
+        "stars": { "type": "array", "items": { "$ref": "#/$defs/term" }, "description": "LezWatch gold/silver/bronze star, if any." },
+        "ratings": { "$ref": "#/$defs/ratings" },
+        "counts": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["characters", "deaths", "characters_source_reported", "deaths_source_reported"],
+          "properties": {
+            "characters": { "type": "integer", "minimum": 0, "description": "Computed by the pipeline from the characters array." },
+            "deaths": { "type": "integer", "minimum": 0, "description": "Computed: characters on this show with died=true." },
+            "characters_source_reported": { "type": ["integer", "null"], "description": "LezWatch's own lezshows_char_count, for comparison." },
+            "deaths_source_reported": { "type": ["integer", "null"] }
+          }
+        },
+        "external_ids": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["imdb", "tmdb", "tvmaze"],
+          "properties": {
+            "imdb": { "type": ["string", "null"], "pattern": "^tt[0-9]+$" },
+            "tmdb": { "type": ["string", "null"] },
+            "tvmaze": { "type": ["integer", "null"], "description": "As recorded by LezWatch (manual override wins). The joined id lives in schedule.tvmaze_id." }
+          }
+        },
+        "watch_links": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["url", "host"],
+            "properties": {
+              "url": { "$ref": "#/$defs/url" },
+              "host": { "type": "string", "description": "Registrable host of the url, for a label (e.g. \"netflix.com\"). Never a guessed service name." }
+            }
+          },
+          "description": "Where-to-watch links exactly as LezWatch records them, to open in Safari. Empty when LezWatch has none; the pipeline never guesses one."
+        },
+        "similar_show_ids": { "type": "array", "items": { "$ref": "#/$defs/show_id" }, "description": "Only ids that exist in this snapshot." },
+        "notes": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["plot", "queer_episodes"],
+          "properties": {
+            "plot": { "type": ["string", "null"], "description": "LezWatch's plot/spoiler notes, plain text. May contain spoilers; the app should hide it behind a tap." },
+            "queer_episodes": { "type": ["string", "null"], "description": "LezWatch's notable-episodes list, HTML stripped to plain text with line breaks." }
+          }
+        },
+        "schedule": { "$ref": "#/$defs/schedule" },
+        "source_modified_at": { "$ref": "#/$defs/datetime", "description": "LezWatch modified_gmt." }
+      }
+    },
+    "death": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["died", "death_known", "dates", "years"],
+      "properties": {
+        "died": {
+          "type": ["boolean", "null"],
+          "enum": [true, null],
+          "description": "true when LezWatch records a death. null otherwise. NEVER false: LezWatch does not record survival, only deaths, so absence is \"no recorded death\", not \"survives\"."
+        },
+        "death_known": { "type": "boolean", "description": "true iff died is true. The app renders death_known=false as \"no recorded death\"." },
+        "dates": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["date", "year", "raw"],
+            "properties": {
+              "date": { "oneOf": [ { "$ref": "#/$defs/date" }, { "type": "null" } ] },
+              "year": { "type": ["integer", "null"] },
+              "raw": { "type": "string", "description": "LezWatch's value verbatim (usually YYYYMMDD)." }
+            }
+          },
+          "description": "One entry per recorded death (a character can die more than once). Empty when death_known=false."
+        },
+        "years": { "type": "array", "items": { "type": "integer" }, "description": "Distinct years from dates, ascending." }
+      }
+    },
+    "character": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "lwtv_id", "slug", "name", "source_url", "gender", "sexuality", "romantic", "cliches", "actors", "shows", "death", "source_modified_at"],
+      "properties": {
+        "id": { "$ref": "#/$defs/character_id" },
+        "lwtv_id": { "type": "integer" },
+        "slug": { "type": "string", "minLength": 1 },
+        "name": { "type": "string", "minLength": 1 },
+        "source_url": { "$ref": "#/$defs/url" },
+        "gender": { "oneOf": [ { "$ref": "#/$defs/term" }, { "type": "null" } ], "description": "As LezWatch records it. null when unrecorded." },
+        "sexuality": { "oneOf": [ { "$ref": "#/$defs/term" }, { "type": "null" } ] },
+        "romantic": { "oneOf": [ { "$ref": "#/$defs/term" }, { "type": "null" } ], "description": "Romantic orientation, recorded for a minority of characters." },
+        "cliches": { "type": "array", "items": { "$ref": "#/$defs/term" }, "description": "LezWatch clichés/tropes on the character (includes \"Dead\" for dead characters; death.died is the authority)." },
+        "actors": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["lwtv_id", "slug", "name"],
+            "properties": {
+              "lwtv_id": { "type": "integer" },
+              "slug": { "type": ["string", "null"] },
+              "name": { "type": ["string", "null"], "description": "null when the actor id did not resolve in the actor export." }
+            }
+          }
+        },
+        "shows": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["show_id", "role", "years"],
+            "properties": {
+              "show_id": { "$ref": "#/$defs/show_id" },
+              "role": { "type": ["string", "null"], "description": "LezWatch chartype: \"regular\", \"recurring\", \"guest\"." },
+              "years": { "type": "array", "items": { "type": "string" }, "description": "Years the character appears, as LezWatch records them." }
+            }
+          },
+          "description": "Only shows that exist in this snapshot."
+        },
+        "death": { "$ref": "#/$defs/death" },
+        "source_modified_at": { "$ref": "#/$defs/datetime" }
+      }
+    }
+  }
+}

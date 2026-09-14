@@ -71,7 +71,9 @@ unless noted:
    product's differentiator (research §4.3) — this screen is evidence, not
    boilerplate.
 
-All five map onto existing screens (§4 below); none require new UI.
+All five map onto existing screens (§4 below); none require new UI. Take
+these after §5 step 3 below (the real-snapshot swap) — the bundled fixture's
+invented shows must never appear in a submitted screenshot.
 
 ## 2. Privacy label
 
@@ -226,7 +228,25 @@ xcrun altool --list-apps -u "<owner apple id>" -p "<app-specific password>"
 #    or Xcode's Settings > Accounts > Manage Certificates).
 security find-identity -v -p codesigning
 
-# 3. Archive (device build; needs the profile from step 1-2 present
+# 3. REQUIRED before any archive: replace the bundled fixture with a real
+#    snapshot. ios/QueerTVGuide/Resources/snapshot.v1.json as committed is
+#    a hand-made 4-show/5-character fixture for the test/dev loop --
+#    invented titles, example.com watch links -- not real LezWatch/TVmaze
+#    data. It says so in its own "notice" field
+#    ("pipeline_version": "0.0.0-fixture"), and AppModel.live() loads it as
+#    the app's first-launch/offline state, so an archive built without
+#    this step ships fake shows. Replace it with the pipeline lane's real
+#    published output (pipeline/README.md "Publishing") before continuing:
+cd ../pipeline && uv run qtv build --cache .cache --out out && cd ../ios
+cp ../pipeline/out/snapshot.v1.json QueerTVGuide/Resources/snapshot.v1.json
+#    …or, once the nightly workflow has run at least once, download the
+#    published copy instead of building locally:
+#    curl -fsSL https://chelseakr.github.io/queer-tv-guide/snapshot.v1.json \
+#      -o QueerTVGuide/Resources/snapshot.v1.json
+#    Either way, confirm the swap landed before archiving:
+python3 -c "import json; d = json.load(open('QueerTVGuide/Resources/snapshot.v1.json')); assert d['build']['pipeline_version'] != '0.0.0-fixture', 'still the fixture'; print(f\"{len(d['shows'])} shows, {len(d['characters'])} characters\")"
+
+# 4. Archive (device build; needs the profile from step 1-2 present
 #    locally — this session's simulator-only environment cannot run this
 #    step to completion without them).
 xcodebuild -project QueerTVGuide.xcodeproj -scheme QueerTVGuide \
@@ -235,7 +255,7 @@ xcodebuild -project QueerTVGuide.xcodeproj -scheme QueerTVGuide \
   DEVELOPMENT_TEAM=6X5YH93QNM \
   archive
 
-# 4. Validate the archive against App Store Connect before uploading.
+# 5. Validate the archive against App Store Connect before uploading.
 xcodebuild -exportArchive \
   -archivePath build/QueerTVGuide.xcarchive \
   -exportPath build/export \
@@ -243,14 +263,14 @@ xcodebuild -exportArchive \
   # ExportOptions.plist (owner creates once): method=app-store-connect,
   # teamID=6X5YH93QNM, signingStyle=automatic.
 
-# 5. Upload to App Store Connect (owner-run; needs an app-specific
+# 6. Upload to App Store Connect (owner-run; needs an app-specific
 #    password or API key).
 xcrun altool --validate-app -f build/export/QueerTVGuide.ipa \
   -t ios -u "<owner apple id>" -p "<app-specific password>"
 xcrun altool --upload-app -f build/export/QueerTVGuide.ipa \
   -t ios -u "<owner apple id>" -p "<app-specific password>"
 
-# 6. In App Store Connect (owner-run, web UI): attach the build to a
+# 7. In App Store Connect (owner-run, web UI): attach the build to a
 #    TestFlight group, fill in the "Notes for Review" text from §3 above,
 #    complete the privacy label as "Data Not Collected" per §2, set the
 #    price tier per §1, and submit for internal testing.

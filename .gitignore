@@ -1,0 +1,20 @@
+# pipeline
+pipeline/.venv/
+pipeline/.cache/
+pipeline/out/
+pipeline/site/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+# never commit a mirror or a built snapshot; they are release assets
+*.tar.gz
+snapshot.v1.json
+snapshot.v1.json.sha256
+!schema/snapshot.v1.json
+# os / editors
+.DS_Store
+# ios (owned by the app lane; listed so a stray build never lands here)
+ios/**/build/
+ios/**/DerivedData/
+ios/**/*.xcuserstate

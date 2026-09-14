@@ -1,0 +1,14 @@
+[
+ {
+  "id": 102,
+  "slug": "channel-4",
+  "name": "Channel 4",
+  "count": 6
+ },
+ {
+  "id": 999,
+  "slug": "hulu",
+  "name": "Hulu",
+  "count": 2
+ }
+]

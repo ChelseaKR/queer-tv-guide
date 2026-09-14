@@ -1,0 +1,94 @@
+name: ci
+
+# PR-gating checks. Two independent lanes, each real:
+#
+#   pipeline  -- lint + the offline pytest suite (no network; the fetch/build
+#                commands that talk to LezWatch/TVmaze are not run here --
+#                see snapshot.yml for the nightly mirror).
+#   guidecore -- `swift test` on the ios/GuideCore Swift package (no
+#                external SwiftPM dependencies, so this needs no network
+#                either). Deliberately NOT `xcodebuild`: the full
+#                QueerTVGuide app target (and its UI tests) needs simulator
+#                provisioning and a signing/scheme setup this repo hasn't
+#                proven out in CI yet, and a flaky xcodebuild lane is worse
+#                than none. GuideCore holds all of the app's logic; the UI
+#                layer is thin SwiftUI views over it. Revisit xcodebuild
+#                once the scheme is confirmed to build headlessly on a
+#                runner.
+#
+# Each job checks whether its own directory is present before doing
+# anything else, and no-ops (green, not skipped) when it isn't. That is not
+# hypothetical: at the time this workflow was written, PR #1 has pipeline/
+# but not ios/GuideCore, and PR #2 has ios/ but not pipeline/, because the
+# two lanes are still separate branches off main. Once both are merged,
+# every future PR carries both directories and both jobs run for real.
+
+on:
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  pipeline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: check this lane is present on this branch
+        id: present
+        run: |
+          if [ -f pipeline/pyproject.toml ]; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            echo "pipeline/ isn't on this branch -- nothing to test here."
+          fi
+
+      - name: install uv
+        if: steps.present.outputs.present == 'true'
+        uses: astral-sh/setup-uv@v3
+        with:
+          version: "0.12.9"
+
+      - name: install
+        if: steps.present.outputs.present == 'true'
+        working-directory: pipeline
+        run: uv sync --all-groups
+
+      - name: lint
+        if: steps.present.outputs.present == 'true'
+        working-directory: pipeline
+        run: uv run ruff check src tests
+
+      - name: test (offline; httpx.MockTransport fixtures only)
+        if: steps.present.outputs.present == 'true'
+        working-directory: pipeline
+        run: uv run pytest
+
+  guidecore:
+    runs-on: macos-14
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: check this lane is present on this branch
+        id: present
+        run: |
+          if [ -f ios/GuideCore/Package.swift ]; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            echo "ios/GuideCore isn't on this branch -- nothing to test here."
+          fi
+
+      - name: swift test
+        if: steps.present.outputs.present == 'true'
+        working-directory: ios/GuideCore
+        run: swift test

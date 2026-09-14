@@ -1,0 +1,52 @@
+{
+ "id": 98071,
+ "slug": "marielle-sinclair",
+ "link": "https://lezwatchtv.com/character/marielle-sinclair/",
+ "modified_gmt": "2026-07-23T22:03:59",
+ "title": {
+  "rendered": "Marielle Sinclair"
+ },
+ "acf": {
+  "lezchars_gender": 209,
+  "lezchars_sexuality": 217,
+  "lezchars_romantic": false,
+  "lezchars_cliches": [
+   168,
+   134,
+   114
+  ],
+  "lezchars_death_year": [
+   {
+    "date": "20260628"
+   }
+  ],
+  "lezchars_actor": [
+   98058
+  ],
+  "lezchars_character_image_group": "",
+  "lezchars_show_group": [
+   {
+    "show": 25206,
+    "type": "regular",
+    "appears": [
+     "2023",
+     "2024",
+     "2026"
+    ]
+   }
+  ]
+ },
+ "cliche": [
+  134,
+  114,
+  168
+ ],
+ "gender": [
+  209
+ ],
+ "sexuality": [
+  217
+ ],
+ "romantic": [],
+ "status": "publish"
+}

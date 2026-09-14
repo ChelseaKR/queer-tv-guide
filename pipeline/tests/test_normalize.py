@@ -46,6 +46,20 @@ def test_recorded_death_is_true_with_a_parsed_date():
     assert char["death"]["years"] == [2026]
 
 
+def test_death_date_already_hyphenated_is_parsed_not_dropped():
+    """The real mirror (2026-09-13) showed LezWatch stores most death dates as
+    YYYY-MM-DD already (673/682), not the YYYYMMDD shape seen in the one
+    sample this pipeline was first built against (9/682). Both must parse:
+    a knowable date must never be reported as unknown."""
+    result = normalize._normalize_death([{"date": "2013-08-15"}])
+    assert result == {
+        "died": True,
+        "death_known": True,
+        "dates": [{"date": "2013-08-15", "year": 2013, "raw": "2013-08-15"}],
+        "years": [2013],
+    }
+
+
 @pytest.mark.parametrize("bogus", [False, "false", 0, "no", None, [], [{}], [{"date": ""}]])
 def test_normalize_death_never_produces_false(bogus):
     """died is constrained to {true, null} by the schema; prove the normalizer

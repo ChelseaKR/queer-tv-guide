@@ -72,6 +72,12 @@ lost cache costs one full mirror, nothing else.
    exists in the snapshot.
 
 The join rate to TVmaze is reported, not gated: it is a property of the sources.
+Measured on the first full mirror (2026-09-13): 1,800/2,272 shows joined
+(79.2%); misses were 37 with no join key at all and 435 where LezWatch's
+stored/manual TVmaze id or IMDb id did not resolve on TVmaze (`not_found`) --
+LezWatch's own docs describe hand-fixing exactly this class of mismatch via a
+"TVmaze Names" override, which this pipeline does not yet search by show name
+as a fourth fallback; that is the natural next improvement to the join rate.
 
 ## Publishing
 

@@ -98,8 +98,9 @@ the file bytes, for transport integrity.
 
 ### Sizes
 
-Expect ~2,300 shows and ~7,400 characters. Text fields (`summary`, `notes.*`,
-`ratings.worth_it_details`) are the bulk; budget for a 5–10 MB file.
+Measured on the first full mirror (2026-09-13): 2,272 shows, 7,375
+characters, 12.5 MB. Text fields (`summary`, `notes.*`,
+`ratings.worth_it_details`) are the bulk.
 
 ## Validating locally
 

@@ -255,7 +255,12 @@ def _normalize_death(raw_entries: Any) -> dict[str, Any]:
         )
         parsed = None
         year = None
-        if raw_date and re.match(r"^\d{8}$", raw_date):
+        if raw_date and re.match(r"^\d{4}-\d{2}-\d{2}$", raw_date):
+            # LezWatch's own most common format (measured 2026-09-13: 673 of 682
+            # recorded death dates were already YYYY-MM-DD, only 9 were YYYYMMDD).
+            parsed = raw_date
+            year = int(raw_date[0:4])
+        elif raw_date and re.match(r"^\d{8}$", raw_date):
             parsed = f"{raw_date[0:4]}-{raw_date[4:6]}-{raw_date[6:8]}"
             year = int(raw_date[0:4])
         elif raw_date and re.match(r"^\d{4}$", raw_date):

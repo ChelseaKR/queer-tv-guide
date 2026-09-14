@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <!-- Placeholder app icon (DECISIONS 0004: name undecided; this is a
+       generic mark, not tied to any candidate name).
+       Concept: a two-tone "watch" mark. Full-bleed square, diagonal
+       split into two flat colors (no gradient), with a simple centered
+       play triangle: reads instantly as a "video/TV guide" mark at any
+       size and needs no text. Source of truth for the exported PNGs in
+       this appiconset; re-export with rsvg-convert if colors change. -->
+  <rect width="1024" height="1024" fill="#FF7A59"/>
+  <polygon points="0,0 0,1024 1024,1024" fill="#3D1F47"/>
+  <polygon points="400,342 400,682 712,512" fill="#FFF6EF"/>
+</svg>

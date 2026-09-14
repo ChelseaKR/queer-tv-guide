@@ -24,6 +24,7 @@
 		E60747319E9280CBC27E52B3 /* ShowRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = DBE1A58F2D904E39B806EA53 /* ShowRow.swift */; };
 		E7CEDA1C3DD522D60FDAE5D3 /* FavouritesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5FD48479A8521C288E302D0 /* FavouritesView.swift */; };
 		EA9CEF975F452BE75A15C0E8 /* DataStatusFooter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 750D33208053211A76D4C98D /* DataStatusFooter.swift */; };
+		F70E2EF63B2598E11FF25570 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 95D825B045FC7516E54DAF0C /* Assets.xcassets */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -56,6 +57,7 @@
 		7C7F3D8E238A2C369F0CC6B2 /* QueerTVGuideUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = QueerTVGuideUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		7D83B45C246B3923C7DA87E3 /* FavouriteButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FavouriteButton.swift; sourceTree = "<group>"; };
 		8DC448BA66E038712B00882B /* GuideCore */ = {isa = PBXFileReference; lastKnownFileType = folder; name = GuideCore; path = GuideCore; sourceTree = SOURCE_ROOT; };
+		95D825B045FC7516E54DAF0C /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		AE2B560D8C4AC1CFC059C157 /* QueerTVGuideUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QueerTVGuideUITests.swift; sourceTree = "<group>"; };
 		CECFC0920C1F6BBA446DE631 /* App-Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "App-Release.xcconfig"; sourceTree = "<group>"; };
 		D03E4A71ECC4D5A0E8DB8BD0 /* snapshot.v1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = snapshot.v1.json; sourceTree = "<group>"; };
@@ -124,6 +126,7 @@
 		5EBDA5B0457F2248135AABCF /* QueerTVGuide */ = {
 			isa = PBXGroup;
 			children = (
+				95D825B045FC7516E54DAF0C /* Assets.xcassets */,
 				D6D678C521FBF48D7FBB5670 /* PrivacyInfo.xcprivacy */,
 				205FB0D5A4434F7DC4A3A1B5 /* App */,
 				F0058A4C22B9616A13143AC2 /* Resources */,
@@ -305,6 +308,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F70E2EF63B2598E11FF25570 /* Assets.xcassets in Resources */,
 				AAD2204F4BD58CC5046A2883 /* PrivacyInfo.xcprivacy in Resources */,
 				E476019A52A508BA9D90F16B /* snapshot.v1.json in Resources */,
 			);
@@ -358,7 +362,7 @@
 		};
 		787377F4AD314594AA4627E9 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			productRef = "TEMP_100E0ABD-30A2-400A-95CA-8AC3FB67D977" /* GuideCore */;
+			productRef = "TEMP_8CE25CFB-0645-4BD2-8831-DABD6BDB36B3" /* GuideCore */;
 		};
 		FDEF029D89D55214348A5D55 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -634,7 +638,7 @@
 			isa = XCSwiftPackageProductDependency;
 			productName = GuideCore;
 		};
-		"TEMP_100E0ABD-30A2-400A-95CA-8AC3FB67D977" /* GuideCore */ = {
+		"TEMP_8CE25CFB-0645-4BD2-8831-DABD6BDB36B3" /* GuideCore */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = GuideCore;
 		};

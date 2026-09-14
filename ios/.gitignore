@@ -1,0 +1,11 @@
+# Build products and IDE-local state — QueerTVGuide.xcodeproj itself is
+# committed (derived from project.yml via `xcodegen generate`, but kept so
+# `xcodebuild` works without xcodegen installed).
+.build/
+build/
+DerivedData/
+*.xcuserstate
+xcuserdata/
+.swiftpm/
+*.xcarchive
+export/

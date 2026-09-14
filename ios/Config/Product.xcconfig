@@ -1,0 +1,15 @@
+// The app target's product identity. PRODUCT_NAME is a clean technical
+// identifier (no spaces) on purpose: a spaced PRODUCT_NAME changes the
+// built executable's filename too, which breaks Xcode's default TEST_HOST
+// computation for hosted unit tests and Swift's default module-name
+// derivation. The human-facing placeholder display name (DECISIONS 0004 —
+// the app name is undecided; never the rejected name) lives in exactly one
+// Swift source location instead: `AppIdentity.displayName` in
+// QueerTVGuide/App/AppIdentity.swift. Renaming the app is therefore two
+// edits — this identifier plus that constant — not a scattered search.
+//
+// Included ONLY by App.xcconfig (the app target), never by the test
+// targets' config chain — every target sharing one PRODUCT_NAME collides.
+PRODUCT_NAME = QueerTVGuide
+PRODUCT_BUNDLE_IDENTIFIER = com.chelseakr.queertvguide
+INFOPLIST_KEY_CFBundleDisplayName = $(PRODUCT_NAME)

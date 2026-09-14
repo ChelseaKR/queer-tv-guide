@@ -1,0 +1,80 @@
+name: QueerTVGuide
+options:
+  bundleIdPrefix: com.chelseakr
+  deploymentTarget:
+    iOS: "17.0"
+  createIntermediateGroups: true
+  generateEmptyDirectories: false
+
+packages:
+  GuideCore:
+    path: GuideCore
+
+targets:
+  QueerTVGuide:
+    type: application
+    platform: iOS
+    configFiles:
+      Debug: Config/App-Debug.xcconfig
+      Release: Config/App-Release.xcconfig
+    sources:
+      - path: QueerTVGuide
+        excludes:
+          - "Resources/snapshot.v1.json"
+      - path: QueerTVGuide/Resources/snapshot.v1.json
+        buildPhase: resources
+      - path: QueerTVGuide/PrivacyInfo.xcprivacy
+        buildPhase: resources
+    dependencies:
+      - package: GuideCore
+        product: GuideCore
+    settings:
+      base:
+        ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS: YES
+
+  QueerTVGuideTests:
+    type: bundle.unit-test
+    platform: iOS
+    configFiles:
+      Debug: Config/Debug.xcconfig
+      Release: Config/Release.xcconfig
+    sources:
+      - path: QueerTVGuideTests
+    dependencies:
+      - target: QueerTVGuide
+      # GuideCore is already statically linked into the host app this test
+      # bundle runs inside; linking it again here duplicates the library
+      # (Xcode errors on this). `link: false` gives compile-time module
+      # access (`import GuideCore`) without a second link.
+      - package: GuideCore
+        product: GuideCore
+        link: false
+
+  QueerTVGuideUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    configFiles:
+      Debug: Config/Debug.xcconfig
+      Release: Config/Release.xcconfig
+    sources:
+      - path: QueerTVGuideUITests
+    dependencies:
+      - target: QueerTVGuide
+
+schemes:
+  QueerTVGuide:
+    build:
+      targets:
+        QueerTVGuide: all
+        QueerTVGuideTests: [test]
+        QueerTVGuideUITests: [test]
+    test:
+      config: Debug
+      gatherCoverageData: true
+      targets:
+        - QueerTVGuideTests
+        - QueerTVGuideUITests
+    run:
+      config: Debug
+    archive:
+      config: Release

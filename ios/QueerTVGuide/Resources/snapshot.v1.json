@@ -1,0 +1,439 @@
+{
+  "schema_version": "1",
+  "generated_at": "2026-09-13T20:00:00Z",
+  "content_digest": "sha256:48b13d741d288cdc2a4672a90b1a6ae1687799ed72c562b9ba3848115617893a",
+  "build": {
+    "pipeline_version": "0.0.0-fixture",
+    "run": { "git_sha": null, "workflow_run_id": null }
+  },
+  "licence": {
+    "snapshot": {
+      "spdx": "CC-BY-SA-4.0",
+      "name": "Creative Commons Attribution-ShareAlike 4.0 International",
+      "url": "https://creativecommons.org/licenses/by-sa/4.0/"
+    },
+    "notice": "This snapshot is a database compiled from LezWatch.TV and TVmaze and is published under CC BY-SA 4.0. It is a HAND-MADE FIXTURE, not real data, and is replaced by the pipeline lane's real snapshot."
+  },
+  "attribution": [
+    {
+      "source": "lezwatch",
+      "name": "LezWatch.TV",
+      "url": "https://lezwatchtv.com/",
+      "text": "Character, show, death, worth-it, trope and where-to-watch data from LezWatch.TV.",
+      "licence_name": "LezWatch.TV terms of use (free reuse, link-back requested)",
+      "licence_url": "https://lezwatchtv.com/tos/",
+      "terms_url": "https://lezwatchtv.com/tos/",
+      "terms_read_on": "2026-09-13"
+    },
+    {
+      "source": "tvmaze",
+      "name": "TVmaze",
+      "url": "https://www.tvmaze.com/",
+      "text": "Episode schedule data from TVmaze.",
+      "licence_name": "CC BY-SA 4.0",
+      "licence_url": "https://creativecommons.org/licenses/by-sa/4.0/",
+      "terms_url": "https://www.tvmaze.com/api",
+      "terms_read_on": "2026-09-13"
+    }
+  ],
+  "sources": {
+    "lezwatch": {
+      "name": "LezWatch.TV",
+      "base_url": "https://lezwatchtv.com/wp-json/",
+      "fetched_at": "2026-09-13T19:30:00Z",
+      "requests": 97,
+      "bytes": 4200000,
+      "mode": "full"
+    },
+    "tvmaze": {
+      "name": "TVmaze",
+      "base_url": "https://api.tvmaze.com/",
+      "fetched_at": "2026-09-13T19:45:00Z",
+      "requests": 4,
+      "bytes": 8000,
+      "mode": "full"
+    }
+  },
+  "coverage": {
+    "lezwatch": {
+      "shows": { "available": 4, "fetched": 4 },
+      "characters": { "available": 5, "fetched": 5 },
+      "actors": { "available": 4, "fetched": 4 }
+    },
+    "tvmaze": {
+      "shows_total": 4,
+      "with_join_key": 3,
+      "joined": 3,
+      "join_rate": 0.75,
+      "misses": { "no_key": 1, "ignored_by_source": 0, "not_found": 0, "other": 0 }
+    },
+    "fields": {
+      "shows.watch_links": { "present": 2, "absent": 2 },
+      "shows.ratings.worth_it": { "present": 3, "absent": 1 },
+      "shows.schedule.next_episode": { "present": 1, "absent": 3 },
+      "characters.death": { "present": 1, "absent": 4 },
+      "characters.gender": { "present": 4, "absent": 1 }
+    }
+  },
+  "taxonomies": {
+    "tropes": [
+      { "lwtv_id": 1, "slug": "slow-burn", "name": "Slow Burn", "count": 1 },
+      { "lwtv_id": 2, "slug": "found-family", "name": "Found Family", "count": 1 }
+    ],
+    "cliches": [
+      { "lwtv_id": 3, "slug": "bury-your-gays", "name": "Bury Your Gays", "count": 1 },
+      { "lwtv_id": 4, "slug": "dead", "name": "Dead", "count": 1 }
+    ],
+    "genders": [
+      { "lwtv_id": 5, "slug": "cisgender-woman", "name": "Cisgender Woman", "count": 3 },
+      { "lwtv_id": 6, "slug": "transgender-woman", "name": "Transgender Woman", "count": 1 },
+      { "lwtv_id": 7, "slug": "non-binary", "name": "Non-Binary", "count": 1 }
+    ],
+    "sexualities": [
+      { "lwtv_id": 8, "slug": "lesbian", "name": "Lesbian", "count": 2 },
+      { "lwtv_id": 9, "slug": "bisexual", "name": "Bisexual", "count": 1 },
+      { "lwtv_id": 10, "slug": "queer", "name": "Queer", "count": 1 }
+    ],
+    "romantic": [
+      { "lwtv_id": 11, "slug": "biromantic", "name": "Biromantic", "count": 1 }
+    ],
+    "stations": [
+      { "lwtv_id": 12, "slug": "example-network", "name": "Example Network", "count": 3 },
+      { "lwtv_id": 13, "slug": "another-example", "name": "Another Example", "count": 1 }
+    ],
+    "genres": [
+      { "lwtv_id": 14, "slug": "drama", "name": "Drama", "count": 1 },
+      { "lwtv_id": 15, "slug": "comedy", "name": "Comedy", "count": 1 },
+      { "lwtv_id": 16, "slug": "period-drama", "name": "Period Drama", "count": 1 },
+      { "lwtv_id": 17, "slug": "dramedy", "name": "Dramedy", "count": 1 }
+    ],
+    "countries": [
+      { "lwtv_id": 18, "slug": "us", "name": "United States", "count": 4 }
+    ],
+    "formats": [
+      { "lwtv_id": 19, "slug": "tv-show", "name": "TV Show", "count": 4 }
+    ],
+    "triggers": [
+      { "lwtv_id": 20, "slug": "violence", "name": "Violence", "count": 1 }
+    ],
+    "intersections": [],
+    "stars": [
+      { "lwtv_id": 21, "slug": "gold-star", "name": "Gold Star", "count": 1 }
+    ]
+  },
+  "shows": [
+    {
+      "id": "lwtv:show:101",
+      "lwtv_id": 101,
+      "slug": "harbor-lights",
+      "title": "Harbor Lights",
+      "alternate_names": [],
+      "source_url": "https://lezwatchtv.com/show/harbor-lights/",
+      "summary": "A lighthouse keeper and a marine biologist run a rescue station on a storm-bound coast.",
+      "years": { "start": 2021, "end": null, "on_air": "yes" },
+      "seasons": 3,
+      "format": { "slug": "tv-show", "name": "TV Show" },
+      "networks": [ { "slug": "example-network", "name": "Example Network" } ],
+      "countries": [ { "slug": "us", "name": "United States" } ],
+      "genres": [ { "slug": "drama", "name": "Drama" } ],
+      "tropes": [ { "slug": "slow-burn", "name": "Slow Burn" }, { "slug": "found-family", "name": "Found Family" } ],
+      "triggers": [],
+      "intersections": [],
+      "stars": [ { "slug": "gold-star", "name": "Gold Star" } ],
+      "ratings": {
+        "worth_it": "Yes",
+        "worth_it_details": "A gentle, well-researched slow burn with no bury-your-gays payoff.",
+        "quality": 4,
+        "realness": 5,
+        "screentime": 4,
+        "score": 42.5,
+        "show_we_love": true
+      },
+      "counts": { "characters": 2, "deaths": 0, "characters_source_reported": 2, "deaths_source_reported": 0 },
+      "external_ids": { "imdb": "tt1234567", "tmdb": "9001", "tvmaze": 5001 },
+      "watch_links": [ { "url": "https://www.example.com/watch/harbor-lights", "host": "www.example.com" } ],
+      "similar_show_ids": [ "lwtv:show:104" ],
+      "notes": { "plot": "Season 3 opens with a storm that strands the whole cast on the point.", "queer_episodes": "S1E1, S2E6" },
+      "schedule": {
+        "schedule_known": true,
+        "join": { "method": "lwtv_tvmaze_id", "matched": true },
+        "tvmaze_id": 5001,
+        "tvmaze_url": "https://www.tvmaze.com/shows/5001/harbor-lights",
+        "status": "Running",
+        "premiered": "2021-03-01",
+        "ended": null,
+        "network": { "name": "Example Network", "country_code": "US" },
+        "web_channel": null,
+        "next_episode": {
+          "tvmaze_id": 900001,
+          "season": 3,
+          "number": 4,
+          "name": "Fog Signal",
+          "airdate": "2026-09-20",
+          "airtime": "21:00",
+          "airstamp": "2026-09-20T21:00:00-04:00",
+          "runtime": 42,
+          "url": "https://www.tvmaze.com/episodes/900001/harbor-lights-3x04-fog-signal"
+        },
+        "previous_episode": {
+          "tvmaze_id": 900000,
+          "season": 3,
+          "number": 3,
+          "name": "The Wreck",
+          "airdate": "2026-09-13",
+          "airtime": "21:00",
+          "airstamp": "2026-09-13T21:00:00-04:00",
+          "runtime": 42,
+          "url": "https://www.tvmaze.com/episodes/900000/harbor-lights-3x03-the-wreck"
+        }
+      },
+      "source_modified_at": "2026-09-10T08:00:00Z"
+    },
+    {
+      "id": "lwtv:show:102",
+      "lwtv_id": 102,
+      "slug": "the-cartographers",
+      "title": "The Cartographers",
+      "alternate_names": [ "Cartographers" ],
+      "source_url": "https://lezwatchtv.com/show/the-cartographers/",
+      "summary": "Two rival mapmakers in a fictional 1890s survey office.",
+      "years": { "start": 2016, "end": 2018, "on_air": "no" },
+      "seasons": 2,
+      "format": { "slug": "tv-show", "name": "TV Show" },
+      "networks": [ { "slug": "example-network", "name": "Example Network" }, { "slug": "another-example", "name": "Another Example" } ],
+      "countries": [ { "slug": "us", "name": "United States" } ],
+      "genres": [ { "slug": "period-drama", "name": "Period Drama" } ],
+      "tropes": [ { "slug": "bury-your-gays", "name": "Bury Your Gays" } ],
+      "triggers": [ { "slug": "violence", "name": "Violence" } ],
+      "intersections": [],
+      "stars": [],
+      "ratings": {
+        "worth_it": "Meh",
+        "worth_it_details": null,
+        "quality": 3,
+        "realness": null,
+        "screentime": 2,
+        "score": 18.0,
+        "show_we_love": false
+      },
+      "counts": { "characters": 2, "deaths": 1, "characters_source_reported": 2, "deaths_source_reported": 1 },
+      "external_ids": { "imdb": "tt7654321", "tmdb": null, "tvmaze": null },
+      "watch_links": [],
+      "similar_show_ids": [],
+      "notes": { "plot": null, "queer_episodes": null },
+      "schedule": {
+        "schedule_known": true,
+        "join": { "method": "imdb_lookup", "matched": true },
+        "tvmaze_id": 5002,
+        "tvmaze_url": "https://www.tvmaze.com/shows/5002/the-cartographers",
+        "status": "Ended",
+        "premiered": "2016-10-01",
+        "ended": "2018-05-20",
+        "network": { "name": "Example Network", "country_code": "US" },
+        "web_channel": null,
+        "next_episode": null,
+        "previous_episode": {
+          "tvmaze_id": 800099,
+          "season": 2,
+          "number": 10,
+          "name": "The Final Survey",
+          "airdate": "2018-05-20",
+          "airtime": "20:00",
+          "airstamp": "2018-05-20T20:00:00-04:00",
+          "runtime": 45,
+          "url": "https://www.tvmaze.com/episodes/800099/the-cartographers-2x10-the-final-survey"
+        }
+      },
+      "source_modified_at": "2026-01-05T12:00:00Z"
+    },
+    {
+      "id": "lwtv:show:103",
+      "lwtv_id": 103,
+      "slug": "salt-and-ember",
+      "title": "Salt & Ember",
+      "alternate_names": [],
+      "source_url": "https://lezwatchtv.com/show/salt-and-ember/",
+      "summary": null,
+      "years": { "start": null, "end": null, "on_air": "unknown" },
+      "seasons": null,
+      "format": null,
+      "networks": [],
+      "countries": [],
+      "genres": [ { "slug": "comedy", "name": "Comedy" } ],
+      "tropes": [],
+      "triggers": [],
+      "intersections": [],
+      "stars": [],
+      "ratings": {
+        "worth_it": null,
+        "worth_it_details": null,
+        "quality": null,
+        "realness": null,
+        "screentime": null,
+        "score": null,
+        "show_we_love": false
+      },
+      "counts": { "characters": 1, "deaths": 0, "characters_source_reported": null, "deaths_source_reported": null },
+      "external_ids": { "imdb": null, "tmdb": null, "tvmaze": null },
+      "watch_links": [],
+      "similar_show_ids": [],
+      "notes": { "plot": null, "queer_episodes": null },
+      "schedule": {
+        "schedule_known": false,
+        "join": { "method": "none", "matched": false },
+        "tvmaze_id": null,
+        "tvmaze_url": null,
+        "status": null,
+        "premiered": null,
+        "ended": null,
+        "network": null,
+        "web_channel": null,
+        "next_episode": null,
+        "previous_episode": null
+      },
+      "source_modified_at": "2026-08-01T00:00:00Z"
+    },
+    {
+      "id": "lwtv:show:104",
+      "lwtv_id": 104,
+      "slug": "night-shift-radio",
+      "title": "Night Shift Radio",
+      "alternate_names": [],
+      "source_url": "https://lezwatchtv.com/show/night-shift-radio/",
+      "summary": "An overnight call-in host and her producer keep a small station alive.",
+      "years": { "start": 2024, "end": null, "on_air": "yes" },
+      "seasons": 1,
+      "format": { "slug": "tv-show", "name": "TV Show" },
+      "networks": [ { "slug": "example-network", "name": "Example Network" } ],
+      "countries": [ { "slug": "us", "name": "United States" } ],
+      "genres": [ { "slug": "dramedy", "name": "Dramedy" } ],
+      "tropes": [],
+      "triggers": [],
+      "intersections": [],
+      "stars": [],
+      "ratings": {
+        "worth_it": "No",
+        "worth_it_details": "Frequent cliché workplace-romance beats.",
+        "quality": 2,
+        "realness": 3,
+        "screentime": 5,
+        "score": 9.0,
+        "show_we_love": false
+      },
+      "counts": { "characters": 0, "deaths": 0, "characters_source_reported": 0, "deaths_source_reported": 0 },
+      "external_ids": { "imdb": null, "tmdb": null, "tvmaze": 5004 },
+      "watch_links": [
+        { "url": "https://www.example.com/watch/night-shift-radio", "host": "www.example.com" },
+        { "url": "https://store.example.org/night-shift-radio", "host": "store.example.org" }
+      ],
+      "similar_show_ids": [ "lwtv:show:101" ],
+      "notes": { "plot": null, "queer_episodes": null },
+      "schedule": {
+        "schedule_known": true,
+        "join": { "method": "lwtv_tvmaze_id", "matched": true },
+        "tvmaze_id": 5004,
+        "tvmaze_url": "https://www.tvmaze.com/shows/5004/night-shift-radio",
+        "status": "Running",
+        "premiered": "2024-01-08",
+        "ended": null,
+        "network": null,
+        "web_channel": { "name": "Example Streaming", "country_code": null },
+        "next_episode": null,
+        "previous_episode": {
+          "tvmaze_id": 700050,
+          "season": 1,
+          "number": 12,
+          "name": "Dead Air",
+          "airdate": "2026-08-30",
+          "airtime": "23:00",
+          "airstamp": "2026-08-31T02:00:00-04:00",
+          "runtime": 30,
+          "url": "https://www.tvmaze.com/episodes/700050/night-shift-radio-1x12-dead-air"
+        }
+      },
+      "source_modified_at": "2026-08-31T23:00:00Z"
+    }
+  ],
+  "characters": [
+    {
+      "id": "lwtv:character:201",
+      "lwtv_id": 201,
+      "slug": "mara-quill",
+      "name": "Mara Quill",
+      "source_url": "https://lezwatchtv.com/character/mara-quill/",
+      "gender": { "slug": "cisgender-woman", "name": "Cisgender Woman" },
+      "sexuality": { "slug": "lesbian", "name": "Lesbian" },
+      "romantic": null,
+      "cliches": [ { "slug": "slow-burn", "name": "Slow Burn" } ],
+      "actors": [ { "lwtv_id": 301, "slug": "example-actor-one", "name": "Example Actor One" } ],
+      "shows": [ { "show_id": "lwtv:show:101", "role": "regular", "years": [ "2021", "2022", "2023", "2024", "2025", "2026" ] } ],
+      "death": { "died": null, "death_known": false, "dates": [], "years": [] },
+      "source_modified_at": "2026-09-01T00:00:00Z"
+    },
+    {
+      "id": "lwtv:character:202",
+      "lwtv_id": 202,
+      "slug": "ines-varga",
+      "name": "Inés Varga",
+      "source_url": "https://lezwatchtv.com/character/ines-varga/",
+      "gender": { "slug": "cisgender-woman", "name": "Cisgender Woman" },
+      "sexuality": { "slug": "bisexual", "name": "Bisexual" },
+      "romantic": { "slug": "biromantic", "name": "Biromantic" },
+      "cliches": [],
+      "actors": [ { "lwtv_id": 302, "slug": "example-actor-two", "name": "Example Actor Two" } ],
+      "shows": [ { "show_id": "lwtv:show:101", "role": "regular", "years": [ "2021", "2022", "2023", "2024", "2025", "2026" ] } ],
+      "death": { "died": null, "death_known": false, "dates": [], "years": [] },
+      "source_modified_at": "2026-09-01T00:00:00Z"
+    },
+    {
+      "id": "lwtv:character:203",
+      "lwtv_id": 203,
+      "slug": "odile-brandt",
+      "name": "Odile Brandt",
+      "source_url": "https://lezwatchtv.com/character/odile-brandt/",
+      "gender": { "slug": "cisgender-woman", "name": "Cisgender Woman" },
+      "sexuality": { "slug": "lesbian", "name": "Lesbian" },
+      "romantic": null,
+      "cliches": [ { "slug": "bury-your-gays", "name": "Bury Your Gays" }, { "slug": "dead", "name": "Dead" } ],
+      "actors": [ { "lwtv_id": 303, "slug": "example-actor-three", "name": "Example Actor Three" } ],
+      "shows": [ { "show_id": "lwtv:show:102", "role": "regular", "years": [ "2016", "2017", "2018" ] } ],
+      "death": {
+        "died": true,
+        "death_known": true,
+        "dates": [ { "date": "2017-11-12", "year": 2017, "raw": "20171112" } ],
+        "years": [ 2017 ]
+      },
+      "source_modified_at": "2026-01-05T12:00:00Z"
+    },
+    {
+      "id": "lwtv:character:204",
+      "lwtv_id": 204,
+      "slug": "thea-marsh",
+      "name": "Thea Marsh",
+      "source_url": "https://lezwatchtv.com/character/thea-marsh/",
+      "gender": { "slug": "transgender-woman", "name": "Transgender Woman" },
+      "sexuality": { "slug": "queer", "name": "Queer" },
+      "romantic": null,
+      "cliches": [],
+      "actors": [ { "lwtv_id": 304, "slug": "example-actor-four", "name": "Example Actor Four" } ],
+      "shows": [ { "show_id": "lwtv:show:102", "role": "recurring", "years": [ "2017", "2018" ] } ],
+      "death": { "died": null, "death_known": false, "dates": [], "years": [] },
+      "source_modified_at": "2026-01-05T12:00:00Z"
+    },
+    {
+      "id": "lwtv:character:205",
+      "lwtv_id": 205,
+      "slug": "juno-adeyemi",
+      "name": "Juno Adeyemi",
+      "source_url": "https://lezwatchtv.com/character/juno-adeyemi/",
+      "gender": { "slug": "non-binary", "name": "Non-Binary" },
+      "sexuality": null,
+      "romantic": null,
+      "cliches": [],
+      "actors": [ { "lwtv_id": 305, "slug": null, "name": null } ],
+      "shows": [ { "show_id": "lwtv:show:103", "role": null, "years": [] } ],
+      "death": { "died": null, "death_known": false, "dates": [], "years": [] },
+      "source_modified_at": "2026-08-01T00:00:00Z"
+    }
+  ]
+}

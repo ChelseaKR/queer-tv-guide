@@ -25,6 +25,8 @@ struct AboutView: View {
                                     .foregroundStyle(.secondary)
                                 Button(item.url.absoluteString) { openURL(item.url) }
                                     .font(.caption)
+                                    .accessibilityLabel("Visit \(item.name)")
+                                    .accessibilityHint("Opens in Safari")
                             }
                             .padding(.vertical, 4)
                         }
@@ -34,6 +36,7 @@ struct AboutView: View {
                         Text(snapshot.licence.notice)
                         Button(snapshot.licence.snapshot.name) { openURL(snapshot.licence.snapshot.url) }
                             .font(.caption)
+                            .accessibilityHint("Opens in Safari")
                     }
 
                     Section("Coverage") {

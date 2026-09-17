@@ -9,7 +9,13 @@ final class SourceTreeGuardTests: XCTestCase {
     /// Text files that could carry a URL or an import. `.json` is data the
     /// app only ever hands to `openURL`; it is scanned by `testJSONDataFilesAreNotFetched`
     /// instead of the host gate.
-    private static let codeExtensions: Set<String> = ["swift", "plist", "xcprivacy", "xcconfig", "pbxproj", "xcscheme", "xcstrings", "entitlements", "xctestplan"]
+    // "yml" covers `project.yml`: XcodeGen's source of truth for
+    // QueerTVGuide.xcodeproj (see the Makefile — `xcodegen generate`
+    // regenerates the committed .pbxproj from it). A host or a remote
+    // package added there would otherwise reach the real build without
+    // ever being scanned, since it isn't Swift, a plist, or the pbxproj
+    // itself.
+    private static let codeExtensions: Set<String> = ["swift", "plist", "xcprivacy", "xcconfig", "pbxproj", "xcscheme", "xcstrings", "entitlements", "xctestplan", "yml"]
 
     private static let hostPattern = try! NSRegularExpression(pattern: #"https?://([A-Za-z0-9.-]+)"#)
 
@@ -106,6 +112,47 @@ final class SourceTreeGuardTests: XCTestCase {
         let packageText = try read(Repo.iosRoot.appendingPathComponent("GuideCore/Package.swift"))
         XCTAssertFalse(packageText.contains("dependencies: [\n        .package"), "GuideCore must not depend on other packages")
         XCTAssertFalse(packageText.contains(".package(url"), "GuideCore must not depend on other packages")
+
+        // project.yml is XcodeGen's source of truth for QueerTVGuide.xcodeproj
+        // (Makefile: "xcodegen generate regenerates ... from project.yml").
+        // A remote package declared there (XcodeGen's `url:` key) would only
+        // show up in the .pbxproj scan above after a regenerate; catch it at
+        // the source instead. The one legitimate package (GuideCore) uses
+        // `path:`, never `url:`.
+        let projectYMLText = try read(Repo.iosRoot.appendingPathComponent("project.yml"))
+        XCTAssertFalse(projectYMLText.contains("url:"), "project.yml declares a package by url: (remote); only path: (local, like GuideCore) is allowed")
+    }
+
+    /// Regression guard for the check above: proves the `url:` substring
+    /// test actually matches the shapes XcodeGen's own docs show for a
+    /// remote package (quoted, unquoted, with any version-constraint key),
+    /// and does not false-positive on the local `path:` syntax GuideCore
+    /// legitimately uses.
+    func testProjectYMLRemotePackageDetectionCatchesRealisticXcodeGenSyntax() {
+        // Built with a split scheme, not a literal "https://…", so this
+        // file's own fixture strings don't trip `testOnlyTheSnapshotHostAppearsInSource`
+        // (which scans every .swift file, this one included).
+        let scheme = "https"
+        let remoteExamples = [
+            "packages:\n  SomeSDK:\n    url: \(scheme)://example.com/sdk\n    from: 1.0.0\n",
+            "packages:\n  SomeSDK:\n    url: \"\(scheme)://example.com/sdk\"\n    exactVersion: 2.1.0\n",
+            "packages:\n  SomeSDK:\n    url: git@example.com:sdk.git\n    branch: main\n",
+        ]
+        for example in remoteExamples {
+            XCTAssertTrue(example.contains("url:"), "remote package example should be detected: \(example)")
+        }
+        let localExample = "packages:\n  GuideCore:\n    path: GuideCore\n"
+        XCTAssertFalse(localExample.contains("url:"), "a local path: package must not false-positive")
+    }
+
+    /// Regression guard for `testOnlyTheSnapshotHostAppearsInSource`: proves
+    /// `project.yml` is actually in the scanned file set, not just that
+    /// "yml" is in the extension list (a typo in the enumerator's filter
+    /// could still skip it silently).
+    func testProjectYMLIsScannedForHosts() {
+        XCTAssertTrue(Self.codeExtensions.contains("yml"), "project.yml must be scanned for stray hosts")
+        let matches = codeFiles().filter { $0.lastPathComponent == "project.yml" }
+        XCTAssertEqual(matches.count, 1, "project.yml must be included in the scanned file set")
     }
 
     // MARK: 4. Privacy manifest matches reality

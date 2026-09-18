@@ -16,7 +16,7 @@ struct CharacterDetailView: View {
                         identity(character)
                         doesSheDie(character)
                         shows(character, snapshot: snapshot)
-                        DataStatusFooter(generatedAt: snapshot.generatedAt, refreshError: model.lastRefreshError)
+                        DataStatusFooter(snapshot: snapshot)
                     }
                     .padding()
                 }
@@ -42,6 +42,8 @@ struct CharacterDetailView: View {
                     .font(.subheadline)
                     .foregroundStyle(.subdued)
             }
+            // LezWatch.TV's terms: link back (Attribution).
+            LezWatchSourceLink(name: character.name, url: character.sourceURL)
         }
     }
 

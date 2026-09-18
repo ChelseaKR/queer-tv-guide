@@ -24,8 +24,18 @@ CHARACTER_FILES = [
 ]
 
 TAXONOMY_REST_BASES = [
-    "trope", "cliche", "gender", "sexuality", "romantic",
-    "station", "genre", "country", "format", "trigger", "intersection", "star",
+    "trope",
+    "cliche",
+    "gender",
+    "sexuality",
+    "romantic",
+    "station",
+    "genre",
+    "country",
+    "format",
+    "trigger",
+    "intersection",
+    "star",
 ]
 
 
@@ -49,63 +59,55 @@ def build_handler(*, grant_present: bool = True):
     tvmaze_derry = _load("tvmaze_show_derry_girls.json")
     tvmaze_imdb_only = _load("tvmaze_show_imdb_only.json")
 
+    def tos(_params):
+        text = f"<p>You are welcome to {GRANT_SENTENCE if grant_present else 'do something else entirely'}.</p>"
+        return httpx.Response(200, text=text)
+
+    def paged(records):
+        # `per_page=1` is the pipeline's "how many are available?" probe.
+        def route(params):
+            if params.get("per_page") == "1":
+                return _json_response(
+                    [{"id": records[0]["id"]}], headers={"X-WP-Total": str(len(records))}
+                )
+            return _json_response(
+                records, headers={"X-WP-Total": str(len(records)), "X-WP-TotalPages": "1"}
+            )
+
+        return route
+
+    def imdb_lookup(params):
+        if params.get("imdb") == "tt8888882":
+            return _json_response({"id": 55555})
+        return httpx.Response(404, json={"message": "not found"})
+
+    routes = {
+        "/tos/": tos,
+        "/wp-json/wp/v2/show": paged(shows),
+        "/wp-json/wp/v2/character": paged(characters),
+        "/wp-json/lwtv/v1/export/raw/actors/": lambda _p: _json_response(actors),
+        "/wp-json/lwtv/v1/export/list/shows/": lambda _p: _json_response(id_list_shows),
+        "/wp-json/lwtv/v1/export/list/characters/": lambda _p: _json_response(id_list_characters),
+        "/updates/shows": lambda _p: _json_response({}),
+        "/shows/33320": lambda _p: _json_response(tvmaze_derry),
+        "/shows/55555": lambda _p: _json_response(tvmaze_imdb_only),
+        "/shows/9999999": lambda _p: httpx.Response(404, json={"message": "not found"}),
+        "/lookup/shows": imdb_lookup,
+    }
+
     def handler(request: httpx.Request) -> httpx.Response:
         url = request.url
         path = url.path
         params = {k: v[0] for k, v in parse_qs(str(url.query, "utf-8")).items()}
-
-        if path == "/tos/":
-            text = f"<p>You are welcome to {GRANT_SENTENCE if grant_present else 'do something else entirely'}.</p>"
-            return httpx.Response(200, text=text)
-
-        if path.startswith("/wp-json/wp/v2/") and path.rstrip("/").rsplit("/", 1)[-1] in taxonomies:
-            rest_base = path.rstrip("/").rsplit("/", 1)[-1]
+        route = routes.get(path)
+        if route is not None:
+            return route(params)
+        rest_base = path.rstrip("/").rsplit("/", 1)[-1]
+        if path.startswith("/wp-json/wp/v2/") and rest_base in taxonomies:
+            terms = taxonomies[rest_base]
             return _json_response(
-                taxonomies[rest_base], headers={"X-WP-TotalPages": "1", "X-WP-Total": str(len(taxonomies[rest_base]))}
+                terms, headers={"X-WP-TotalPages": "1", "X-WP-Total": str(len(terms))}
             )
-
-        if path == "/wp-json/wp/v2/show":
-            if params.get("per_page") == "1":
-                return _json_response([{"id": shows[0]["id"]}], headers={"X-WP-Total": str(len(shows))})
-            return _json_response(
-                shows, headers={"X-WP-Total": str(len(shows)), "X-WP-TotalPages": "1"}
-            )
-
-        if path == "/wp-json/wp/v2/character":
-            if params.get("per_page") == "1":
-                return _json_response(
-                    [{"id": characters[0]["id"]}], headers={"X-WP-Total": str(len(characters))}
-                )
-            return _json_response(
-                characters, headers={"X-WP-Total": str(len(characters)), "X-WP-TotalPages": "1"}
-            )
-
-        if path == "/wp-json/lwtv/v1/export/raw/actors/":
-            return _json_response(actors)
-
-        if path == "/wp-json/lwtv/v1/export/list/shows/":
-            return _json_response(id_list_shows)
-
-        if path == "/wp-json/lwtv/v1/export/list/characters/":
-            return _json_response(id_list_characters)
-
-        if path == "/updates/shows":
-            return _json_response({})
-
-        if path == "/shows/33320":
-            return _json_response(tvmaze_derry)
-
-        if path == "/shows/55555":
-            return _json_response(tvmaze_imdb_only)
-
-        if path == "/shows/9999999":
-            return httpx.Response(404, json={"message": "not found"})
-
-        if path == "/lookup/shows":
-            if params.get("imdb") == "tt8888882":
-                return _json_response({"id": 55555})
-            return httpx.Response(404, json={"message": "not found"})
-
         raise AssertionError(f"unexpected request: {request.method} {url}")
 
     return handler

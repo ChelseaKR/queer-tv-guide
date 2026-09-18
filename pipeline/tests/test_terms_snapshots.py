@@ -67,6 +67,7 @@ def test_gitattributes_keeps_terms_snapshots_byte_exact():
 
 # ---- negative controls: the verifier really catches each failure ----------------
 
+
 def _one_file_dir(tmp_path: Path, body: bytes) -> Path:
     d = tmp_path / "2026-01-01"
     d.mkdir()

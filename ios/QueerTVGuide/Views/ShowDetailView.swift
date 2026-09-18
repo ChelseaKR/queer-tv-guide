@@ -14,7 +14,8 @@ struct ShowDetailView: View {
                     VStack(alignment: .leading, spacing: 20) {
                         header(show)
                         ratings(show)
-                        schedule(show)
+                        worthItDetails(show)
+                        schedule(show, snapshot: snapshot)
                         doAnyDie(show, snapshot: snapshot)
                         tropesAndTriggers(show)
                         characters(show, snapshot: snapshot)
@@ -49,6 +50,8 @@ struct ShowDetailView: View {
                     .font(.subheadline)
                     .foregroundStyle(.subdued)
             }
+            // LezWatch.TV's terms: link back (Attribution).
+            LezWatchSourceLink(name: show.title, url: show.sourceURL)
         }
     }
 
@@ -61,24 +64,39 @@ struct ShowDetailView: View {
             LabeledContent("Quality", value: Presentation.ratingValue(show.ratings.quality))
             LabeledContent("Realness", value: Presentation.ratingValue(show.ratings.realness))
             LabeledContent("Screentime", value: Presentation.ratingValue(show.ratings.screentime))
-            if let details = show.ratings.worthItDetails, !details.isEmpty {
-                Text(details)
-                    .font(.callout)
-                    .foregroundStyle(.subdued)
-            }
         }
         .accessibilityElement(children: .combine)
     }
 
-    private func schedule(_ show: Show) -> some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text("Next episode")
-                .font(.headline)
-                .accessibilityAddTraits(.isHeader)
-            Text(Presentation.nextEpisode(show.schedule))
-                .font(.body)
+    /// LezWatch's worth-it explanation. Closed by default: in the
+    /// 2026-09-17 snapshot, 61 of 2,268 name a death outright ("everyone
+    /// dies in the end"), which would defeat the closed reveal below.
+    @ViewBuilder
+    private func worthItDetails(_ show: Show) -> some View {
+        if let details = show.ratings.worthItDetails, !details.isEmpty {
+            DisclosureGroup("Why? (may contain spoilers)") {
+                Text(details)
+                    .font(.callout)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
         }
-        .accessibilityElement(children: .combine)
+    }
+
+    private func schedule(_ show: Show, snapshot: Snapshot) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Next episode")
+                    .font(.headline)
+                    .accessibilityAddTraits(.isHeader)
+                Text(Presentation.nextEpisode(show.schedule))
+                    .font(.body)
+            }
+            .accessibilityElement(children: .combine)
+            // TVmaze's CC BY-SA 4.0 credit, wherever its data shows.
+            if let credit = Attribution.tvmazeCredit(for: show.schedule, in: snapshot) {
+                TVmazeCreditView(credit: credit)
+            }
+        }
     }
 
     /// The show-level "does she die": which listed characters have a
@@ -197,7 +215,7 @@ struct ShowDetailView: View {
                         .multilineTextAlignment(.leading)
                 }
             }
-            DataStatusFooter(generatedAt: snapshot.generatedAt, refreshError: model.lastRefreshError)
+            DataStatusFooter(snapshot: snapshot)
         }
     }
 }

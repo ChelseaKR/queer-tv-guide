@@ -1,0 +1,19 @@
+# zizmor configuration (CI-CD-STANDARD §7, CICD-19; SECURITY §6.1, SEC-25).
+#
+# No waivers today: every workflow passes at medium severity and above.
+#
+# If a finding ever has to be waived, waive it for ONE rule in ONE file (never
+# a whole file for every rule) and name the issue that removes it, in this
+# shape:
+#
+#   rules:
+#     unpinned-uses:
+#       ignore:
+#         - some-workflow.yml  # #NN: why, and what removes it
+#
+# Waivers expire on their own: `make workflows` also runs zizmor with no
+# configuration and fails if any entry here no longer matches a real finding
+# (scripts/check_zizmor_waivers.py), so the PR that fixes a workflow must
+# delete its waiver. The checker parses this file without a YAML library;
+# keep the shape above.
+rules: {}

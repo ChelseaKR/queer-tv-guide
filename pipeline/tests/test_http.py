@@ -14,9 +14,11 @@ def test_user_agent_names_the_repo():
 def test_unknown_host_refused(no_sleep):
     sleep, _ = no_sleep
     transport = httpx.MockTransport(lambda req: httpx.Response(200, json={}))
-    with PacedClient(transport=transport, sleep=sleep) as client:
-        with pytest.raises(FetchError, match="no crawl policy declared"):
-            client.get("https://example.com/whatever")
+    with (
+        PacedClient(transport=transport, sleep=sleep) as client,
+        pytest.raises(FetchError, match="no crawl policy declared"),
+    ):
+        client.get("https://example.com/whatever")
 
 
 def test_pacing_waits_the_full_interval():
@@ -60,7 +62,9 @@ def test_429_backs_off_and_then_succeeds(no_sleep):
 
     transport = httpx.MockTransport(handler)
     client = PacedClient(
-        policies={"api.tvmaze.com": HostPolicy(min_interval=0.0, wait_429=5.0, backoff_429=2.0, max_429=5)},
+        policies={
+            "api.tvmaze.com": HostPolicy(min_interval=0.0, wait_429=5.0, backoff_429=2.0, max_429=5)
+        },
         transport=transport,
         sleep=sleep,
     )

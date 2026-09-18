@@ -17,6 +17,8 @@ def test_grant_removed_is_a_hard_stop(mock_transport_no_grant, no_sleep):
     """Negative control: if LezWatch's ToS page no longer contains the reuse
     grant, the pipeline must refuse to run rather than mirror on stale trust."""
     sleep, _ = no_sleep
-    with PacedClient(transport=mock_transport_no_grant, sleep=sleep) as client:
-        with pytest.raises(TermsChanged, match="no longer contains"):
-            check_lezwatch_terms(client)
+    with (
+        PacedClient(transport=mock_transport_no_grant, sleep=sleep) as client,
+        pytest.raises(TermsChanged, match="no longer contains"),
+    ):
+        check_lezwatch_terms(client)

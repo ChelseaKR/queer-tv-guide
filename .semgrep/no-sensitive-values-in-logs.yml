@@ -1,0 +1,48 @@
+rules:
+  - id: no-sensitive-values-in-logs-python
+    languages: [python]
+    severity: ERROR
+    message: >-
+      A value whose name marks it as a credential or personal data reaches a
+      log or print call. OBSERVABILITY-STANDARD §3 (OBS-11) forbids logging
+      these in any repository that logs; DATA-GOVERNANCE-STANDARD §4 owns the
+      field list.
+    patterns:
+      - pattern-either:
+          - pattern: print(..., $X, ...)
+          - pattern: print(..., f"...{$X}...", ...)
+          - pattern: log(..., $X, ...)
+          - pattern: log(..., f"...{$X}...", ...)
+          - pattern: $OBJ.log(..., $X, ...)
+          - pattern: $OBJ.log(..., f"...{$X}...", ...)
+          # A method call counts only when the method is a logging level;
+          # without this, `items.append(token)` would match.
+          - patterns:
+              - pattern-either:
+                  - pattern: $LOGGER.$LEVEL(..., $X, ...)
+                  - pattern: $LOGGER.$LEVEL(..., f"...{$X}...", ...)
+              - metavariable-regex:
+                  metavariable: $LEVEL
+                  regex: ^(debug|info|warning|warn|error|exception|critical|fatal|log)$
+      - metavariable-regex:
+          metavariable: $X
+          regex: (?i)^.*(passw(or)?d|token|secret|api_?key|authori[sz]ation|cookie|session_?id|e_?mail|ssn|dob|date_?of_?birth|credit_?card|card_?number|private_?key)[A-Za-z0-9_\]\['"]*$
+  - id: no-sensitive-values-in-logs-swift
+    languages: [swift]
+    severity: ERROR
+    message: >-
+      A value whose name marks it as a credential or personal data reaches a
+      log or print call. OBSERVABILITY-STANDARD §3 (OBS-11).
+    patterns:
+      - pattern-either:
+          - pattern: print(..., $X, ...)
+          - pattern: NSLog(..., $X, ...)
+          - pattern: debugPrint(..., $X, ...)
+          - patterns:
+              - pattern: $LOGGER.$LEVEL(..., $X, ...)
+              - metavariable-regex:
+                  metavariable: $LEVEL
+                  regex: ^(trace|debug|info|notice|log|warning|error|critical|fault)$
+      - metavariable-regex:
+          metavariable: $X
+          regex: (?i)^.*(passw(or)?d|token|secret|api_?key|authori[sz]ation|cookie|session_?id|e_?mail|ssn|dob|date_?of_?birth|credit_?card|card_?number|private_?key).*$

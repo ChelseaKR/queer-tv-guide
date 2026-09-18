@@ -1,0 +1,68 @@
+name: security
+
+# Stage 5 of the CI-CD-STANDARD §1 pipeline (secret scan, SAST, dependency
+# CVEs), workflow SAST (zizmor, CICD-19), and the repository policy tests.
+# Each job runs root Makefile targets, the same commands `make verify` runs
+# locally (CICD-27); tests/test_ci_parity.py fails if this workflow and
+# ci.yml together stop covering every verify target.
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  schedule:
+    # Weekly, so a newly published CVE or rule reaches main in a week with no
+    # pushes. Monday 14:37 UTC, off the hour.
+    - cron: "37 14 * * 1"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+concurrency:
+  # One group per commit on push, one per branch on a pull request (CI-CD
+  # §11c): a ref-only key lets a third push evict a pending run, and that
+  # commit then carries no verdict at all.
+  group: ${{ github.workflow }}-${{ github.ref }}-${{ github.event_name == 'pull_request' && 'pr' || github.sha }}
+  cancel-in-progress: true
+
+jobs:
+  policy:
+    name: policy
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
+        with:
+          version: "0.12.12"
+
+      - name: repository policy tests and workflow SAST
+        run: make policy workflows
+
+  security:
+    name: security
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # gitleaks walks every commit; the default depth-1 clone would scan
+          # one commit and still report success.
+          fetch-depth: 0
+          persist-credentials: false
+
+      - uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
+        with:
+          version: "0.12.12"
+
+      - name: secret scan, SAST, dependency CVEs
+        run: make secrets sast sca

@@ -2,29 +2,26 @@
 // identifier (no spaces) on purpose: a spaced PRODUCT_NAME changes the
 // built executable's filename too, which breaks Xcode's default TEST_HOST
 // computation for hosted unit tests and Swift's default module-name
-// derivation. The human-facing placeholder display name (DECISIONS 0004 —
-// the app name is undecided; never the rejected name) lives in exactly one
-// Swift source location instead: `AppIdentity.displayName` in
-// QueerTVGuide/App/AppIdentity.swift. Renaming the app is therefore two
-// edits — this identifier plus that constant — not a scattered search.
+// derivation. It, the bundle id and the targets keep their working names
+// (DECISIONS 0006). The human-facing name is the display name
+// below plus `AppIdentity.displayName` in QueerTVGuide/App/AppIdentity.swift;
+// SourceTreeGuardTests checks the two agree.
 //
 // Included ONLY by App.xcconfig (the app target), never by the test
 // targets' config chain — every target sharing one PRODUCT_NAME collides.
 PRODUCT_NAME = QueerTVGuide
 PRODUCT_BUNDLE_IDENTIFIER = com.chelseakr.queertvguide
-INFOPLIST_KEY_CFBundleDisplayName = $(PRODUCT_NAME)
+INFOPLIST_KEY_CFBundleDisplayName = Queer Frame
 
 // App Store submission keys the generated Info.plist was missing.
-// - iPad multitasking needs all four orientations declared, or upload
-//   validation rejects the build (the target supports iPad:
-//   TARGETED_DEVICE_FAMILY = 1,2 in Shared.xcconfig). iPhone: no
-//   upside-down, as Xcode's own template.
+// - Orientations: iPhone only (DECISIONS 0009, TARGETED_DEVICE_FAMILY = 1
+//   in Shared.xcconfig): portrait and landscape, no upside-down, as Xcode's
+//   own template.
 // - Export compliance: the app's one network call is HTTPS through
 //   URLSession, and it contains no encryption of its own, so it uses no
 //   non-exempt encryption. Declaring it here answers App Store Connect's
 //   question for every build.
 // - Category: Entertainment, per docs/APP-STORE.md §1.
-INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight
 INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight
 INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO
 INFOPLIST_KEY_LSApplicationCategoryType = public.app-category.entertainment

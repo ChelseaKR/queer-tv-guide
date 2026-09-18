@@ -38,12 +38,17 @@ public enum Presentation {
     // the contract. `deathKnown == false` means exactly "no death is
     // recorded in this snapshot" — it must never read as a confirmed "no"
     // or "she lives".
+    //
+    // Every unknown answer opens with "Not recorded." A sentence that opens
+    // with "No …" ("No death is recorded …") is heard as "No" by a VoiceOver
+    // user who moves on after the first word, and "No" answers "does she
+    // die?" with a fact the source never asserts.
 
     /// The spoiler text itself, shown only after the user chooses to reveal
     /// it. `name` lets it read as a sentence about a person.
     public static func death(_ death: Death, name: String) -> String {
         guard death.deathKnown, death.died == true else {
-            return "No death is recorded for \(name) in this snapshot."
+            return "Not recorded. This snapshot does not record a death for \(name)."
         }
         if death.years.isEmpty {
             return "Yes. \(name) dies. The year is not recorded."
@@ -55,15 +60,15 @@ public enum Presentation {
     }
 
     public static func deathShort(_ death: Death) -> String {
-        death.deathKnown && death.died == true ? "Dies" : "No recorded death"
+        death.deathKnown && death.died == true ? "Dies" : "Death not recorded"
     }
 
     /// Show-level summary after the reveal.
     public static func deathsSummary(cast: [Character]) -> String {
-        guard !cast.isEmpty else { return "No queer characters are listed for this show in this snapshot." }
+        guard !cast.isEmpty else { return noListedCast }
         let dead = cast.filter { $0.death.deathKnown && $0.death.died == true }
         if dead.isEmpty {
-            return "No recorded deaths among \(cast.count) listed \(cast.count == 1 ? "character" : "characters")."
+            return "Not recorded for any of the \(cast.count) listed \(cast.count == 1 ? "character" : "characters")."
         }
         return "\(dead.count) of \(cast.count) listed \(cast.count == 1 ? "character" : "characters") \(dead.count == 1 ? "dies" : "die"): \(dead.map(\.name).joined(separator: ", "))."
     }
@@ -108,16 +113,15 @@ public enum Presentation {
         terms.filter { !spoilers.contains($0.slug) }
     }
 
+    /// The show-level answer when the snapshot lists nobody to answer about.
+    static let noListedCast = "Not recorded. This snapshot does not list any queer characters for this show."
+
     public static func showDeaths(cast: [Character], show: Show) -> ShowDeaths {
         var notes: [String] = []
         let spoilerTags = show.tropes.filter { deathSpoilerTropeSlugs.contains($0.slug) }
         guard !cast.isEmpty else {
             notes += spoilerTags.map { "LezWatch.TV tags this show “\($0.name)”." }
-            return ShowDeaths(
-                headline: "No queer characters are listed for this show in this snapshot, so there is no answer here.",
-                lines: [],
-                notes: notes
-            )
+            return ShowDeaths(headline: noListedCast, lines: [], notes: notes)
         }
         let dead = cast.filter { $0.death.deathKnown && $0.death.died == true }
         let listed = "\(cast.count) listed \(cast.count == 1 ? "character" : "characters")"
@@ -128,8 +132,8 @@ public enum Presentation {
         guard !dead.isEmpty else {
             return ShowDeaths(
                 headline: cast.count == 1
-                    ? "No death is recorded for the one listed character."
-                    : "No death is recorded for any of the \(listed).",
+                    ? "Not recorded. This snapshot does not record a death for the one listed character."
+                    : "Not recorded. This snapshot does not record a death for any of the \(listed).",
                 lines: [],
                 notes: notes
             )
@@ -221,6 +225,80 @@ public enum Presentation {
 
     public static func generatedAt(_ date: Date) -> String {
         "Data as of \(dateTimeFormatter.string(from: date))"
+    }
+
+    /// The data-status line on every screen that reads the snapshot: when
+    /// the data was last updated, and how long ago that was. An age that
+    /// cannot be worked out is said to be unknown, never left off (which
+    /// would read as current).
+    public static func dataAsOf(_ date: Date, freshness: DataFreshness) -> String {
+        switch freshness {
+        case .current(let seconds), .stale(let seconds):
+            return "\(generatedAt(date)) (\(age(seconds)))"
+        case .unknown:
+            return "\(generatedAt(date)) (age unknown: that is later than this device's clock)"
+        }
+    }
+
+    /// "less than an hour ago", "1 hour ago", "30 hours ago", then whole
+    /// days from two days on. Rounded down, so an age is never overstated
+    /// into the next threshold, and never understated past it either: 48
+    /// hours and one second is "2 days ago", and stale.
+    public static func age(_ seconds: TimeInterval) -> String {
+        let hours = Int(max(0, seconds) / 3600)
+        if hours < 1 { return "less than an hour ago" }
+        if hours < 48 { return hours == 1 ? "1 hour ago" : "\(hours) hours ago" }
+        return "\(hours / 24) days ago"
+    }
+
+    /// What a stale or unknown-age snapshot says about itself, above the
+    /// content it affects. `nil` only when the data is current.
+    public struct FreshnessWarning: Equatable, Sendable {
+        public let title: String
+        public let detail: String
+        /// Everything, in reading order, for one VoiceOver element. Opens
+        /// with "Warning" so a listener who moves on after the first word
+        /// still hears that something is wrong.
+        public var spoken: String { "Warning. \(title). \(detail)" }
+    }
+
+    public static func freshnessWarning(generatedAt date: Date, freshness: DataFreshness) -> FreshnessWarning? {
+        switch freshness {
+        case .current:
+            return nil
+        case .stale(let seconds):
+            return FreshnessWarning(
+                title: "This data is out of date",
+                detail: "It was last updated \(age(seconds)), on \(dateTimeFormatter.string(from: date)). Next episodes and where-to-watch links may have changed since then. The app looks for new data each time it opens; pull down on Search to look now."
+            )
+        case .unknown:
+            return FreshnessWarning(
+                title: "This data's age is unknown",
+                detail: "It is dated \(dateTimeFormatter.string(from: date)), which is later than this device's clock, so the app can't tell how old it is. Treat it as possibly out of date, and check the date and time in Settings."
+            )
+        }
+    }
+
+    // MARK: Favourites backup
+
+    /// What an import did, counted: every entry in the file is accounted
+    /// for, including the ones skipped.
+    public static func importSummary(added: Int, alreadySaved: Int, notInSnapshot: Int, unreadable: Int) -> String {
+        func count(_ n: Int, _ one: String, _ many: String) -> String { "\(n) \(n == 1 ? one : many)" }
+        if added + alreadySaved + notInSnapshot + unreadable == 0 {
+            return "The file lists no favourites. Nothing was added."
+        }
+        var sentences = [added == 0 ? "No new favourites were added." : "Added \(count(added, "favourite", "favourites"))."]
+        if alreadySaved > 0 {
+            sentences.append("\(count(alreadySaved, "was", "were")) already saved.")
+        }
+        if notInSnapshot > 0 {
+            sentences.append("\(count(notInSnapshot, "is", "are")) not in this snapshot and \(notInSnapshot == 1 ? "was" : "were") skipped.")
+        }
+        if unreadable > 0 {
+            sentences.append("\(count(unreadable, "entry", "entries")) could not be read and \(unreadable == 1 ? "was" : "were") skipped.")
+        }
+        return sentences.joined(separator: " ")
     }
 
     public static let dayFormatter: DateFormatter = {

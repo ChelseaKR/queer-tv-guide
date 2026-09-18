@@ -1,0 +1,32 @@
+cff-version: 1.2.0
+message: >-
+  If you reuse the published snapshot, cite it as below and keep its licence
+  notice and source credits (LezWatch.TV and TVmaze), as CC BY-SA 4.0 requires.
+title: "queer-tv-guide snapshot (working name)"
+type: dataset
+abstract: >-
+  A nightly, schema-validated JSON snapshot of queer women, non-binary and
+  transgender characters on TV and the shows they appear in, from
+  LezWatch.TV, joined to TVmaze episode schedules. Absence is explicit: a
+  death the source has not recorded is null, never false.
+authors:
+  - family-names: Kelly-Reif
+    given-names: Chelsea
+license: CC-BY-SA-4.0
+url: "https://chelseakr.github.io/queer-tv-guide/"
+keywords:
+  - LGBTQ representation
+  - television
+  - open data
+references:
+  - type: database
+    title: LezWatch.TV
+    url: "https://lezwatchtv.com/"
+    authors:
+      - name: LezWatch.TV
+  - type: database
+    title: TVmaze
+    url: "https://www.tvmaze.com/"
+    license: CC-BY-SA-4.0
+    authors:
+      - name: TVmaze

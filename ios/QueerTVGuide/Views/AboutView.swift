@@ -8,16 +8,21 @@ struct AboutView: View {
     var body: some View {
         NavigationStack {
             List {
-                Section("Privacy") {
-                    Text("No account, no analytics, no crash reporting, no third-party SDKs. Nothing leaves this device except one request for the data file this app reads — a plain, cookieless GET of a static file, sent only when you open the app or pull to refresh.")
-                        .accessibilityLabel("Privacy posture: no account, no analytics, no crash reporting, no third-party SDKs. Nothing leaves this device except one request for the data file this app reads.")
+                Section(subdued: "Privacy") {
+                    Text("\(AppIdentity.displayName) collects nothing: no account, no analytics, no crash reporting, no third-party SDKs. Nothing leaves this device except one request for the data file this app reads — a plain, cookieless GET of a static file, sent only when you open the app or pull to refresh.")
+                        .accessibilityLabel("Privacy posture: \(AppIdentity.displayName) collects nothing. No account, no analytics, no crash reporting, no third-party SDKs. Nothing leaves this device except one request for the data file this app reads.")
+                    // DECISIONS 0007: say plainly who serves that file and
+                    // what a web server sees.
+                    Text("That file is served by GitHub Pages, which, like any web server, sees your IP address and logs it for security. The developer never sees that log.")
                     Text("Favourites are stored only on this device and are never sent anywhere.")
                     Button("Privacy policy") { openURL(PrivacyPolicy.url) }
+                        .accessibilityHint("Opens in Safari")
+                    Button("Support") { openURL(SupportPage.url) }
                         .accessibilityHint("Opens in Safari")
                 }
 
                 if let snapshot = model.snapshot {
-                    Section("Data sources") {
+                    Section(subdued: "Data sources") {
                         ForEach(snapshot.attribution) { item in
                             VStack(alignment: .leading, spacing: 4) {
                                 Text(item.name).font(.headline)
@@ -25,9 +30,12 @@ struct AboutView: View {
                                     // otherwise (and the audit flags it).
                                     .accessibilityLabel(item.name.replacingOccurrences(of: ".", with: " "))
                                 Text(item.text)
-                                Text("Licence: \(item.licenceName)")
+                                Button("Licence: \(item.licenceName)") { openURL(item.licenceURL) }
                                     .font(.caption)
-                                    .foregroundStyle(.subdued)
+                                    .frame(minHeight: 44, alignment: .leading)
+                                    .contentShape(Rectangle())
+                                    .accessibilityHint("Opens in Safari")
+                                    .accessibilityIdentifier("licence-link-\(item.source)")
                                 Button(item.url.absoluteString) { openURL(item.url) }
                                     .font(.caption)
                                     // A caption-sized link is under the 44 pt
@@ -36,12 +44,15 @@ struct AboutView: View {
                                     .contentShape(Rectangle())
                                     .accessibilityLabel("Visit \(item.name.replacingOccurrences(of: ".", with: " "))")
                                     .accessibilityHint("Opens in Safari")
+                                    .accessibilityIdentifier("source-link-\(item.source)")
                             }
                             .padding(.vertical, 4)
                         }
+                        // Stated by the app itself, whatever the data says.
+                        Text(Attribution.nonEndorsement)
                     }
 
-                    Section("Licence") {
+                    Section(subdued: "Licence") {
                         Text(snapshot.licence.notice)
                         Button(snapshot.licence.snapshot.name) { openURL(snapshot.licence.snapshot.url) }
                             .font(.caption)
@@ -50,14 +61,14 @@ struct AboutView: View {
                             .accessibilityHint("Opens in Safari")
                     }
 
-                    Section("Coverage") {
+                    Section(subdued: "Coverage") {
                         LabeledContent("Shows", value: "\(snapshot.coverage.lezwatch.shows.fetched) of \(snapshot.coverage.lezwatch.shows.available.map(String.init) ?? "an unreported total")")
                         LabeledContent("Characters", value: "\(snapshot.coverage.lezwatch.characters.fetched) of \(snapshot.coverage.lezwatch.characters.available.map(String.init) ?? "an unreported total")")
                         LabeledContent("Schedules matched", value: "\(snapshot.coverage.tvmaze.joined) of \(snapshot.coverage.tvmaze.showsTotal)")
                     }
 
-                    Section("This snapshot") {
-                        DataStatusFooter(generatedAt: snapshot.generatedAt, refreshError: model.lastRefreshError)
+                    Section(subdued: "This snapshot") {
+                        DataStatusFooter(snapshot: snapshot)
                         if let origin = model.origin {
                             Text(origin == .bundled ? "Bundled with the app" : "Downloaded")
                                 .font(.caption)
@@ -66,7 +77,7 @@ struct AboutView: View {
                     }
                 }
 
-                Section("Version") {
+                Section(subdued: "Version") {
                     LabeledContent("App", value: "\(Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "—") (\(Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "—"))")
                 }
             }

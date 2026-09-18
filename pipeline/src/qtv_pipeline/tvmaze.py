@@ -64,7 +64,8 @@ def load_joins(cache_dir: Path) -> dict[str, dict[str, Any]]:
     path = _joins_path(cache_dir)
     if not path.exists():
         return {}
-    return json.loads(path.read_text())
+    joins: dict[str, dict[str, Any]] = json.loads(path.read_text())
+    return joins
 
 
 def _save_joins(cache_dir: Path, joins: dict[str, dict[str, Any]]) -> None:
@@ -75,9 +76,8 @@ def _save_joins(cache_dir: Path, joins: dict[str, dict[str, Any]]) -> None:
 
 def _recently_updated_ids(client: PacedClient, *, since: str = "week") -> set[int]:
     fetched = client.get(f"{BASE}/updates/shows", params={"since": since})
-    assert fetched is not None
     data = fetched.json()
-    return {int(k) for k in data.keys()} if isinstance(data, dict) else set()
+    return {int(k) for k in data} if isinstance(data, dict) else set()
 
 
 def _needs_refresh(cached: dict[str, Any] | None, recently_updated: set[int]) -> bool:
@@ -196,4 +196,5 @@ def load_tvmaze_show(cache_dir: Path, tvmaze_id: int) -> dict[str, Any] | None:
     path = _cache_dir(cache_dir) / f"{tvmaze_id}.json"
     if not path.exists():
         return None
-    return json.loads(path.read_text())
+    show: dict[str, Any] = json.loads(path.read_text())
+    return show

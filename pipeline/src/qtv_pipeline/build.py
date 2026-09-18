@@ -167,27 +167,9 @@ def run_build(
         normalize.normalize_character(raw, taxonomies_by_key, actor_names) for raw in chars_raw
     ]
 
-    for show in shows:
-        join = joins.get(str(show["lwtv_id"]))
-        tvmaze_show = None
-        if join and join.get("matched") and join.get("tvmaze_id") is not None:
-            tvmaze_show = tvmaze.load_tvmaze_show(cache_dir, join["tvmaze_id"])
-        show["schedule"] = normalize.normalize_schedule(join, tvmaze_show)
-
-    show_ids = {s["id"] for s in shows}
-    for show in shows:
-        show["similar_show_ids"] = [sid for sid in show["similar_show_ids"] if sid in show_ids]
-    for char in characters:
-        char["shows"] = [s for s in char["shows"] if s["show_id"] in show_ids]
-
-    per_show_chars: dict[str, list[dict[str, Any]]] = {}
-    for char in characters:
-        for s in char["shows"]:
-            per_show_chars.setdefault(s["show_id"], []).append(char)
-    for show in shows:
-        here = per_show_chars.get(show["id"], [])
-        show["counts"]["characters"] = len(here)
-        show["counts"]["deaths"] = sum(1 for c in here if c["death"]["death_known"])
+    _attach_schedules(shows, joins, cache_dir)
+    show_ids = _drop_dangling_references(shows, characters)
+    _count_characters_per_show(shows, characters)
 
     tvmaze_cov = coverage_mod.tvmaze_coverage(shows)
     clean_shows = [normalize.strip_internal(s) for s in shows]
@@ -252,7 +234,52 @@ def run_build(
     }
     doc["content_digest"] = digest_mod.content_digest(doc)
 
-    schema_path = schema_path or _find_schema_path()
+    _validate(doc, schema_path or _find_schema_path(), show_ids)
+    _write_outputs(doc, coverage, out_dir, log)
+    return doc
+
+
+def _attach_schedules(
+    shows: list[dict[str, Any]], joins: dict[str, dict[str, Any]], cache_dir: Path
+) -> None:
+    """Give every show its TVmaze schedule block (unknown when not joined)."""
+    for show in shows:
+        join = joins.get(str(show["lwtv_id"]))
+        tvmaze_show = None
+        if join and join.get("matched") and join.get("tvmaze_id") is not None:
+            tvmaze_show = tvmaze.load_tvmaze_show(cache_dir, join["tvmaze_id"])
+        show["schedule"] = normalize.normalize_schedule(join, tvmaze_show)
+
+
+def _drop_dangling_references(
+    shows: list[dict[str, Any]], characters: list[dict[str, Any]]
+) -> set[str]:
+    """Remove similar-show and character-show links to shows not in this
+    snapshot, and return the ids that are."""
+    show_ids = {s["id"] for s in shows}
+    for show in shows:
+        show["similar_show_ids"] = [sid for sid in show["similar_show_ids"] if sid in show_ids]
+    for char in characters:
+        char["shows"] = [s for s in char["shows"] if s["show_id"] in show_ids]
+    return show_ids
+
+
+def _count_characters_per_show(
+    shows: list[dict[str, Any]], characters: list[dict[str, Any]]
+) -> None:
+    """Patch each show's character and recorded-death counts."""
+    per_show_chars: dict[str, list[dict[str, Any]]] = {}
+    for char in characters:
+        for s in char["shows"]:
+            per_show_chars.setdefault(s["show_id"], []).append(char)
+    for show in shows:
+        here = per_show_chars.get(show["id"], [])
+        show["counts"]["characters"] = len(here)
+        show["counts"]["deaths"] = sum(1 for c in here if c["death"]["death_known"])
+
+
+def _validate(doc: dict[str, Any], schema_path: Path, show_ids: set[str]) -> None:
+    """Refuse a document that fails the schema or references a missing show."""
     schema = json.loads(schema_path.read_text())
     validator = jsonschema.Draft202012Validator(schema)
     errors = sorted(validator.iter_errors(doc), key=lambda e: list(e.path))
@@ -263,15 +290,15 @@ def run_build(
             f"{'/'.join(str(p) for p in first.path)}: {first.message}"
         )
 
-    dangling = [
-        sid
-        for s in doc["shows"]
-        for sid in s["similar_show_ids"]
-        if sid not in show_ids
-    ]
+    dangling = [sid for s in doc["shows"] for sid in s["similar_show_ids"] if sid not in show_ids]
     if dangling:
         raise BuildError(f"referential integrity: {len(dangling)} similar_show_ids not in snapshot")
 
+
+def _write_outputs(
+    doc: dict[str, Any], coverage: dict[str, Any], out_dir: Path, log: Callable[[str], None]
+) -> None:
+    """Write the snapshot, its checksum line and the coverage report."""
     out_dir.mkdir(parents=True, exist_ok=True)
     out_path = out_dir / "snapshot.v1.json"
     raw = json.dumps(doc, indent=1, sort_keys=True, ensure_ascii=False).encode("utf-8")
@@ -284,5 +311,3 @@ def run_build(
     for line in coverage_mod.summary_lines(coverage):
         log(line)
     log(f"wrote {out_path} ({len(raw)} bytes), content_digest={doc['content_digest']}")
-
-    return doc

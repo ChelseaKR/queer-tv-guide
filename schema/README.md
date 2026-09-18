@@ -18,11 +18,10 @@ https://chelseakr.github.io/queer-tv-guide/snapshot.v1.json
 https://chelseakr.github.io/queer-tv-guide/snapshot.v1.json.sha256
 ```
 
-GitHub Pages is used because this repo is private and Release assets on a
-private repo require a token to download; Pages on a Pro account serves a public
-static file from a private repo. The same bytes are also attached to the rolling
-GitHub Release `snapshot-latest` (auth-gated while the repo is private; useful
-for `gh release download` during development and as a history of checksums).
+GitHub Pages was chosen while the repository was private, when Release assets
+needed a token to download, and it stays the app's one URL. The same bytes are
+also attached to the rolling GitHub Release `snapshot-latest` (useful for
+`gh release download` during development and as a history of checksums).
 
 The app fetches `snapshot.v1.json.sha256` first (~100 bytes), compares it with
 the digest of the bundled/cached snapshot, and only then fetches the file. That
@@ -42,7 +41,7 @@ is the app's only network call.
 | Situation | What the snapshot says | What the app must render |
 |---|---|---|
 | LezWatch records a death | `death.died: true`, `death_known: true`, `dates` non-empty | "Dies (2026)" |
-| LezWatch records no death | `death.died: null`, `death_known: false`, `dates: []` | "No recorded death" — never "survives" or "no" |
+| LezWatch records no death | `death.died: null`, `death_known: false`, `dates: []` | "Not recorded" — never "survives" or "no" |
 | TVmaze matched, nothing scheduled | `schedule.schedule_known: true`, `next_episode: null` | "No upcoming episode" |
 | TVmaze not matched | `schedule.schedule_known: false`, everything else in `schedule` null | "Schedule unknown" |
 | LezWatch has no watch link | `watch_links: []` | Nothing; never a guessed service |

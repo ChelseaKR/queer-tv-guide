@@ -15,7 +15,10 @@ uv run qtv validate out/snapshot.v1.json
 uv run pytest
 ```
 
-`make verify` runs lint + tests + an offline build over the fixtures.
+`make verify` checks that `uv.lock` matches `pyproject.toml`, then runs ruff
+(lint and format), `mypy --strict`, the offline test suite with its 85% branch
+coverage floor (the end-to-end tests build a snapshot from fixtures), and a
+wheel build. The root `make verify` runs it as `make pipeline`.
 
 ## Crawl budget (declared before the first mirror)
 
@@ -90,10 +93,10 @@ mirror, fetches incrementally, builds, and then:
 2. deploys `snapshot.v1.json`, its `.sha256`, and an `index.html` carrying the
    attribution and licence notice to **GitHub Pages**.
 
-Why both. A release asset on a private repo needs a token to download, so it
-cannot be the URL a no-account app fetches; Pages on a Pro account serves a
-public static file from a private repo, and publishing the file openly is also
-what CC BY-SA's ShareAlike asks for (`docs/LICENSES-AND-ATTRIBUTION.md`). The
+Why both. Pages gives the app one plain static URL with an ETag, chosen while
+the repository was private (a release asset on a private repository needs a
+token to download), and publishing the file openly is also what CC BY-SA's
+ShareAlike asks for (`docs/LICENSES-AND-ATTRIBUTION.md`). The
 release keeps the cache and gives the app lane `gh release download` during
 development. A rolling tag rather than dated tags because the app needs one
 URL that never changes and dated releases would pile up 365 a year; the

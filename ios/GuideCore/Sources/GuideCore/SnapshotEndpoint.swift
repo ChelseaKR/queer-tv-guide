@@ -5,7 +5,7 @@ import Foundation
 /// `openURL`, i.e. Safari, not this process.
 ///
 /// The URL is published in `schema/README.md` (owned by the pipeline lane):
-/// GitHub Pages serving the static file out of this private repo. That doc
+/// GitHub Pages serving the static file out of this repository. That doc
 /// also describes a two-request protocol (fetch `snapshot.v1.json.sha256`
 /// first, compare against the stored file's digest, only then fetch the
 /// full file). This app deliberately does not implement that: standard HTTP
@@ -29,4 +29,11 @@ public enum SnapshotEndpoint {
 /// in Safari via `openURL`; the app itself never fetches it.
 public enum PrivacyPolicy {
     public static let url = URL(string: "https://chelseakr.github.io/queer-tv-guide/privacy.html")!
+}
+
+/// The support page (DECISIONS 0010): the App Store Support URL, published by
+/// the same nightly workflow onto the same Pages site. Opened in Safari via
+/// `openURL`; the app never fetches it.
+public enum SupportPage {
+    public static let url = URL(string: "https://chelseakr.github.io/queer-tv-guide/support.html")!
 }

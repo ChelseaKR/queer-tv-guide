@@ -4,10 +4,10 @@ name: snapshot
 # one static URL the app fetches. No users, no telemetry: this workflow's own
 # logs contain request/byte counts against the two sources and nothing else.
 #
-# Publishing target: GitHub Pages (source: this workflow), because the repo
-# is private and a Release asset would need an authenticated download -- Pages
-# on a paid plan serves a public static file from a private repo, which is
-# what a no-account app fetching one URL needs. See pipeline/README.md
+# Publishing target: GitHub Pages (source: this workflow): one stable, plain
+# static URL with an ETag, which is what a no-account app fetching one URL
+# needs. The URL was chosen while the repository was private, when a Release
+# asset would have needed an authenticated download. See pipeline/README.md
 # "Publishing" for the full rationale. The rolling GitHub Release
 # `snapshot-latest` is kept alongside it for the mirror cache and for
 # `gh release download` during development; it is not the app's URL.
@@ -17,10 +17,10 @@ on:
     - cron: "17 9 * * *" # ~02:17 Pacific standard time; off the hour to avoid the scheduler herd
   workflow_dispatch: {}
 
+# Read-only by default; each job is granted only the writes it uses
+# (CI-CD-STANDARD §2, CICD-04).
 permissions:
-  contents: write # upload release assets
-  pages: write # deploy to Pages
-  id-token: write # required by actions/deploy-pages
+  contents: read
 
 concurrency:
   group: qtv-snapshot
@@ -33,15 +33,23 @@ jobs:
   build:
     runs-on: ubuntu-latest
     timeout-minutes: 90 # a full mirror is ~55 min (README "Crawl budget"); leave real headroom
+    permissions:
+      contents: write # upload the rolling release's assets
     outputs:
       digest: ${{ steps.build.outputs.digest }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: install uv
-        uses: astral-sh/setup-uv@v3
+        uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
         with:
           version: "0.12.9"
+          # This job publishes (release assets, the Pages artifact): no cache,
+          # which a poisoned entry could ride into the published file
+          # (CI-CD §8c, CICD-24).
+          enable-cache: false
 
       - name: install
         working-directory: pipeline
@@ -102,45 +110,30 @@ jobs:
           mkdir -p site
           cp out/snapshot.v1.json site/
           cp out/snapshot.v1.json.sha256 site/
-          # The app's privacy policy (App Store Connect's Privacy Policy URL
-          # and the About screen's link). Static, no scripts, no fonts, no
+          # The app's privacy policy and support page (App Store Connect's
+          # Privacy Policy and Support URLs, and the About screen's links;
+          # DECISIONS 0007, 0010). Static, no scripts, no fonts, no
           # third-party requests.
           cp ../docs/site/privacy.html site/privacy.html
-          python3 - <<'PY'
-          import json
-          doc = json.load(open("out/snapshot.v1.json"))
-          cov = doc["coverage"]
-          lw = cov["lezwatch"]
-          tv = cov["tvmaze"]
-          html = f"""<!doctype html><meta charset="utf-8">
-          <title>queer-tv-guide snapshot</title>
-          <p>{doc['licence']['notice']}</p>
-          <ul>
-          <li>generated_at: {doc['generated_at']}</li>
-          <li>content_digest: {doc['content_digest']}</li>
-          <li>shows: {lw['shows']['fetched']} / {lw['shows']['available']} available</li>
-          <li>characters: {lw['characters']['fetched']} / {lw['characters']['available']} available</li>
-          <li>TVmaze joined: {tv['joined']} / {tv['shows_total']} ({tv['join_rate']*100:.1f}%)</li>
-          </ul>
-          <ul>
-          <li><a href="snapshot.v1.json">snapshot.v1.json</a></li>
-          <li><a href="snapshot.v1.json.sha256">snapshot.v1.json.sha256</a></li>
-          <li><a href="privacy.html">privacy policy (the iOS app)</a></li>
-          </ul>
-          """
-          open("site/index.html", "w").write(html)
-          PY
+          cp ../docs/site/support.html site/support.html
+          # The index carries the file's CC BY-SA 4.0 licence and every
+          # source credit with links (qtv_pipeline/site_index.py, tested).
+          uv run python -m qtv_pipeline.site_index out/snapshot.v1.json site/index.html
 
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3.0.1
         with:
           path: pipeline/site
 
   deploy:
     needs: build
     runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      pages: write # deploy to Pages
+      id-token: write # required by actions/deploy-pages
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4.0.5

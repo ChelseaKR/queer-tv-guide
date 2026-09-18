@@ -1,0 +1,29 @@
+# gitleaks configuration (SECURITY-AND-SUPPLY-CHAIN-STANDARD §4, SEC-17/SEC-18).
+# The upstream default ruleset, plus exactly one false-positive exemption.
+
+[extend]
+useDefault = true
+
+# `generic-api-key` reads `defaultsKey = "favourites.v1"` as a credential: a
+# `...Key = "<string>"` assignment whose value has enough entropy. It is the
+# UserDefaults key the favourites list is stored under, not a secret.
+#
+# The exemption is as narrow as gitleaks can express, and every condition must
+# hold at once (condition = "AND"):
+#   - only the generic-api-key rule (targetRules), so every other rule still
+#     scans this file;
+#   - only this one file (paths);
+#   - only a line that is exactly this declaration (regexTarget = "line"), so
+#     any other line in the file, or a different value on this line, is still a
+#     finding.
+# No path is exempted wholesale: a path exemption would blind every rule.
+# tests/test_gitleaks_allowlist.py plants a real-shaped key in the same file,
+# changes the value on this line, and copies this line to another file, and
+# asserts each one is still reported.
+[[allowlists]]
+description = "favourites UserDefaults key in FavouritesStore.swift is not a credential"
+targetRules = ["generic-api-key"]
+condition = "AND"
+paths = ['''^ios/GuideCore/Sources/GuideCore/FavouritesStore\.swift$''']
+regexTarget = "line"
+regexes = ['''^\s*public static let defaultsKey = "favourites\.v1"\s*$''']

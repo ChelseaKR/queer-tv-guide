@@ -328,8 +328,12 @@ https://developer.apple.com/app-store/review/guidelines/ (fetched
 
 The brief's five screens, all present in `ios/QueerTVGuide/Views`:
 
-1. **Search** (`SearchView.swift`) — search across shows and characters,
-   worth-it/no-recorded-deaths/has-a-watch-link filters, pull to refresh.
+1. **Search** (`SearchView.swift`, `SearchFiltersView.swift`) — search
+   across shows, characters, actors and networks, with punctuation optional
+   and words in any order; a filter screen for worth it, where to watch (any
+   link, or particular sites), tropes (never "Bury Your Queers"), trigger
+   warnings to hide, and no recorded deaths; a count of what the filters
+   leave, one-tap clearing, empty states that say why, pull to refresh.
 2. **Show detail** (`ShowDetailView.swift`) — "View on LezWatch.TV" (this
    show's page), worth-it/quality/realness/screentime (the worth-it
    explanation collapsed, since some name a death), "do any queer characters die?" behind `SpoilerReveal`

@@ -33,9 +33,16 @@ consumer of the published snapshot, would notice.
   CC BY-SA 4.0 licence. About states that neither source endorses the app.
   The snapshot's Pages index shows the licence and every source credit with
   links.
+- Search filters for where to watch (particular sites), tropes and trigger
+  warnings, on one filter screen that counts the shows they leave. Tropes
+  that give away a death are never offered as a filter.
 
 ### Changed
 
+- Search no longer needs punctuation or word order: "greys anatomy" finds
+  Grey’s Anatomy and "xena warrior" finds Xena: Warrior Princess (both found
+  nothing before). Results are worked out off the main thread, and an empty
+  result says whether the filters caused it, with a button to clear them.
 - A show's worth-it explanation is collapsed behind "Why? (may contain
   spoilers)", because 61 of them name a death outright.
 

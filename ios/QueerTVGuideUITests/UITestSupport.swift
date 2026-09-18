@@ -61,4 +61,32 @@ extension XCUIApplication {
         row.tap()
         XCTAssertTrue(staticTexts["Do any queer characters die?"].waitForExistence(timeout: 30), "did not reach \(title)")
     }
+
+    /// A show row in a results list. Show rows are read "<title>. Worth it:
+    /// …", which sets them apart from character rows and from the
+    /// active-filters row above the results.
+    @MainActor
+    var firstShowRow: XCUIElement {
+        buttons.matching(NSPredicate(format: "label CONTAINS %@", ". Worth it: ")).firstMatch
+    }
+
+    /// Search → Filter → "Has a where-to-watch link" → show the results.
+    /// Returns when a show row is on screen.
+    @MainActor
+    func applyWhereToWatchFilter(file: StaticString = #filePath, line: UInt = #line) {
+        let filter = buttons.matching(NSPredicate(format: "label BEGINSWITH 'Filter'")).firstMatch
+        XCTAssertTrue(filter.waitForExistence(timeout: 30), "no Filter button", file: file, line: line)
+        filter.tap()
+        let toggle = buttons["Has a where-to-watch link"]
+        XCTAssertTrue(toggle.waitForExistence(timeout: 10), "no where-to-watch filter", file: file, line: line)
+        // At accessibility text sizes the filters are taller than the screen.
+        for _ in 0..<8 where !toggle.isHittable { swipeUp() }
+        toggle.tap()
+        XCTAssertTrue(toggle.isSelected, "the where-to-watch filter did not turn on", file: file, line: line)
+        let showResults = buttons["filters-show-results"]
+        for _ in 0..<8 where !(showResults.exists && showResults.isHittable) { swipeUp() }
+        XCTAssertTrue(showResults.waitForExistence(timeout: 10), "no Show results button", file: file, line: line)
+        showResults.tap()
+        XCTAssertTrue(firstShowRow.waitForExistence(timeout: 30), "the filter left no show rows", file: file, line: line)
+    }
 }

@@ -53,6 +53,9 @@ consumer of the published snapshot, would notice.
   query or fragment removed) to the system share sheet.
 - Pull to refresh on Favourites and About, as on Search, and light haptics
   when a star is toggled or a reveal is opened.
+- Search filters for where to watch (particular sites), tropes and trigger
+  warnings, on one filter screen that counts the shows they leave. Tropes
+  that give away a death are never offered as a filter.
 - Optional reminders on the day a favorite show has a new episode listed,
   set on the device with no server, carrying no episode title and nothing
   about any character. They are off until a person turns them on from
@@ -66,9 +69,12 @@ consumer of the published snapshot, would notice.
   name is a heading. With Reduce Motion on, the app's own animations are
   dropped. The accessibility audit now covers Search, its results, the
   character screen, Favourites and About at the largest text size too.
+- Search no longer needs punctuation or word order: "greys anatomy" finds
+  Grey’s Anatomy and "xena warrior" finds Xena: Warrior Princess (both found
+  nothing before). Results are worked out off the main thread, and an empty
+  result says whether the filters caused it, with a button to clear them.
 - A show's worth-it explanation is collapsed behind "Why? (may contain
   spoilers)", because 61 of them name a death outright.
-
 - The app ships the real published snapshot, checksum-verified, instead of the
   test fixture, and loads it off the main thread (#10).
 - Trope tags that give away a death ("Dead Queers", "Bury Your Queers") no

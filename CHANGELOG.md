@@ -45,6 +45,10 @@ consumer of the published snapshot, would notice.
   every 6 hours and opens an `incident` issue when it is more than 30 hours
   old, past the 48-hour SLA, unreadable, or the last nightly run failed
   (#25).
+- A short first-run screen, skippable at once, on how spoilers stay closed,
+  what "Not recorded" means, where the data comes from (LezWatch.TV and
+  TVmaze, neither endorsing the app) and what the app does not collect.
+  About opens it again.
 
 ### Changed
 

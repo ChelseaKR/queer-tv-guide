@@ -46,5 +46,8 @@ struct SpoilerReveal<Content: View>: View {
             }
         }
         .animation(reduceMotion ? nil : .default, value: revealed)
+        // A light tap as the answer opens. It fires only on the user's own
+        // tap: `revealed` starts false and nothing else sets it.
+        .sensoryFeedback(.impact(weight: .light), trigger: revealed)
     }
 }

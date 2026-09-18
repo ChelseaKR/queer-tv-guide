@@ -74,6 +74,13 @@ struct SearchView: View {
         let hits = results.hits
         let settled = results.key == key
         List {
+            // DG-04: data past its SLA, or of unknown age, says so above
+            // everything it could be wrong about.
+            if let warning = model.freshnessWarning(for: snapshot) {
+                Section {
+                    DataFreshnessBanner(warning: warning)
+                }
+            }
             if !filters.isEmpty {
                 Section {
                     activeFiltersRow(count: settled ? hits.count : nil)
@@ -92,7 +99,7 @@ struct SearchView: View {
                 }
             }
             Section {
-                DataStatusFooter(generatedAt: snapshot.generatedAt, refreshError: model.lastRefreshError)
+                DataStatusFooter(snapshot: snapshot)
             }
         }
         .listStyle(.plain)

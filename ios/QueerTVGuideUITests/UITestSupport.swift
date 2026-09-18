@@ -34,10 +34,23 @@ enum SnapshotFacts {
 }
 
 extension XCUIApplication {
+    /// Starts past the first-run screen (`OnboardingView.seenKey`, read from
+    /// UserDefaults' argument domain), as every test but the onboarding
+    /// ones needs.
+    static let skipOnboarding = ["-onboarding.v1.seen", "YES"]
+
+    /// The app, set to start on Search. Not launched yet. Not main-actor
+    /// bound, like the `XCUIApplication()` it replaces in the smoke tests.
+    static func guide() -> XCUIApplication {
+        let app = XCUIApplication()
+        app.launchArguments += skipOnboarding
+        return app
+    }
+
     /// Launches and waits for the Search tab.
     @MainActor
     static func launchedGuide(arguments: [String] = []) -> XCUIApplication {
-        let app = XCUIApplication()
+        let app = XCUIApplication.guide()
         app.launchArguments += arguments
         app.launch()
         XCTAssertTrue(app.tabBars.buttons["Search"].waitForExistence(timeout: 30))

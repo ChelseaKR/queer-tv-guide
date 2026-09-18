@@ -90,14 +90,32 @@ Note anything confusing, even if the task was completed.
 - [ ] Removing the item works through the Actions rotor (swipe up or down
       to "Delete"), and through Edit.
 - [ ] Once the list is empty, "No favourites yet" and its message are read.
+- [ ] The … menu button reads "Back up or restore favourites". Its menu
+      reads "Export favourites" (dimmed, and said to be, while the list is
+      empty) and "Import favourites".
+- [ ] Export opens the share sheet; saving to Files works with VoiceOver.
+      Import opens the file picker; after picking a backup, the alert that
+      says how many favourites were added is read out, and focus returns to
+      the list.
 
-### 5. Open a where-to-watch link
+### 5. Out-of-date data
+
+Set the device's date two weeks ahead (Settings > General > Date & Time,
+automatic off), open the app offline, and set it back afterwards.
+
+- [ ] At the top of Search, one element reads "Warning. This data is out of
+      date. It was last updated … days ago …" in full.
+- [ ] The same warning is at the top of a non-empty Favourites list.
+- [ ] The data line at the bottom of each screen reads "This data is out of
+      date." before "Data as of …".
+
+### 6. Open a where-to-watch link
 
 - [ ] Each link reads its host and the hint "Opens … in Safari".
 - [ ] A double-tap opens Safari. Returning to the app puts you back where
       you were.
 
-### 6. About, attribution and privacy
+### 7. About, attribution and privacy
 
 - [ ] Section headings are announced as headings.
 - [ ] The privacy text, data sources, licence and coverage figures are all

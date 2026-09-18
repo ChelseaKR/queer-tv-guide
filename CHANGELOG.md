@@ -33,6 +33,26 @@ consumer of the published snapshot, would notice.
   CC BY-SA 4.0 licence. About states that neither source endorses the app.
   The snapshot's Pages index shows the licence and every source credit with
   links.
+- The app says how old its data is ("Data as of … (5 hours ago)"). Once the
+  data is more than 48 hours old, or its age cannot be known because it is
+  dated later than the device's clock, Search and Favourites open with a
+  plain warning that it is out of date (#25).
+- Favourites can be backed up without an account: the … menu on Favourites
+  exports a JSON file through the share sheet and imports one you pick.
+  Import checks the file and skips shows or characters that are not in the
+  data, saying how many (#25).
+- A staleness alarm for the published snapshot: `freshness.yml` checks it
+  every 6 hours and opens an `incident` issue when it is more than 30 hours
+  old, past the 48-hour SLA, unreadable, or the last nightly run failed
+  (#25).
+- A short first-run screen, skippable at once, on how spoilers stay closed,
+  what "Not recorded" means, where the data comes from (LezWatch.TV and
+  TVmaze, neither endorsing the app) and what the app does not collect.
+  About opens it again.
+- A Share button on every show, which hands its LezWatch.TV page (with any
+  query or fragment removed) to the system share sheet.
+- Pull to refresh on Favourites and About, as on Search, and light haptics
+  when a star is toggled or a reveal is opened.
 - Optional reminders on the day a favorite show has a new episode listed,
   set on the device with no server, carrying no episode title and nothing
   about any character. They are off until a person turns them on from
@@ -41,6 +61,11 @@ consumer of the published snapshot, would notice.
 
 ### Changed
 
+- VoiceOver reads a show's years, seasons and networks as one stop, in words
+  ("1995 to 2001") rather than punctuation, and each show's and character's
+  name is a heading. With Reduce Motion on, the app's own animations are
+  dropped. The accessibility audit now covers Search, its results, the
+  character screen, Favourites and About at the largest text size too.
 - A show's worth-it explanation is collapsed behind "Why? (may contain
   spoilers)", because 61 of them name a death outright.
 

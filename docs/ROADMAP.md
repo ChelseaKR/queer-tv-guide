@@ -51,7 +51,12 @@ release declaration (REL-01). Values live here; the rigour lives in
 - **App: no telemetry, by design** (`docs/DECISIONS.md` 0002). No crash
   reporting, analytics, RUM or remote logging; the tier model's OTel and Core
   Web Vitals rows are N/A for that reason. What a user can observe is shown in
-  the app: the snapshot's "data as of" time and any refresh failure.
+  the app: the snapshot's "data as of" time and age, a plain warning once it
+  is past the 48-hour SLA or its age is unknown, and any refresh failure.
+- **Staleness alarm (DG-04):** `freshness.yml` checks the published snapshot
+  every 6 hours and opens an `incident` issue when it is older than 30 hours
+  (SEV3), older than the 48-hour SLA (SEV2), or the last nightly run failed
+  (SEV3). An unreadable file or missing run history is an alarm too.
 - **No credentials or personal data in logs** (OBS-11, never N/A): the semgrep
   rule above, over Python and Swift.
 
@@ -60,7 +65,7 @@ release declaration (REL-01). Values live here; the rigour lives in
 | Surface | RPO | RTO | How |
 |---|---|---|---|
 | Published snapshot (GitHub Pages) | 24 h (rebuilt nightly) | about 1 h | dispatch `snapshot.yml`; the mirror cache restores from the `snapshot-latest` release assets. Not exercised yet (#25). |
-| Favourites | n/a: on the device only | n/a | the user's own device backup (#25) |
+| Favourites | the user's last export, or their last device backup | minutes | two mechanisms, both held by the user: the device's own iCloud or computer backup, and a file the user exports from the … menu on Favourites and imports on the same or another device. Import checks the file and skips ids not in the snapshot. Round-trip tested in `FavouritesBackupTests` (DG-10, #25). |
 
 ## Releases (REL-01)
 

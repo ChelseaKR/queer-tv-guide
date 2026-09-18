@@ -18,7 +18,7 @@ consumer of the published snapshot, would notice.
   schema-validated snapshot file, published at a single static URL, with a
   coverage report of what each source did and did not provide (#1).
 - The iOS app: search and browse with filters, show and character screens,
-  "does she die?" behind a tap-to-reveal, favorites kept only on the device,
+  "does she die?" behind a tap-to-reveal, favourites kept only on the device,
   and a data-as-of footer. It works offline from the bundled snapshot and
   refreshes with one HTTPS request (#2).
 - A placeholder app icon (#3, #5).
@@ -29,95 +29,39 @@ consumer of the published snapshot, would notice.
 - A privacy policy page and an in-app link to it; iPad orientations; the
   export-compliance declaration (#17).
 - Every show and character screen links to its LezWatch.TV page. A show's
-  next episode and the Favorites list credit TVmaze with a link and its
-  CC BY-SA 4.0 license. About states that neither source endorses the app.
-  The snapshot's Pages index shows the license and every source credit with
+  next episode and the Favourites list credit TVmaze with a link and its
+  CC BY-SA 4.0 licence. About states that neither source endorses the app.
+  The snapshot's Pages index shows the licence and every source credit with
   links.
-- The app says how old its data is ("Data as of … (5 hours ago)"). Once the
-  data is more than 48 hours old, or its age cannot be known because it is
-  dated later than the device's clock, Search and Favorites open with a
-  plain warning that it is out of date (#25).
-- Favorites can be backed up without an account: the … menu on Favorites
-  exports a JSON file through the share sheet and imports one you pick.
-  Import checks the file and skips shows or characters that are not in the
-  data, saying how many (#25).
-- A staleness alarm for the published snapshot: `freshness.yml` checks it
-  every 6 hours and opens an `incident` issue when it is more than 30 hours
-  old, past the 48-hour SLA, unreadable, or the last nightly run failed
-  (#25).
-- A short first-run screen, skippable at once, on how spoilers stay closed,
-  what "Not recorded" means, where the data comes from (LezWatch.TV and
-  TVmaze, neither endorsing the app) and what the app does not collect.
-  About opens it again.
-- A Share button on every show, which hands its LezWatch.TV page (with any
-  query or fragment removed) to the system share sheet.
-- Pull to refresh on Favorites and About, as on Search, and light haptics
-  when a star is toggled or a reveal is opened.
-- Search filters for where to watch (particular sites), tropes and trigger
-  warnings, on one filter screen that counts the shows they leave. Tropes
-  that give away a death are never offered as a filter.
+- An "Up Next" home-screen widget (small and medium) with the next episode
+  of each favorite show, soonest first. It reads a file the app writes on the
+  device, makes no network request, never shows death data or episode
+  titles, always shows the data's date, and says "Out of date" past 48 hours.
 
 ### Changed
 
-- VoiceOver reads a show's years, seasons and networks as one stop, in words
-  ("1995 to 2001") rather than punctuation, and each show's and character's
-  name is a heading. With Reduce Motion on, the app's own animations are
-  dropped. The accessibility audit now covers Search, its results, the
-  character screen, Favorites and About at the largest text size too.
-- Search no longer needs punctuation or word order: "greys anatomy" finds
-  Grey’s Anatomy and "xena warrior" finds Xena: Warrior Princess (both found
-  nothing before). Results are worked out off the main thread, and an empty
-  result says whether the filters caused it, with a button to clear them.
 - A show's worth-it explanation is collapsed behind "Why? (may contain
   spoilers)", because 61 of them name a death outright.
+
 - The app ships the real published snapshot, checksum-verified, instead of the
   test fixture, and loads it off the main thread (#10).
 - Trope tags that give away a death ("Dead Queers", "Bury Your Queers") no
   longer appear above the reveal (#15).
 - The App Store checklist now requires swapping the test fixture for the real
   snapshot before any archive (#4).
-- The app, its code and its docs use American English throughout: the tab and
-  its buttons say "Favorites", the About and credit links say "License", and
-  the loading message says "catalog". Saved favorites, existing backup files
-  and the published snapshot are unaffected: the stored key
-  (`favourites.v1`), the backup file's format tag, JSON key and file name, and
-  the snapshot's `licence` field names keep their original spelling.
-- The app looks for new data when you come back to it after a few days, not
-  only when it opens or you pull down: once its data is more than 3 days old,
-  and at most once every 6 hours, in the background, with the same single
-  request as before and no alert if it fails. And when the app ships newer
-  data than an older downloaded copy, it now shows the newer one. The
-  out-of-date banner, About, the privacy policy and the support page say so.
 
 ### Fixed
 
-- The nightly LezWatch mirror no longer loses new shows and characters. It
-  looks back a full day from its cursor (LezWatch compares that cursor with the
-  site's local time, so a record edited within a few hours after it was skipped
-  for good), fetches by id any record LezWatch lists that the mirror lacks, and
-  removes a record only once LezWatch confirms it is no longer published. A run
-  that still cannot make the mirror match LezWatch's list fails and names the
-  ids, and the last good snapshot stays. The three shows and ten characters the
-  published snapshot lacked are fetched by id on the next run. The manual run of
-  the snapshot workflow can now start a full mirror (#50).
-- The nightly build now enforces the completeness gate the pipeline README
-  promised: it refuses to publish when the mirror holds fewer than 99% of the
-  shows or characters LezWatch reports, or when either count fell by more than
-  2% against the snapshot it would replace (a maintainer can pass
-  `allow_shrink` to a manual run for a deliberate removal). A malformed, empty,
-  renamed-key or truncated id list now stops the fetch and removes nothing,
-  where it used to read as "these records were deleted". In each case the last
-  good snapshot stays published (#51).
 - VoiceOver now reads a show's network in search results, which it had been
   skipping (#6).
-- Text and accent colors meet 4.5:1 contrast. Empty states and show rows no
+- Text and accent colours meet 4.5:1 contrast. Empty states and show rows no
   longer clip or truncate at large Dynamic Type sizes. VoiceOver moves to an
   answer when it is revealed. A next-episode date that has passed says so
   instead of posing as upcoming (#15).
 - Show and character descriptions no longer contain HTML tags or entities;
   a season count LezWatch never filled in reads "not recorded" instead of
   "0 seasons" (#8).
-- The saved copy of LezWatch.TV's robots.txt, kept as license evidence,
+- The saved copy of LezWatch.TV's robots.txt, kept as licence evidence,
   matches the bytes as fetched again, and CI checks every saved terms page
   against its recorded checksum (#9).
 - An unrecorded death now reads "Not recorded. …" on the character and show

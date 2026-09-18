@@ -123,6 +123,36 @@ final class AttributionTests: XCTestCase {
         XCTAssertEqual(problems, [])
     }
 
+    /// The home-screen widget shows TVmaze next episodes, so it names TVmaze
+    /// wherever it does. A widget cannot hold the app's two links on its
+    /// small size (a tap opens the app, where Favorites carries them), so the
+    /// credit there is TVmaze by name.
+    static func widgetCreditProblems(in text: String, file: String) -> [String] {
+        text.contains("UpNextPresentation.line(") && !text.contains("UpNextPresentation.tvmazeCredit")
+            ? ["\(file) shows TVmaze schedule data without UpNextPresentation.tvmazeCredit"]
+            : []
+    }
+
+    func testTheWidgetCreditsTVmazeWhereverItShowsASchedule() throws {
+        var problems: [String] = []
+        var scanned = 0
+        for file in Repo.sourceFiles(extensions: ["swift"]) where file.path.contains("/QueerTVGuideWidgets/") {
+            scanned += 1
+            problems += Self.widgetCreditProblems(in: try String(contentsOf: file, encoding: .utf8), file: file.lastPathComponent)
+        }
+        XCTAssertGreaterThan(scanned, 0, "no widget source was scanned")
+        XCTAssertEqual(problems, [])
+        XCTAssertTrue(UpNextPresentation.tvmazeCredit.contains("TVmaze"))
+    }
+
+    func testTheWidgetScanCatchesARemovedCredit() throws {
+        let file = Repo.iosRoot.appendingPathComponent("QueerTVGuideWidgets/UpNextWidgetView.swift")
+        let text = try String(contentsOf: file, encoding: .utf8)
+        let sabotaged = text.replacingOccurrences(of: "UpNextPresentation.tvmazeCredit", with: "nil as String?")
+        XCTAssertNotEqual(sabotaged, text, "the sabotage landed")
+        XCTAssertEqual(Self.widgetCreditProblems(in: sabotaged, file: "UpNextWidgetView.swift").count, 1)
+    }
+
     /// Negative control: the scan really fails when a credit is removed.
     func testTheScanCatchesARemovedCredit() throws {
         let rule = Self.rules[0]

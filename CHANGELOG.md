@@ -33,6 +33,10 @@ consumer of the published snapshot, would notice.
   CC BY-SA 4.0 licence. About states that neither source endorses the app.
   The snapshot's Pages index shows the licence and every source credit with
   links.
+- Optional reminders on the day a favorite show has a new episode listed,
+  set on the device with no server, carrying no episode title and nothing
+  about any character. Built behind a flag that is off: the app does not show
+  or ask for them until the owner decides they should exist.
 
 ### Changed
 

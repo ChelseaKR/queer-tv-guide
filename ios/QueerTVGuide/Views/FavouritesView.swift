@@ -4,6 +4,7 @@ import GuideCore
 struct FavouritesView: View {
     @Environment(AppModel.self) private var model
     @State private var entries: [FavouritesStore.Entry] = []
+    @State private var showingReminderPrimer = false
 
     var body: some View {
         NavigationStack {
@@ -30,6 +31,11 @@ struct FavouritesView: View {
                                     TVmazeCreditView(credit: credit)
                                 }
                             }
+                            // Off, and absent, unless the owner turns the
+                            // feature on (FeatureFlags).
+                            if FeatureFlags.episodeReminders, entries.contains(where: { $0.kind == .show }) {
+                                RemindersSection(showingPrimer: $showingReminderPrimer)
+                            }
                         }
                     }
                 } else {
@@ -43,6 +49,15 @@ struct FavouritesView: View {
                 }
             }
             .onAppear(perform: reload)
+            // The explanation before the system's permission prompt. Only
+            // "Turn on reminders" there asks iOS for permission.
+            .sheet(isPresented: $showingReminderPrimer) {
+                ReminderPrimingView { accepted in
+                    showingReminderPrimer = false
+                    guard accepted else { return }
+                    Task { _ = await ReminderScheduler.enable(model) }
+                }
+            }
         }
     }
 

@@ -1,16 +1,27 @@
 import XCTest
 @testable import QueerTVGuide
 
-/// Built-but-unapproved features ship off. Turning one on changes this test
-/// in the same diff, so it cannot happen by accident.
+/// Every feature flag's shipped value is pinned here. Changing one changes
+/// this test in the same diff, so it cannot happen by accident.
 @MainActor
 final class FeatureFlagTests: XCTestCase {
-    func testEpisodeRemindersShipOff() {
-        XCTAssertFalse(FeatureFlags.episodeRemindersShipped, "episode reminders need the owner's decision before they ship")
+    /// The owner decided on 2026-09-18 that reminders ship.
+    func testEpisodeRemindersShipOn() {
+        XCTAssertTrue(FeatureFlags.episodeRemindersShipped)
     }
 
-    /// With the flag off (and no Debug override), the user's stored choice
-    /// cannot turn reminders on, so nothing ever asks for permission.
+    /// Shipping the feature turns nothing on by itself: until a person turns
+    /// reminders on, none is set and permission is never asked for.
+    func testRemindersStayOffUntilAPersonTurnsThemOn() {
+        let defaults = UserDefaults.standard
+        let previous = defaults.object(forKey: ReminderScheduler.enabledKey)
+        defer { defaults.set(previous, forKey: ReminderScheduler.enabledKey) }
+        defaults.removeObject(forKey: ReminderScheduler.enabledKey)
+        XCTAssertFalse(ReminderScheduler.isEnabled)
+    }
+
+    /// The flag gates the stored choice: with it off (as a revert of the
+    /// default-on commit would leave it), a stored "on" cannot set reminders.
     func testTheFlagGatesTheStoredChoice() {
         let defaults = UserDefaults.standard
         let previous = defaults.object(forKey: ReminderScheduler.enabledKey)

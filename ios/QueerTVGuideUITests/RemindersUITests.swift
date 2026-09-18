@@ -1,9 +1,10 @@
 import XCTest
 
-/// Episode reminders are built behind `FeatureFlags.episodeReminders`, off.
-/// Off, nothing about them appears and nothing asks for permission. With the
-/// Debug-only override, the switch and the explanation before the system
-/// prompt are reachable, and they pass Xcode's accessibility audit.
+/// Episode reminders ship on (`FeatureFlags.episodeReminders`, owner
+/// decision 2026-09-18), off for each person until they turn them on. The
+/// switch appears with a favorite show, the explanation comes before the
+/// system prompt, and it passes Xcode's accessibility audit. With the flag
+/// forced off (the Debug-only override), nothing about reminders appears.
 final class RemindersUITests: XCTestCase {
     /// Xena: Warrior Princess, as in AttributionUITests.
     static let referenceShowID = "lwtv:show:26"
@@ -33,10 +34,11 @@ final class RemindersUITests: XCTestCase {
 
     @MainActor
     func testThePrimerExplainsBeforeAnyPromptAndPassesTheAudit() throws {
-        let app = try launchWithAFavoriteShow(arguments: ["-feature.episodeReminders", "YES"])
+        // No override: the shipped default.
+        let app = try launchWithAFavoriteShow(arguments: [])
         let toggle = app.switches["New-episode reminders"]
         for _ in 0..<4 where !toggle.isHittable { app.swipeUp() }
-        XCTAssertTrue(toggle.waitForExistence(timeout: 10), "no reminders switch with the override on")
+        XCTAssertTrue(toggle.waitForExistence(timeout: 10), "no reminders switch by default")
         XCTAssertEqual(toggle.value as? String, "0", "reminders start off")
         // The row's own hit point is its label, which does not flip a
         // switch; tap the switch inside it.

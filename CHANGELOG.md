@@ -35,8 +35,9 @@ consumer of the published snapshot, would notice.
   links.
 - Optional reminders on the day a favorite show has a new episode listed,
   set on the device with no server, carrying no episode title and nothing
-  about any character. Built behind a flag that is off: the app does not show
-  or ask for them until the owner decides they should exist.
+  about any character. They are off until a person turns them on from
+  Favorites, and only then, after an explanation, does the app ask for
+  notification permission; it never asks at launch.
 
 ### Changed
 

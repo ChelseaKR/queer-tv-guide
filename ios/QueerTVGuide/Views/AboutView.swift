@@ -4,6 +4,7 @@ import GuideCore
 struct AboutView: View {
     @Environment(AppModel.self) private var model
     @Environment(\.openURL) private var openURL
+    @State private var showingIntroduction = false
 
     var body: some View {
         NavigationStack {
@@ -80,10 +81,20 @@ struct AboutView: View {
                 Section(subdued: "Version") {
                     LabeledContent("App", value: "\(Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "—") (\(Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "—"))")
                 }
+
+                // The first-run page again, last, so the sections above keep
+                // their place.
+                Section {
+                    Button("How \(AppIdentity.displayName) works") { showingIntroduction = true }
+                        .accessibilityHint("Spoilers, sources and privacy, in one page")
+                }
             }
             // Pull to check for a newer data file (the one GET).
             .refreshable { await model.refresh() }
             .navigationTitle("About \(AppIdentity.displayName)")
+            .sheet(isPresented: $showingIntroduction) {
+                OnboardingView(finish: { showingIntroduction = false }, isFirstRun: false)
+            }
         }
     }
 }

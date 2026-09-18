@@ -45,6 +45,10 @@ consumer of the published snapshot, would notice.
   every 6 hours and opens an `incident` issue when it is more than 30 hours
   old, past the 48-hour SLA, unreadable, or the last nightly run failed
   (#25).
+- A short first-run screen, skippable at once, on how spoilers stay closed,
+  what "Not recorded" means, where the data comes from (LezWatch.TV and
+  TVmaze, neither endorsing the app) and what the app does not collect.
+  About opens it again.
 - A Share button on every show, which hands its LezWatch.TV page (with any
   query or fragment removed) to the system share sheet.
 - Pull to refresh on Favourites and About, as on Search, and light haptics

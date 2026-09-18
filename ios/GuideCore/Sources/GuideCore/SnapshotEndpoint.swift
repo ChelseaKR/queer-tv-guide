@@ -5,7 +5,7 @@ import Foundation
 /// `openURL`, i.e. Safari, not this process.
 ///
 /// The URL is published in `schema/README.md` (owned by the pipeline lane):
-/// GitHub Pages serving the static file out of this private repo. That doc
+/// GitHub Pages serving the static file out of this repository. That doc
 /// also describes a two-request protocol (fetch `snapshot.v1.json.sha256`
 /// first, compare against the stored file's digest, only then fetch the
 /// full file). This app deliberately does not implement that: standard HTTP

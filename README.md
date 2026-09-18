@@ -5,7 +5,7 @@
 A no-account, no-telemetry iOS guide to queer TV: *does she die, is it worth
 it, where to watch, when's the next episode.*
 
-**Status:** In build. Not yet on the App Store; private repository.
+**Status:** In build. Not yet on the App Store; public repository.
 
 Chosen on 2026-09-13 from [moved to private strategy notes]. The
 product's premise is that the App Store label **"Data Not Collected"** is
@@ -78,8 +78,7 @@ records.
   versioned.
 - `ios/` — SwiftUI. Reads the bundled snapshot; refreshes it with one plain GET
   of a static file; stores favourites locally; links out to watch, never plays.
-- `docs/` — research, decisions, licences and attributions, the App Store
-  checklist.
+- `docs/` — decisions, licenses and attributions, the App Store checklist.
 
 ## Not yet cleared to ship
 

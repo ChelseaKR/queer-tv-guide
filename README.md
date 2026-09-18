@@ -61,8 +61,11 @@ decisions live in `docs/DECISIONS.md` and `docs/adr/` (one number sequence,
 | Incident Response | Applies — gap tracked in #27 (no incidents to date) |
 | Data Governance | Applies — gap tracked in #25 (L1 public data; actor sexuality and gender are never stored) |
 
-CITATION.cff covers the published snapshot dataset (CC BY-SA 4.0). The code
-itself has no licence yet: that is an owner decision.
+The code is licensed under the [Elastic License 2.0](LICENSE). The published
+snapshot dataset is licensed separately under CC BY-SA 4.0 (`CITATION.cff`,
+`docs/LICENSES-AND-ATTRIBUTION.md`). The dated copies of third-party terms
+pages in `docs/terms-snapshots/` belong to their publishers and are kept as
+records.
 
 
 ## Shape

@@ -21,6 +21,7 @@
 		30C7D17533AA5FC8407B1F24 /* AppIdentity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45C035570157184FA03B5D6C /* AppIdentity.swift */; };
 		35299370D6D51D2B89FE3532 /* AccessibleStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E750D2B2E53B7541A9D0A8C /* AccessibleStyle.swift */; };
 		4C00C3BF875CE9D5217C3B19 /* AttributionUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A0BF16C0CAC9F83B9D5D31 /* AttributionUITests.swift */; };
+		5D3A44E157F7DC32569B93EE /* SearchFiltersView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E22869739CB3B5101511B36 /* SearchFiltersView.swift */; };
 		68425D95518F53E70F4F5419 /* GuideCore in Frameworks */ = {isa = PBXBuildFile; productRef = 13543BD064FB8FE28EAA03E0 /* GuideCore */; };
 		69503986E8D186306BA9FEC4 /* UpNextPublisher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8470466FB9EBD014FBF632A7 /* UpNextPublisher.swift */; };
 		7DFA6218C2D7D56694BCB630 /* UITestSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = C18432D587CE03BBE8A49E63 /* UITestSupport.swift */; };
@@ -106,6 +107,7 @@
 		750D33208053211A76D4C98D /* DataStatusFooter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataStatusFooter.swift; sourceTree = "<group>"; };
 		7C7F3D8E238A2C369F0CC6B2 /* QueerTVGuideUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = QueerTVGuideUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		7D83B45C246B3923C7DA87E3 /* FavouriteButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FavouriteButton.swift; sourceTree = "<group>"; };
+		7E22869739CB3B5101511B36 /* SearchFiltersView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchFiltersView.swift; sourceTree = "<group>"; };
 		7E835F42B98A96001D0E7850 /* UpNextWidgetView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpNextWidgetView.swift; sourceTree = "<group>"; };
 		8470466FB9EBD014FBF632A7 /* UpNextPublisher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpNextPublisher.swift; sourceTree = "<group>"; };
 		85195CB20EE3BB6D75837574 /* UpNextWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpNextWidget.swift; sourceTree = "<group>"; };
@@ -186,6 +188,7 @@
 				D56562EBCC7DCEFB07B0A07D /* CharacterDetailView.swift */,
 				E5FD48479A8521C288E302D0 /* FavouritesView.swift */,
 				B384108A7E71C3A6C208AE15 /* OnboardingView.swift */,
+				7E22869739CB3B5101511B36 /* SearchFiltersView.swift */,
 				DFD338C39510587AB04DD0E8 /* SearchView.swift */,
 				10165D9A5F58512DBB27DE07 /* ShowDetailView.swift */,
 				68DBC3DB5354EE0D2913FBA8 /* Components */,
@@ -498,6 +501,7 @@
 				E7CEDA1C3DD522D60FDAE5D3 /* FavouritesView.swift in Sources */,
 				96EE0A6594196C3F464850B8 /* OnboardingView.swift in Sources */,
 				B1D3FCC5C39C4930C7672351 /* QueerTVGuideApp.swift in Sources */,
+				5D3A44E157F7DC32569B93EE /* SearchFiltersView.swift in Sources */,
 				2BC163CF30C059381EF045EE /* SearchView.swift in Sources */,
 				22C9F693C4E01B49EA8A7DC0 /* ShowDetailView.swift in Sources */,
 				E60747319E9280CBC27E52B3 /* ShowRow.swift in Sources */,
@@ -531,7 +535,7 @@
 		};
 		787377F4AD314594AA4627E9 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			productRef = "TEMP_58025952-A44E-4C23-AF91-3B190D316743" /* GuideCore */;
+			productRef = "TEMP_77AD2F42-D961-4E5D-AF47-8EF9741ED698" /* GuideCore */;
 		};
 		FDEF029D89D55214348A5D55 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -852,7 +856,7 @@
 			isa = XCSwiftPackageProductDependency;
 			productName = GuideCore;
 		};
-		"TEMP_58025952-A44E-4C23-AF91-3B190D316743" /* GuideCore */ = {
+		"TEMP_77AD2F42-D961-4E5D-AF47-8EF9741ED698" /* GuideCore */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = GuideCore;
 		};

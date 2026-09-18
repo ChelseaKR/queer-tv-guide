@@ -56,6 +56,10 @@ consumer of the published snapshot, would notice.
 - Search filters for where to watch (particular sites), tropes and trigger
   warnings, on one filter screen that counts the shows they leave. Tropes
   that give away a death are never offered as a filter.
+- An "Up Next" home-screen widget (small and medium) with the next episode
+  of each favorite show, soonest first. It reads a file the app writes on the
+  device, makes no network request, never shows death data or episode
+  titles, always shows the data's date, and says "Out of date" past 48 hours.
 
 ### Changed
 

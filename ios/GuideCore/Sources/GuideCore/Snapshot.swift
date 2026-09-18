@@ -42,13 +42,17 @@ public struct Snapshot: Equatable, Sendable {
         self.characters = characters
         showsByID = Dictionary(uniqueKeysWithValues: shows.map { ($0.id, $0) })
         charactersByID = Dictionary(uniqueKeysWithValues: characters.map { ($0.id, $0) })
+        characterIDsByShow = Self.indexCharactersByShow(characters)
     }
 
     public func show(id: Show.ID) -> Show? { showsByID[id] }
     public func character(id: Character.ID) -> Character? { charactersByID[id] }
 
+    /// Characters listed for a show, in snapshot order. O(cast), not
+    /// O(all characters): the "no recorded deaths" filter calls this once per
+    /// show, and a linear scan made that 2,272 × 7,375 on real data.
     public func characters(inShow id: Show.ID) -> [Character] {
-        characters.filter { character in character.shows.contains { $0.showID == id } }
+        (characterIDsByShow[id] ?? []).compactMap { charactersByID[$0] }
     }
 
     public func shows(forCharacter id: Character.ID) -> [Show] {
@@ -65,6 +69,18 @@ public struct Snapshot: Equatable, Sendable {
     // make every detail screen and every filter pass O(n).
     private let showsByID: [Show.ID: Show]
     private let charactersByID: [Character.ID: Character]
+    private let characterIDsByShow: [Show.ID: [Character.ID]]
+
+    private static func indexCharactersByShow(_ characters: [Character]) -> [Show.ID: [Character.ID]] {
+        var index: [Show.ID: [Character.ID]] = [:]
+        for character in characters {
+            // A character listed twice for one show (two stints) appears once.
+            for showID in Set(character.shows.map(\.showID)) {
+                index[showID, default: []].append(character.id)
+            }
+        }
+        return index
+    }
 }
 
 extension Snapshot: Decodable {
@@ -97,6 +113,7 @@ extension Snapshot: Decodable {
         characters = try c.decode([Character].self, forKey: .characters)
         showsByID = Dictionary(uniqueKeysWithValues: shows.map { ($0.id, $0) })
         charactersByID = Dictionary(uniqueKeysWithValues: characters.map { ($0.id, $0) })
+        characterIDsByShow = Self.indexCharactersByShow(characters)
     }
 }
 

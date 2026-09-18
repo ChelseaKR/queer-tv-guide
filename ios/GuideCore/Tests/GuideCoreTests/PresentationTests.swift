@@ -74,9 +74,94 @@ final class PresentationTests: XCTestCase {
 
     func testNextEpisodePresent() throws {
         let s = try Repo.fixture()
-        let text = Presentation.nextEpisode(try XCTUnwrap(s.show(id: "lwtv:show:101")).schedule)
+        // The fixture's next episode airs 2026-09-20; pin "today" before it.
+        let text = Presentation.nextEpisode(try XCTUnwrap(s.show(id: "lwtv:show:101")).schedule, today: Self.day("2026-09-17"))
         XCTAssertTrue(text.hasPrefix("S3E4 “Fog Signal” — "), text)
         XCTAssertTrue(text.contains("2026"), text)
+        XCTAssertFalse(text.contains("passed"), text)
+    }
+
+    /// A bundled or cached snapshot ages. Once the listed "next" episode's
+    /// day is behind us, saying it is next would be a stale fact presented
+    /// as current.
+    func testNextEpisodeWhoseDateHasPassedIsNotPresentedAsUpcoming() throws {
+        let schedule = try XCTUnwrap(try Repo.fixture().show(id: "lwtv:show:101")).schedule
+        let onTheDay = Presentation.nextEpisode(schedule, today: Self.day("2026-09-20"))
+        let dayAfter = Presentation.nextEpisode(schedule, today: Self.day("2026-09-21"))
+        let weekAfter = Presentation.nextEpisode(schedule, today: Self.day("2026-09-27"))
+        XCTAssertFalse(onTheDay.contains("passed"), onTheDay)
+        XCTAssertFalse(dayAfter.contains("passed"), "one day of grace for broadcast time zones: \(dayAfter)")
+        XCTAssertTrue(weekAfter.hasPrefix("S3E4 “Fog Signal” — listed for "), weekAfter)
+        XCTAssertTrue(weekAfter.contains("which has passed. This data may be out of date."), weekAfter)
+    }
+
+    private static func day(_ ymd: String) -> Date {
+        let f = ISO8601DateFormatter()
+        f.formatOptions = [.withFullDate, .withDashSeparatorInDate]
+        f.timeZone = TimeZone(identifier: "UTC")
+        return f.date(from: ymd)!
+    }
+
+    // MARK: Show-level deaths — per character, with the source's limits stated
+
+    func testShowDeathsNamesEachRecordedDeath() throws {
+        let s = try Repo.fixture()
+        let show = try XCTUnwrap(s.show(id: "lwtv:show:102"))
+        let deaths = Presentation.showDeaths(cast: s.characters(inShow: show.id), show: show)
+        XCTAssertEqual(deaths.headline, "1 of 2 listed characters has a recorded death.")
+        XCTAssertEqual(deaths.lines, ["Odile Brandt dies (2017)."])
+        XCTAssertEqual(deaths.notes, [], "the fixture's own tally agrees (1) and it has no death-revealing trope")
+    }
+
+    func testShowDeathsWithNoneRecordedNeverSaysNobodyDies() throws {
+        let s = try Repo.fixture()
+        let show = try XCTUnwrap(s.show(id: "lwtv:show:101"))
+        let deaths = Presentation.showDeaths(cast: s.characters(inShow: show.id), show: show)
+        XCTAssertEqual(deaths.headline, "No death is recorded for any of the 2 listed characters.")
+        XCTAssertEqual(deaths.lines, [])
+        let spoken = deaths.spoken.lowercased()
+        for manufactured in ["survive", "nobody dies", "no one dies", "lives"] {
+            XCTAssertFalse(spoken.contains(manufactured), "\(manufactured) is a fact LezWatch never records: \(deaths.spoken)")
+        }
+    }
+
+    func testShowDeathsWithNoListedCastIsUnknownNotNo() throws {
+        let s = try Repo.fixture()
+        let show = try XCTUnwrap(s.show(id: "lwtv:show:104"))
+        XCTAssertEqual(s.characters(inShow: show.id), [])
+        let deaths = Presentation.showDeaths(cast: [], show: show)
+        XCTAssertEqual(deaths.headline, "No queer characters are listed for this show in this snapshot, so there is no answer here.")
+    }
+
+    /// LezWatch records a death on the character. When the character is in
+    /// more than one show, the record cannot say this show is where it
+    /// happens, so the line says exactly that instead of "dies".
+    func testADeadCharacterInSeveralShowsIsNotPinnedOnThisShow() throws {
+        let data = try JSONEdit.editCharacter(try Repo.fixtureData(), index: 2) { odile in
+            var shows = odile["shows"] as! [[String: Any]]
+            shows.append(["show_id": "lwtv:show:101", "role": "guest", "years": []])
+            odile["shows"] = shows
+        }
+        let s = try SnapshotDecoder().decode(data)
+        let odile = try XCTUnwrap(s.character(id: "lwtv:character:203"))
+        XCTAssertEqual(odile.shows.count, 2, "the edit landed")
+        let show = try XCTUnwrap(s.show(id: "lwtv:show:101"))
+        let deaths = Presentation.showDeaths(cast: s.characters(inShow: show.id), show: show)
+        XCTAssertEqual(deaths.lines, ["Odile Brandt: a death is recorded (2017). Odile Brandt appears in 2 shows, and the record does not say which one."])
+        XCTAssertFalse(deaths.lines[0].contains(" dies"), deaths.lines[0])
+    }
+
+    func testShowDeathsStatesADisagreeingSourceTally() throws {
+        let data = try JSONEdit.editShow(try Repo.fixtureData(), index: 1) { show in
+            var counts = show["counts"] as! [String: Any]
+            counts["deaths_source_reported"] = 0
+            show["counts"] = counts
+        }
+        let s = try SnapshotDecoder().decode(data)
+        let show = try XCTUnwrap(s.show(id: "lwtv:show:102"))
+        XCTAssertEqual(show.counts.deathsSourceReported, 0, "the edit landed")
+        let deaths = Presentation.showDeaths(cast: s.characters(inShow: show.id), show: show)
+        XCTAssertEqual(deaths.notes, ["LezWatch.TV's own tally for this show is 0 deaths; its character records list 1."])
     }
 
     func testYearsAbsence() {
@@ -84,6 +169,7 @@ final class PresentationTests: XCTestCase {
         XCTAssertEqual(Presentation.years(Years(start: 2021, end: nil, onAir: .yes)), "2021 – present")
         XCTAssertEqual(Presentation.years(Years(start: 2016, end: 2018, onAir: .no)), "2016 – 2018")
         XCTAssertEqual(Presentation.seasons(nil), "Seasons not recorded")
+        XCTAssertEqual(Presentation.seasons(0), "Seasons not recorded", "LezWatch's 0 means never filled in, not zero seasons")
         XCTAssertEqual(Presentation.seasons(1), "1 season")
         XCTAssertEqual(Presentation.seasons(3), "3 seasons")
     }
@@ -95,5 +181,29 @@ final class PresentationTests: XCTestCase {
 
     func testGeneratedAtIsLabelled() {
         XCTAssertTrue(Presentation.generatedAt(Date(timeIntervalSince1970: 0)).hasPrefix("Data as of "))
+    }
+
+    // MARK: Death spoilers never sit outside the reveal
+
+    func testDeathRevealingTermsAreFilteredOutOfVisibleLists() {
+        let cliches = [Term(slug: "student", name: "Student"), Term(slug: "dead", name: "Dead Queers"), Term(slug: "undead", name: "Undead")]
+        XCTAssertEqual(Presentation.withoutSpoilers(cliches, Presentation.deathSpoilerClicheSlugs).map(\.slug), ["student", "undead"])
+        let tropes = [Term(slug: "dead-queers", name: "Bury Your Queers"), Term(slug: "coming-out", name: "Coming Out")]
+        XCTAssertEqual(Presentation.withoutSpoilers(tropes, Presentation.deathSpoilerTropeSlugs).map(\.slug), ["coming-out"])
+    }
+
+    func testTheBuryYourQueersTagMovesInsideTheShowReveal() throws {
+        let data = try JSONEdit.editShow(try Repo.fixtureData(), index: 0) { show in
+            var tropes = show["tropes"] as! [[String: Any]]
+            tropes.append(["slug": "dead-queers", "name": "Bury Your Queers"])
+            show["tropes"] = tropes
+        }
+        let s = try SnapshotDecoder().decode(data)
+        let show = try XCTUnwrap(s.show(id: "lwtv:show:101"))
+        XCTAssertTrue(show.tropes.contains { $0.slug == "dead-queers" }, "the edit landed")
+        let deaths = Presentation.showDeaths(cast: s.characters(inShow: show.id), show: show)
+        XCTAssertEqual(deaths.headline, "No death is recorded for any of the 2 listed characters.")
+        XCTAssertEqual(deaths.notes, ["LezWatch.TV tags this show “Bury Your Queers”."])
+        XCTAssertFalse(Presentation.withoutSpoilers(show.tropes, Presentation.deathSpoilerTropeSlugs).contains { $0.slug == "dead-queers" })
     }
 }

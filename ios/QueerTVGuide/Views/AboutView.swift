@@ -19,13 +19,20 @@ struct AboutView: View {
                         ForEach(snapshot.attribution) { item in
                             VStack(alignment: .leading, spacing: 4) {
                                 Text(item.name).font(.headline)
+                                    // "LezWatch.TV" is read "LezWatch dot T V"
+                                    // otherwise (and the audit flags it).
+                                    .accessibilityLabel(item.name.replacingOccurrences(of: ".", with: " "))
                                 Text(item.text)
                                 Text("Licence: \(item.licenceName)")
                                     .font(.caption)
-                                    .foregroundStyle(.secondary)
+                                    .foregroundStyle(.subdued)
                                 Button(item.url.absoluteString) { openURL(item.url) }
                                     .font(.caption)
-                                    .accessibilityLabel("Visit \(item.name)")
+                                    // A caption-sized link is under the 44 pt
+                                    // minimum hit area without this.
+                                    .frame(minHeight: 44, alignment: .leading)
+                                    .contentShape(Rectangle())
+                                    .accessibilityLabel("Visit \(item.name.replacingOccurrences(of: ".", with: " "))")
                                     .accessibilityHint("Opens in Safari")
                             }
                             .padding(.vertical, 4)
@@ -36,6 +43,8 @@ struct AboutView: View {
                         Text(snapshot.licence.notice)
                         Button(snapshot.licence.snapshot.name) { openURL(snapshot.licence.snapshot.url) }
                             .font(.caption)
+                            .frame(minHeight: 44, alignment: .leading)
+                            .contentShape(Rectangle())
                             .accessibilityHint("Opens in Safari")
                     }
 
@@ -50,7 +59,7 @@ struct AboutView: View {
                         if let origin = model.origin {
                             Text(origin == .bundled ? "Bundled with the app" : "Downloaded")
                                 .font(.caption)
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(.subdued)
                         }
                     }
                 }

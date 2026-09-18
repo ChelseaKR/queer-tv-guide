@@ -28,7 +28,7 @@ struct CharacterDetailView: View {
                     }
                 }
             } else {
-                ContentUnavailableView("Character not found", systemImage: "questionmark.square.dashed")
+                EmptyState(title: "Character not found", systemImage: "questionmark.square.dashed")
             }
         }
     }
@@ -40,7 +40,7 @@ struct CharacterDetailView: View {
             if !character.actors.isEmpty {
                 Text("Played by " + character.actors.compactMap(\.name).joined(separator: ", "))
                     .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.subdued)
             }
         }
     }
@@ -56,8 +56,11 @@ struct CharacterDetailView: View {
             if let romantic = character.romantic {
                 LabeledContent("Romantic orientation", value: romantic.name)
             }
-            if !character.cliches.isEmpty {
-                LabeledContent("Tropes", value: character.cliches.map(\.name).joined(separator: ", "))
+            // "Dead Queers" would answer the question the reveal below
+            // exists to keep closed; the reveal states the death instead.
+            let cliches = Presentation.withoutSpoilers(character.cliches, Presentation.deathSpoilerClicheSlugs)
+            if !cliches.isEmpty {
+                LabeledContent("Tropes", value: cliches.map(\.name).joined(separator: ", "))
             }
         }
         .accessibilityElement(children: .combine)
@@ -69,8 +72,11 @@ struct CharacterDetailView: View {
     /// recorded death is never "she lives").
     private func doesSheDie(_ character: Character) -> some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("Does she die?")
+            // Named, not "she": LezWatch covers trans men and non-binary
+            // characters too.
+            Text("Does \(character.name) die?")
                 .font(.headline)
+                .accessibilityAddTraits(.isHeader)
             SpoilerReveal(
                 prompt: "Reveal",
                 revealedHint: "Reveals whether a death is recorded for \(character.name) in this snapshot."
@@ -86,6 +92,7 @@ struct CharacterDetailView: View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Appears in")
                 .font(.headline)
+                .accessibilityAddTraits(.isHeader)
             ForEach(character.shows, id: \.showID) { link in
                 if let show = snapshot.show(id: link.showID) {
                     NavigationLink {
@@ -96,7 +103,7 @@ struct CharacterDetailView: View {
                             if let role = link.role {
                                 Text(role.capitalized)
                                     .font(.caption)
-                                    .foregroundStyle(.secondary)
+                                    .foregroundStyle(.subdued)
                             }
                         }
                     }

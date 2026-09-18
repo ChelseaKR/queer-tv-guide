@@ -14,6 +14,7 @@
 		2BC163CF30C059381EF045EE /* SearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFD338C39510587AB04DD0E8 /* SearchView.swift */; };
 		2F9FA11DB6FB9F425574CBE2 /* AppModelIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42DBCBFCCCE00AF21CE2B243 /* AppModelIntegrationTests.swift */; };
 		30C7D17533AA5FC8407B1F24 /* AppIdentity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45C035570157184FA03B5D6C /* AppIdentity.swift */; };
+		35299370D6D51D2B89FE3532 /* AccessibleStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E750D2B2E53B7541A9D0A8C /* AccessibleStyle.swift */; };
 		68425D95518F53E70F4F5419 /* GuideCore in Frameworks */ = {isa = PBXBuildFile; productRef = 13543BD064FB8FE28EAA03E0 /* GuideCore */; };
 		8AAB1C2FDBFAB8562373B763 /* AboutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 657AE9A3B9D336B3F6289154 /* AboutView.swift */; };
 		AAD2204F4BD58CC5046A2883 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = D6D678C521FBF48D7FBB5670 /* PrivacyInfo.xcprivacy */; };
@@ -58,6 +59,7 @@
 		7D83B45C246B3923C7DA87E3 /* FavouriteButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FavouriteButton.swift; sourceTree = "<group>"; };
 		8DC448BA66E038712B00882B /* GuideCore */ = {isa = PBXFileReference; lastKnownFileType = folder; name = GuideCore; path = GuideCore; sourceTree = SOURCE_ROOT; };
 		95D825B045FC7516E54DAF0C /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		9E750D2B2E53B7541A9D0A8C /* AccessibleStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccessibleStyle.swift; sourceTree = "<group>"; };
 		AE2B560D8C4AC1CFC059C157 /* QueerTVGuideUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QueerTVGuideUITests.swift; sourceTree = "<group>"; };
 		CECFC0920C1F6BBA446DE631 /* App-Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "App-Release.xcconfig"; sourceTree = "<group>"; };
 		D03E4A71ECC4D5A0E8DB8BD0 /* snapshot.v1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = snapshot.v1.json; sourceTree = "<group>"; };
@@ -150,6 +152,7 @@
 		68DBC3DB5354EE0D2913FBA8 /* Components */ = {
 			isa = PBXGroup;
 			children = (
+				9E750D2B2E53B7541A9D0A8C /* AccessibleStyle.swift */,
 				750D33208053211A76D4C98D /* DataStatusFooter.swift */,
 				7D83B45C246B3923C7DA87E3 /* FavouriteButton.swift */,
 				DBE1A58F2D904E39B806EA53 /* ShowRow.swift */,
@@ -338,6 +341,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				8AAB1C2FDBFAB8562373B763 /* AboutView.swift in Sources */,
+				35299370D6D51D2B89FE3532 /* AccessibleStyle.swift in Sources */,
 				30C7D17533AA5FC8407B1F24 /* AppIdentity.swift in Sources */,
 				CF25EB2A090C6F989F6152F5 /* AppModel.swift in Sources */,
 				2913F2CF2572B412572BC0A0 /* CharacterDetailView.swift in Sources */,

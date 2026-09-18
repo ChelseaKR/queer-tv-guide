@@ -189,15 +189,21 @@ The brief's five screens, all present in `ios/QueerTVGuide/Views`:
 1. **Search** (`SearchView.swift`) — search across shows and characters,
    worth-it/no-recorded-deaths/has-a-watch-link filters, pull to refresh.
 2. **Show detail** (`ShowDetailView.swift`) — worth-it/quality/realness/
-   screentime, tropes, trigger warnings, characters, where-to-watch as
-   `openURL` links, next episode (schedule-known vs schedule-unknown
-   distinguished), plot notes behind a spoiler disclosure, attribution
-   footer with `generated_at`.
-3. **Character detail** (`CharacterDetailView.swift`) — identity fields,
-   "does she die" behind `SpoilerReveal` (closed by default), shows the
-   character appears in.
-4. **Favourites** (`FavouritesView.swift`) — local list, swipe to remove,
-   empty state explains the local-only posture.
+   screentime, "do any queer characters die?" behind `SpoilerReveal`
+   (closed by default; per listed character, and says when a death may
+   belong to another of the character's shows or when LezWatch's own tally
+   disagrees), tropes (minus "Bury Your Queers", which moves inside the
+   reveal), trigger warnings, characters, where-to-watch as `openURL` links,
+   next episode (schedule-known vs schedule-unknown distinguished, and a
+   date that has passed is called past, never "next"), plot notes behind a
+   spoiler disclosure, attribution footer with `generated_at`.
+3. **Character detail** (`CharacterDetailView.swift`) — identity fields
+   (minus the "Dead Queers" cliché, which would answer the reveal),
+   "Does <name> die?" behind `SpoilerReveal` (closed by default; VoiceOver
+   focus moves to the answer on reveal), shows the character appears in.
+4. **Favourites** (`FavouritesView.swift`) — local list with each show's
+   next episode, swipe to remove, empty state explains the local-only
+   posture.
 5. **About & Privacy** (`AboutView.swift`) — the posture statement, every
    `attribution` entry from the snapshot, the licence notice, coverage
    numbers, and the current snapshot's `generated_at`/origin.

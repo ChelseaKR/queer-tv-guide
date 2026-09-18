@@ -44,6 +44,9 @@ public struct SearchIndex: Sendable {
 
     private let entries: [Entry]
     private let snapshot: Snapshot
+    /// Shows in folded-title order, sorted once here rather than on every
+    /// browse (which SwiftUI re-runs on each render of the Search screen).
+    private let showsByTitle: [Show]
 
     public init(snapshot: Snapshot) {
         self.snapshot = snapshot
@@ -58,6 +61,10 @@ public struct SearchIndex: Sendable {
             entries.append(Entry(hit: .character(character), primary: Self.fold(character.name), secondary: (actorNames + showTitles).map(Self.fold)))
         }
         self.entries = entries
+        self.showsByTitle = snapshot.shows
+            .map { (Self.fold($0.title), $0) }
+            .sorted { $0.0 < $1.0 }
+            .map(\.1)
     }
 
     /// Empty or whitespace-only queries return nothing: the screen shows a
@@ -78,9 +85,7 @@ public struct SearchIndex: Sendable {
     /// All shows that pass the filters, alphabetical. Used for browsing when
     /// the query is empty and a filter is on.
     public func browse(filters: Filters) -> [Show] {
-        snapshot.shows
-            .filter { passes(.show($0), filters) }
-            .sorted { Self.fold($0.title) < Self.fold($1.title) }
+        showsByTitle.filter { passes(.show($0), filters) }
     }
 
     public struct DeathCoverage: Equatable, Sendable {

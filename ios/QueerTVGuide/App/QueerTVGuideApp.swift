@@ -8,6 +8,9 @@ struct QueerTVGuideApp: App {
         WindowGroup {
             RootTabView()
                 .environment(model)
+                // Contrast-checked tint for every link, button and row
+                // (Views/Components/AccessibleStyle.swift).
+                .tint(.accessibleAccent)
                 .task {
                     await model.loadInitial()
                     await model.refresh()

@@ -24,7 +24,7 @@ struct SearchView: View {
             ProgressView("Loading catalogue…")
                 .accessibilityLabel("Loading catalogue")
         case .failed(let message):
-            ContentUnavailableView("Couldn't load the catalogue", systemImage: "exclamationmark.triangle", description: Text(message))
+            EmptyState(title: "Couldn't load the catalogue", systemImage: "exclamationmark.triangle", message: message)
         case .loaded:
             if let index = model.searchIndex, let snapshot = model.snapshot {
                 resultsList(index: index, snapshot: snapshot)
@@ -42,10 +42,10 @@ struct SearchView: View {
         List {
             if hits.isEmpty {
                 Section {
-                    ContentUnavailableView(
-                        trimmed.isEmpty ? "Browse or search" : "No matches",
+                    EmptyState(
+                        title: trimmed.isEmpty ? "Browse or search" : "No matches",
                         systemImage: "magnifyingglass",
-                        description: Text(trimmed.isEmpty ? "Search for a show or character, or turn on a filter to browse." : "Nothing in this snapshot matches “\(trimmed)”.")
+                        message: trimmed.isEmpty ? "Search for a show or character, or turn on a filter to browse." : "Nothing in this snapshot matches “\(trimmed)”."
                     )
                 }
                 .listRowSeparator(.hidden)

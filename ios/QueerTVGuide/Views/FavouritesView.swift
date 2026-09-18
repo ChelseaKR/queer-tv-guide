@@ -10,10 +10,10 @@ struct FavouritesView: View {
             Group {
                 if let snapshot = model.snapshot {
                     if entries.isEmpty {
-                        ContentUnavailableView(
-                            "No favourites yet",
+                        EmptyState(
+                            title: "No favourites yet",
                             systemImage: "star",
-                            description: Text("Tap the star on a show or character to save it here. Favourites stay on this device only.")
+                            message: "Tap the star on a show or character to save it here. Favourites stay on this device only."
                         )
                     } else {
                         List {
@@ -45,7 +45,9 @@ struct FavouritesView: View {
                 NavigationLink {
                     ShowDetailView(showID: show.id)
                 } label: {
-                    ShowRow(show: show)
+                    // "When's the next episode" for everything followed,
+                    // at a glance.
+                    ShowRow(show: show, detail: Presentation.nextEpisode(show.schedule))
                 }
             } else {
                 missingRow(label: "A favourited show is not in this snapshot.")
@@ -66,7 +68,7 @@ struct FavouritesView: View {
     private func missingRow(label: String) -> some View {
         Text(label)
             .font(.subheadline)
-            .foregroundStyle(.secondary)
+            .foregroundStyle(.subdued)
     }
 
     private func reload() {

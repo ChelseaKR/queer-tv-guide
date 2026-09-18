@@ -10,12 +10,18 @@ struct SpoilerReveal<Content: View>: View {
     @ViewBuilder let content: () -> Content
 
     @State private var revealed = false
+    @AccessibilityFocusState private var answerFocused: Bool
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         Group {
             if revealed {
+                // The button a VoiceOver user just activated disappears;
+                // move focus to the answer that replaced it so it is read
+                // out, rather than leaving focus to land somewhere else.
                 content()
+                    .accessibilityFocused($answerFocused)
+                    .onAppear { answerFocused = true }
                     .transition(reduceMotion ? .identity : .opacity)
             } else {
                 Button {

@@ -12,11 +12,11 @@ struct DataStatusFooter: View {
         VStack(alignment: .leading, spacing: 2) {
             Text(Presentation.generatedAt(generatedAt))
                 .font(.caption)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(.subdued)
             if let refreshError {
                 Text("Refresh failed: \(refreshError)")
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.subdued)
             }
         }
         .accessibilityElement(children: .combine)

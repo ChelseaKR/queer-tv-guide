@@ -3,6 +3,10 @@ import GuideCore
 
 struct ShowRow: View {
     let show: Show
+    /// An extra line under the row, e.g. the next episode on Favourites.
+    var detail: String? = nil
+
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     /// `.accessibilityElement(children: .combine)` plus an explicit
     /// `.accessibilityLabel` means the explicit label wins outright — none
@@ -15,23 +19,47 @@ struct ShowRow: View {
         if !show.networks.isEmpty {
             summary += " \(show.networks.map(\.name).joined(separator: ", "))."
         }
+        if let detail {
+            summary += " \(detail)"
+        }
         return summary
+    }
+
+    private var networks: String? {
+        show.networks.isEmpty ? nil : show.networks.map(\.name).joined(separator: ", ")
     }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
             Text(show.title)
                 .font(.headline)
-            HStack(spacing: 8) {
+            // At accessibility text sizes the verdict and network stack
+            // instead of sharing a line, and the network is never truncated.
+            if dynamicTypeSize.isAccessibilitySize {
                 Text(Presentation.worthIt(show.ratings.worthIt))
                     .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                if !show.networks.isEmpty {
-                    Text("· \(show.networks.map(\.name).joined(separator: ", "))")
+                    .foregroundStyle(.subdued)
+                if let networks {
+                    Text(networks)
                         .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                        .lineLimit(1)
+                        .foregroundStyle(.subdued)
                 }
+            } else {
+                HStack(spacing: 8) {
+                    Text(Presentation.worthIt(show.ratings.worthIt))
+                        .font(.subheadline)
+                        .foregroundStyle(.subdued)
+                    if let networks {
+                        Text("· \(networks)")
+                            .font(.subheadline)
+                            .foregroundStyle(.subdued)
+                            .lineLimit(1)
+                    }
+                }
+            }
+            if let detail {
+                Text(detail)
+                    .font(.subheadline)
             }
         }
         .accessibilityElement(children: .combine)
@@ -42,6 +70,8 @@ struct ShowRow: View {
 struct CharacterRow: View {
     let character: Character
     let snapshot: Snapshot
+
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     private var showTitles: String {
         character.shows.compactMap { snapshot.show(id: $0.showID)?.title }.joined(separator: ", ")
@@ -54,8 +84,8 @@ struct CharacterRow: View {
             if !showTitles.isEmpty {
                 Text(showTitles)
                     .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                    .lineLimit(1)
+                    .foregroundStyle(.subdued)
+                    .lineLimit(dynamicTypeSize.isAccessibilitySize ? nil : 1)
             }
         }
         .accessibilityElement(children: .combine)

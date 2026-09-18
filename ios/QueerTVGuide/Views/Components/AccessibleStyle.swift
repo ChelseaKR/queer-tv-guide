@@ -109,6 +109,26 @@ extension View {
     }
 }
 
+extension View {
+    /// With Reduce Motion on, SwiftUI animations in this subtree are
+    /// dropped: disclosure groups, list changes and reveals change at once
+    /// instead of sliding or fading. System transitions (navigation pushes,
+    /// sheets) follow the setting on their own.
+    func reduceMotionRespected() -> some View {
+        modifier(ReduceMotionRespected())
+    }
+}
+
+private struct ReduceMotionRespected: ViewModifier {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    func body(content: Content) -> some View {
+        content.transaction { transaction in
+            if reduceMotion { transaction.animation = nil }
+        }
+    }
+}
+
 /// An empty or error state built from Dynamic Type text styles, in place of
 /// `ContentUnavailableView`, whose description text the audit reported as
 /// not scaling and clipping at large sizes.

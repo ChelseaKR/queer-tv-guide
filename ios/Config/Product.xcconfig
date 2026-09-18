@@ -13,3 +13,18 @@
 PRODUCT_NAME = QueerTVGuide
 PRODUCT_BUNDLE_IDENTIFIER = com.chelseakr.queertvguide
 INFOPLIST_KEY_CFBundleDisplayName = $(PRODUCT_NAME)
+
+// App Store submission keys the generated Info.plist was missing.
+// - iPad multitasking needs all four orientations declared, or upload
+//   validation rejects the build (the target supports iPad:
+//   TARGETED_DEVICE_FAMILY = 1,2 in Shared.xcconfig). iPhone: no
+//   upside-down, as Xcode's own template.
+// - Export compliance: the app's one network call is HTTPS through
+//   URLSession, and it contains no encryption of its own, so it uses no
+//   non-exempt encryption. Declaring it here answers App Store Connect's
+//   question for every build.
+// - Category: Entertainment, per docs/APP-STORE.md §1.
+INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight
+INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight
+INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO
+INFOPLIST_KEY_LSApplicationCategoryType = public.app-category.entertainment

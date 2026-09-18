@@ -102,6 +102,10 @@ jobs:
           mkdir -p site
           cp out/snapshot.v1.json site/
           cp out/snapshot.v1.json.sha256 site/
+          # The app's privacy policy (App Store Connect's Privacy Policy URL
+          # and the About screen's link). Static, no scripts, no fonts, no
+          # third-party requests.
+          cp ../docs/site/privacy.html site/privacy.html
           python3 - <<'PY'
           import json
           doc = json.load(open("out/snapshot.v1.json"))
@@ -121,6 +125,7 @@ jobs:
           <ul>
           <li><a href="snapshot.v1.json">snapshot.v1.json</a></li>
           <li><a href="snapshot.v1.json.sha256">snapshot.v1.json.sha256</a></li>
+          <li><a href="privacy.html">privacy policy (the iOS app)</a></li>
           </ul>
           """
           open("site/index.html", "w").write(html)

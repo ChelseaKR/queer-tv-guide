@@ -12,6 +12,8 @@ struct AboutView: View {
                     Text("No account, no analytics, no crash reporting, no third-party SDKs. Nothing leaves this device except one request for the data file this app reads — a plain, cookieless GET of a static file, sent only when you open the app or pull to refresh.")
                         .accessibilityLabel("Privacy posture: no account, no analytics, no crash reporting, no third-party SDKs. Nothing leaves this device except one request for the data file this app reads.")
                     Text("Favourites are stored only on this device and are never sent anywhere.")
+                    Button("Privacy policy") { openURL(PrivacyPolicy.url) }
+                        .accessibilityHint("Opens in Safari")
                 }
 
                 if let snapshot = model.snapshot {

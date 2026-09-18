@@ -12,8 +12,12 @@ access and this session did not attempt any.
 | Subtitle | "Does she die? Is it worth it?" (29 characters, fits the 30-char subtitle limit) | research §6 rank 1 |
 | Category | Entertainment (primary); no secondary category needed | — |
 | Price | One-time purchase, no IAP, no subscription. [moved to private strategy notes] | DECISIONS 0003 |
-| Age rating | **12+** if declared at all — draft answer below | research §3.1 (Sapphic Signal's own rating), §7 |
-| Privacy label | **"Data Not Collected"** for every category — this is the product's whole premise and is literally true for this build (see §3) | DECISIONS 0002, research §4.3 |
+| Age rating | **13+ expected** — computed by App Store Connect from the questionnaire below. Apple's current tiers are 4+, 9+, 13+, 16+, 18+; "12+" no longer exists (checked 2026-09-17 against Apple's "Age ratings values and definitions"). | Apple, research §7 |
+| Privacy label | **"Data Not Collected"** for every category — this is the product's whole premise and is literally true for this build (see §2) | DECISIONS 0002, research §4.3 |
+| Privacy Policy URL | `https://chelseakr.github.io/queer-tv-guide/privacy.html` — published by the nightly snapshot workflow from `docs/site/privacy.html`, and linked from the app's About screen (App Review 5.1.1(i) wants both). Live after the first nightly run following merge. | this file §2 |
+| Support URL | **Owner decision** — required by App Store Connect. The privacy policy points questions at it. | — |
+| Export compliance | "No" to non-exempt encryption — declared in the build (`ITSAppUsesNonExemptEncryption = NO`, `ios/Config/Product.xcconfig`): the only network call is HTTPS via URLSession and the app has no cryptography of its own. | — |
+| Devices | iPhone **and iPad** (`TARGETED_DEVICE_FAMILY = 1,2`). Universal means App Store Connect also requires **13-inch iPad screenshots**; iPhone-only would drop that requirement. Owner decision. | — |
 
 ### Description (draft)
 
@@ -23,13 +27,25 @@ access and this session did not attempt any.
 > filter by rating, favourite what you're following — all stored only on
 > this device. Data is a nightly, attributed mirror of LezWatch.TV and
 > TVmaze; the app works offline and tells you exactly how current its data
-> is. No account. No analytics. No ads. No third-party SDKs. The only thing
-> this app ever asks for is the data file itself.
+> is. No account. No analytics. No ads. No third-party SDKs. The app's one
+> network request fetches its data file.
+
+Copy rule: no "only", "first" or other uniqueness claims about the market
+(the space has TV Time — shut down 2026-07-15 — Does the Dog Die, Serializd,
+TVmaze and Sapphic Signal). Claims about the app's own behaviour ("no
+account") are fine because they are checkable.
 
 ### Keywords (draft, adult branches excluded per research §7 / 1.1.4)
 
-`queer tv, lesbian tv, sapphic, lgbtq shows, bury your gays, where to watch,
-queer characters, tv tracker, does she die, lgbtq representation`
+App Store Connect allows **100 characters**, commas included; spaces after
+commas waste characters, and words already in the name or subtitle add
+nothing. The earlier draft was 140 characters. This one is 97:
+
+`lesbian,sapphic,lgbtq,bury your gays,where to watch,character,tracker,episode,trans,nonbinary,wlw`
+
+Not included: "LezWatch" and "TVmaze" (credit them in the description, not
+as search terms), competitor app names (Apple forbids them), and anything
+from the adult branches below.
 
 Deliberately excluded: any keyword from TMDB's `lesbian-fetish` /
 `queer-porn` / `lesbian-rape` branches (research §3.1, §7) — this app doesn't
@@ -56,8 +72,9 @@ unless noted:
   hands URLs to the system via `openURL`, which is not "web access" in
   Apple's sense (no `WKWebView`, no `SFSafariViewController` — enforced by
   `SourceTreeGuardTests.testNoOtherNetworkOrWebPrimitives`).
-- Expected result: **12+**, matching Sapphic Signal's own rating (research
-  §3.1) and comfortably below Groove/qcal/QLIST's 17+/18+.
+- Expected result: **13+**, Apple's nearest current tier to Sapphic
+  Signal's older 12+ rating (research §3.1), and below Groove/qcal/QLIST's
+  17+/18+. App Store Connect computes it from these answers.
 
 ### Screenshots plan (not produced this session — no device/App Store Connect access)
 
@@ -81,6 +98,17 @@ the hand-made test fixture (invented titles) lives only under
 
 "Data Not Collected" for every category Apple's privacy label asks about.
 This is true of the build in this PR:
+
+- **One caveat to decide on, not hide.** The snapshot is served by GitHub
+  Pages, and GitHub's own docs say "the visitor's IP address is logged and
+  stored for security purposes". The developer never receives that log, and
+  Apple's definition of "collect" covers the developer and "third-party
+  partners" (its examples: analytics tools, ad networks, SDKs), not a static
+  host. So the label stays true, and the privacy policy says it outright.
+  DECISIONS 0002, though, promised the file would come "from infrastructure
+  Chelsea controls with access logging minimised". GitHub Pages is neither,
+  so the owner either accepts the host or moves the file to one with logging
+  off. The app changes one constant either way (`SnapshotEndpoint.url`).
 
 - No account, ever (`AppModel` never asks for identity; `FavouritesStore` is
   local `UserDefaults`, never synced).
@@ -148,8 +176,11 @@ https://developer.apple.com/app-store/review/guidelines/ (fetched
   significant account-based features, let people use it without a login."*
   There is no login anywhere in this app — no screen asks for identity of
   any kind. The privacy policy link is still required even for "Data Not
-  Collected" (owner action: publish one; the About screen's posture text can
-  be the policy's substance).
+  Collected": `docs/site/privacy.html`, published to
+  `https://chelseakr.github.io/queer-tv-guide/privacy.html` by the nightly
+  workflow and linked from the About screen. It says plainly that GitHub
+  Pages, the host, logs the IP address of every request "for security
+  purposes", and that the developer never sees that log.
 - **5.1.2 / App Tracking Transparency.** No SDK exists to prompt for, and
   none is added (DECISIONS 0002; enforced by the import/host guard tests
   above). A plain outbound link to a streaming service is not "tracking" per

@@ -8,7 +8,7 @@ final class SnapshotRefresherTests: XCTestCase {
     override func setUpWithError() throws {
         try super.setUpWithError()
         dir = try Repo.temporaryDirectory()
-        store = SnapshotStore(directory: dir, bundledURL: Repo.bundledFixture)
+        store = SnapshotStore(directory: dir, bundledURL: Repo.fixtureURL)
         StubURLProtocol.reset()
     }
 

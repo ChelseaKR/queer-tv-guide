@@ -6,8 +6,9 @@ name: ci
 #                commands that talk to LezWatch/TVmaze are not run here --
 #                see snapshot.yml for the nightly mirror).
 #   guidecore -- `swift test` on the ios/GuideCore Swift package (no
-#                external SwiftPM dependencies, so this needs no network
-#                either). Deliberately NOT `xcodebuild`: the full
+#                external SwiftPM dependencies; its only network use is
+#                `make -C ios bundle-snapshot`, one GET of the app's own
+#                published snapshot). Deliberately NOT `xcodebuild`: the full
 #                QueerTVGuide app target (and its UI tests) needs simulator
 #                provisioning and a signing/scheme setup this repo hasn't
 #                proven out in CI yet, and a flaky xcodebuild lane is worse
@@ -87,6 +88,15 @@ jobs:
             echo "present=false" >> "$GITHUB_OUTPUT"
             echo "ios/GuideCore isn't on this branch -- nothing to test here."
           fi
+
+      # The app's bundled first-launch snapshot is gitignored (a copy of the
+      # published file, never committed). Fetch and checksum-verify it so
+      # BundledSnapshotTests can check that what would ship is real,
+      # published data. One GET to the app's own Pages URL; no source is
+      # contacted.
+      - name: fetch the bundled snapshot
+        if: steps.present.outputs.present == 'true'
+        run: make -C ios bundle-snapshot
 
       - name: swift test
         if: steps.present.outputs.present == 'true'

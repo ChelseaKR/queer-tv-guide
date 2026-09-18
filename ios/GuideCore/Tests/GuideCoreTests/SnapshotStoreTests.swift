@@ -15,7 +15,7 @@ final class SnapshotStoreTests: XCTestCase {
     }
 
     func testFallsBackToBundledWhenNothingDownloaded() throws {
-        let store = SnapshotStore(directory: dir, bundledURL: Repo.bundledFixture)
+        let store = SnapshotStore(directory: dir, bundledURL: Repo.fixtureURL)
         let loaded = try store.load()
         XCTAssertEqual(loaded.origin, .bundled)
         XCTAssertNil(loaded.etag)
@@ -30,7 +30,7 @@ final class SnapshotStoreTests: XCTestCase {
     }
 
     func testReplaceWritesFileAndETagAndIsPreferredOnLoad() throws {
-        let store = SnapshotStore(directory: dir, bundledURL: Repo.bundledFixture)
+        let store = SnapshotStore(directory: dir, bundledURL: Repo.fixtureURL)
         let newer = try JSONEdit.edit(try Repo.fixtureData()) { $0["generated_at"] = "2026-09-14T00:00:00Z" }
         let snapshot = try store.replace(with: newer, etag: "\"abc\"")
         XCTAssertEqual(snapshot.generatedAt, ISO8601SecondFormatter.date(from: "2026-09-14T00:00:00Z"))
@@ -43,7 +43,7 @@ final class SnapshotStoreTests: XCTestCase {
     }
 
     func testFailedReplaceKeepsLastGoodByteForByte() throws {
-        let store = SnapshotStore(directory: dir, bundledURL: Repo.bundledFixture)
+        let store = SnapshotStore(directory: dir, bundledURL: Repo.fixtureURL)
         let good = try Repo.fixtureData()
         try store.replace(with: good, etag: "\"v1\"")
 
@@ -58,7 +58,7 @@ final class SnapshotStoreTests: XCTestCase {
     }
 
     func testNoTemporaryFilesLeftBehind() throws {
-        let store = SnapshotStore(directory: dir, bundledURL: Repo.bundledFixture)
+        let store = SnapshotStore(directory: dir, bundledURL: Repo.fixtureURL)
         try store.replace(with: try Repo.fixtureData(), etag: nil)
         try store.replace(with: try Repo.fixtureData(), etag: "\"x\"")
         let names = try FileManager.default.contentsOfDirectory(atPath: dir.path).sorted()
@@ -66,7 +66,7 @@ final class SnapshotStoreTests: XCTestCase {
     }
 
     func testUndecodableDownloadedFileFallsBackToBundled() throws {
-        let store = SnapshotStore(directory: dir, bundledURL: Repo.bundledFixture)
+        let store = SnapshotStore(directory: dir, bundledURL: Repo.fixtureURL)
         try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
         try Data("garbage".utf8).write(to: store.snapshotFileURL)
         let loaded = try store.load()
@@ -75,7 +75,7 @@ final class SnapshotStoreTests: XCTestCase {
     }
 
     func testNilETagRemovesSidecar() throws {
-        let store = SnapshotStore(directory: dir, bundledURL: Repo.bundledFixture)
+        let store = SnapshotStore(directory: dir, bundledURL: Repo.fixtureURL)
         try store.replace(with: try Repo.fixtureData(), etag: "\"x\"")
         XCTAssertEqual(store.readETag(), "\"x\"")
         try store.replace(with: try Repo.fixtureData(), etag: nil)

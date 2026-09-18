@@ -72,8 +72,10 @@ unless noted:
    boilerplate.
 
 All five map onto existing screens (§4 below); none require new UI. Take
-these after §5 step 3 below (the real-snapshot swap) — the bundled fixture's
-invented shows must never appear in a submitted screenshot.
+these after §5 step 3 below (refresh the bundled snapshot), so the screenshots
+show the data that ships. The bundle holds real published data;
+the hand-made test fixture (invented titles) lives only under
+`ios/GuideCore/Tests/Fixtures/` and never reaches the app.
 
 ## 2. Privacy label
 
@@ -228,23 +230,19 @@ xcrun altool --list-apps -u "<owner apple id>" -p "<app-specific password>"
 #    or Xcode's Settings > Accounts > Manage Certificates).
 security find-identity -v -p codesigning
 
-# 3. REQUIRED before any archive: replace the bundled fixture with a real
-#    snapshot. ios/QueerTVGuide/Resources/snapshot.v1.json as committed is
-#    a hand-made 4-show/5-character fixture for the test/dev loop --
-#    invented titles, example.com watch links -- not real LezWatch/TVmaze
-#    data. It says so in its own "notice" field
-#    ("pipeline_version": "0.0.0-fixture"), and AppModel.live() loads it as
-#    the app's first-launch/offline state, so an archive built without
-#    this step ships fake shows. Replace it with the pipeline lane's real
-#    published output (pipeline/README.md "Publishing") before continuing:
-cd ../pipeline && uv run qtv build --cache .cache --out out && cd ../ios
-cp ../pipeline/out/snapshot.v1.json QueerTVGuide/Resources/snapshot.v1.json
-#    …or, once the nightly workflow has run at least once, download the
-#    published copy instead of building locally:
-#    curl -fsSL https://chelseakr.github.io/queer-tv-guide/snapshot.v1.json \
-#      -o QueerTVGuide/Resources/snapshot.v1.json
-#    Either way, confirm the swap landed before archiving:
-python3 -c "import json; d = json.load(open('QueerTVGuide/Resources/snapshot.v1.json')); assert d['build']['pipeline_version'] != '0.0.0-fixture', 'still the fixture'; print(f\"{len(d['shows'])} shows, {len(d['characters'])} characters\")"
+# 3. REQUIRED before any archive: refresh the bundled snapshot.
+#    ios/QueerTVGuide/Resources/snapshot.v1.json is the app's first-launch
+#    and offline catalogue (gitignored, never committed): a byte-for-byte
+#    copy of a pipeline-PUBLISHED snapshot (real LezWatch.TV + TVmaze data, the same bytes anyone can
+#    fetch under CC BY-SA 4.0). Re-copy the latest before archiving so the
+#    release ships current data. The target verifies the published .sha256
+#    and refuses a fixture or a locally built file (no workflow run id):
+make bundle-snapshot
+#    GuideCore's BundledSnapshotTests and the hosted
+#    AppModelIntegrationTests re-check the result (not the fixture, published
+#    by the nightly workflow, decodes with the app's decoder, real-catalogue
+#    scale). Run them before archiving:
+make test
 
 # 4. Archive (device build; needs the profile from step 1-2 present
 #    locally — this session's simulator-only environment cannot run this

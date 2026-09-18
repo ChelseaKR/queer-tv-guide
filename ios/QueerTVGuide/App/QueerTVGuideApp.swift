@@ -9,7 +9,7 @@ struct QueerTVGuideApp: App {
             RootTabView()
                 .environment(model)
                 .task {
-                    model.loadInitial()
+                    await model.loadInitial()
                     await model.refresh()
                 }
         }

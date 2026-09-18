@@ -15,6 +15,11 @@ snapshot.v1.json.sha256
 # os / editors
 .DS_Store
 # ios (owned by the app lane; listed so a stray build never lands here)
+# ios/QueerTVGuide/Resources/snapshot.v1.json is ignored by the
+# snapshot.v1.json rule above on purpose: it is a byte-for-byte copy of the
+# published snapshot, fetched and checksum-verified by
+# `make -C ios bundle-snapshot` (the build and test targets run it when the
+# file is missing), never committed.
 ios/**/build/
 ios/**/DerivedData/
 ios/**/*.xcuserstate

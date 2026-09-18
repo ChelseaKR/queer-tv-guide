@@ -16,14 +16,24 @@ enum Repo {
             .deletingLastPathComponent() // ios
     }()
 
-    static let bundledFixture: URL = iosRoot
+    /// A hand-made 4-show/5-character document with invented titles, for
+    /// exercising every absence rule deterministically. Test-only: it lives
+    /// outside every target and is never bundled into the app. Its own
+    /// `build.pipeline_version` is "0.0.0-fixture" and its notice says so.
+    static let fixtureURL: URL = iosRoot
+        .appendingPathComponent("GuideCore/Tests/Fixtures/snapshot.fixture.json")
+
+    /// The snapshot the app actually ships: a byte-for-byte copy of a
+    /// pipeline-published `snapshot.v1.json` (real LezWatch.TV + TVmaze data),
+    /// put there by `make bundle-snapshot`. Gitignored, never committed.
+    static let bundledSnapshot: URL = iosRoot
         .appendingPathComponent("QueerTVGuide/Resources/snapshot.v1.json")
 
     static let privacyManifest: URL = iosRoot
         .appendingPathComponent("QueerTVGuide/PrivacyInfo.xcprivacy")
 
     static func fixtureData() throws -> Data {
-        try Data(contentsOf: bundledFixture)
+        try Data(contentsOf: fixtureURL)
     }
 
     static func fixture() throws -> Snapshot {

@@ -45,18 +45,26 @@ final class AppModel {
         ))
     }
 
-    func loadInitial() {
+    /// Decodes the snapshot (12.5 MB of real LezWatch + TVmaze data) and
+    /// builds the search index off the main actor, so launch shows
+    /// "Loading catalogue…" instead of a frozen screen.
+    func loadInitial() async {
+        let store = self.store
         do {
-            apply(try store.load())
+            let (loaded, index) = try await Task.detached(priority: .userInitiated) {
+                let loaded = try store.load()
+                return (loaded, SearchIndex(snapshot: loaded.snapshot))
+            }.value
+            apply(loaded.snapshot, origin: loaded.origin, index: index)
         } catch {
             loadState = .failed(error.localizedDescription)
         }
     }
 
-    private func apply(_ loaded: SnapshotStore.Loaded) {
-        snapshot = loaded.snapshot
-        origin = loaded.origin
-        searchIndex = SearchIndex(snapshot: loaded.snapshot)
+    private func apply(_ snapshot: Snapshot, origin: SnapshotStore.Loaded.Origin, index: SearchIndex) {
+        self.snapshot = snapshot
+        self.origin = origin
+        searchIndex = index
         loadState = .loaded
     }
 
@@ -71,8 +79,14 @@ final class AppModel {
         defer { isRefreshing = false }
         do {
             let outcome = try await refresher.refresh()
-            if case .updated = outcome, let loaded = try? store.load() {
-                apply(loaded)
+            if case .updated(let fresh) = outcome {
+                // The refresher already decoded and stored this snapshot;
+                // use it rather than decoding the file a second time, and
+                // build the index off the main actor.
+                let index = await Task.detached(priority: .userInitiated) {
+                    SearchIndex(snapshot: fresh)
+                }.value
+                apply(fresh, origin: .downloaded, index: index)
             }
             lastRefreshError = nil
         } catch {

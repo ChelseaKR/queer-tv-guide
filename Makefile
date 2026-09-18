@@ -33,7 +33,7 @@ RUFF := uvx --python 3.12 ruff@0.16.7
 RUFF_ROOT := --isolated --target-version py312 --line-length 100
 ROOT_PY := tests scripts
 
-VERIFY_TARGETS := pipeline guidecore policy workflows secrets sast sca
+VERIFY_TARGETS := pipeline guidecore a11y policy workflows secrets sast sca
 
 .PHONY: verify $(VERIFY_TARGETS)
 
@@ -51,6 +51,13 @@ pipeline:
 # and checksum-verifies the bundled snapshot that BundledSnapshotTests check.
 guidecore:
 	$(MAKE) -C ios package-test
+
+# The app's accessibility gate (#22): Xcode's accessibility audit over every
+# screen, and the check that a closed "does she die" answer is not in the
+# accessibility tree, in the iOS simulator. Needs Xcode 26 with the iOS 26.5
+# simulator runtime (ios/Makefile's test-a11y says why the version is pinned).
+a11y:
+	$(MAKE) -C ios test-a11y
 
 # Repository policy tests (tests/): workflow invariants, make/CI parity,
 # vendored-standards integrity, and the gitleaks allowlist negative controls,

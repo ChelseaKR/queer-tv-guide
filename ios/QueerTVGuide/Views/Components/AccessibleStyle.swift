@@ -29,6 +29,86 @@ extension ShapeStyle where Self == Color {
     }
 }
 
+/// A list section header in `.subdued`. The system's grouped-list header grey
+/// measured 3.3:1 on the grouped background (#85858B on #F2F2F7, iOS 26.5),
+/// which the audit reports as "Contrast nearly passed": it clears only the
+/// large-text threshold.
+struct SubduedSectionHeader: View {
+    let title: String
+
+    var body: some View {
+        Text(title)
+            .foregroundStyle(.subdued)
+            .accessibilityAddTraits(.isHeader)
+    }
+}
+
+extension Section where Parent == SubduedSectionHeader, Footer == EmptyView, Content: View {
+    /// `Section("Title") { … }` with a header that clears 4.5:1.
+    init(subdued title: String, @ViewBuilder content: () -> Content) {
+        self.init(content: content, header: { SubduedSectionHeader(title: title) })
+    }
+}
+
+/// `LabeledContent` draws its value ("3 of 5", "Yes", a coverage count) in
+/// the system `.secondary` grey, measured at 3.4:1 on white (#8A8A8E). The
+/// audit does not report it, perhaps because those rows are read as one
+/// combined element, but it is under 4.5:1 for anyone reading the screen.
+/// This style keeps the system layout (label leading, value trailing) with
+/// the value in `.subdued`, and stacks the two at accessibility text sizes
+/// so neither is squeezed.
+struct SubduedValueLabeledContentStyle: LabeledContentStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        SubduedValueRow(configuration: configuration)
+    }
+}
+
+private struct SubduedValueRow: View {
+    let configuration: LabeledContentStyleConfiguration
+
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
+    var body: some View {
+        Group {
+            if dynamicTypeSize.isAccessibilitySize {
+                VStack(alignment: .leading, spacing: 2) {
+                    configuration.label
+                    configuration.content
+                        .foregroundStyle(.subdued)
+                }
+            } else {
+                HStack(alignment: .firstTextBaseline, spacing: 8) {
+                    configuration.label
+                    Spacer(minLength: 8)
+                    configuration.content
+                        .foregroundStyle(.subdued)
+                        .multilineTextAlignment(.trailing)
+                }
+            }
+        }
+        .accessibilityElement(children: .combine)
+    }
+}
+
+extension View {
+    /// iOS 26 fades scrolling content into a soft blur as it nears the
+    /// floating tab bar, so text scrolling into that band is drawn lighter
+    /// than its colour. With the soft edge, the audit reported 4 contrast
+    /// failures at the bottom of Search. With this change and nothing else
+    /// on that screen, it reported none. The hard edge keeps content at
+    /// full contrast up to the bar and puts an opaque backing behind the bar
+    /// itself. Earlier iOS versions have no edge effect, so nothing changes
+    /// there.
+    @ViewBuilder
+    func legibleScrollEdges() -> some View {
+        if #available(iOS 26.0, *) {
+            scrollEdgeEffectStyle(.hard, for: .bottom)
+        } else {
+            self
+        }
+    }
+}
+
 /// An empty or error state built from Dynamic Type text styles, in place of
 /// `ContentUnavailableView`, whose description text the audit reported as
 /// not scaling and clipping at large sizes.

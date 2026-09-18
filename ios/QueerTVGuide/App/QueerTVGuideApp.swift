@@ -29,5 +29,9 @@ struct RootTabView: View {
             AboutView()
                 .tabItem { Label("About", systemImage: "info.circle") }
         }
+        // Every scroll view and labelled value in every tab
+        // (AccessibleStyle.swift).
+        .legibleScrollEdges()
+        .labeledContentStyle(SubduedValueLabeledContentStyle())
     }
 }

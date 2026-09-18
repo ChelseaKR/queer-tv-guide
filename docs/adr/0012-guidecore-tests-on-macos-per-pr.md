@@ -41,6 +41,16 @@ A nightly-only run would let a change to the app's logic merge untested.
   a way to skip the tests on a pull request that does touch the app.
 - Revisit if GuideCore stops needing Apple networking types, or if the Actions
   budget rather than correctness becomes the binding constraint.
+- Amended 2026-09-18 (#22, #28): the same job now also runs `make a11y`,
+  the accessibility audit UI tests, in the iOS simulator. The scope rule is
+  unchanged. The job moved from `macos-14` to `macos-26`: the audit's
+  results depend on the iOS version, the test was proven on Xcode 26.6 with
+  iOS 26.5, and the macOS 14 image is deprecated. A pull request that
+  touches the app now uses more macOS minutes: the audit tests take about
+  3 minutes locally, plus the simulator build. Reverting means
+  dropping that one step and the `a11y` verify target, and moving the audit
+  to a nightly schedule. A regression would then merge and fail a day
+  later.
 - Numbered 0012 in the one sequence shared with `docs/DECISIONS.md`
   (`docs/adr/0000`): 0005 is `docs/adr/0005`, and 0006–0011 are the launch
   decisions proposed in #33.

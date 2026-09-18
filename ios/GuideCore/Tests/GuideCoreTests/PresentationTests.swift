@@ -39,11 +39,45 @@ final class PresentationTests: XCTestCase {
 
         XCTAssertEqual(diesText, "Yes. Odile Brandt dies (2017).")
         XCTAssertEqual(diesNoYearText, "Yes. Odile Brandt dies. The year is not recorded.")
-        XCTAssertEqual(notRecordedText, "No death is recorded for Mara Quill in this snapshot.")
+        XCTAssertEqual(notRecordedText, "Not recorded. This snapshot does not record a death for Mara Quill.")
 
         XCTAssertFalse(notRecordedText.lowercased().contains("survive"), "the contract has no survives state to assert")
-        XCTAssertFalse(notRecordedText.hasPrefix("No.") , "must not read as a flat 'No' answer to 'does she die'")
+        XCTAssertFalse(Self.opensWithNo(notRecordedText), "must not read as a flat 'No' answer to 'does she die'")
         XCTAssertNotEqual(Presentation.deathShort(recorded), Presentation.deathShort(notRecorded))
+    }
+
+    /// "No death is recorded …" opens with "No", and a VoiceOver user who
+    /// moves on after the first word hears "No" to "does she die?". Every
+    /// unknown answer, per character and per show, opens with "Not recorded".
+    func testEveryUnknownDeathAnswerOpensWithNotRecordedNeverNo() throws {
+        let s = try Repo.fixture()
+        let notRecorded = Death(died: nil, deathKnown: false, dates: [], years: [])
+        let noneDead = try XCTUnwrap(s.show(id: "lwtv:show:101"))
+        let noCast = try XCTUnwrap(s.show(id: "lwtv:show:104"))
+        let oneAlive = try XCTUnwrap(s.characters(inShow: noneDead.id).first)
+        let answers = [
+            Presentation.death(notRecorded, name: "Mara Quill"),
+            Presentation.showDeaths(cast: s.characters(inShow: noneDead.id), show: noneDead).headline,
+            Presentation.showDeaths(cast: [oneAlive], show: noneDead).headline,
+            Presentation.showDeaths(cast: [], show: noCast).headline,
+            Presentation.deathsSummary(cast: s.characters(inShow: noneDead.id)),
+            Presentation.deathsSummary(cast: []),
+        ]
+        XCTAssertEqual(answers.count, 6, "the denominator")
+        for answer in answers {
+            XCTAssertTrue(answer.hasPrefix("Not recorded"), answer)
+            XCTAssertFalse(Self.opensWithNo(answer), answer)
+        }
+        XCTAssertEqual(Presentation.deathShort(notRecorded), "Death not recorded")
+        // The detector itself: a bare "No" opener is caught, "Not" is not.
+        XCTAssertTrue(Self.opensWithNo("No death is recorded for Mara Quill."))
+        XCTAssertTrue(Self.opensWithNo("No. Mara Quill lives."))
+        XCTAssertFalse(Self.opensWithNo("Not recorded."))
+    }
+
+    /// True when `text` opens with the word "No" (not "Not", "None", …).
+    static func opensWithNo(_ text: String) -> Bool {
+        text.range(of: #"^\s*No\b"#, options: [.regularExpression, .caseInsensitive]) != nil
     }
 
     func testMultipleDeathDatesAreAllStated() {
@@ -56,9 +90,9 @@ final class PresentationTests: XCTestCase {
         XCTAssertEqual(Presentation.deathsSummary(cast: s.characters(inShow: "lwtv:show:102")),
                        "1 of 2 listed characters dies: Odile Brandt.")
         XCTAssertEqual(Presentation.deathsSummary(cast: s.characters(inShow: "lwtv:show:101")),
-                       "No recorded deaths among 2 listed characters.")
+                       "Not recorded for any of the 2 listed characters.")
         XCTAssertEqual(Presentation.deathsSummary(cast: []),
-                       "No queer characters are listed for this show in this snapshot.")
+                       "Not recorded. This snapshot does not list any queer characters for this show.")
     }
 
     // MARK: Schedule — "unknown" vs "confirmed nothing upcoming"
@@ -117,7 +151,7 @@ final class PresentationTests: XCTestCase {
         let s = try Repo.fixture()
         let show = try XCTUnwrap(s.show(id: "lwtv:show:101"))
         let deaths = Presentation.showDeaths(cast: s.characters(inShow: show.id), show: show)
-        XCTAssertEqual(deaths.headline, "No death is recorded for any of the 2 listed characters.")
+        XCTAssertEqual(deaths.headline, "Not recorded. This snapshot does not record a death for any of the 2 listed characters.")
         XCTAssertEqual(deaths.lines, [])
         let spoken = deaths.spoken.lowercased()
         for manufactured in ["survive", "nobody dies", "no one dies", "lives"] {
@@ -130,7 +164,7 @@ final class PresentationTests: XCTestCase {
         let show = try XCTUnwrap(s.show(id: "lwtv:show:104"))
         XCTAssertEqual(s.characters(inShow: show.id), [])
         let deaths = Presentation.showDeaths(cast: [], show: show)
-        XCTAssertEqual(deaths.headline, "No queer characters are listed for this show in this snapshot, so there is no answer here.")
+        XCTAssertEqual(deaths.headline, "Not recorded. This snapshot does not list any queer characters for this show.")
     }
 
     /// LezWatch records a death on the character. When the character is in
@@ -202,7 +236,7 @@ final class PresentationTests: XCTestCase {
         let show = try XCTUnwrap(s.show(id: "lwtv:show:101"))
         XCTAssertTrue(show.tropes.contains { $0.slug == "dead-queers" }, "the edit landed")
         let deaths = Presentation.showDeaths(cast: s.characters(inShow: show.id), show: show)
-        XCTAssertEqual(deaths.headline, "No death is recorded for any of the 2 listed characters.")
+        XCTAssertEqual(deaths.headline, "Not recorded. This snapshot does not record a death for any of the 2 listed characters.")
         XCTAssertEqual(deaths.notes, ["LezWatch.TV tags this show “Bury Your Queers”."])
         XCTAssertFalse(Presentation.withoutSpoilers(show.tropes, Presentation.deathSpoilerTropeSlugs).contains { $0.slug == "dead-queers" })
     }

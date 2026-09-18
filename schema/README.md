@@ -42,7 +42,7 @@ is the app's only network call.
 | Situation | What the snapshot says | What the app must render |
 |---|---|---|
 | LezWatch records a death | `death.died: true`, `death_known: true`, `dates` non-empty | "Dies (2026)" |
-| LezWatch records no death | `death.died: null`, `death_known: false`, `dates: []` | "No recorded death" — never "survives" or "no" |
+| LezWatch records no death | `death.died: null`, `death_known: false`, `dates: []` | "Not recorded" — never "survives" or "no" |
 | TVmaze matched, nothing scheduled | `schedule.schedule_known: true`, `next_episode: null` | "No upcoming episode" |
 | TVmaze not matched | `schedule.schedule_known: false`, everything else in `schedule` null | "Schedule unknown" |
 | LezWatch has no watch link | `watch_links: []` | Nothing; never a guessed service |

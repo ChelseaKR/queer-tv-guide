@@ -19,6 +19,7 @@
 		68425D95518F53E70F4F5419 /* GuideCore in Frameworks */ = {isa = PBXBuildFile; productRef = 13543BD064FB8FE28EAA03E0 /* GuideCore */; };
 		7DFA6218C2D7D56694BCB630 /* UITestSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = C18432D587CE03BBE8A49E63 /* UITestSupport.swift */; };
 		8AAB1C2FDBFAB8562373B763 /* AboutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 657AE9A3B9D336B3F6289154 /* AboutView.swift */; };
+		A3D1463E24AE8A6F0737D48C /* AccessibilityAuditTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7D13B01EA5DD72032DF50DE /* AccessibilityAuditTests.swift */; };
 		A8E093E39E4BB59B74F7D3E1 /* AppStoreScreenshotTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE5E38E6D1C9D03CA948241D /* AppStoreScreenshotTests.swift */; };
 		AAD2204F4BD58CC5046A2883 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = D6D678C521FBF48D7FBB5670 /* PrivacyInfo.xcprivacy */; };
 		B1D3FCC5C39C4930C7672351 /* QueerTVGuideApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D90E104D1F01789CA1519A7 /* QueerTVGuideApp.swift */; };
@@ -68,6 +69,7 @@
 		9E750D2B2E53B7541A9D0A8C /* AccessibleStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccessibleStyle.swift; sourceTree = "<group>"; };
 		AE2B560D8C4AC1CFC059C157 /* QueerTVGuideUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QueerTVGuideUITests.swift; sourceTree = "<group>"; };
 		C18432D587CE03BBE8A49E63 /* UITestSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UITestSupport.swift; sourceTree = "<group>"; };
+		C7D13B01EA5DD72032DF50DE /* AccessibilityAuditTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccessibilityAuditTests.swift; sourceTree = "<group>"; };
 		CE5E38E6D1C9D03CA948241D /* AppStoreScreenshotTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppStoreScreenshotTests.swift; sourceTree = "<group>"; };
 		CECFC0920C1F6BBA446DE631 /* App-Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "App-Release.xcconfig"; sourceTree = "<group>"; };
 		D03E4A71ECC4D5A0E8DB8BD0 /* snapshot.v1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = snapshot.v1.json; sourceTree = "<group>"; };
@@ -128,6 +130,7 @@
 		50F2AD463AA9942A5FC99CB0 /* QueerTVGuideUITests */ = {
 			isa = PBXGroup;
 			children = (
+				C7D13B01EA5DD72032DF50DE /* AccessibilityAuditTests.swift */,
 				CE5E38E6D1C9D03CA948241D /* AppStoreScreenshotTests.swift */,
 				13A0BF16C0CAC9F83B9D5D31 /* AttributionUITests.swift */,
 				AE2B560D8C4AC1CFC059C157 /* QueerTVGuideUITests.swift */,
@@ -344,6 +347,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A3D1463E24AE8A6F0737D48C /* AccessibilityAuditTests.swift in Sources */,
 				A8E093E39E4BB59B74F7D3E1 /* AppStoreScreenshotTests.swift in Sources */,
 				4C00C3BF875CE9D5217C3B19 /* AttributionUITests.swift in Sources */,
 				29306A55EB6EA2EE7083201D /* QueerTVGuideUITests.swift in Sources */,
@@ -382,7 +386,7 @@
 		};
 		787377F4AD314594AA4627E9 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			productRef = "TEMP_8CE25CFB-0645-4BD2-8831-DABD6BDB36B3" /* GuideCore */;
+			productRef = "TEMP_871224D7-8BA3-4C5A-85D6-E55E09E845F2" /* GuideCore */;
 		};
 		FDEF029D89D55214348A5D55 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -658,7 +662,7 @@
 			isa = XCSwiftPackageProductDependency;
 			productName = GuideCore;
 		};
-		"TEMP_8CE25CFB-0645-4BD2-8831-DABD6BDB36B3" /* GuideCore */ = {
+		"TEMP_871224D7-8BA3-4C5A-85D6-E55E09E845F2" /* GuideCore */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = GuideCore;
 		};

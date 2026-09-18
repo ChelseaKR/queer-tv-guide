@@ -60,3 +60,8 @@ consumer of the published snapshot, would notice.
 - The saved copy of LezWatch.TV's robots.txt, kept as licence evidence,
   matches the bytes as fetched again, and CI checks every saved terms page
   against its recorded checksum (#9).
+- An unrecorded death now reads "Not recorded. …" on the character and show
+  screens. It used to open with "No death is recorded", and a VoiceOver user
+  who moved on after the first word heard "No". Section headings on About,
+  and text scrolling toward the tab bar, now meet 4.5:1 contrast, and the
+  About rows scale with Dynamic Type (#22, #28).

@@ -33,13 +33,18 @@ struct TVmazeCreditView: View {
     let credit: Attribution.TVmazeCredit
 
     @Environment(\.openURL) private var openURL
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
-        ViewThatFits(in: .horizontal) {
-            HStack(spacing: 12) { links }
-            VStack(alignment: .leading, spacing: 0) { links }
-        }
-        .font(.footnote)
+        // Side by side, stacked at accessibility text sizes. One layout
+        // whose axis changes, not `ViewThatFits`: that builds both
+        // arrangements, and Xcode's accessibility audit reported the link in
+        // it as "Dynamic Type font sizes are partially unsupported".
+        let layout = dynamicTypeSize.isAccessibilitySize
+            ? AnyLayout(VStackLayout(alignment: .leading, spacing: 0))
+            : AnyLayout(HStackLayout(spacing: 12))
+        layout { links }
+            .font(.footnote)
     }
 
     @ViewBuilder

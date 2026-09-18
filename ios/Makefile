@@ -51,6 +51,23 @@ test-ui: $(BUNDLED_SNAPSHOT)
 		-destination '$(SIMULATOR)' -configuration Debug \
 		-only-testing:QueerTVGuideUITests test
 
+# The accessibility gate (#22): Xcode's accessibility audit over every screen
+# and the spoiler-under-VoiceOver checks (AccessibilityAuditTests). The root
+# `make a11y` runs this, in `make verify` and in CI. The audit's verdicts
+# depend on the iOS version (iOS 26's floating tab bar changes what contrast
+# is measured against), so the gate names the runtime it was proven on; move
+# it deliberately, with a green run. One simulator, one test at a time: a
+# starved machine makes audits time out. Point it at another simulator with
+# `make -C ios test-a11y A11Y_SIMULATOR='platform=iOS Simulator,id=<udid>'`.
+A11Y_SIMULATOR := $(SIMULATOR),OS=26.5
+
+.PHONY: test-a11y
+test-a11y: $(BUNDLED_SNAPSHOT)
+	xcodebuild -project $(PROJECT) -scheme $(SCHEME) \
+		-destination '$(A11Y_SIMULATOR)' -configuration Debug \
+		-parallel-testing-enabled NO \
+		-only-testing:QueerTVGuideUITests/AccessibilityAuditTests test
+
 clean:
 	xcodebuild -project $(PROJECT) -scheme $(SCHEME) clean
 	cd GuideCore && rm -rf .build

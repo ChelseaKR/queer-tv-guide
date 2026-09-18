@@ -26,8 +26,8 @@ release declaration (REL-01). Values live here; the rigour lives in
 | No credentials or personal data in logs [OBS-11] | 0 | semgrep rule `.semgrep/no-sensitive-values-in-logs.yml` | AUTO | Chelsea |
 | Snapshot schema-valid [DG-03] | every build | `qtv build` refuses to write an invalid snapshot | AUTO | Chelsea |
 | App privacy premise | one host, no third-party code, privacy manifest empty | `SourceTreeGuardTests` | AUTO | Chelsea |
-| Native accessibility audit [A11Y] | 0 issues on every screen, largest text size included | `performAccessibilityAudit` UI tests (on branch `ios/a11y-audit-suite`; not on `main` or in CI, #22) | AUTO once in CI | Chelsea |
-| VoiceOver walkthrough [A11Y-11, A11Y-18] | every primary task, per release | dated `docs/a11y/` record | REVIEW (#22) | Chelsea |
+| Native accessibility audit [A11Y] | 0 issues on every screen, largest text size included; a closed "does she die" answer is not in the accessibility tree | `AccessibilityAuditTests` (`performAccessibilityAudit`), `make a11y` in `ci.yml`'s `guidecore` job (#22) | AUTO | Chelsea |
+| VoiceOver walkthrough [A11Y-11, A11Y-18] | every primary task, per release | dated `docs/a11y/` record, from [the checklist](a11y/voiceover-walkthrough-checklist.md); not done yet | REVIEW (#22) | Chelsea |
 | Threat model [QM-14, RTF-06] | per new external surface | `docs/RESPONSIBLE-TECH-AUDITS.md` §F | REVIEW (#24) | Chelsea |
 | DORA delivery signal [QM-11] | reviewed quarterly | portfolio `delivery_metrics.py` | REVIEW | Chelsea |
 

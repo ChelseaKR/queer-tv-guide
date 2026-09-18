@@ -38,12 +38,17 @@ public enum Presentation {
     // the contract. `deathKnown == false` means exactly "no death is
     // recorded in this snapshot" — it must never read as a confirmed "no"
     // or "she lives".
+    //
+    // Every unknown answer opens with "Not recorded." A sentence that opens
+    // with "No …" ("No death is recorded …") is heard as "No" by a VoiceOver
+    // user who moves on after the first word, and "No" answers "does she
+    // die?" with a fact the source never asserts.
 
     /// The spoiler text itself, shown only after the user chooses to reveal
     /// it. `name` lets it read as a sentence about a person.
     public static func death(_ death: Death, name: String) -> String {
         guard death.deathKnown, death.died == true else {
-            return "No death is recorded for \(name) in this snapshot."
+            return "Not recorded. This snapshot does not record a death for \(name)."
         }
         if death.years.isEmpty {
             return "Yes. \(name) dies. The year is not recorded."
@@ -55,15 +60,15 @@ public enum Presentation {
     }
 
     public static func deathShort(_ death: Death) -> String {
-        death.deathKnown && death.died == true ? "Dies" : "No recorded death"
+        death.deathKnown && death.died == true ? "Dies" : "Death not recorded"
     }
 
     /// Show-level summary after the reveal.
     public static func deathsSummary(cast: [Character]) -> String {
-        guard !cast.isEmpty else { return "No queer characters are listed for this show in this snapshot." }
+        guard !cast.isEmpty else { return noListedCast }
         let dead = cast.filter { $0.death.deathKnown && $0.death.died == true }
         if dead.isEmpty {
-            return "No recorded deaths among \(cast.count) listed \(cast.count == 1 ? "character" : "characters")."
+            return "Not recorded for any of the \(cast.count) listed \(cast.count == 1 ? "character" : "characters")."
         }
         return "\(dead.count) of \(cast.count) listed \(cast.count == 1 ? "character" : "characters") \(dead.count == 1 ? "dies" : "die"): \(dead.map(\.name).joined(separator: ", "))."
     }
@@ -108,16 +113,15 @@ public enum Presentation {
         terms.filter { !spoilers.contains($0.slug) }
     }
 
+    /// The show-level answer when the snapshot lists nobody to answer about.
+    static let noListedCast = "Not recorded. This snapshot does not list any queer characters for this show."
+
     public static func showDeaths(cast: [Character], show: Show) -> ShowDeaths {
         var notes: [String] = []
         let spoilerTags = show.tropes.filter { deathSpoilerTropeSlugs.contains($0.slug) }
         guard !cast.isEmpty else {
             notes += spoilerTags.map { "LezWatch.TV tags this show “\($0.name)”." }
-            return ShowDeaths(
-                headline: "No queer characters are listed for this show in this snapshot, so there is no answer here.",
-                lines: [],
-                notes: notes
-            )
+            return ShowDeaths(headline: noListedCast, lines: [], notes: notes)
         }
         let dead = cast.filter { $0.death.deathKnown && $0.death.died == true }
         let listed = "\(cast.count) listed \(cast.count == 1 ? "character" : "characters")"
@@ -128,8 +132,8 @@ public enum Presentation {
         guard !dead.isEmpty else {
             return ShowDeaths(
                 headline: cast.count == 1
-                    ? "No death is recorded for the one listed character."
-                    : "No death is recorded for any of the \(listed).",
+                    ? "Not recorded. This snapshot does not record a death for the one listed character."
+                    : "Not recorded. This snapshot does not record a death for any of the \(listed).",
                 lines: [],
                 notes: notes
             )

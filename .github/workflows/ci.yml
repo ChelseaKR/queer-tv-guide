@@ -6,17 +6,23 @@ name: ci
 #                own gate (lint and the offline pytest suite; no network --
 #                the fetch/build commands that talk to LezWatch/TVmaze are
 #                not run here, see snapshot.yml for the nightly mirror).
-#   guidecore -- `swift test` on the ios/GuideCore Swift package (no
-#                external SwiftPM dependencies; its only network use is
-#                `make -C ios bundle-snapshot`, one GET of the app's own
-#                published snapshot). Deliberately NOT `xcodebuild`: the full
-#                QueerTVGuide app target (and its UI tests) needs simulator
-#                provisioning and a signing/scheme setup this repo hasn't
-#                proven out in CI yet, and a flaky xcodebuild lane is worse
-#                than none. GuideCore holds all of the app's logic; the UI
-#                layer is thin SwiftUI views over it. Revisit xcodebuild
-#                once the scheme is confirmed to build headlessly on a
-#                runner.
+#   guidecore -- `make guidecore`: `swift test` on the ios/GuideCore Swift
+#                package (no external SwiftPM dependencies; its only network
+#                use is `make -C ios bundle-snapshot`, one GET of the app's
+#                own published snapshot). Then `make a11y`: the app's
+#                accessibility gate (#22), AccessibilityAuditTests in the iOS
+#                simulator. It runs Xcode's accessibility audit over every
+#                screen and checks that a closed "does she die" answer is not
+#                in the accessibility tree, where VoiceOver could read it. A
+#                new audit finding fails the job. Simulator builds need no
+#                signing. Only that test class runs here; the rest of the UI
+#                suite is local (`make -C ios test-ui`).
+#
+#                The job is pinned to the Xcode and iOS versions the audit
+#                was proven on (macos-26, Xcode 26.6, iOS 26.5; ios/Makefile
+#                says why). The job name stays `guidecore` because the
+#                protect-main ruleset requires that check by name
+#                (.github/rulesets/main.json).
 #
 # Both jobs run root Makefile targets, the same commands `make verify` runs
 # locally (CI-CD §9, CICD-27; tests/test_ci_parity.py). There used to be a
@@ -126,10 +132,16 @@ jobs:
     # Skipped only on a clean "false" from `changes`; a failed or cancelled
     # scope step runs the tests rather than skipping them.
     if: ${{ !cancelled() && (needs.changes.result != 'success' || needs.changes.outputs.guidecore != 'false') }}
-    runs-on: macos-14
-    timeout-minutes: 15
+    runs-on: macos-26
+    # Measured locally: the GuideCore tests take under a minute and the 11
+    # audit tests about 3, plus the simulator build. The margin covers a
+    # cold build and simulator boot on the runner; a timeout reads as
+    # "cancelled", not "failed", so it must sit well above the real run time.
+    timeout-minutes: 45
     permissions:
       contents: read
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_26.6.app/Contents/Developer
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -141,3 +153,8 @@ jobs:
       # data. One GET to the app's own Pages URL; no source is contacted.
       - name: swift test (GuideCore)
         run: make guidecore
+
+      # Xcode's accessibility audit and the spoiler-under-VoiceOver checks,
+      # one test at a time on one simulator (ios/Makefile, test-a11y).
+      - name: accessibility audit (simulator)
+        run: make a11y

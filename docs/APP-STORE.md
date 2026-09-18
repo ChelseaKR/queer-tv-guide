@@ -13,16 +13,17 @@ are in **`docs/app-store-listing.json`**, the one copy to paste from.
 with the build: name = display name, iPhone-only = device family, URLs on
 the snapshot host with pages that exist.
 
-Character counts, recounted 2026-09-17:
+Character counts, recounted 2026-09-18 after the search pass (§App Store
+search):
 
 | Field | Value | Count / limit | Source |
 |---|---|---|---|
 | Name | **Queer Frame** | 11 / 30 | DECISIONS 0006 |
-| Subtitle | "Does she die? Is it worth it?" | 29 / 30 | research §6 rank 1 |
-| Promotional text | see the JSON | 141 / 170 | — |
-| Keywords | see §Keywords below | 97 / 100 | — |
-| Description | see the JSON | 1,139 / 4,000 | — |
-| Category | Entertainment (primary); no secondary | — | — |
+| Subtitle | "Does she die? Lesbian TV guide" | 30 / 30 | §App Store search (was "Does she die? Is it worth it?", research §6 rank 1) |
+| Promotional text | see the JSON | 168 / 170 | §App Store search |
+| Keywords | see §App Store search | 98 / 100 | §App Store search |
+| Description | see the JSON | 1,329 / 4,000 | first paragraph rewritten, §App Store search |
+| Category | Entertainment (primary), Reference (secondary) | — | §App Store search, Categories |
 | Price | **$4.99**, one-time. No IAP, no subscription. Apple Small Business Program (15%). | — | DECISIONS 0003, 0011 |
 | Devices | **iPhone only** (`TARGETED_DEVICE_FAMILY = 1`). Screenshots: iPhone only (6.9" set). iPads can still run it in iPhone compatibility mode, and App Review may test it there (2.4.1). | — | DECISIONS 0009 |
 | Age rating | **13+ expected**, computed by App Store Connect from the questionnaire below. Apple's current tiers are 4+, 9+, 13+, 16+, 18+; "12+" no longer exists (checked 2026-09-17). | — | Apple, research §7 |
@@ -48,29 +49,89 @@ attribution (DECISIONS 0013; the permission request of 0008 was not sent).
 ### Description
 
 In `docs/app-store-listing.json`. It names the sources, states the spoiler
-reveal, and says "no death is recorded" never becomes "survives".
+reveal, and says "no death is recorded" never becomes "survives". Its first
+paragraph, the part shown before "more", was rewritten on 2026-09-18 to
+lead with the two questions the app answers (§App Store search).
 
 Copy rule: no "only", "first" or other uniqueness claims about the market
 (the space has TV Time — shut down 2026-07-15 — Does the Dog Die, Serializd,
 TVmaze and Sapphic Signal). Claims about the app's own behaviour ("no
 account") are fine because they are checkable.
 
-### Keywords (draft, adult branches excluded per research §7 / 1.1.4)
+### App Store search (ASO), 2026-09-18
 
-App Store Connect allows **100 characters**, commas included; spaces after
-commas waste characters, and words already in the name or subtitle add
-nothing. The earlier draft was 140 characters. This one is 97:
+The search fields, rewritten against live US App Store data on
+2026-09-18. `docs/app-store-listing.json` holds the strings, and
+`AppStoreReadinessTests` checks them: Apple's limits, no space after a
+keyword comma, no keyword repeating a name or subtitle word, and no
+"only", "first" or "best". Counts are Python `len()` on the exact strings.
 
-`lesbian,sapphic,lgbtq,bury your gays,where to watch,character,tracker,episode,trans,nonbinary,wlw`
+| Field | Value | Count / limit |
+|---|---|---|
+| Name (unchanged) | `Queer Frame` | 11 / 30 |
+| Subtitle | `Does she die? Lesbian TV guide` | 30 / 30 |
+| Keywords | `sapphic,lgbtq,wlw,bury your gays,spoiler,trigger,warning,trope,show,trans,where,watch,episode,next` | 98 / 100 |
+| Promotional text | `Before you start a show: is it worth it, and do any queer characters die? That answer stays hidden until you tap. 2,000+ shows, where to watch, no account, no tracking.` | 168 / 170 |
 
-Not included: "LezWatch" and "TVmaze" (credit them in the description, not
-as search terms), competitor app names (Apple forbids them), and anything
-from the adult branches below.
+**Description, first paragraph** (the rest is unchanged, except that one
+list item no longer repeats it):
 
-Deliberately excluded: any keyword from TMDB's `lesbian-fetish` /
-`queer-porn` / `lesbian-rape` branches (research §3.1, §7) — this app doesn't
-use TMDB at all (it's LezWatch + TVmaze only, research §6 rank 1), and none
-of those terms describe this product regardless.
+> Before you start a show, find out whether it's worth it and whether any
+> of its queer characters die. That answer stays hidden until you tap, so
+> you find out when you choose to. Queer Frame covers more than 2,000 shows
+> with queer women, non-binary and trans characters. No account, no
+> tracking.
+
+"More than 2,000" was checked against the live snapshot: 2,272 shows and
+7,375 characters in the file generated 2026-09-18T09:44:42Z.
+
+**Spoiler-safe.** Every field asks the question, and none answers it. No
+field names a show or a character. The copy says the answer is hidden
+until you tap, which is what `SpoilerReveal` does. "Bury your gays" is
+only a keyword, and people browsing the App Store never see keywords.
+
+**Honest.** "Does she die" is the question the app answers, and "guide"
+is the word the app already uses for itself. Each keyword matches
+something on screen:
+
+- "trigger" and "warning": the show screen's "Trigger warnings" heading.
+- "spoiler": the reveal.
+- "trope": the tropes list.
+- "where" and "watch": the where-to-watch links.
+- "next" and "episode": the next-episode line.
+
+"Tracker" is gone from the old list. The app doesn't record what you've
+watched, and someone searching for a tracker expects that.
+
+**Why the subtitle changed.** The old subtitle, "Does she die? Is it worth
+it?", put "does", "she", "die", "is", "it" and "worth" into the index.
+Only "does she die" was a phrase anyone might search. "TV" was in none of
+the indexed fields, so the app could not match "queer TV" or "lesbian TV"
+at all. "Worth it" stays in the promotional text and the description.
+
+#### Categories
+
+**Primary: Entertainment** (unchanged). The build declares it
+(`LSApplicationCategoryType = public.app-category.entertainment`, checked
+by `AppStoreReadinessTests`). It is also where every comparable app is
+listed: Sapphic Signal, Does the Dog Die?, Next Episode, Sofa Time, Queue,
+JustWatch, Reelgood, Tello Films and Revry (primary genre from the iTunes
+Lookup API, 2026-09-18). Serializd and Letterboxd chose Social
+Networking, which fits their reviews and follows. This app has neither.
+
+**Secondary: Reference** (new, since there was none). The three closest
+comparables all pair Entertainment with Reference: Sapphic Signal ("Track
+sapphic TV & film"), Does the Dog Die? ("Emotional Trigger Database") and
+Next Episode. The app is a lookup over a database, which is what Reference
+means. Lifestyle is the other common pairing (JustWatch, Reelgood,
+Revry). In this niche, though, Lifestyle is where the dating apps are
+(HER, Spicy, DOWN, Likk), and they already crowd every "lesbian" and
+"queer" search. Apple indexes both categories for search, so neither
+category's name is repeated in the keywords.
+
+#### Why these terms
+
+[moved to private strategy notes]
 
 ### Age rating questionnaire (draft answers)
 
@@ -394,13 +455,15 @@ Apple account.
    Storefronts are your call (research §7 on where LGBTQ content is
    restricted).
 5. **App Information:**
-   - Category: Entertainment
+   - Category: primary Entertainment, secondary Reference (§App Store
+     search, Categories)
    - Age rating questionnaire: answer as in §1, which should compute **13+**
    - Privacy Policy URL: `https://chelseakr.github.io/queer-tv-guide/privacy.html`
 6. **App Privacy:** "Data Not Collected" (§2).
 7. **Version page:**
    - Subtitle, promotional text, description and keywords from
-     `docs/app-store-listing.json`
+     `docs/app-store-listing.json` (the secondary category is set in step
+     5, under App Information)
    - Support URL `https://chelseakr.github.io/queer-tv-guide/support.html`,
      **after its contact method is added** (blocker 1 above)
    - The five screenshots in `docs/app-store/screenshots/` in the 6.9"

@@ -213,23 +213,87 @@ final class AccessibilityAuditTests: XCTestCase {
     /// Search → filter to shows with a where-to-watch link → first show.
     @MainActor @discardableResult
     private func openFirstShow(_ app: XCUIApplication) -> Bool {
-        let filter = app.buttons["Filter"]
-        guard filter.waitForExistence(timeout: 30) else { XCTFail("no Filter button"); return false }
-        filter.tap()
-        let toggle = app.buttons["Has a where-to-watch link"]
-        guard toggle.waitForExistence(timeout: 10) else { XCTFail("no where-to-watch filter"); return false }
-        toggle.tap()
-        let firstRow = app.cells.firstMatch
+        app.applyWhereToWatchFilter()
+        let firstRow = app.firstShowRow
         guard firstRow.waitForExistence(timeout: 30) else { XCTFail("filter produced no rows"); return false }
         firstRow.tap()
         let heading = app.staticTexts["Do any queer characters die?"]
         if !heading.waitForExistence(timeout: 15), firstRow.exists, firstRow.isHittable {
-            // Measured: on a loaded machine the filter menu can still be
-            // closing when the row is tapped, and that tap only closes it.
-            // One more tap on the same row; the assertion below is unchanged.
+            // Measured: on a loaded machine the filter sheet can still be
+            // closing when the row is tapped, and that tap is lost. One more
+            // tap on the same row; the assertion below is unchanged.
             firstRow.tap()
         }
         return heading.waitForExistence(timeout: 30)
+    }
+
+    /// The filter sheet, its trope picker, and the active-filters row and
+    /// empty state it leads to.
+    @MainActor
+    func testFilterSheetAndItsResultsPassTheAudit() throws {
+        let app = launch()
+        XCTAssertTrue(app.cells.firstMatch.waitForExistence(timeout: 30), "the catalogue did not load")
+        let filter = app.buttons["Filter"]
+        XCTAssertTrue(filter.waitForExistence(timeout: 30))
+        filter.tap()
+        XCTAssertTrue(app.buttons["Worth it: Yes"].waitForExistence(timeout: 10))
+        try audit(app)
+
+        // Tropes: a searchable list of choices, none of them death-revealing.
+        let tropes = app.buttons.matching(NSPredicate(format: "label BEGINSWITH 'Tropes'")).firstMatch
+        for _ in 0..<4 where !(tropes.exists && tropes.isHittable) { app.swipeUp() }
+        tropes.tap()
+        XCTAssertTrue(app.navigationBars["Tropes"].waitForExistence(timeout: 10))
+        XCTAssertFalse(app.buttons.matching(NSPredicate(format: "label BEGINSWITH 'Bury Your Queers'")).firstMatch.exists, "a death-revealing trope is offered")
+        try audit(app)
+        let firstTrope = app.buttons.matching(identifier: "filter-term").firstMatch
+        XCTAssertTrue(firstTrope.waitForExistence(timeout: 10))
+        firstTrope.tap()
+        XCTAssertTrue(firstTrope.isSelected, "picking a trope does not mark it selected")
+        // Back to the filter sheet (the Tropes bar's own back button, not a
+        // button on the Search bar under the sheet).
+        app.navigationBars["Tropes"].buttons.element(boundBy: 0).tap()
+
+        app.buttons["filters-show-results"].tap()
+        XCTAssertTrue(app.buttons.matching(NSPredicate(format: "label BEGINSWITH '1 filter on'")).firstMatch.waitForExistence(timeout: 30), "no active-filters row")
+        XCTAssertTrue(app.firstShowRow.waitForExistence(timeout: 30))
+        try audit(app)
+    }
+
+    /// A search that matches nothing with a filter on: the empty state says
+    /// so and offers to search without filters.
+    @MainActor
+    func testNoMatchesWithFiltersPassesTheAudit() throws {
+        let app = launch()
+        app.applyWhereToWatchFilter()
+        let search = app.searchFields.firstMatch
+        XCTAssertTrue(search.waitForExistence(timeout: 30))
+        search.tap()
+        search.typeText("zzzzqqq\n")
+        XCTAssertTrue(app.staticTexts["No matches with these filters"].waitForExistence(timeout: 30))
+        let without = app.buttons["Search without filters"]
+        XCTAssertTrue(without.exists)
+        try audit(app)
+        without.tap()
+        XCTAssertTrue(app.staticTexts["No matches"].waitForExistence(timeout: 30), "clearing the filters did not leave the plain empty state")
+    }
+
+    /// The filter sheet at the largest text size: nothing clipped, every
+    /// font scales.
+    @MainActor
+    func testLargestTextSizeFilterSheetPassesDynamicTypeAndClippingAudits() throws {
+        let app = launch(textSize: "UICTContentSizeCategoryAccessibilityXXXL")
+        let filter = app.buttons["Filter"]
+        XCTAssertTrue(filter.waitForExistence(timeout: 30))
+        filter.tap()
+        XCTAssertTrue(app.buttons["Worth it: Yes"].waitForExistence(timeout: 10))
+        try audit(app, [.dynamicType, .textClipped])
+        // The bottom of the form, where the results button sits at these
+        // sizes.
+        let showResults = app.buttons["filters-show-results"]
+        for _ in 0..<12 where !(showResults.exists && showResults.isHittable) { app.swipeUp() }
+        XCTAssertTrue(showResults.isHittable, "the results button is out of reach")
+        try audit(app, [.dynamicType, .textClipped])
     }
 
     @MainActor

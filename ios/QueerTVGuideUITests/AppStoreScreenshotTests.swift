@@ -41,11 +41,6 @@ final class AppStoreScreenshotTests: XCTestCase {
     }
 
     @MainActor
-    private func filterButton(_ app: XCUIApplication) -> XCUIElement {
-        app.buttons.matching(NSPredicate(format: "label BEGINSWITH 'Filter'")).firstMatch
-    }
-
-    @MainActor
     private func backToSearch(_ app: XCUIApplication) {
         app.navigationBars.buttons.element(boundBy: 0).tap()
         XCTAssertTrue(app.searchFields.firstMatch.waitForExistence(timeout: 30))
@@ -56,13 +51,8 @@ final class AppStoreScreenshotTests: XCTestCase {
         let app = XCUIApplication.launchedGuide()
 
         // 1. Browse: shows with a where-to-watch link.
-        filterButton(app).tap()
-        let filter = app.buttons["Has a where-to-watch link"]
-        XCTAssertTrue(filter.waitForExistence(timeout: 10))
-        filter.tap()
-        XCTAssertTrue(app.cells.firstMatch.waitForExistence(timeout: 30))
+        app.applyWhereToWatchFilter()
         keep("01-browse", app)
-        filterButton(app).tap()
         let clearFilters = app.buttons["Clear filters"]
         XCTAssertTrue(clearFilters.waitForExistence(timeout: 10))
         clearFilters.tap()

@@ -14,26 +14,64 @@ from typing import Any
 
 from . import fields
 
-_TAG_RE = re.compile(r"<[^>]+>")
-_LI_RE = re.compile(r"(?is)<li[^>]*>")
-_BLOCK_END_RE = re.compile(r"(?is)</(li|p|div|ul|ol)>")
-_WS_RE = re.compile(r"[ \t]+")
+# A tag starts with a letter (or "/" then a letter), so prose like "I <3 it"
+# or "a < b" is never mistaken for markup and eaten.
+_TAG_RE = re.compile(r"</?[A-Za-z][^<>]*>")
+_LI_RE = re.compile(r"(?i)<li\b[^<>]*>")
+_BR_RE = re.compile(r"(?i)<br\b[^<>]*>")
+# Block boundaries become paragraph breaks, so "<p>a</p><p>b</p>" reads as two
+# paragraphs, not "ab".
+_BLOCK_RE = re.compile(r"(?i)</?(p|div|ul|ol|blockquote|h[1-6])\b[^<>]*>")
+_LI_END_RE = re.compile(r"(?i)</li\s*>")
+_WS_RE = re.compile(r"[ \t ]+")
+_EDGE_WS_RE = re.compile(r"[ \t]*\n[ \t]*")
+# Consecutive list items sit on consecutive lines; the source's own line
+# breaks between </li> and <li> would otherwise open a blank line per item.
+_LIST_GAP_RE = re.compile(r"(\n- [^\n]*)\n{2,}(?=- )")
 _BLANKLINES_RE = re.compile(r"\n{3,}")
 
 
 def html_to_text(raw: str | None) -> str | None:
-    """Minimal HTML->text for LezWatch's own short, simply-marked-up fields
-    (lists of <li>, <strong>, <p>). Not a general HTML sanitizer."""
+    """Minimal HTML->text for LezWatch's own short, simply-marked-up prose
+    fields. Not a general HTML sanitizer.
+
+    Measured on the 2026-09-17 mirror: `lezshows_plots` carries <p>, <em>,
+    <strong>, <ul>/<li>, <a>, <blockquote>, <img> and <br>; `excerpt` and
+    `lezshows_worthit_details` carry <em>, <a> and entities such as `&amp;`.
+    Every tag is dropped (link text and emphasis text are kept; an <img> has
+    no text and vanishes, so no image URL reaches the snapshot), entities are
+    decoded, CRLF becomes LF, and list items become "- " lines."""
     if not raw:
         return None
-    text = _LI_RE.sub("\n- ", raw)
-    text = _BLOCK_END_RE.sub("\n", text)
+    text = raw.replace("\r\n", "\n").replace("\r", "\n")
+    text = _LI_RE.sub("\n- ", text)
+    text = _LI_END_RE.sub("\n", text)
+    text = _BR_RE.sub("\n", text)
+    text = _BLOCK_RE.sub("\n\n", text)
     text = _TAG_RE.sub("", text)
     text = html.unescape(text)
     text = _WS_RE.sub(" ", text)
+    text = _EDGE_WS_RE.sub("\n", text)
     text = _BLANKLINES_RE.sub("\n\n", text)
+    text = "\n" + text  # so a leading list item matches _LIST_GAP_RE too
+    while True:
+        collapsed = _LIST_GAP_RE.sub(r"\1\n", text)
+        if collapsed == text:
+            break
+        text = collapsed
     text = text.strip()
     return text or None
+
+
+def _seasons(value: Any) -> int | None:
+    """LezWatch stores 0 when the season count was never filled in (measured
+    2026-09-17: 294 of 2,272 shows, including Xena: Warrior Princess and
+    Chicago Fire). No show in the database has zero seasons, so 0 and "not
+    recorded" are the same fact and both become null -- never "0 seasons"."""
+    n = fields.int_or_none(value)
+    if n is None or n <= 0:
+        return None
+    return n
 
 
 def _rating_int(value: Any) -> int | None:
@@ -123,13 +161,13 @@ def normalize_show(
         "title": html.unescape((raw.get("title") or {}).get("rendered", "")),
         "alternate_names": _alternate_names(fields.acf(raw, "lezshows_show_names")),
         "source_url": raw["link"],
-        "summary": fields.nonempty_str(fields.acf(raw, "excerpt")),
+        "summary": html_to_text(fields.acf(raw, "excerpt")),
         "years": {
             "start": fields.int_or_none(fields.acf(raw, "lezshows_airdates_start")),
             "end": fields.int_or_none(fields.acf(raw, "lezshows_airdates_finish")),
             "on_air": on_air,
         },
-        "seasons": fields.int_or_none(fields.acf(raw, "lezshows_seasons")),
+        "seasons": _seasons(fields.acf(raw, "lezshows_seasons")),
         "format": format_term,
         "networks": _terms_from_ids(raw.get("station"), taxonomies["stations"]),
         "countries": _terms_from_ids(raw.get("country"), taxonomies["countries"]),
@@ -140,7 +178,7 @@ def normalize_show(
         "stars": _terms_from_ids(raw.get("star"), taxonomies["stars"]),
         "ratings": {
             "worth_it": fields.nonempty_str(fields.acf(raw, "lezshows_worthit_rating")),
-            "worth_it_details": fields.nonempty_str(fields.acf(raw, "lezshows_worthit_details")),
+            "worth_it_details": html_to_text(fields.acf(raw, "lezshows_worthit_details")),
             "quality": _rating_int(fields.acf(raw, "lezshows_quality_rating")),
             "realness": _rating_int(fields.acf(raw, "lezshows_realness_rating")),
             "screentime": _rating_int(fields.acf(raw, "lezshows_screentime_rating")),
@@ -169,7 +207,7 @@ def normalize_show(
             f"lwtv:show:{sid}" for sid in (fields.acf(raw, "lezshows_similar_shows") or [])
         ],
         "notes": {
-            "plot": fields.nonempty_str(fields.acf(raw, "lezshows_plots")),
+            "plot": html_to_text(fields.acf(raw, "lezshows_plots")),
             "queer_episodes": html_to_text(fields.acf(raw, "lezshows_episodes")),
         },
         "schedule": None,  # filled in by normalize_schedule in build.py

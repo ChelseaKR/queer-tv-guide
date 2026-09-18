@@ -48,6 +48,7 @@ is the app's only network call.
 | LezWatch has no watch link | `watch_links: []` | Nothing; never a guessed service |
 | Rating not given | `ratings.quality: null` (LezWatch stores 0 for unrated; the pipeline maps 0 → null) | "Unrated" |
 | Gender/sexuality not recorded | `gender: null` | "Not recorded" |
+| Season count not filled in | `seasons: null` (LezWatch stores 0; the pipeline maps 0 → null) | "Seasons not recorded" — never "0 seasons" |
 | Finish year blank | `years.end: null`; read `years.on_air` (`yes`/`no`/`unknown`) | Don't infer "ongoing" from a blank |
 
 `died` is constrained by the schema to `true` or `null`; `false` is a schema

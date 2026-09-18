@@ -158,3 +158,70 @@ def test_html_to_text_handles_lists_and_empty():
     assert normalize.html_to_text("") is None
     text = normalize.html_to_text("<ul>\r\n\t<li><strong>S1E6</strong> Erin does a thing.</li>\r\n</ul>")
     assert "S1E6" in text and "<" not in text
+
+
+# Shapes copied from the real 2026-09-17 mirror (lezshows_plots, excerpt,
+# lezshows_worthit_details), where the app was rendering "<p>" literally.
+def test_html_to_text_paragraphs_become_paragraphs_not_tags():
+    raw = "<p>It was suggested in season one.</p><p>By season two we were sure.</p>"
+    assert normalize.html_to_text(raw) == "It was suggested in season one.\n\nBy season two we were sure."
+
+
+def test_html_to_text_decodes_entities_and_keeps_link_and_emphasis_text():
+    assert normalize.html_to_text("Cake &amp; Candles") == "Cake & Candles"
+    raw = 'He went on to make <a href="https://lezwatchtv.com/show/sense8/">Sense8</a>, <em>twice</em>.'
+    assert normalize.html_to_text(raw) == "He went on to make Sense8, twice."
+
+
+def test_html_to_text_drops_images_so_no_image_url_reaches_the_snapshot():
+    raw = '<p>Before <img class="x" src="https://lezwatchtv.com/wp-content/uploads/a.jpg" alt="" /> after</p>'
+    text = normalize.html_to_text(raw)
+    assert text == "Before after"
+    assert "wp-content" not in text
+
+
+def test_html_to_text_list_with_crlf_and_nbsp():
+    raw = "<ul>\r\n<li>Season 3 we meet Maggie.</li>\r\n<li>Season 8, Kerry meets\xa0Sandy.</li>\r\n</ul>"
+    assert normalize.html_to_text(raw) == "- Season 3 we meet Maggie.\n- Season 8, Kerry meets Sandy."
+
+
+def test_html_to_text_never_eats_prose_that_merely_contains_angle_brackets():
+    assert normalize.html_to_text("I <3 this show, and 2 < 3 > 1.") == "I <3 this show, and 2 < 3 > 1."
+
+
+def test_html_to_text_plain_text_passes_through_with_crlf_normalised():
+    raw = "The reveal is in the last episode.\r\n\r\nOrla is played as non-binary."
+    assert normalize.html_to_text(raw) == "The reveal is in the last episode.\n\nOrla is played as non-binary."
+
+
+def test_every_prose_field_is_plain_text():
+    """Negative control: the raw fixture fields carry markup; if any one of
+    the four prose fields stops going through html_to_text, this fails."""
+    raw = _load("lezwatch_show_derry_girls.json")
+    raw["acf"]["excerpt"] = "Cake &amp; <em>Candles</em>"
+    raw["acf"]["lezshows_plots"] = "<p>Plot.</p>"
+    raw["acf"]["lezshows_worthit_details"] = "<em>Yes</em> &amp; more"
+    show = normalize.normalize_show(raw, TAX)
+    prose = [show["summary"], show["notes"]["plot"], show["notes"]["queer_episodes"],
+             show["ratings"]["worth_it_details"]]
+    assert raw["acf"]["lezshows_plots"].startswith("<p>")  # the sabotage is really in the input
+    for value in prose:
+        assert value is not None
+        assert "<" not in value and "&amp;" not in value, value
+    assert show["summary"] == "Cake & Candles"
+    assert show["notes"]["plot"] == "Plot."
+    assert show["ratings"]["worth_it_details"] == "Yes & more"
+
+
+# ---- seasons: LezWatch's 0 ("never filled in") becomes null, not "0 seasons" ----
+
+@pytest.mark.parametrize("unset", [0, "0", "", None, [], -1])
+def test_unset_season_count_is_null_not_zero(unset):
+    raw = _load("lezwatch_show_derry_girls.json")
+    raw["acf"]["lezshows_seasons"] = unset
+    assert normalize.normalize_show(raw, TAX)["seasons"] is None
+
+
+def test_recorded_season_count_is_kept():
+    show = normalize.normalize_show(_load("lezwatch_show_derry_girls.json"), TAX)
+    assert show["seasons"] == 3

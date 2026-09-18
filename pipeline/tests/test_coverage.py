@@ -6,10 +6,10 @@ from qtv_pipeline import coverage
 def test_field_presence_counts_both_sides():
     shows = [
         {"watch_links": [{"url": "https://a", "host": "a"}], "ratings": {"worth_it": "Yes", "quality": 3},
-         "external_ids": {"imdb": "tt1"}, "years": {"end": 2020}, "schedule": {"schedule_known": True, "next_episode": None},
+         "external_ids": {"imdb": "tt1"}, "years": {"end": 2020}, "seasons": 3, "schedule": {"schedule_known": True, "next_episode": None},
          "networks": [], "tropes": []},
         {"watch_links": [], "ratings": {"worth_it": None, "quality": None},
-         "external_ids": {"imdb": None}, "years": {"end": None}, "schedule": {"schedule_known": False, "next_episode": None},
+         "external_ids": {"imdb": None}, "years": {"end": None}, "seasons": None, "schedule": {"schedule_known": False, "next_episode": None},
          "networks": [], "tropes": []},
     ]
     characters = [
@@ -19,6 +19,7 @@ def test_field_presence_counts_both_sides():
     fields_cov = coverage.field_presence(shows, characters)
     assert fields_cov["shows.watch_links"] == {"present": 1, "absent": 1}
     assert fields_cov["shows.ratings.worth_it"] == {"present": 1, "absent": 1}
+    assert fields_cov["shows.seasons"] == {"present": 1, "absent": 1}
     assert fields_cov["characters.death"] == {"present": 1, "absent": 1}
     assert fields_cov["characters.gender"] == {"present": 1, "absent": 1}
 

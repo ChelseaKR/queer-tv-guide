@@ -113,6 +113,11 @@ https://chelseakr.github.io/queer-tv-guide/snapshot.v1.json
 - TVmaze not joined: `schedule_known: false` and every schedule field null.
   Joined with nothing scheduled: `schedule_known: true`, `next_episode: null`.
 - Rating 0 in LezWatch means unrated and becomes `null`.
+- Season count 0 in LezWatch means never filled in and becomes `null`.
+- Prose fields (`summary`, `notes.plot`, `notes.queer_episodes`,
+  `ratings.worth_it_details`) are HTML stripped to plain text: tags dropped,
+  entities decoded, list items as `- ` lines. An inline `<img>` has no text,
+  so no image URL reaches the snapshot.
 - A failed fetch is a failed run. The previous snapshot stays current.
 
 ## Layout

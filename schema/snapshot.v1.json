@@ -272,7 +272,7 @@
       "required": ["worth_it", "worth_it_details", "quality", "realness", "screentime", "score", "show_we_love"],
       "properties": {
         "worth_it": { "type": ["string", "null"], "description": "LezWatch's verdict as recorded (observed values: \"Yes\", \"Meh\", \"No\", \"TBD\"). null when not rated." },
-        "worth_it_details": { "type": ["string", "null"] },
+        "worth_it_details": { "type": ["string", "null"], "description": "LezWatch's worth-it explanation, HTML stripped to plain text." },
         "quality": { "type": ["integer", "null"], "minimum": 1, "maximum": 5, "description": "null when unrated (LezWatch stores 0 for unrated; the pipeline maps 0 to null)." },
         "realness": { "type": ["integer", "null"], "minimum": 1, "maximum": 5 },
         "screentime": { "type": ["integer", "null"], "minimum": 1, "maximum": 5 },
@@ -352,9 +352,9 @@
         "title": { "type": "string", "minLength": 1, "description": "HTML entities decoded." },
         "alternate_names": { "type": "array", "items": { "type": "string" } },
         "source_url": { "$ref": "#/$defs/url", "description": "The LezWatch.TV page. Link it: LezWatch asks for a link back." },
-        "summary": { "type": ["string", "null"], "description": "LezWatch's excerpt, plain text." },
+        "summary": { "type": ["string", "null"], "description": "LezWatch's excerpt, HTML stripped to plain text (entities decoded)." },
         "years": { "$ref": "#/$defs/years" },
-        "seasons": { "type": ["integer", "null"] },
+        "seasons": { "type": ["integer", "null"], "description": "Season count as LezWatch records it. null when not recorded: LezWatch stores 0 for a count never filled in, and the pipeline maps 0 to null, never \"0 seasons\"." },
         "format": { "oneOf": [ { "$ref": "#/$defs/term" }, { "type": "null" } ], "description": "LezWatch lez_formats term, e.g. \"TV Show\", \"Web Series\"." },
         "networks": { "type": "array", "items": { "$ref": "#/$defs/term" }, "description": "LezWatch stations. Empty when none recorded." },
         "countries": { "type": "array", "items": { "$ref": "#/$defs/term" } },
@@ -404,7 +404,7 @@
           "additionalProperties": false,
           "required": ["plot", "queer_episodes"],
           "properties": {
-            "plot": { "type": ["string", "null"], "description": "LezWatch's plot/spoiler notes, plain text. May contain spoilers; the app should hide it behind a tap." },
+            "plot": { "type": ["string", "null"], "description": "LezWatch's plot/spoiler notes, HTML stripped to plain text with line breaks. May contain spoilers; the app should hide it behind a tap." },
             "queer_episodes": { "type": ["string", "null"], "description": "LezWatch's notable-episodes list, HTML stripped to plain text with line breaks." }
           }
         },

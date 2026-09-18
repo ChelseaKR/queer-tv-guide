@@ -41,7 +41,9 @@ if the "for no fees" sentence is gone (`pipeline/src/qtv_pipeline/terms.py`),
 and the dated copy in `docs/terms-snapshots/` is the record of what was granted
 when the app shipped.
 
-**Not taken.** Images (the site's fair-use position is its own, not ours);
+**Not taken.** Images (the site's fair-use position is its own, not ours;
+inline `<img>` tags inside LezWatch's prose fields are stripped with the rest
+of the markup, so not even an image URL reaches the snapshot);
 article/post content (editorial, not "the data"); anything about LezWatch's
 users or contributors.
 

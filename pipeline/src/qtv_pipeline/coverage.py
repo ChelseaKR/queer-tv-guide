@@ -15,6 +15,7 @@ _FIELD_GETTERS_SHOW: dict[str, Any] = {
     "shows.ratings.quality": lambda s: s["ratings"]["quality"] is not None,
     "shows.external_ids.imdb": lambda s: s["external_ids"]["imdb"] is not None,
     "shows.years.end": lambda s: s["years"]["end"] is not None,
+    "shows.seasons": lambda s: s["seasons"] is not None,
     "shows.schedule.schedule_known": lambda s: s["schedule"]["schedule_known"],
     "shows.schedule.next_episode": lambda s: s["schedule"]["next_episode"] is not None,
     "shows.networks": lambda s: len(s["networks"]) > 0,

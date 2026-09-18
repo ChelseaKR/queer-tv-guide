@@ -104,9 +104,16 @@ struct SearchFiltersView: View {
             }
             .safeAreaInset(edge: .bottom) {
                 if !dynamicTypeSize.isAccessibilitySize {
-                    showResultsButton
-                        .padding()
-                        .background(.bar)
+                    // Opaque, not the translucent `.bar` material: text
+                    // scrolling under the translucent bar showed through
+                    // at low contrast (the audit measured the trigger-
+                    // warning note there).
+                    VStack(spacing: 0) {
+                        Divider()
+                        showResultsButton
+                            .padding()
+                    }
+                    .background(Color(uiColor: .systemBackground))
                 }
             }
         }

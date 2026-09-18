@@ -62,6 +62,17 @@ final class AccessibilityAuditTests: XCTestCase {
     /// The audit runs once two reads of the accessibility tree agree
     /// (`waitForStillScreen`), so it does not measure a screen
     /// mid-animation.
+    ///
+    /// Contrast runs as its own audit, after the other checks. Run together
+    /// with them, the audit reports its contrast issues with no element:
+    /// measured on the filtered Search results, 4 of 4 contrast issues came
+    /// with no element in one `.all` audit, and all 4 came with their
+    /// element in a `.contrast` audit of the same screen a moment later.
+    /// With no element, an issue can only be excused by counting texts under
+    /// the tab bar (allowance 1). With its element, each is held to the rule
+    /// for where it is: over the bar (allowance 1, by frame), just above it
+    /// and measured from its own pixels at 4.5:1 or better (allowance 2), or
+    /// failed.
     @MainActor
     private func audit(_ app: XCUIApplication, _ types: XCUIAccessibilityAuditType = .all) throws {
         waitForStillScreen(app)
@@ -70,41 +81,46 @@ final class AccessibilityAuditTests: XCTestCase {
         let searchField = app.searchFields.firstMatch
         let searchFieldFrame = searchField.exists ? searchField.frame : .null
         var underBarBudget = tabBarFrame.isNull ? 0 : Self.textsUnderTabBar(app, tabBarFrame)
-        try app.performAccessibilityAudit(for: types) { issue in
-            guard let element = issue.element, element.exists else {
-                if issue.auditType == .contrast, underBarBudget > 0 {
-                    underBarBudget -= 1
-                    print("audit allowance 1: \(issue.compactDescription) with no element; \(underBarBudget) more allowed under the tab bar \(tabBarFrame)")
-                    return true
+        let passes: [XCUIAccessibilityAuditType] = types.contains(.contrast)
+            ? [types.subtracting(.contrast), .contrast].filter { !$0.isEmpty }
+            : [types]
+        for pass in passes {
+            try app.performAccessibilityAudit(for: pass) { issue in
+                guard let element = issue.element, element.exists else {
+                    if issue.auditType == .contrast, underBarBudget > 0 {
+                        underBarBudget -= 1
+                        print("audit allowance 1: \(issue.compactDescription) with no element; \(underBarBudget) more allowed under the tab bar \(tabBarFrame)")
+                        return true
+                    }
+                    print("audit issue: \(issue.compactDescription) | \(issue.detailedDescription) | no element")
+                    return false
                 }
-                print("audit issue: \(issue.compactDescription) | \(issue.detailedDescription) | no element")
+                let frame = element.frame
+                switch issue.auditType {
+                case .contrast where !tabBarFrame.isNull && frame.intersects(tabBarFrame):
+                    underBarBudget = max(0, underBarBudget - 1)
+                    print("audit allowance 1: \(issue.compactDescription) on \(Self.describe(element)); tab bar \(tabBarFrame)")
+                    return true
+                case .contrast where !tabBarFrame.isNull
+                    && frame.maxY <= tabBarFrame.minY && frame.maxY > tabBarFrame.minY - Self.tabBarBand:
+                    if let ratio = Self.renderedContrast(of: element), ratio >= 4.5 {
+                        print("audit allowance 2: \(issue.compactDescription) on \(Self.describe(element)); drawn at \(String(format: "%.1f", ratio)):1")
+                        return true
+                    }
+                case .dynamicType where Self.aboutRowsThatScale.contains(where: { $0.type == element.elementType && $0.label == element.label }):
+                    print("audit allowance 3: \(issue.compactDescription) on \(Self.describe(element))")
+                    return true
+                case .textClipped where element.elementType == .searchField,
+                     .hitRegion where element.elementType == .button && element.label == "Clear text"
+                        && !searchFieldFrame.isNull && searchFieldFrame.contains(frame):
+                    print("audit allowance 4: \(issue.compactDescription) on \(Self.describe(element))")
+                    return true
+                default:
+                    break
+                }
+                print("audit issue: \(issue.compactDescription) | \(issue.detailedDescription) | \(Self.describe(element))")
                 return false
             }
-            let frame = element.frame
-            switch issue.auditType {
-            case .contrast where !tabBarFrame.isNull && frame.intersects(tabBarFrame):
-                underBarBudget = max(0, underBarBudget - 1)
-                print("audit allowance 1: \(issue.compactDescription) on \(Self.describe(element)); tab bar \(tabBarFrame)")
-                return true
-            case .contrast where !tabBarFrame.isNull
-                && frame.maxY <= tabBarFrame.minY && frame.maxY > tabBarFrame.minY - Self.tabBarBand:
-                if let ratio = Self.renderedContrast(of: element), ratio >= 4.5 {
-                    print("audit allowance 2: \(issue.compactDescription) on \(Self.describe(element)); drawn at \(String(format: "%.1f", ratio)):1")
-                    return true
-                }
-            case .dynamicType where Self.aboutRowsThatScale.contains(where: { $0.type == element.elementType && $0.label == element.label }):
-                print("audit allowance 3: \(issue.compactDescription) on \(Self.describe(element))")
-                return true
-            case .textClipped where element.elementType == .searchField,
-                 .hitRegion where element.elementType == .button && element.label == "Clear text"
-                    && !searchFieldFrame.isNull && searchFieldFrame.contains(frame):
-                print("audit allowance 4: \(issue.compactDescription) on \(Self.describe(element))")
-                return true
-            default:
-                break
-            }
-            print("audit issue: \(issue.compactDescription) | \(issue.detailedDescription) | \(Self.describe(element))")
-            return false
         }
     }
 

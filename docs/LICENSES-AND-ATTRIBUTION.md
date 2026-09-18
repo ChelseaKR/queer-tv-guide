@@ -5,7 +5,10 @@ what it permits for a paid app that bundles a derived dataset, the attribution
 text the app must show and where, and any share-alike obligation on the derived
 snapshot. Plain-text copies of every page quoted here, as read, are in
 `docs/terms-snapshots/2026-09-13/` with checksums; keep them for App Review
-5.2.2 ("Authorization must be provided upon request").
+5.2.2 ("Authorization must be provided upon request"). The bytes are kept
+exactly as fetched (`.gitattributes` marks the directory `-text`; LezWatch
+serves robots.txt with CRLF line endings) and CI re-verifies every
+`SHA256SUMS` (`pipeline/tests/test_terms_snapshots.py`).
 
 Rule: if any source's terms cannot be read today, it is **unknown** and is not
 used until it can be. Nobody is contacted to ask.

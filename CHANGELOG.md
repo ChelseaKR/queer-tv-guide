@@ -49,6 +49,10 @@ consumer of the published snapshot, would notice.
   what "Not recorded" means, where the data comes from (LezWatch.TV and
   TVmaze, neither endorsing the app) and what the app does not collect.
   About opens it again.
+- A Share button on every show, which hands its LezWatch.TV page (with any
+  query or fragment removed) to the system share sheet.
+- Pull to refresh on Favourites and About, as on Search, and light haptics
+  when a star is toggled or a reveal is opened.
 
 ### Changed
 

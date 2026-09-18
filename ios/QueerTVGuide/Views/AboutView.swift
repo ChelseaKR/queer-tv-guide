@@ -89,6 +89,8 @@ struct AboutView: View {
                         .accessibilityHint("Spoilers, sources and privacy, in one page")
                 }
             }
+            // Pull to check for a newer data file (the one GET).
+            .refreshable { await model.refresh() }
             .navigationTitle("About \(AppIdentity.displayName)")
             .sheet(isPresented: $showingIntroduction) {
                 OnboardingView(finish: { showingIntroduction = false }, isFirstRun: false)

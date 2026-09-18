@@ -81,6 +81,8 @@ struct AboutView: View {
                     LabeledContent("App", value: "\(Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "—") (\(Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "—"))")
                 }
             }
+            // Pull to check for a newer data file (the one GET).
+            .refreshable { await model.refresh() }
             .navigationTitle("About \(AppIdentity.displayName)")
         }
     }

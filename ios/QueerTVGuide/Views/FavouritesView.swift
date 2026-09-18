@@ -31,6 +31,9 @@ struct FavouritesView: View {
                                 }
                             }
                         }
+                        // Pull for the latest next-episode dates: the same
+                        // one GET as Search, nothing else.
+                        .refreshable { await model.refresh() }
                     }
                 } else {
                     ProgressView()

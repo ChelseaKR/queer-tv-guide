@@ -52,6 +52,9 @@ struct ShowDetailView: View {
             }
             // LezWatch.TV's terms: link back (Attribution).
             LezWatchSourceLink(name: show.title, url: show.sourceURL)
+            // In the page, not the toolbar: a second toolbar button squeezed
+            // the navigation title until the audit reported it clipped.
+            ShareShowLink(show: show)
         }
     }
 
@@ -217,5 +220,29 @@ struct ShowDetailView: View {
             }
             DataStatusFooter(generatedAt: snapshot.generatedAt, refreshError: model.lastRefreshError)
         }
+    }
+}
+
+/// Shares a show's LezWatch.TV page, cleaned of any query or fragment
+/// (`Sharing.cleanURL`). The system share sheet sends it wherever the user
+/// picks; the app sends nothing itself.
+private struct ShareShowLink: View {
+    let show: Show
+
+    var body: some View {
+        ShareLink(
+            item: Sharing.cleanURL(show.sourceURL),
+            subject: Text(show.title),
+            preview: SharePreview(show.title)
+        ) {
+            Label("Share this show", systemImage: "square.and.arrow.up")
+                .font(.subheadline)
+        }
+        .frame(minHeight: 44, alignment: .leading)
+        .contentShape(Rectangle())
+        .accessibilityLabel("Share \(show.title)")
+        .accessibilityHint("Shares its LezWatch.TV page")
+        .accessibilityInputLabels(["Share", "Share this show"])
+        .accessibilityIdentifier("share-show")
     }
 }

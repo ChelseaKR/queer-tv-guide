@@ -33,6 +33,10 @@ consumer of the published snapshot, would notice.
   CC BY-SA 4.0 licence. About states that neither source endorses the app.
   The snapshot's Pages index shows the licence and every source credit with
   links.
+- A Share button on every show, which hands its LezWatch.TV page (with any
+  query or fragment removed) to the system share sheet.
+- Pull to refresh on Favourites and About, as on Search, and light haptics
+  when a star is toggled or a reveal is opened.
 
 ### Changed
 

@@ -137,6 +137,22 @@ This is true of the build in this PR:
 
 - No account, ever (`AppModel` never asks for identity; `FavouritesStore` is
   local `UserDefaults`, never synced).
+- **Favourites backup is a file the user holds, so it is not collection
+  (#25).** Export favourites (the … menu on Favourites) writes a JSON file of favourite ids
+  and dates and hands it to the system share sheet; the user picks where it
+  goes each time, and nothing reaches the developer or any partner. Import
+  reads a file the user picks. Apple: "'Collect' refers to transmitting data
+  off the device in a way that allows you and/or your third-party partners
+  to access it for a period longer than what is necessary to service the
+  transmitted request in real time", and "Data that is processed only on
+  device is not 'collected'"
+  (https://developer.apple.com/app-store/app-privacy-details/, read
+  2026-09-18). No iCloud key-value sync: it would be Apple-hosted user data,
+  which Apple says is not the developer's to disclose ("You are not
+  responsible for disclosing data collected by Apple"), but it would still
+  break the privacy policy's "never synced", and
+  `SourceTreeGuardTests.testNoOtherNetworkOrWebPrimitives` bans
+  `NSUbiquitousKeyValueStore` and `CKContainer`.
 - No analytics, no crash reporter, no third-party SDK of any kind — enforced
   by `SourceTreeGuardTests.testNoRemotePackagesOrPods` and
   `testImportsAreSystemOrOurs` (only `Foundation`/`SwiftUI`/`Observation`/

@@ -40,6 +40,13 @@ struct SearchView: View {
             : index.search(trimmed, filters: filters)
 
         List {
+            // DG-04: data past its SLA, or of unknown age, says so above
+            // everything it could be wrong about.
+            if let warning = model.freshnessWarning(for: snapshot) {
+                Section {
+                    DataFreshnessBanner(warning: warning)
+                }
+            }
             if hits.isEmpty {
                 Section {
                     EmptyState(
@@ -57,7 +64,7 @@ struct SearchView: View {
                 }
             }
             Section {
-                DataStatusFooter(generatedAt: snapshot.generatedAt, refreshError: model.lastRefreshError)
+                DataStatusFooter(snapshot: snapshot)
             }
         }
         .listStyle(.plain)

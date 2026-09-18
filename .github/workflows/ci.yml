@@ -67,6 +67,20 @@ jobs:
       - name: make pipeline (offline; fixtures only)
         run: make pipeline
 
+      # Owner items that block App Store submission: TODO(owner) markers in
+      # what gets published or submitted (docs/APP-STORE.md, "Before
+      # submission"). Reported as warning annotations on every run, never a
+      # failure; they are owner decisions, not code defects. Here because
+      # this job always runs.
+      - name: pre-submission owner items (warning only)
+        run: |
+          set -euo pipefail
+          if ! make -C ios presubmit-check; then
+            grep -rnF "TODO(owner)" docs/site docs/app-store-listing.json | while IFS=: read -r file line _; do
+              echo "::warning file=${file},line=${line}::Unresolved TODO(owner): blocks App Store submission (docs/APP-STORE.md, Before submission)"
+            done
+          fi
+
   changes:
     name: changes
     runs-on: ubuntu-latest

@@ -30,9 +30,12 @@ struct AboutView: View {
                                     // otherwise (and the audit flags it).
                                     .accessibilityLabel(item.name.replacingOccurrences(of: ".", with: " "))
                                 Text(item.text)
-                                Text("Licence: \(item.licenceName)")
+                                Button("Licence: \(item.licenceName)") { openURL(item.licenceURL) }
                                     .font(.caption)
-                                    .foregroundStyle(.subdued)
+                                    .frame(minHeight: 44, alignment: .leading)
+                                    .contentShape(Rectangle())
+                                    .accessibilityHint("Opens in Safari")
+                                    .accessibilityIdentifier("licence-link-\(item.source)")
                                 Button(item.url.absoluteString) { openURL(item.url) }
                                     .font(.caption)
                                     // A caption-sized link is under the 44 pt
@@ -41,9 +44,12 @@ struct AboutView: View {
                                     .contentShape(Rectangle())
                                     .accessibilityLabel("Visit \(item.name.replacingOccurrences(of: ".", with: " "))")
                                     .accessibilityHint("Opens in Safari")
+                                    .accessibilityIdentifier("source-link-\(item.source)")
                             }
                             .padding(.vertical, 4)
                         }
+                        // Stated by the app itself, whatever the data says.
+                        Text(Attribution.nonEndorsement)
                     }
 
                     Section("Licence") {

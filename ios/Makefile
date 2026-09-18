@@ -14,7 +14,7 @@ SIMULATOR := platform=iOS Simulator,name=iPhone 17 Pro
 SNAPSHOT_URL := https://chelseakr.github.io/queer-tv-guide/snapshot.v1.json
 BUNDLED_SNAPSHOT := QueerTVGuide/Resources/snapshot.v1.json
 
-.PHONY: generate package-test build test test-unit test-ui clean bundle-snapshot
+.PHONY: generate package-test build test test-unit test-ui clean bundle-snapshot screenshots presubmit-check
 
 # Regenerate QueerTVGuide.xcodeproj from project.yml. Requires xcodegen
 # (`brew install xcodegen`); only needed after editing project.yml or
@@ -77,3 +77,17 @@ bundle-snapshot:
 	mkdir -p "$(dir $(BUNDLED_SNAPSHOT))" && \
 	cp "$$tmp/snapshot.v1.json" "$(BUNDLED_SNAPSHOT)" && \
 	echo "bundle-snapshot: wrote $(BUNDLED_SNAPSHOT) (sha256 $$got)"
+
+# App Store screenshots, iPhone 6.9" (1320 x 2868), on the real bundled
+# snapshot: a throwaway simulator, a clean status bar, reveals closed.
+# Writes docs/app-store/screenshots/*.png.
+screenshots: $(BUNDLED_SNAPSHOT)
+	scripts/app-store-screenshots.sh
+
+# Unresolved owner items that block App Store submission, marked
+# TODO(owner) in what gets published or submitted. Fails while any remain;
+# CI runs it as a warning, not a gate (docs/APP-STORE.md "Before submission").
+presubmit-check:
+	@if grep -nF "TODO(owner)" ../docs/site/*.html ../docs/app-store-listing.json; then \
+		echo "presubmit-check: the TODO(owner) items above block App Store submission" >&2; exit 1; \
+	else echo "presubmit-check: no TODO(owner) items"; fi

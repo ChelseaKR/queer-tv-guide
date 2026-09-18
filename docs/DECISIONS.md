@@ -1,8 +1,7 @@
 # Decisions
 
-Numbering: 0001–0004 and 0006 onward live here. 0005 is taken by
-`docs/adr/0005-two-projects-one-repository.md` (proposed in PR #14), so it
-is skipped here rather than duplicated.
+Numbering: 0001–0004, 0006–0011 and 0013 live here. 0005 and 0012 are
+ADRs in `docs/adr/`, so they are skipped here rather than duplicated.
 
 ## 0001 — Native SwiftUI, not a web shell (2026-09-13)
 
@@ -40,7 +39,7 @@ no receipt validation, nothing to phone home about. [moved to private strategy n
 Owner's call. Do not use "Signal". **Resolved by 0006.**
 
 
-## 0006 — Name: Queer Frame (2026-09-18)
+## 0006 — Name: Queer Frame (2026-09-17)
 
 **Decision.** The product is called **Queer Frame**. It is the home-screen
 name (`CFBundleDisplayName`), the in-app name (`AppIdentity.displayName`),
@@ -52,7 +51,7 @@ snapshot URL keep their working names. None of them is shown to a user,
 and a bundle identifier cannot change once an app is registered. Resolves
 0004. Never "Signal".
 
-## 0007 — The snapshot stays on GitHub Pages (2026-09-18)
+## 0007 — The snapshot stays on GitHub Pages (2026-09-17)
 
 **Decision.** `https://chelseakr.github.io/queer-tv-guide/snapshot.v1.json`
 stays the app's one fetch URL.
@@ -69,7 +68,9 @@ infrastructure Chelsea controls with access logging minimised". The rest of
 Collected": the developer collects nothing, and GitHub is a host, not a
 partner whose code is in the app.
 
-## 0008 — Ask LezWatch.TV in writing before shipping (2026-09-18)
+## 0008 — Ask LezWatch.TV in writing before shipping (2026-09-17)
+
+**Superseded by 0013.** The request was never sent.
 
 **Decision.** The app does not ship until LezWatch.TV gives written OK for
 its use.
@@ -91,7 +92,7 @@ ask" rule, for this one question. The nightly mirror and the published
 CC BY-SA snapshot continue as before, and the email tells LezWatch.TV about
 both.
 
-## 0009 — iPhone only (2026-09-18)
+## 0009 — iPhone only (2026-09-17)
 
 **Decision.** The app targets iPhone only (`TARGETED_DEVICE_FAMILY = 1`), not
 iPad.
@@ -102,7 +103,7 @@ iPad.
   may test it there (guideline 2.4.1), so it must still work at that size.
 - The iPad-only orientation key is gone.
 
-## 0010 — Support URL: a support page on the same Pages site (2026-09-18)
+## 0010 — Support URL: a support page on the same Pages site (2026-09-17)
 
 **Decision.** The App Store Support URL is
 `https://chelseakr.github.io/queer-tv-guide/support.html`, published from
@@ -114,9 +115,38 @@ About screen.
 to offer "an easy way to contact you", and the page says one will be added
 before release.
 
-## 0011 — Price: $4.99, one-time (2026-09-18)
+## 0011 — Price: $4.99, one-time (2026-09-17)
 
 **Decision.** One-time purchase at **$4.99** (US), no IAP, no subscription.
 [moved to private strategy notes] The Apple
 Small Business Program rate (15%) applies.
+
+## 0013 — Ship on LezWatch.TV's published terms, with full attribution (2026-09-17)
+
+**Decision.** Queer Frame launches on LezWatch.TV's published terms of use
+("You are welcome to use, reuse, and extend the data here for no fees … We
+do ask you link back to us, or note us by name"), with every credit those
+terms and TVmaze's CC BY-SA 4.0 ask for. **Supersedes 0008.** The permission
+email drafted under 0008 was not sent, by owner decision, and nobody was
+contacted.
+
+**What "full attribution" means, and where each piece is checked:**
+- Every show and character screen links to its LezWatch.TV page
+  ("View on LezWatch.TV").
+- The About screen names both sources with links, links each source's
+  licence or terms, and says "LezWatch.TV and TVmaze do not endorse this
+  app".
+- Wherever TVmaze data shows (a show's next episode, the Favourites list),
+  a TVmaze link and the CC BY-SA 4.0 licence link show with it.
+- The published snapshot carries its CC BY-SA 4.0 licence, notice and source
+  credits, and so does its Pages index.
+
+The full audit is in `docs/LICENSES-AND-ATTRIBUTION.md` ("Attribution
+audit"). Removing a credit fails `swift test` or the pipeline tests (both
+run in CI) and the UI tests.
+
+**Risk accepted.** The terms scope themselves to "any API based services to
+display data on your own site", and a paid app is arguably not that.
+App Review 5.2.2 may ask for authorization. The answer is the dated terms
+snapshot, the attribution, and the App Review note in `docs/APP-STORE.md`.
 

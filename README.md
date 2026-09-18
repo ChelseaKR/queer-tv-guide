@@ -80,7 +80,9 @@ itself has no licence yet: that is an owner decision.
 
 ## Not yet cleared to ship
 
-LezWatch.TV's written OK for use in a paid app (DECISIONS 0008). The request
-is drafted in [moved to private strategy notes] and has not
-been sent. The name is settled: **Queer Frame** (DECISIONS 0006). Never
-"Signal", which collides with Signal Messenger.
+A support contact method on the support page (`TODO(owner)`, DECISIONS
+0010). `make -C ios presubmit-check` fails until it is added, and CI warns.
+The rest of the submission checklist is `docs/APP-STORE.md` "Before
+submission". Data use is settled: the app ships on LezWatch.TV's published
+terms with full attribution (DECISIONS 0013). The name is **Queer Frame**
+(DECISIONS 0006). Never "Signal", which collides with Signal Messenger.

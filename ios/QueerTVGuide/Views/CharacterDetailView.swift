@@ -42,6 +42,8 @@ struct CharacterDetailView: View {
                     .font(.subheadline)
                     .foregroundStyle(.subdued)
             }
+            // LezWatch.TV's terms: link back (Attribution).
+            LezWatchSourceLink(name: character.name, url: character.sourceURL)
         }
     }
 

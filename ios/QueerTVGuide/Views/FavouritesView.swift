@@ -17,10 +17,19 @@ struct FavouritesView: View {
                         )
                     } else {
                         List {
-                            ForEach(entries) { entry in
-                                row(for: entry, snapshot: snapshot)
+                            Section {
+                                ForEach(entries) { entry in
+                                    row(for: entry, snapshot: snapshot)
+                                }
+                                .onDelete(perform: remove)
+                            } footer: {
+                                // Show rows carry TVmaze next-episode data;
+                                // credit it here (CC BY-SA 4.0).
+                                if entries.contains(where: { $0.kind == .show }),
+                                   let credit = Attribution.tvmazeCredit(in: snapshot) {
+                                    TVmazeCreditView(credit: credit)
+                                }
                             }
-                            .onDelete(perform: remove)
                         }
                     }
                 } else {

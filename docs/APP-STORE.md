@@ -6,14 +6,14 @@ access and this session did not attempt any.
 
 ## 1. Listing draft
 
-The owner's decisions of 2026-09-18 (DECISIONS 0006–0011) settled name,
+The owner's decisions of 2026-09-17 (DECISIONS 0006–0011, 0013) settled name,
 devices, support URL and price. The fields App Store Connect takes as text
 are in **`docs/app-store-listing.json`**, the one copy to paste from.
 `AppStoreReadinessTests` enforces Apple's limits on it and keeps it in step
 with the build: name = display name, iPhone-only = device family, URLs on
 the snapshot host with pages that exist.
 
-Character counts, recounted 2026-09-18:
+Character counts, recounted 2026-09-17:
 
 | Field | Value | Count / limit | Source |
 |---|---|---|---|
@@ -33,12 +33,17 @@ Character counts, recounted 2026-09-18:
 
 ### Before submission (hard gates)
 
-1. **LezWatch.TV's written OK** (DECISIONS 0008). Draft request:
-   [moved to private strategy notes]. Until the reply is
-   saved beside it and the licence doc's LezWatch row says "granted", the app
-   does not ship.
-2. A contact method on the support page.
-3. `make -C ios bundle-snapshot`, then screenshots from that build (§Screenshots).
+1. **A support contact method** on `docs/site/support.html`, currently a
+   `TODO(owner)` marker (DECISIONS 0010). `make -C ios presubmit-check`
+   fails until it is resolved, and CI puts a warning on every run. The owner
+   has deferred it; nothing invents an address.
+2. `make -C ios bundle-snapshot` then `make -C ios test` on the build you
+   archive.
+3. Screenshots from that build: `make -C ios screenshots` (§Screenshots).
+4. The owner steps in §6.
+
+Data use is settled: the app ships on LezWatch.TV's published terms with full
+attribution (DECISIONS 0013; the permission request of 0008 was not sent).
 
 ### Description
 
@@ -91,24 +96,29 @@ unless noted:
   Signal's older 12+ rating (research §3.1), and below Groove/qcal/QLIST's
   17+/18+. App Store Connect computes it from these answers.
 
-### Screenshots plan (not produced this session — no device/App Store Connect access)
+### Screenshots (iPhone 6.9", 1320 × 2868, real data)
 
-1. Search screen with a few bundled shows visible and the filter menu open.
-2. A show detail screen: worth-it/quality, where-to-watch links, next
-   episode.
-3. A character detail screen with the spoiler reveal control **shown
-   closed** (never a screenshot with a death spoiler already revealed).
-4. Favourites screen.
-5. About & Privacy screen, since "Data Not Collected" being checkable is the
-   product's differentiator (research §4.3) — this screen is evidence, not
-   boilerplate.
+Produced by `make -C ios screenshots`. It creates a throwaway iPhone 17 Pro
+Max simulator, sets a 9:41 status bar, and runs `AppStoreScreenshotTests` on
+the real bundled snapshot. The test refuses the fixture, and every shot
+asserts that no death answer is on screen. The shots are then exported:
 
-All five map onto existing screens (§4 below); none require new UI.
-iPhone only (DECISIONS 0009): produce the 6.9" iPhone set, no iPad set. Take
-these after §5 step 3 below (refresh the bundled snapshot), so the screenshots
-show the data that ships. The bundle holds real published data;
-the hand-made test fixture (invented titles) lives only under
-`ios/GuideCore/Tests/Fixtures/` and never reaches the app.
+1. `docs/app-store/screenshots/01-browse.png`: Search, browsing shows with a
+   where-to-watch link.
+2. `docs/app-store/screenshots/02-show-reveal-closed.png`: a show (Abbott
+   Elementary) with "Do any queer characters die?" **closed** and its
+   worth-it explanation collapsed.
+3. `docs/app-store/screenshots/03-where-to-watch.png`: the same show's
+   where-to-watch links, with the LezWatch.TV and TVmaze credits.
+4. `docs/app-store/screenshots/04-next-episodes.png`: Favourites with each
+   followed show's next episode, credited to TVmaze.
+5. `docs/app-store/screenshots/05-privacy-and-sources.png`: About, with the
+   privacy posture and the sources.
+
+The shows used have no outcome tropes on screen (their trope list is
+"None!"), and every reveal and collapsible stays closed. iPhone only
+(DECISIONS 0009): no iPad set. Re-shoot after any UI change or snapshot
+refresh; the dates in "next episode" and "Data as of" are real.
 
 ## 2. Privacy label
 
@@ -155,17 +165,11 @@ https://developer.apple.com/app-store/review/guidelines/ (fetched
 - **5.2.2 Third-party terms.** *"If your app uses, accesses, monetizes
   access to, or displays content from a third-party service, ensure that
   you are specifically permitted to do so under the service's terms of
-  use."* LezWatch.TV's published terms are free-reuse with a link-back
-  request (schema/README.md, research §2.2), but they scope the service to
-  displaying data "on your own site". So the owner is asking LezWatch.TV in
-  writing first, and the app does not ship without their OK (DECISIONS 0008,
-  [moved to private strategy notes]). Attach that reply to the
-  review notes. The app links every show and
-  character back to its `source_url` (`ShowDetailView`/`CharacterDetailView`
-  headers use the show/character page URL from the snapshot) and shows the
-  attribution text and licence on the About screen
-  (`AboutView`/`Snapshot.attribution`). Owner action: attach the ToS text and
-  a TVmaze attribution screenshot to the App Review notes (§5 below).
+  use."* The app ships on LezWatch.TV's published terms (free reuse, link
+  back requested) and TVmaze's CC BY-SA 4.0, with every credit both ask for
+  (DECISIONS 0013; audit in `docs/LICENSES-AND-ATTRIBUTION.md`). The review
+  note below says so. Keep the dated terms copies in `docs/terms-snapshots/`
+  ready if Apple asks for authorization.
 - **4.2 Minimum functionality / 4.2.2 "not primarily a collection of
   links."** *"Your app should include features, content, and UI that
   elevate it beyond a repackaged website."* This app bundles the dataset
@@ -232,30 +236,61 @@ https://developer.apple.com/app-store/review/guidelines/ (fetched
   first release to storefronts where the content is uncontroversial rather
   than treating this as a review risk to engineer around.
 
+### App Review note (paste into "Notes" under App Review Information)
+
+> **Data sources, licences and attribution (5.2.2).** Queer Frame shows data
+> from two public sources. It bundles a snapshot and refreshes it from one
+> static file we publish.
+>
+> 1. **LezWatch.TV** (https://lezwatchtv.com): shows, characters, recorded
+>    deaths, ratings, tropes and where-to-watch links, from its public API.
+>    Its terms of use (https://lezwatchtv.com/tos/) say: "You are welcome to
+>    use, reuse, and extend the data here for no fees … We do ask you link
+>    back to us, or note us by name." Every show and character screen links
+>    to its LezWatch.TV page ("View on LezWatch.TV"), and the About screen
+>    names LezWatch.TV with a link.
+> 2. **TVmaze** (https://www.tvmaze.com): episode schedules, from its API,
+>    licensed CC BY-SA 4.0 (https://www.tvmaze.com/api, "Licensing"). TVmaze
+>    asks for attribution by linking back to it from within the app. Every
+>    next-episode line is shown with "Schedule data from TVmaze", linked,
+>    and the CC BY-SA 4.0 licence, linked.
+>
+> The About screen states: "LezWatch.TV and TVmaze do not endorse this
+> app." No images or articles are used. The combined data file is itself
+> published under CC BY-SA 4.0 at
+> https://chelseakr.github.io/queer-tv-guide/snapshot.v1.json, with its
+> licence and credits. The app makes one network request, a GET of that
+> file. It has no accounts, analytics, ads or third-party SDKs. Nothing
+> requires sign-in.
+
 ## 4. Screens this build ships (2 of 2 planned before this PR / 5 total)
 
 The brief's five screens, all present in `ios/QueerTVGuide/Views`:
 
 1. **Search** (`SearchView.swift`) — search across shows and characters,
    worth-it/no-recorded-deaths/has-a-watch-link filters, pull to refresh.
-2. **Show detail** (`ShowDetailView.swift`) — worth-it/quality/realness/
-   screentime, "do any queer characters die?" behind `SpoilerReveal`
+2. **Show detail** (`ShowDetailView.swift`) — "View on LezWatch.TV" (this
+   show's page), worth-it/quality/realness/screentime (the worth-it
+   explanation collapsed, since some name a death), "do any queer characters die?" behind `SpoilerReveal`
    (closed by default; per listed character, and says when a death may
    belong to another of the character's shows or when LezWatch's own tally
    disagrees), tropes (minus "Bury Your Queers", which moves inside the
    reveal), trigger warnings, characters, where-to-watch as `openURL` links,
    next episode (schedule-known vs schedule-unknown distinguished, and a
-   date that has passed is called past, never "next"), plot notes behind a
+   date that has passed is called past, never "next") with TVmaze's credit
+   and licence link, plot notes behind a
    spoiler disclosure, attribution footer with `generated_at`.
-3. **Character detail** (`CharacterDetailView.swift`) — identity fields
+3. **Character detail** (`CharacterDetailView.swift`) — "View on
+   LezWatch.TV" (this character's page), identity fields
    (minus the "Dead Queers" cliché, which would answer the reveal),
    "Does <name> die?" behind `SpoilerReveal` (closed by default; VoiceOver
    focus moves to the answer on reveal), shows the character appears in.
 4. **Favourites** (`FavouritesView.swift`) — local list with each show's
-   next episode, swipe to remove, empty state explains the local-only
+   next episode, credited to TVmaze with its licence, swipe to remove, empty state explains the local-only
    posture.
 5. **About & Privacy** (`AboutView.swift`) — the posture statement, every
-   `attribution` entry from the snapshot, the licence notice, coverage
+   `attribution` entry from the snapshot with its source and licence links,
+   "LezWatch.TV and TVmaze do not endorse this app", the licence notice, coverage
    numbers, and the current snapshot's `generated_at`/origin.
 
 ## 5. Owner steps to a TestFlight build
@@ -335,3 +370,50 @@ Nothing above installs, signs, or uploads anything from this session — no
 `xcrun altool`/`xcodebuild archive`/`-exportArchive` command in this section
 was run here; they are the ordered commands for the owner to run with
 Apple credentials this environment doesn't have.
+
+## 6. Owner steps to submit (the remaining, owner-only work)
+
+Nothing below was run from this repository. Each step needs the owner's
+Apple account.
+
+1. **Agreements** (App Store Connect → Business): the Paid Apps agreement
+   active, with banking and tax forms complete. A paid app cannot go on
+   sale without it. Enrol in the App Store Small Business Program (15%).
+2. **Bundle ID** (Certificates, Identifiers & Profiles → Identifiers →
+   +): explicit App ID `com.chelseakr.queertvguide`, Team `6X5YH93QNM`,
+   no capabilities.
+3. **App record** (App Store Connect → Apps → + → New App):
+   - Platform: iOS
+   - Name: **Queer Frame**
+   - Primary language: English (U.S.)
+   - Bundle ID: `com.chelseakr.queertvguide`
+   - SKU: any internal id you choose, never shown to users (for example
+     `queer-frame-ios`)
+   - User access: Full
+4. **Pricing and Availability:** price **$4.99** (USD base price, one-time).
+   Storefronts are your call (research §7 on where LGBTQ content is
+   restricted).
+5. **App Information:**
+   - Category: Entertainment
+   - Age rating questionnaire: answer as in §1, which should compute **13+**
+   - Privacy Policy URL: `https://chelseakr.github.io/queer-tv-guide/privacy.html`
+6. **App Privacy:** "Data Not Collected" (§2).
+7. **Version page:**
+   - Subtitle, promotional text, description and keywords from
+     `docs/app-store-listing.json`
+   - Support URL `https://chelseakr.github.io/queer-tv-guide/support.html`,
+     **after its contact method is added** (blocker 1 above)
+   - The five screenshots in `docs/app-store/screenshots/` in the 6.9"
+     iPhone slot
+   - The App Review note above, and your own contact details for the
+     reviewer
+   - Sign-in required: No
+8. **Build:** from `ios/`, run `make bundle-snapshot`, `make test` and
+   `make presubmit-check`. Then open `QueerTVGuide.xcodeproj` in Xcode and
+   choose Product → Archive with the "Any iOS Device" destination (signing:
+   automatic, Team `6X5YH93QNM`). Then Organizer → Distribute App → App
+   Store Connect → Upload. Export compliance is answered by the build
+   (`ITSAppUsesNonExemptEncryption = NO`).
+9. **Submit:** select the processed build on the version page, then Add for
+   Review → Submit. Optionally TestFlight it internally first.
+

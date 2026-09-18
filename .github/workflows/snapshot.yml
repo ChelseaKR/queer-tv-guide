@@ -116,31 +116,9 @@ jobs:
           # third-party requests.
           cp ../docs/site/privacy.html site/privacy.html
           cp ../docs/site/support.html site/support.html
-          python3 - <<'PY'
-          import json
-          doc = json.load(open("out/snapshot.v1.json"))
-          cov = doc["coverage"]
-          lw = cov["lezwatch"]
-          tv = cov["tvmaze"]
-          html = f"""<!doctype html><meta charset="utf-8">
-          <title>Queer Frame snapshot</title>
-          <p>{doc['licence']['notice']}</p>
-          <ul>
-          <li>generated_at: {doc['generated_at']}</li>
-          <li>content_digest: {doc['content_digest']}</li>
-          <li>shows: {lw['shows']['fetched']} / {lw['shows']['available']} available</li>
-          <li>characters: {lw['characters']['fetched']} / {lw['characters']['available']} available</li>
-          <li>TVmaze joined: {tv['joined']} / {tv['shows_total']} ({tv['join_rate']*100:.1f}%)</li>
-          </ul>
-          <ul>
-          <li><a href="snapshot.v1.json">snapshot.v1.json</a></li>
-          <li><a href="snapshot.v1.json.sha256">snapshot.v1.json.sha256</a></li>
-          <li><a href="privacy.html">Queer Frame privacy policy</a></li>
-          <li><a href="support.html">Queer Frame support</a></li>
-          </ul>
-          """
-          open("site/index.html", "w").write(html)
-          PY
+          # The index carries the file's CC BY-SA 4.0 licence and every
+          # source credit with links (qtv_pipeline/site_index.py, tested).
+          uv run python -m qtv_pipeline.site_index out/snapshot.v1.json site/index.html
 
       - uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3.0.1
         with:

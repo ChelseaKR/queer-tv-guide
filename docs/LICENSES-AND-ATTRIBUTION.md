@@ -11,15 +11,15 @@ serves robots.txt with CRLF line endings) and CI re-verifies every
 `SHA256SUMS` (`pipeline/tests/test_terms_snapshots.py`).
 
 Rule: if any source's terms cannot be read today, it is **unknown** and is not
-used until it can be. Nobody is contacted to ask, with one owner-decided
-exception: LezWatch.TV, asked in writing before the app ships (DECISIONS
-0008, [moved to private strategy notes]).
+used until it can be. Nobody is contacted to ask. (DECISIONS 0008 planned one
+exception, a written request to LezWatch.TV; 0013 reversed it before it was
+sent.)
 
 ## Summary table
 
 | Source | What we take | Licence (verbatim, link, date read) | Paid-app bundling OK? | Attribution required | Share-alike on the snapshot? |
 |---|---|---|---|---|---|
-| LezWatch.TV REST API | shows, characters, deaths, worth-it/quality/realness/screentime, tropes/clichés, gender/sexuality/romantic terms, where-to-watch URLs, actor names. **No images.** | Terms of Use, "Last Updated: 16 August 2018", https://lezwatchtv.com/tos/, read 2026-09-13: *"You are welcome to use, reuse, and extend the data here for no fees. … We do ask you link back to us, or note us by name, as a thank you in your final works."* API docs, https://docs.lezwatchtv.com/api/, read 2026-09-13: *"The public API at LezWatchTV is available for anyone anywhere to consume and reproduce the data found on this site."* | **Pending LezWatch.TV's written OK: the app does not ship without it** (DECISIONS 0008). The terms read as yes ("for no fees" with no non-commercial limit; the API docs say "anyone anywhere"), but the same page scopes the service to displaying data "on your own site", so the owner is asking rather than relying on a reading. Request drafted, not yet sent. Data only: the ToS disclaims copyright in images ("believe them to fall under the fair-use clause"), which does not transfer to us, so the pipeline takes no image and the snapshot has no image field. | Yes, as a request, not a licence condition: *"link back to us, or note us by name"*. The app names LezWatch.TV with a link on the attribution screen and links every show and character to its LezWatch page (`source_url`). | **None imposed.** LezWatch attaches no licence to derived works. Its data may sit inside the BY-SA snapshot. |
+| LezWatch.TV REST API | shows, characters, deaths, worth-it/quality/realness/screentime, tropes/clichés, gender/sexuality/romantic terms, where-to-watch URLs, actor names. **No images.** | Terms of Use, "Last Updated: 16 August 2018", https://lezwatchtv.com/tos/, read 2026-09-13: *"You are welcome to use, reuse, and extend the data here for no fees. … We do ask you link back to us, or note us by name, as a thank you in your final works."* API docs, https://docs.lezwatchtv.com/api/, read 2026-09-13: *"The public API at LezWatchTV is available for anyone anywhere to consume and reproduce the data found on this site."* | **Yes, on the published terms, with full attribution** (DECISIONS 0013). "For no fees" has no non-commercial limit, and the API docs say "anyone anywhere". The same page scopes the service to displaying data "on your own site"; the owner considered asking and chose not to (0008, superseded; the request was not sent). Data only: the ToS disclaims copyright in images ("believe them to fall under the fair-use clause"), which does not transfer to us, so the pipeline takes no image and the snapshot has no image field. | Yes, as a request, not a licence condition: *"link back to us, or note us by name"*. The app names LezWatch.TV with a link on the attribution screen and links every show and character to its LezWatch page (`source_url`). | **None imposed.** LezWatch attaches no licence to derived works. Its data may sit inside the BY-SA snapshot. |
 | TVmaze API | per show: TVmaze id/URL, status, premiered/ended, network/web channel, next and previous episode (season, number, name, air date/time, runtime, URL). **No images, no summaries.** | https://www.tvmaze.com/api §Licensing, read 2026-09-13: *"Use of the TVmaze API is licensed by CC BY-SA. This means the data can freely be used for any purpose, as long as TVmaze is properly credited as source and your usage complies with the ShareAlike provision. You can satisfy the attribution requirement by linking back to TVmaze from within your application or website, for example using the URLs available in the API."* The "CC BY-SA" link targets `http://creativecommons.org/licenses/by-sa/4.0/`. Licence text: https://creativecommons.org/licenses/by-sa/4.0/legalcode.txt, read 2026-09-13. | **Yes.** CC BY-SA 4.0 has no NonCommercial element; s.2(a)(1) grants *"a worldwide, royalty-free, non-sublicensable, non-exclusive, irrevocable license"* to *"reproduce and Share the Licensed Material, in whole or in part"* and *"produce, reproduce, and Share Adapted Material"*. TVmaze's own gloss: "for any purpose". | Yes, a licence condition (s.3(a)). Satisfied per TVmaze's own instruction by linking to TVmaze URLs from within the app: `schedule.tvmaze_url` on every joined show and `url` on every episode. The attribution screen additionally names TVmaze, states "CC BY-SA 4.0", links the licence (s.3(a)(1)(c)) and says the data was reformatted (s.3(a)(1)(b)). | **Yes, on the snapshot file.** See below. The app code is not Adapted Material. |
 | TheTVDB | nothing | Not read this session; not needed (TVmaze covers schedule). | **UNKNOWN — not used.** | — | — |
 
@@ -46,14 +46,14 @@ if the "for no fees" sentence is gone (`pipeline/src/qtv_pipeline/terms.py`),
 and the dated copy in `docs/terms-snapshots/` is the record of what was granted
 when the app shipped.
 
-**The scope question, and the request.** The same page scopes the terms to
-"any API based services to display data on your own site". A paid iPhone app
-is arguably not "your own site", so the owner decided (DECISIONS 0008) to ask
-LezWatch.TV in writing before shipping. The draft, addressed to
-`contact@lezwatchtv.com`, is in [moved to private strategy notes].
-It also tells them that the combined snapshot, including their data, is
-published under CC BY-SA 4.0. When they answer, save the reply beside the
-draft and update the table row above.
+**The scope question.** The same page scopes the terms to "any API based
+services to display data on your own site". A paid iPhone app is arguably not
+"your own site". The owner weighed asking LezWatch.TV in writing (DECISIONS
+0008; the unsent draft is in [moved to private strategy notes])
+and chose instead to ship on the published terms with every credit they ask
+for (DECISIONS 0013). App Review 5.2.2 may ask for authorization. The answer
+is the dated copy in `docs/terms-snapshots/`, the attribution below, and the
+review note in `docs/APP-STORE.md`.
 
 **Not taken.** Images (the site's fair-use position is its own, not ours;
 inline `<img>` tags inside LezWatch's prose fields are stripped with the rest
@@ -175,3 +175,21 @@ https://thetvdb.com/api-information first and fill the row.
 Requests made on 2026-09-13 before any mirror, for reading terms and sampling
 field shapes: lezwatchtv.com 7, docs.lezwatchtv.com 3, api.tvmaze.com 3 (one
 was a 301 followed once), www.tvmaze.com 2, creativecommons.org 1. Total 16.
+
+## Attribution audit (2026-09-17, DECISIONS 0013)
+
+Each requirement was read from the recorded terms
+(`docs/terms-snapshots/2026-09-13/`), then checked in the code and on screen.
+The last column names what fails if the credit is removed. CI runs the
+`swift test` and pipeline checks; the UI tests run locally (`make -C ios test`).
+
+| Requirement (source, verbatim) | Where it is met | What fails if it goes |
+|---|---|---|
+| LezWatch.TV ToS: *"We do ask you link back to us, or note us by name, as a thank you in your final works."* | Every show screen and every character screen has "View on LezWatch.TV", linking that record's own page (`source_url`). VoiceOver reads "View *name* on LezWatch.TV". Before this audit neither screen had it: the show screen linked only LezWatch.TV's home page in its footer, and the character screen had no link at all. | `AttributionTests.testEveryScreenRendersTheCreditsItsDataRequires` (source scan), `AttributionUITests.testShowScreen…`, `testCharacterScreen…` |
+| LezWatch.TV: named, and no implied endorsement | About → Data sources names LezWatch.TV with its link, shows the snapshot's credit text ("…LezWatch.TV does not endorse this app"), links its terms, and states in the app's own words: "LezWatch.TV and TVmaze do not endorse this app." | `AttributionTests` (source scan and the real snapshot's text), `AttributionUITests.testAbout…` |
+| TVmaze API: *"licensed by CC BY-SA … as long as TVmaze is properly credited as source … You can satisfy the attribution requirement by linking back to TVmaze from within your application"* | Wherever TVmaze data shows: under a show's "Next episode" ("Schedule data from TVmaze", linking the show's own TVmaze page, plus "CC BY-SA 4.0" linking the licence), and at the foot of Favourites, whose rows show next episodes. Also About → Data sources. Before this audit the next-episode section had no TVmaze link, and Favourites credited TVmaze nowhere. | `AttributionTests` (any view that shows TVmaze episode data must render `TVmazeCreditView`), `AttributionUITests.testShowScreen…`, `testFavourites…` |
+| CC BY-SA 4.0 s.3(a)(1): source identified, licence notice and URI, warranty disclaimer, modification indicated | The TVmaze credit text says "licensed under CC BY-SA 4.0 (URI). Reformatted for this app; TVmaze provides the data as-is without warranty and does not endorse this app." About links the licence. | `AttributionTests.testRealSnapshot…`, pipeline `licence.attribution_problems` |
+| CC BY-SA 4.0 s.3(b), ShareAlike on the snapshot | `snapshot.v1.json` carries `licence.snapshot` (CC-BY-SA-4.0 plus URI), `licence.notice` and `attribution[]`. Its Pages index now shows the licence with a link and every source credit with links to the source, its licence and its terms (`pipeline/src/qtv_pipeline/site_index.py`). | `pipeline/tests/test_attribution.py`, with negative controls |
+| Every record has something to link | Checked on the real bundled snapshot: all 2,272 shows and 7,375 characters have a lezwatchtv.com page, and every matched schedule has a TVmaze page. The pipeline check found 0 problems on the published file. | `AttributionTests.testRealSnapshot…`, `licence.attribution_problems` |
+| robots.txt: `Crawl-delay: 10`; `/wp-json/` not disallowed | Crawl conduct, not attribution: the pipeline paces LezWatch.TV at one request per 10 s (see "Crawl budget" above). | `pipeline/tests/test_http.py` |
+

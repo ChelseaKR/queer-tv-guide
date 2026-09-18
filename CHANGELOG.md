@@ -28,8 +28,16 @@ consumer of the published snapshot, would notice.
   numbers where LezWatch.TV's own tally disagrees with its character records (#15).
 - A privacy policy page and an in-app link to it; iPad orientations; the
   export-compliance declaration (#17).
+- Every show and character screen links to its LezWatch.TV page. A show's
+  next episode and the Favourites list credit TVmaze with a link and its
+  CC BY-SA 4.0 licence. About states that neither source endorses the app.
+  The snapshot's Pages index shows the licence and every source credit with
+  links.
 
 ### Changed
+
+- A show's worth-it explanation is collapsed behind "Why? (may contain
+  spoilers)", because 61 of them name a death outright.
 
 - The app ships the real published snapshot, checksum-verified, instead of the
   test fixture, and loads it off the main thread (#10).

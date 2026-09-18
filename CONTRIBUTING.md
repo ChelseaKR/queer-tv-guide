@@ -1,6 +1,6 @@
 # Contributing
 
-One maintainer, private repository. These notes are for her, for future
+One maintainer, public repository. These notes are for her, for future
 collaborators, and for the coding agents that work here.
 
 ## The one local gate

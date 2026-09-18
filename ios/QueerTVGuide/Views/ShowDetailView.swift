@@ -40,19 +40,41 @@ struct ShowDetailView: View {
 
     private func header(_ show: Show) -> some View {
         VStack(alignment: .leading, spacing: 6) {
+            // The screen's first heading, so VoiceOver's headings rotor
+            // starts at the show.
             Text(show.title)
                 .font(.largeTitle.bold())
-            Text(Presentation.years(show.years) + " · " + Presentation.seasons(show.seasons))
-                .font(.subheadline)
-                .foregroundStyle(.subdued)
-            if !show.networks.isEmpty {
-                Text(show.networks.map(\.name).joined(separator: ", "))
+                .accessibilityAddTraits(.isHeader)
+            // Years, seasons and networks as one stop, read as words
+            // ("1995 to 2001") rather than "en dash" and "middle dot".
+            VStack(alignment: .leading, spacing: 6) {
+                Text(Presentation.years(show.years) + " · " + Presentation.seasons(show.seasons))
                     .font(.subheadline)
                     .foregroundStyle(.subdued)
+                if !show.networks.isEmpty {
+                    Text(show.networks.map(\.name).joined(separator: ", "))
+                        .font(.subheadline)
+                        .foregroundStyle(.subdued)
+                }
             }
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(Self.spokenFacts(show))
             // LezWatch.TV's terms: link back (Attribution).
             LezWatchSourceLink(name: show.title, url: show.sourceURL)
         }
+    }
+
+    /// "1995 to 2001. 6 seasons. Syndication, USA Network." A start year with
+    /// no known end reads "1995, ongoing status not recorded".
+    static func spokenFacts(_ show: Show) -> String {
+        let years = Presentation.years(show.years)
+            .replacingOccurrences(of: " – ongoing status not recorded", with: ", ongoing status not recorded")
+            .replacingOccurrences(of: " – ", with: " to ")
+        var parts = [years, Presentation.seasons(show.seasons)]
+        if !show.networks.isEmpty {
+            parts.append(show.networks.map(\.name).joined(separator: ", "))
+        }
+        return parts.joined(separator: ". ") + "."
     }
 
     private func ratings(_ show: Show) -> some View {
@@ -215,7 +237,7 @@ struct ShowDetailView: View {
                         .multilineTextAlignment(.leading)
                 }
             }
-            DataStatusFooter(generatedAt: snapshot.generatedAt, refreshError: model.lastRefreshError)
+            DataStatusFooter(snapshot: snapshot)
         }
     }
 }

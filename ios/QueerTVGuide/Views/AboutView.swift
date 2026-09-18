@@ -69,7 +69,7 @@ struct AboutView: View {
                     }
 
                     Section(subdued: "This snapshot") {
-                        DataStatusFooter(generatedAt: snapshot.generatedAt, refreshError: model.lastRefreshError)
+                        DataStatusFooter(snapshot: snapshot)
                         if let origin = model.origin {
                             Text(origin == .bundled ? "Bundled with the app" : "Downloaded")
                                 .font(.caption)

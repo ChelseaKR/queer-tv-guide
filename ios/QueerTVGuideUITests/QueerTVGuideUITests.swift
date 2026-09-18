@@ -10,7 +10,7 @@ final class QueerTVGuideUITests: XCTestCase {
     }
 
     func testLaunchesToSearchWithTabsPresent() throws {
-        let app = XCUIApplication()
+        let app = XCUIApplication.guide()
         app.launch()
 
         XCTAssertTrue(app.tabBars.buttons["Search"].waitForExistence(timeout: 30))
@@ -20,7 +20,7 @@ final class QueerTVGuideUITests: XCTestCase {
 
     func testSearchFindsABundledShow() throws {
         let show = try BundledData.referenceShow()
-        let app = XCUIApplication()
+        let app = XCUIApplication.guide()
         app.launch()
 
         let searchField = app.searchFields.firstMatch
@@ -33,7 +33,7 @@ final class QueerTVGuideUITests: XCTestCase {
     }
 
     func testFavouritesTabShowsEmptyStateOnFirstLaunch() throws {
-        let app = XCUIApplication()
+        let app = XCUIApplication.guide()
         app.launch()
 
         app.tabBars.buttons["Favourites"].tap()
@@ -41,7 +41,7 @@ final class QueerTVGuideUITests: XCTestCase {
     }
 
     func testAboutScreenStatesThePrivacyPosture() throws {
-        let app = XCUIApplication()
+        let app = XCUIApplication.guide()
         app.launch()
 
         app.tabBars.buttons["About"].tap()
@@ -57,7 +57,7 @@ final class QueerTVGuideUITests: XCTestCase {
     func testShowRowAnnouncesNetworkToVoiceOver() throws {
         let show = try BundledData.referenceShow()
         XCTAssertFalse(show.networks.isEmpty, "the reference show has no network to check")
-        let app = XCUIApplication()
+        let app = XCUIApplication.guide()
         app.launch()
 
         let searchField = app.searchFields.firstMatch

@@ -1,5 +1,6 @@
 # gitleaks configuration (SECURITY-AND-SUPPLY-CHAIN-STANDARD §4, SEC-17/SEC-18).
-# The upstream default ruleset, plus exactly one false-positive exemption.
+# The upstream default ruleset, plus two false-positive exemptions, each for
+# one UserDefaults key declaration.
 
 [extend]
 useDefault = true
@@ -27,3 +28,18 @@ condition = "AND"
 paths = ['''^ios/GuideCore/Sources/GuideCore/FavouritesStore\.swift$''']
 regexTarget = "line"
 regexes = ['''^\s*public static let defaultsKey = "favourites\.v1"\s*$''']
+
+# The same false positive for the new-episode reminders switch (PR #46):
+# `enabledKey = "reminders.v1.enabled"` is the UserDefaults key the person's
+# on/off choice is stored under, not a secret. The exemption has the same
+# shape as the one above: one rule, one file, one exact line.
+# `gitleaks git` walks every fetched branch, so while the reminders branch
+# exists this line is scanned on every pull request, not only on #46.
+# tests/test_gitleaks_allowlist.py holds it to the same negative controls.
+[[allowlists]]
+description = "reminders UserDefaults key in ReminderScheduler.swift is not a credential"
+targetRules = ["generic-api-key"]
+condition = "AND"
+paths = ['''^ios/QueerTVGuide/Reminders/ReminderScheduler\.swift$''']
+regexTarget = "line"
+regexes = ['''^\s*static let enabledKey = "reminders\.v1\.enabled"\s*$''']

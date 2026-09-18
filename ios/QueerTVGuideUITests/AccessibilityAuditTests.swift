@@ -199,11 +199,12 @@ final class AccessibilityAuditTests: XCTestCase {
     }
 
     @MainActor
-    private func launch(textSize: String? = nil) -> XCUIApplication {
-        let app = XCUIApplication()
+    private func launch(textSize: String? = nil, arguments: [String] = []) -> XCUIApplication {
+        let app = XCUIApplication.guide()
         if let textSize {
             app.launchArguments += ["-UIPreferredContentSizeCategoryName", textSize]
         }
+        app.launchArguments += arguments
         app.launch()
         XCTAssertTrue(app.tabBars.buttons["Search"].waitForExistence(timeout: 30))
         return app
@@ -305,6 +306,57 @@ final class AccessibilityAuditTests: XCTestCase {
         try audit(app)
     }
 
+    // MARK: Data freshness and favourites backup (#25)
+
+    /// Mirrors `DataFreshnessBanner.identifier`.
+    static let freshnessWarningIdentifier = "data-freshness-warning"
+
+    /// With the clock pinned years after any snapshot (a Debug-only launch
+    /// argument, `AppModel.uiTestClock`), Search opens with the out-of-date
+    /// warning. It is one element that VoiceOver reads as a warning, and
+    /// the screen still passes the audit.
+    @MainActor
+    func testStaleDataWarningIsReadAsAWarningAndPassesTheAudit() throws {
+        let app = launch(arguments: ["-UITestClock", "2031-01-01T00:00:00Z"])
+        XCTAssertTrue(app.cells.firstMatch.waitForExistence(timeout: 30), "the catalogue did not load")
+        let warning = app.descendants(matching: .any)[Self.freshnessWarningIdentifier]
+        XCTAssertTrue(warning.waitForExistence(timeout: 10), "no out-of-date warning with the clock in 2031")
+        XCTAssertTrue(warning.label.hasPrefix("Warning. This data is out of date. It was last updated "), warning.label)
+        // The pinned clock landed: the age is counted in days, not hours.
+        XCTAssertTrue(warning.label.contains(" days ago, on "), warning.label)
+        try audit(app)
+    }
+
+    /// A clock set before the snapshot was built: the age is unknown, and
+    /// the app says so rather than calling the data current.
+    @MainActor
+    func testUnknownDataAgeIsStatedNotShownAsCurrent() throws {
+        let app = launch(arguments: ["-UITestClock", "2020-01-01T00:00:00Z"])
+        XCTAssertTrue(app.cells.firstMatch.waitForExistence(timeout: 30), "the catalogue did not load")
+        let warning = app.descendants(matching: .any)[Self.freshnessWarningIdentifier]
+        XCTAssertTrue(warning.waitForExistence(timeout: 10), "no warning with the clock in 2020")
+        XCTAssertTrue(warning.label.hasPrefix("Warning. This data's age is unknown. "), warning.label)
+        XCTAssertFalse(Self.opensWithNo(warning.label), warning.label)
+    }
+
+    /// The Favourites screen's backup menu: an icon button VoiceOver names
+    /// "Back up or restore favourites", offering Export (unavailable while
+    /// there is nothing to export) and Import. The screen itself is audited
+    /// by `testFavouritesAndAboutPassTheAudit`.
+    @MainActor
+    func testFavouritesBackUpMenuIsLabelledForVoiceOver() throws {
+        let app = launch()
+        app.tabBars.buttons["Favourites"].tap()
+        XCTAssertTrue(app.staticTexts["No favourites yet"].waitForExistence(timeout: 30))
+        let menu = app.buttons["Back up or restore favourites"]
+        XCTAssertTrue(menu.waitForExistence(timeout: 10), "no backup menu button")
+        menu.tap()
+        let export = app.buttons["Export favourites"]
+        XCTAssertTrue(export.waitForExistence(timeout: 10), "the menu has no Export item")
+        XCTAssertFalse(export.isEnabled, "Export is offered with nothing to export")
+        XCTAssertTrue(app.buttons["Import favourites"].exists, "the menu has no Import item")
+    }
+
     /// The evidence behind allowance 3 in `audit`: each About row the audit
     /// reports as "partially unsupported" grows by at least half again at
     /// the largest accessibility text size. A row set in a fixed font keeps
@@ -342,6 +394,41 @@ final class AccessibilityAuditTests: XCTestCase {
         }
     }
 
+    /// The first-run screen, top and bottom, at the default text size.
+    @MainActor
+    func testFirstRunScreenPassesTheAudit() throws {
+        let app = launchFirstRun()
+        try audit(app)
+        let finish = app.buttons["onboarding-finish"]
+        for _ in 0..<6 where !finish.isHittable { app.swipeUp() }
+        XCTAssertTrue(finish.isHittable, "Start browsing is out of reach")
+        try audit(app)
+    }
+
+    /// The first-run screen at the largest text size: it scrolls, nothing
+    /// is clipped, every font scales.
+    @MainActor
+    func testLargestTextSizeFirstRunScreenPassesDynamicTypeAndClippingAudits() throws {
+        let app = launchFirstRun(textSize: "UICTContentSizeCategoryAccessibilityXXXL")
+        try audit(app, [.dynamicType, .textClipped])
+        let finish = app.buttons["onboarding-finish"]
+        for _ in 0..<12 where !finish.isHittable { app.swipeUp() }
+        XCTAssertTrue(finish.isHittable, "Start browsing is out of reach at the largest text size")
+        try audit(app, [.dynamicType, .textClipped])
+    }
+
+    @MainActor
+    private func launchFirstRun(textSize: String? = nil) -> XCUIApplication {
+        let app = XCUIApplication()
+        app.launchArguments += ["-onboarding.v1.seen", "NO"]
+        if let textSize {
+            app.launchArguments += ["-UIPreferredContentSizeCategoryName", textSize]
+        }
+        app.launch()
+        XCTAssertTrue(app.staticTexts["onboarding-point-spoilers"].waitForExistence(timeout: 30), "no first-run screen")
+        return app
+    }
+
     /// The largest accessibility text size: nothing clipped, every font
     /// scales. Show screen, where the most text is.
     @MainActor
@@ -349,6 +436,65 @@ final class AccessibilityAuditTests: XCTestCase {
         let app = launch(textSize: "UICTContentSizeCategoryAccessibilityXXXL")
         XCTAssertTrue(openFirstShow(app), "did not reach a show screen")
         try audit(app, [.dynamicType, .textClipped])
+    }
+
+    static let largestTextSize = "UICTContentSizeCategoryAccessibilityXXXL"
+
+    /// The largest accessibility text size on the other tabs: Search's
+    /// catalogue, Favorites and About. Nothing clipped, every font scales.
+    @MainActor
+    func testLargestTextSizeSearchFavouritesAndAboutPassDynamicTypeAndClippingAudits() throws {
+        let app = launch(textSize: Self.largestTextSize)
+        XCTAssertTrue(app.cells.firstMatch.waitForExistence(timeout: 30), "the catalogue did not load")
+        try audit(app, [.dynamicType, .textClipped])
+
+        // Empty or not: a simulator that ran other UI tests may already hold
+        // favorites, and both states must pass.
+        app.tabBars.buttons["Favourites"].tap()
+        XCTAssertTrue(app.navigationBars["Favourites"].waitForExistence(timeout: 30))
+        try audit(app, [.dynamicType, .textClipped])
+
+        app.tabBars.buttons["About"].tap()
+        XCTAssertTrue(app.staticTexts["Privacy"].waitForExistence(timeout: 30))
+        try audit(app, [.dynamicType, .textClipped])
+    }
+
+    /// Search results (a character and its show) at the largest text size.
+    @MainActor
+    func testLargestTextSizeSearchResultsPassDynamicTypeAndClippingAudits() throws {
+        let reference = try BundledDeaths.character(recordedDeath: true)
+        let app = launch(textSize: Self.largestTextSize)
+        let search = app.searchFields.firstMatch
+        XCTAssertTrue(search.waitForExistence(timeout: 30))
+        search.tap()
+        search.typeText(reference.name + "\n")
+        let row = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "\(reference.name), from ")).firstMatch
+        XCTAssertTrue(row.waitForExistence(timeout: 30), "no search result for \(reference.name)")
+        try audit(app, [.dynamicType, .textClipped])
+    }
+
+    /// The character screen at the largest text size, reveal closed.
+    @MainActor
+    func testLargestTextSizeCharacterScreenPassesDynamicTypeAndClippingAudits() throws {
+        let reference = try BundledDeaths.character(recordedDeath: false)
+        let app = launch(textSize: Self.largestTextSize)
+        openCharacter(reference, app)
+        XCTAssertTrue(app.buttons["Reveal"].waitForExistence(timeout: 30))
+        try audit(app, [.dynamicType, .textClipped])
+    }
+
+    /// VoiceOver hears a show's years, seasons and networks as one stop, in
+    /// words: never "en dash" or "middle dot" read out of the punctuation.
+    @MainActor
+    func testShowFactsAreOneVoiceOverStopInWords() throws {
+        let app = launch()
+        XCTAssertTrue(openFirstShow(app), "did not reach a show screen")
+        let facts = app.descendants(matching: .any)
+            .matching(NSPredicate(format: "label CONTAINS 'season' OR label CONTAINS 'Seasons not recorded'")).firstMatch
+        XCTAssertTrue(facts.waitForExistence(timeout: 10), "no years-and-seasons element")
+        XCTAssertFalse(facts.label.contains("·"), facts.label)
+        XCTAssertFalse(facts.label.contains("–"), facts.label)
+        XCTAssertTrue(facts.label.hasSuffix("."), facts.label)
     }
 
     // MARK: Spoiler safety under VoiceOver

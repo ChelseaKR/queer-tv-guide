@@ -1,6 +1,6 @@
-"""Negative controls for the one gitleaks exemption in .gitleaks.toml.
+"""Negative controls for the gitleaks exemptions in .gitleaks.toml.
 
-The allowlist exists because `generic-api-key` reads the declaration of the
+The first allowlist entry exists because `generic-api-key` reads the declaration of the
 favourites UserDefaults key in FavouritesStore.swift as a credential. These
 tests prove the exemption is exactly that narrow: it silences that one line,
 and nothing a real secret could hide behind.
@@ -123,6 +123,69 @@ class GitleaksAllowlistTests(unittest.TestCase):
     def test_the_exempted_line_in_another_file_is_still_found(self) -> None:
         other = STORE.with_name("SomethingElse.swift")
         self._write(other, "enum SomethingElse {\n" + ALLOWED_LINE + "\n}\n")
+        self.assertEqual(_scan(self.tree, CONFIG), 1)
+
+
+REMINDERS = Path("ios/QueerTVGuide/Reminders/ReminderScheduler.swift")
+REMINDERS_VALUE = "reminders" + ".v1" + ".enabled"
+REMINDERS_LINE = "    static let enabledKey = " + f'"{REMINDERS_VALUE}"'
+
+
+class RemindersKeyAllowlistTests(unittest.TestCase):
+    """The second exemption: the reminders switch's UserDefaults key.
+
+    ReminderScheduler.swift arrives with PR #46, so these cases write a
+    minimal stand-in at its real path rather than copying it. The controls are
+    the same four as above: clean with the allowlist, a finding without it, and
+    a finding for a planted secret, a changed value and the line moved
+    elsewhere.
+    """
+
+    def setUp(self) -> None:
+        self.tmp = Path(tempfile.mkdtemp(prefix="qtg-gitleaks-reminders-"))
+        self.addCleanup(shutil.rmtree, self.tmp)
+        self.tree = self.tmp / "tree"
+        self.original = "enum ReminderScheduler {\n" + REMINDERS_LINE + "\n}\n"
+        self._write(REMINDERS, self.original)
+        self.defaults_only = self.tmp / "defaults-only.toml"
+        self.defaults_only.write_text("[extend]\nuseDefault = true\n")
+
+    def _write(self, relative: Path, text: str) -> None:
+        target = self.tree / relative
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(text)
+        self.assertEqual(target.read_text(), text, "sabotage did not land")
+
+    def test_the_real_file_carries_the_exempted_line_once_it_exists(self) -> None:
+        # Before #46 lands there is no file and nothing to excuse. After it,
+        # a renamed or moved key leaves the exemption matching nothing, and it
+        # should be deleted rather than left to excuse some later line.
+        real = REPO / REMINDERS
+        if real.exists():
+            self.assertIn(REMINDERS_LINE + "\n", real.read_text())
+
+    def test_the_line_is_clean_with_the_allowlist(self) -> None:
+        self.assertEqual(_scan(self.tree, CONFIG), 0)
+
+    def test_the_allowlist_is_what_silences_it(self) -> None:
+        self.assertEqual(_scan(self.tree, self.defaults_only), 1)
+
+    def test_a_real_secret_elsewhere_in_the_same_file_is_still_found(self) -> None:
+        planted = f'    private static let apiKey = "{PLANTED}"\n'
+        text = self.original.replace(REMINDERS_LINE + "\n", REMINDERS_LINE + "\n" + planted, 1)
+        self.assertIn(planted, text)
+        self._write(REMINDERS, text)
+        self.assertEqual(_scan(self.tree, CONFIG), 1)
+
+    def test_a_different_value_on_the_exempted_line_is_still_found(self) -> None:
+        text = self.original.replace(f'"{REMINDERS_VALUE}"', f'"{PLANTED}"', 1)
+        self.assertNotEqual(text, self.original)
+        self._write(REMINDERS, text)
+        self.assertEqual(_scan(self.tree, CONFIG), 1)
+
+    def test_the_exempted_line_in_another_file_is_still_found(self) -> None:
+        other = REMINDERS.with_name("SomethingElse.swift")
+        self._write(other, "enum SomethingElse {\n" + REMINDERS_LINE + "\n}\n")
         self.assertEqual(_scan(self.tree, CONFIG), 1)
 
 

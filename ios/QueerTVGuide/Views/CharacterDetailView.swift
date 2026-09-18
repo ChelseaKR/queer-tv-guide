@@ -16,7 +16,7 @@ struct CharacterDetailView: View {
                         identity(character)
                         doesSheDie(character)
                         shows(character, snapshot: snapshot)
-                        DataStatusFooter(generatedAt: snapshot.generatedAt, refreshError: model.lastRefreshError)
+                        DataStatusFooter(snapshot: snapshot)
                     }
                     .padding()
                 }

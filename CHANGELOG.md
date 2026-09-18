@@ -33,6 +33,18 @@ consumer of the published snapshot, would notice.
   CC BY-SA 4.0 licence. About states that neither source endorses the app.
   The snapshot's Pages index shows the licence and every source credit with
   links.
+- The app says how old its data is ("Data as of … (5 hours ago)"). Once the
+  data is more than 48 hours old, or its age cannot be known because it is
+  dated later than the device's clock, Search and Favourites open with a
+  plain warning that it is out of date (#25).
+- Favourites can be backed up without an account: the … menu on Favourites
+  exports a JSON file through the share sheet and imports one you pick.
+  Import checks the file and skips shows or characters that are not in the
+  data, saying how many (#25).
+- A staleness alarm for the published snapshot: `freshness.yml` checks it
+  every 6 hours and opens an `incident` issue when it is more than 30 hours
+  old, past the 48-hour SLA, unreadable, or the last nightly run failed
+  (#25).
 
 ### Changed
 

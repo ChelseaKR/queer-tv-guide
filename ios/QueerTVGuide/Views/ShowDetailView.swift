@@ -215,7 +215,7 @@ struct ShowDetailView: View {
                         .multilineTextAlignment(.leading)
                 }
             }
-            DataStatusFooter(generatedAt: snapshot.generatedAt, refreshError: model.lastRefreshError)
+            DataStatusFooter(snapshot: snapshot)
         }
     }
 }

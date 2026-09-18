@@ -16,6 +16,15 @@ How this repository handles an incident, following INCIDENT-RESPONSE-STANDARD
    IR-06). Blameless: it names what the system and process allowed, never a
    person as the cause.
 
+## Raised automatically
+
+`freshness.yml` opens a `snapshot freshness:` issue, labelled `incident` and
+its severity, when the published snapshot is older than 30 hours (a missed
+nightly run, SEV3), older than the 48-hour SLA (SEV2), cannot be read or
+dated (SEV2), or the last nightly run failed (SEV3). It comments on that
+issue when the situation changes and again when the file is fresh, and
+leaves closing it, after the postmortem, to a person.
+
 ## What the severities mean here
 
 The standard's ladder, applied to this product:

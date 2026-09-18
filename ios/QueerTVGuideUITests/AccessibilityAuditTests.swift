@@ -199,11 +199,12 @@ final class AccessibilityAuditTests: XCTestCase {
     }
 
     @MainActor
-    private func launch(textSize: String? = nil) -> XCUIApplication {
+    private func launch(textSize: String? = nil, arguments: [String] = []) -> XCUIApplication {
         let app = XCUIApplication()
         if let textSize {
             app.launchArguments += ["-UIPreferredContentSizeCategoryName", textSize]
         }
+        app.launchArguments += arguments
         app.launch()
         XCTAssertTrue(app.tabBars.buttons["Search"].waitForExistence(timeout: 30))
         return app
@@ -303,6 +304,57 @@ final class AccessibilityAuditTests: XCTestCase {
         // The sections below Privacy appear once the snapshot has loaded.
         XCTAssertTrue(app.staticTexts["Data sources"].waitForExistence(timeout: 30))
         try audit(app)
+    }
+
+    // MARK: Data freshness and favourites backup (#25)
+
+    /// Mirrors `DataFreshnessBanner.identifier`.
+    static let freshnessWarningIdentifier = "data-freshness-warning"
+
+    /// With the clock pinned years after any snapshot (a Debug-only launch
+    /// argument, `AppModel.uiTestClock`), Search opens with the out-of-date
+    /// warning. It is one element that VoiceOver reads as a warning, and
+    /// the screen still passes the audit.
+    @MainActor
+    func testStaleDataWarningIsReadAsAWarningAndPassesTheAudit() throws {
+        let app = launch(arguments: ["-UITestClock", "2031-01-01T00:00:00Z"])
+        XCTAssertTrue(app.cells.firstMatch.waitForExistence(timeout: 30), "the catalogue did not load")
+        let warning = app.descendants(matching: .any)[Self.freshnessWarningIdentifier]
+        XCTAssertTrue(warning.waitForExistence(timeout: 10), "no out-of-date warning with the clock in 2031")
+        XCTAssertTrue(warning.label.hasPrefix("Warning. This data is out of date. It was last updated "), warning.label)
+        // The pinned clock landed: the age is counted in days, not hours.
+        XCTAssertTrue(warning.label.contains(" days ago, on "), warning.label)
+        try audit(app)
+    }
+
+    /// A clock set before the snapshot was built: the age is unknown, and
+    /// the app says so rather than calling the data current.
+    @MainActor
+    func testUnknownDataAgeIsStatedNotShownAsCurrent() throws {
+        let app = launch(arguments: ["-UITestClock", "2020-01-01T00:00:00Z"])
+        XCTAssertTrue(app.cells.firstMatch.waitForExistence(timeout: 30), "the catalogue did not load")
+        let warning = app.descendants(matching: .any)[Self.freshnessWarningIdentifier]
+        XCTAssertTrue(warning.waitForExistence(timeout: 10), "no warning with the clock in 2020")
+        XCTAssertTrue(warning.label.hasPrefix("Warning. This data's age is unknown. "), warning.label)
+        XCTAssertFalse(Self.opensWithNo(warning.label), warning.label)
+    }
+
+    /// The Favourites screen's backup menu: an icon button VoiceOver names
+    /// "Back up or restore favourites", offering Export (unavailable while
+    /// there is nothing to export) and Import. The screen itself is audited
+    /// by `testFavouritesAndAboutPassTheAudit`.
+    @MainActor
+    func testFavouritesBackUpMenuIsLabelledForVoiceOver() throws {
+        let app = launch()
+        app.tabBars.buttons["Favourites"].tap()
+        XCTAssertTrue(app.staticTexts["No favourites yet"].waitForExistence(timeout: 30))
+        let menu = app.buttons["Back up or restore favourites"]
+        XCTAssertTrue(menu.waitForExistence(timeout: 10), "no backup menu button")
+        menu.tap()
+        let export = app.buttons["Export favourites"]
+        XCTAssertTrue(export.waitForExistence(timeout: 10), "the menu has no Export item")
+        XCTAssertFalse(export.isEnabled, "Export is offered with nothing to export")
+        XCTAssertTrue(app.buttons["Import favourites"].exists, "the menu has no Import item")
     }
 
     /// The evidence behind allowance 3 in `audit`: each About row the audit

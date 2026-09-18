@@ -1,0 +1,40 @@
+# Local fast feedback (SECURITY-AND-SUPPLY-CHAIN-STANDARD §4 Gate 1, SEC-17;
+# CODE-QUALITY-STANDARD §2, CQ-12). Install once per clone:
+#
+#   pre-commit install --hook-type pre-commit --hook-type pre-push
+#
+# These hooks are a convenience, not the gate: `make verify` and CI run the
+# same scanners over the whole repository and history, so skipping a hook
+# (`--no-verify`) only moves the failure to CI.
+#
+# Hook repositories are pinned to the commit behind each release tag
+# (`# frozen:` records the tag); `pre-commit autoupdate --freeze` bumps them.
+repos:
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: 83d9cd684c87d95d656c1458ef04895a7f1cbd8e # frozen: v8.30.1
+    hooks:
+      # Scans the staged diff with the repository's .gitleaks.toml.
+      - id: gitleaks
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: e8f7d69b957a30acb2c875078d5fd012de24b64c # frozen: v0.16.7
+    hooks:
+      # Pipeline files only: pipeline/pyproject.toml carries the rule set.
+      # The root tests/ and scripts/ are checked by `make policy`, which passes
+      # their settings explicitly.
+      - id: ruff-check
+        files: ^pipeline/
+      - id: ruff-format
+        files: ^pipeline/
+
+  - repo: local
+    hooks:
+      # Type checking is slower, so it runs before a push rather than on
+      # every commit.
+      - id: mypy-pipeline
+        name: mypy --strict (pipeline)
+        entry: make -C pipeline type
+        language: system
+        pass_filenames: false
+        files: ^pipeline/
+        stages: [pre-push]

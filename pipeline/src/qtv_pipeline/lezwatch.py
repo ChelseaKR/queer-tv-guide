@@ -82,7 +82,6 @@ def fetch_available_count(client: PacedClient, rest_base: str) -> int | None:
         f"{BASE}/wp/v2/{rest_base}",
         params={"per_page": 1, "status": "publish", "_fields": "id"},
     )
-    assert fetched is not None
     total = fetched.headers.get("X-WP-Total")
     return int(total) if total is not None else None
 
@@ -98,7 +97,6 @@ def fetch_taxonomies(client: PacedClient, cache_dir: Path) -> dict[str, list[dic
                 f"{BASE}/wp/v2/{rest_base}",
                 params={"per_page": PER_PAGE, "page": page, "_fields": "id,slug,name,count"},
             )
-            assert fetched is not None
             batch = fetched.json()
             if not batch:
                 break
@@ -144,7 +142,6 @@ def _list_posts(
         if since:
             params["modified_after"] = since
         fetched = client.get(f"{BASE}/wp/v2/{rest_base}", params=params)
-        assert fetched is not None
         if available is None:
             total = fetched.headers.get("X-WP-Total")
             available = int(total) if total is not None else None
@@ -215,7 +212,6 @@ def fetch_actor_names(client: PacedClient, cache_dir: Path) -> dict[int, str]:
     while True:
         params = {"page": page} if page > 1 else {}
         fetched = client.get(f"{BASE}/lwtv/v1/export/raw/actors/", params=params)
-        assert fetched is not None
         batch = fetched.json()
         if not isinstance(batch, list) or not batch:
             break
@@ -235,7 +231,6 @@ def fetch_id_list(client: PacedClient, cache_dir: Path, *, kind: str) -> list[di
     """`export/list/{shows,characters}/` — ids/slugs/names only, for deletion detection."""
     paths = _cache_paths(cache_dir)
     fetched = client.get(f"{BASE}/lwtv/v1/export/list/{kind}/")
-    assert fetched is not None
     items = fetched.json()
     if not isinstance(items, list):
         items = []

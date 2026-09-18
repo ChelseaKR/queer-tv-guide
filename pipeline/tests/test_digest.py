@@ -9,8 +9,20 @@ BASE_DOC = {
     "generated_at": "2026-09-13T00:00:00Z",
     "build": {"pipeline_version": "0.1.0", "run": {"git_sha": "abc123", "workflow_run_id": "1"}},
     "sources": {
-        "lezwatch": {"name": "LezWatch.TV", "fetched_at": "2026-09-13T00:00:00Z", "requests": 100, "bytes": 5000, "mode": "full"},
-        "tvmaze": {"name": "TVmaze", "fetched_at": "2026-09-13T00:00:00Z", "requests": 50, "bytes": 2000, "mode": "full"},
+        "lezwatch": {
+            "name": "LezWatch.TV",
+            "fetched_at": "2026-09-13T00:00:00Z",
+            "requests": 100,
+            "bytes": 5000,
+            "mode": "full",
+        },
+        "tvmaze": {
+            "name": "TVmaze",
+            "fetched_at": "2026-09-13T00:00:00Z",
+            "requests": 50,
+            "bytes": 2000,
+            "mode": "full",
+        },
     },
     "shows": [{"id": "lwtv:show:1", "title": "X"}],
 }

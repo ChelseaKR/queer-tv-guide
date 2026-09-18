@@ -10,7 +10,7 @@ from __future__ import annotations
 import time
 from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import Any
+from typing import Any, Literal, overload
 from urllib.parse import urlsplit
 
 import httpx
@@ -133,6 +133,16 @@ class PacedClient:
 
     # -- requests -----------------------------------------------------------
 
+    @overload
+    def get(
+        self, url: str, *, params: dict[str, Any] | None = None, ok_404: Literal[False] = False
+    ) -> Fetched: ...
+
+    @overload
+    def get(
+        self, url: str, *, params: dict[str, Any] | None = None, ok_404: Literal[True]
+    ) -> Fetched | None: ...
+
     def get(
         self,
         url: str,
@@ -141,6 +151,9 @@ class PacedClient:
         ok_404: bool = False,
     ) -> Fetched | None:
         """GET with pacing and retries.
+
+        Typed by overload: without `ok_404=True` the result is never None, so
+        callers need no runtime narrowing (an `assert` would vanish under -O).
 
         Returns None on a 404 when ok_404 is set (a definitive "not here" from the
         source). Raises FetchError for anything else that is not a 2xx.
@@ -186,9 +199,7 @@ class PacedClient:
             raise FetchError(f"{resp.status_code} from {url}: {resp.text[:200]!r}")
 
     def get_json(self, url: str, *, params: dict[str, Any] | None = None) -> Any:
-        fetched = self.get(url, params=params)
-        assert fetched is not None
-        return fetched.json()
+        return self.get(url, params=params).json()
 
     def counters_as_dict(self) -> dict[str, dict[str, int]]:
         return {host: c.as_dict() for host, c in sorted(self.counters.items())}

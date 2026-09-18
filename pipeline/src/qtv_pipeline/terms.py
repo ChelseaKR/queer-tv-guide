@@ -44,7 +44,6 @@ class TermsCheck:
 
 def check_lezwatch_terms(client: PacedClient) -> TermsCheck:
     fetched = client.get(LEZWATCH_TOS_URL)
-    assert fetched is not None
     present = GRANT_SENTENCE in fetched.text()
     check = TermsCheck(url=LEZWATCH_TOS_URL, grant_present=present)
     check.raise_if_changed()

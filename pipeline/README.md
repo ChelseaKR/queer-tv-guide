@@ -15,7 +15,10 @@ uv run qtv validate out/snapshot.v1.json
 uv run pytest
 ```
 
-`make verify` runs lint + tests + an offline build over the fixtures.
+`make verify` checks that `uv.lock` matches `pyproject.toml`, then runs ruff
+(lint and format), `mypy --strict`, the offline test suite with its 85% branch
+coverage floor (the end-to-end tests build a snapshot from fixtures), and a
+wheel build. The root `make verify` runs it as `make pipeline`.
 
 ## Crawl budget (declared before the first mirror)
 

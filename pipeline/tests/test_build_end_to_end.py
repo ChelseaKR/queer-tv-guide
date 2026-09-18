@@ -92,8 +92,8 @@ def test_coverage_reports_fetched_vs_available(built_doc):
 
 def test_content_digest_is_stable_across_rebuilds(tmp_path, mock_transport, no_sleep):
     sleep, _ = no_sleep
-    doc1, cache_dir, out_dir1 = _run(tmp_path / "run1", mock_transport, sleep)
-    doc2, _cache2, out_dir2 = _run(tmp_path / "run2", mock_transport, sleep)
+    doc1, _cache1, _out1 = _run(tmp_path / "run1", mock_transport, sleep)
+    doc2, _cache2, _out2 = _run(tmp_path / "run2", mock_transport, sleep)
     assert doc1["content_digest"] == doc2["content_digest"]
 
 
@@ -104,6 +104,7 @@ def test_no_death_ever_serializes_as_false(built_doc):
 
 
 # ---- negative control: prove the schema actually rejects died: false ----------
+
 
 def test_schema_rejects_died_false(built_doc):
     """Sabotage a real, fully-built document by flipping one character's

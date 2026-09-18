@@ -27,8 +27,9 @@ _FIELD_GETTERS_CHARACTER: dict[str, Any] = {
     "characters.gender": lambda c: c["gender"] is not None,
     "characters.sexuality": lambda c: c["sexuality"] is not None,
     "characters.romantic": lambda c: c["romantic"] is not None,
-    "characters.actors": lambda c: len(c["actors"]) > 0
-    and all(a["name"] is not None for a in c["actors"]),
+    "characters.actors": lambda c: (
+        len(c["actors"]) > 0 and all(a["name"] is not None for a in c["actors"])
+    ),
 }
 
 
@@ -41,7 +42,9 @@ class FetchedVsAvailable:
         return {"available": self.available, "fetched": self.fetched}
 
 
-def field_presence(shows: list[dict], characters: list[dict]) -> dict[str, dict[str, int]]:
+def field_presence(
+    shows: list[dict[str, Any]], characters: list[dict[str, Any]]
+) -> dict[str, dict[str, int]]:
     out: dict[str, dict[str, int]] = {}
     for path, getter in _FIELD_GETTERS_SHOW.items():
         present = sum(1 for s in shows if getter(s))
@@ -52,7 +55,7 @@ def field_presence(shows: list[dict], characters: list[dict]) -> dict[str, dict[
     return out
 
 
-def tvmaze_coverage(shows: list[dict]) -> dict[str, Any]:
+def tvmaze_coverage(shows: list[dict[str, Any]]) -> dict[str, Any]:
     total = len(shows)
     with_key = sum(1 for s in shows if s["schedule"]["join"]["method"] != "none")
     joined = sum(1 for s in shows if s["schedule"]["schedule_known"])

@@ -23,7 +23,7 @@ _BR_RE = re.compile(r"(?i)<br\b[^<>]*>")
 # paragraphs, not "ab".
 _BLOCK_RE = re.compile(r"(?i)</?(p|div|ul|ol|blockquote|h[1-6])\b[^<>]*>")
 _LI_END_RE = re.compile(r"(?i)</li\s*>")
-_WS_RE = re.compile(r"[ \t ]+")
+_WS_RE = re.compile(r"[ \t\u00a0]+")  # space, tab, no-break space
 _EDGE_WS_RE = re.compile(r"[ \t]*\n[ \t]*")
 # Consecutive list items sit on consecutive lines; the source's own line
 # breaks between </li> and <li> would otherwise open a blank line per item.
@@ -131,6 +131,7 @@ def _alternate_names(raw: Any) -> list[str]:
         return out
     return []
 
+
 _IMDB_RE = re.compile(r"^tt\d+$")
 
 
@@ -143,6 +144,7 @@ def normalize_show(
         imdb = None
 
     tvmaze_ignore = fields.acf(raw, "lezshows_tvmaze_ignore") is True
+    score_raw = fields.meta_str(raw, "lezshows_the_score")
 
     format_ids = raw.get("format") or []
     format_term = (
@@ -182,11 +184,7 @@ def normalize_show(
             "quality": _rating_int(fields.acf(raw, "lezshows_quality_rating")),
             "realness": _rating_int(fields.acf(raw, "lezshows_realness_rating")),
             "screentime": _rating_int(fields.acf(raw, "lezshows_screentime_rating")),
-            "score": (
-                float(fields.meta_str(raw, "lezshows_the_score"))
-                if fields.meta_str(raw, "lezshows_the_score")
-                else None
-            ),
+            "score": float(score_raw) if score_raw else None,
             "show_we_love": bool(fields.acf(raw, "lezshows_worthit_show_we_love")),
         },
         "counts": {

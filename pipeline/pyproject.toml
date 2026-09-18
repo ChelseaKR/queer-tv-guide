@@ -13,9 +13,13 @@ dependencies = [
 qtv = "qtv_pipeline.cli:main"
 
 [dependency-groups]
+# CODE-QUALITY-STANDARD §2 floors. Dev-only: none of this ships in the wheel.
 dev = [
+    "mypy>=1.18",
     "pytest>=8",
-    "ruff>=0.6",
+    "pytest-cov>=6",
+    "ruff>=0.15",
+    "types-jsonschema",
 ]
 
 [build-system]
@@ -26,16 +30,44 @@ build-backend = "hatchling.build"
 packages = ["src/qtv_pipeline"]
 
 [tool.pytest.ini_options]
+minversion = "8.0"
 testpaths = ["tests"]
-addopts = "-q"
+# Coverage is on by default so the plain `pytest` that CI runs today enforces
+# the floor too (CQ-08); `pytest --no-cov path::test` skips it while iterating.
+addopts = "-q -ra --strict-markers --strict-config --import-mode=importlib --cov --cov-report=term-missing:skip-covered"
+
+[tool.coverage.run]
+branch = true
+source = ["qtv_pipeline"]
+# Inside .pytest_cache/, which the root .gitignore already ignores, so a test
+# run leaves no stray data file to commit by accident.
+data_file = ".pytest_cache/.coverage"
+
+[tool.coverage.report]
+fail_under = 85  # application floor (CQ-08); not a published library
+show_missing = true
+
+[tool.mypy]
+strict = true
+files = ["src"]
 
 [tool.ruff]
 line-length = 100
 target-version = "py312"
 
 [tool.ruff.lint]
-select = ["E", "F", "I", "B", "UP"]
+# CODE-QUALITY-STANDARD §2 (CQ-04, CQ-05): lint, imports, modernize, bugbear,
+# simplify, bandit (S), complexity (C90) and ruff's own rules. Line length is
+# the formatter's job.
+select = ["E", "W", "F", "I", "UP", "B", "SIM", "S", "C90", "RUF"]
+ignore = ["E501"]
+
+[tool.ruff.lint.mccabe]
+max-complexity = 10
 
 [tool.ruff.lint.per-file-ignores]
-# fixture-heavy literal dicts read better on one line than wrapped
-"tests/*" = ["E501"]
+# assert is how pytest tests assert
+"tests/*" = ["S101"]
+
+[tool.ruff.format]
+quote-style = "double"

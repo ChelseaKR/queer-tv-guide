@@ -3,6 +3,7 @@ import SwiftUI
 @main
 struct QueerTVGuideApp: App {
     @State private var model = AppModel.live()
+    @Environment(\.scenePhase) private var scenePhase
 
     var body: some Scene {
         WindowGroup {
@@ -13,7 +14,15 @@ struct QueerTVGuideApp: App {
                 .tint(.accessibleAccent)
                 .task {
                     await model.loadInitial()
+                    UpNextPublisher.publish(model)
                     await model.refresh()
+                    UpNextPublisher.publish(model)
+                }
+                // The widget's copy of the favorites' next episodes is
+                // rewritten as the app leaves the foreground, so a star
+                // added or removed anywhere reaches the home screen.
+                .onChange(of: scenePhase) { _, phase in
+                    if phase != .active { UpNextPublisher.publish(model) }
                 }
         }
     }

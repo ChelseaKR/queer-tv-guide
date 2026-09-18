@@ -89,7 +89,9 @@ final class SourceTreeGuardTests: XCTestCase {
     // MARK: 3. No third-party code
 
     func testImportsAreSystemOrOurs() throws {
-        let allowed: Set<String> = ["Foundation", "SwiftUI", "XCTest", "Observation", "GuideCore", "QueerTVGuide", "PackageDescription", "UIKit"]
+        // WidgetKit: Apple's, for the home-screen widget and the app's one
+        // call asking it to redraw.
+        let allowed: Set<String> = ["Foundation", "SwiftUI", "XCTest", "Observation", "GuideCore", "QueerTVGuide", "PackageDescription", "UIKit", "WidgetKit"]
         let importLine = try NSRegularExpression(pattern: #"^\s*(?:@testable\s+)?import\s+([A-Za-z_][A-Za-z0-9_]*)"#, options: [.anchorsMatchLines])
         var offenders: [String] = []
         for file in swiftFiles() {
@@ -201,6 +203,25 @@ final class SourceTreeGuardTests: XCTestCase {
         expect("NSPrivacyAccessedAPICategoryDiskSpace", usesDiskSpace, reasons: ["E174.1"])
         expect("NSPrivacyAccessedAPICategoryActiveKeyboards", usesKeyboards, reasons: ["3EC4.1"])
         XCTAssertEqual(declaredCategories.count, declared.count, "duplicate category entries")
+    }
+
+    /// The widget extension is its own bundle with its own manifest. It
+    /// reads one local file and calls no required-reason API, so it
+    /// declares nothing at all.
+    func testWidgetPrivacyManifestDeclaresNothing() throws {
+        let url = Repo.iosRoot.appendingPathComponent("QueerTVGuideWidgets/PrivacyInfo.xcprivacy")
+        let m = try XCTUnwrap(PropertyListSerialization.propertyList(from: try Data(contentsOf: url), format: nil) as? [String: Any])
+        XCTAssertEqual(m["NSPrivacyTracking"] as? Bool, false)
+        XCTAssertEqual((m["NSPrivacyTrackingDomains"] as? [Any])?.count, 0)
+        XCTAssertEqual((m["NSPrivacyCollectedDataTypes"] as? [Any])?.count, 0)
+        XCTAssertEqual((m["NSPrivacyAccessedAPITypes"] as? [Any])?.count, 0)
+
+        var text = ""
+        for file in swiftFiles() where file.path.contains("/QueerTVGuideWidgets/") { text += try read(file) }
+        XCTAssertFalse(text.isEmpty, "no widget source was read")
+        for token in ["UserDefaults", "URLSession", "URL(string: \"http", "modificationDate", "creationDate", "systemUptime"] {
+            XCTAssertFalse(text.contains(token), "the widget uses \(token); declare it or remove it")
+        }
     }
 
     // MARK: 5. The product name lives in two places that agree

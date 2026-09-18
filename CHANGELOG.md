@@ -33,6 +33,10 @@ consumer of the published snapshot, would notice.
   CC BY-SA 4.0 licence. About states that neither source endorses the app.
   The snapshot's Pages index shows the licence and every source credit with
   links.
+- An "Up Next" home-screen widget (small and medium) with the next episode
+  of each favorite show, soonest first. It reads a file the app writes on the
+  device, makes no network request, never shows death data or episode
+  titles, always shows the data's date, and says "Out of date" past 48 hours.
 
 ### Changed
 

@@ -1,0 +1,23 @@
+# Review routing (CI-CD-STANDARD §6, CICD-17; CODE-QUALITY §7, CQ-39).
+# One maintainer today, so every path routes to her; the explicit entries
+# below are the paths a ruleset's code-owner requirement must never lose if a
+# second maintainer is added and the catch-all is narrowed.
+*                          @ChelseaKR
+
+# Workflows, their SAST config, and the gates they run: a poisoned pipeline
+# can publish anything.
+/.github/                  @ChelseaKR
+/Makefile                  @ChelseaKR
+/scripts/                  @ChelseaKR
+/tests/                    @ChelseaKR
+/.gitleaks.toml            @ChelseaKR
+/.semgrep/                 @ChelseaKR
+/renovate.json             @ChelseaKR
+
+# The premise of the product: one host, no telemetry, licences before bytes.
+/ios/GuideCore/Tests/GuideCoreTests/SourceTreeGuardTests.swift  @ChelseaKR
+/ios/QueerTVGuide/PrivacyInfo.xcprivacy                          @ChelseaKR
+/pipeline/src/qtv_pipeline/terms.py                              @ChelseaKR
+/pipeline/src/qtv_pipeline/licence.py                            @ChelseaKR
+/docs/terms-snapshots/                                           @ChelseaKR
+/docs/standards/                                                 @ChelseaKR

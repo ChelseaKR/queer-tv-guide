@@ -2,9 +2,10 @@ name: ci
 
 # PR-gating checks. Two independent lanes, each real:
 #
-#   pipeline  -- lint + the offline pytest suite (no network; the fetch/build
-#                commands that talk to LezWatch/TVmaze are not run here --
-#                see snapshot.yml for the nightly mirror).
+#   pipeline  -- `make pipeline`: the lockfile check, then pipeline/Makefile's
+#                own gate (lint and the offline pytest suite; no network --
+#                the fetch/build commands that talk to LezWatch/TVmaze are
+#                not run here, see snapshot.yml for the nightly mirror).
 #   guidecore -- `swift test` on the ios/GuideCore Swift package (no
 #                external SwiftPM dependencies; its only network use is
 #                `make -C ios bundle-snapshot`, one GET of the app's own
@@ -17,88 +18,112 @@ name: ci
 #                once the scheme is confirmed to build headlessly on a
 #                runner.
 #
-# Each job checks whether its own directory is present before doing
-# anything else, and no-ops (green, not skipped) when it isn't. That is not
-# hypothetical: at the time this workflow was written, PR #1 has pipeline/
-# but not ios/GuideCore, and PR #2 has ios/ but not pipeline/, because the
-# two lanes are still separate branches off main. Once both are merged,
-# every future PR carries both directories and both jobs run for real.
+# Both jobs run root Makefile targets, the same commands `make verify` runs
+# locally (CI-CD §9, CICD-27; tests/test_ci_parity.py). There used to be a
+# per-job "is my directory on this branch?" check that reported green when
+# the directory was missing. It was right while pipeline/ and ios/ lived on
+# separate branches; with both on main it meant deleting a directory would
+# turn its check green without running anything, so it is gone (#11).
+#
+# guidecore needs macOS (GuideCore uses Apple's Foundation networking types,
+# which do not build on Linux), and CI-CD §11b keeps macOS off per-PR CI for
+# cost. docs/adr/0012 records the exception: the `changes` job skips
+# guidecore on a pull request that touches nothing it tests, and runs it in
+# every other case, including when `changes` itself fails.
 
 on:
   pull_request:
     branches: [main]
-
-concurrency:
-  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number }}
-  cancel-in-progress: true
+  push:
+    branches: [main]
+  workflow_dispatch: {}
 
 permissions:
   contents: read
 
+concurrency:
+  # One group per commit on push, one per branch on a pull request (CI-CD
+  # §11c): a ref-only key lets a third push evict a pending run, and that
+  # commit then carries no verdict at all.
+  group: ${{ github.workflow }}-${{ github.ref }}-${{ github.event_name == 'pull_request' && 'pr' || github.sha }}
+  cancel-in-progress: true
+
 jobs:
   pipeline:
+    name: pipeline
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    permissions:
+      contents: read
     steps:
-      - uses: actions/checkout@v4
-
-      - name: check this lane is present on this branch
-        id: present
-        run: |
-          if [ -f pipeline/pyproject.toml ]; then
-            echo "present=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "present=false" >> "$GITHUB_OUTPUT"
-            echo "pipeline/ isn't on this branch -- nothing to test here."
-          fi
-
-      - name: install uv
-        if: steps.present.outputs.present == 'true'
-        uses: astral-sh/setup-uv@v3
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          version: "0.12.9"
+          persist-credentials: false
 
-      - name: install
-        if: steps.present.outputs.present == 'true'
-        working-directory: pipeline
-        run: uv sync --all-groups
+      - uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
+        with:
+          version: "0.12.12"
 
-      - name: lint
-        if: steps.present.outputs.present == 'true'
-        working-directory: pipeline
-        run: uv run ruff check src tests
+      - name: make pipeline (offline; fixtures only)
+        run: make pipeline
 
-      - name: test (offline; httpx.MockTransport fixtures only)
-        if: steps.present.outputs.present == 'true'
-        working-directory: pipeline
-        run: uv run pytest
+  changes:
+    name: changes
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    outputs:
+      guidecore: ${{ steps.scope.outputs.guidecore }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: does this change touch anything guidecore tests?
+        id: scope
+        env:
+          EVENT: ${{ github.event_name }}
+          BASE: ${{ github.event.pull_request.base.sha }}
+          HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          if [ "$EVENT" != "pull_request" ]; then
+            echo "guidecore=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          # A failed diff fails this step, and guidecore then runs anyway.
+          # No `grep -q` in a pipe: under pipefail its early exit can turn a
+          # match into a failure, which would read as "nothing changed".
+          changed="$(git diff --name-only "$BASE...$HEAD")"
+          run=false
+          while IFS= read -r path; do
+            case "$path" in
+              ios/* | schema/* | Makefile | .github/workflows/ci.yml) run=true ;;
+            esac
+          done <<< "$changed"
+          printf '%s\n' "$changed"
+          echo "guidecore=$run" >> "$GITHUB_OUTPUT"
 
   guidecore:
+    name: guidecore
+    needs: changes
+    # Skipped only on a clean "false" from `changes`; a failed or cancelled
+    # scope step runs the tests rather than skipping them.
+    if: ${{ !cancelled() && (needs.changes.result != 'success' || needs.changes.outputs.guidecore != 'false') }}
     runs-on: macos-14
     timeout-minutes: 15
+    permissions:
+      contents: read
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
-      - name: check this lane is present on this branch
-        id: present
-        run: |
-          if [ -f ios/GuideCore/Package.swift ]; then
-            echo "present=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "present=false" >> "$GITHUB_OUTPUT"
-            echo "ios/GuideCore isn't on this branch -- nothing to test here."
-          fi
-
-      # The app's bundled first-launch snapshot is gitignored (a copy of the
-      # published file, never committed). Fetch and checksum-verify it so
-      # BundledSnapshotTests can check that what would ship is real,
-      # published data. One GET to the app's own Pages URL; no source is
-      # contacted.
-      - name: fetch the bundled snapshot
-        if: steps.present.outputs.present == 'true'
-        run: make -C ios bundle-snapshot
-
-      - name: swift test
-        if: steps.present.outputs.present == 'true'
-        working-directory: ios/GuideCore
-        run: swift test
+      # `make guidecore` runs `make -C ios package-test`, which first fetches
+      # and checksum-verifies the app's bundled snapshot (gitignored; a copy
+      # of the published file) so BundledSnapshotTests check real, published
+      # data. One GET to the app's own Pages URL; no source is contacted.
+      - name: swift test (GuideCore)
+        run: make guidecore

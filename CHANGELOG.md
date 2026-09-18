@@ -56,6 +56,11 @@ consumer of the published snapshot, would notice.
 - Search filters for where to watch (particular sites), tropes and trigger
   warnings, on one filter screen that counts the shows they leave. Tropes
   that give away a death are never offered as a filter.
+- Optional reminders on the day a favorite show has a new episode listed,
+  set on the device with no server, carrying no episode title and nothing
+  about any character. They are off until a person turns them on from
+  Favorites, and only then, after an explanation, does the app ask for
+  notification permission; it never asks at launch.
 
 ### Changed
 

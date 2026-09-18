@@ -4,6 +4,7 @@ import GuideCore
 struct FavouritesView: View {
     @Environment(AppModel.self) private var model
     @State private var entries: [FavouritesStore.Entry] = []
+    @State private var showingReminderPrimer = false
     @State private var importing = false
     @State private var importOutcome: ImportOutcome?
 
@@ -45,6 +46,11 @@ struct FavouritesView: View {
                                     TVmazeCreditView(credit: credit)
                                 }
                             }
+                            // Off, and absent, unless the owner turns the
+                            // feature on (FeatureFlags).
+                            if FeatureFlags.episodeReminders, entries.contains(where: { $0.kind == .show }) {
+                                RemindersSection(showingPrimer: $showingReminderPrimer)
+                            }
                         }
                         // Pull for the latest next-episode dates: the same
                         // one GET as Search, nothing else.
@@ -64,6 +70,15 @@ struct FavouritesView: View {
                 }
             }
             .onAppear(perform: reload)
+            // The explanation before the system's permission prompt. Only
+            // "Turn on reminders" there asks iOS for permission.
+            .sheet(isPresented: $showingReminderPrimer) {
+                ReminderPrimingView { accepted in
+                    showingReminderPrimer = false
+                    guard accepted else { return }
+                    Task { _ = await ReminderScheduler.enable(model) }
+                }
+            }
             .fileImporter(isPresented: $importing, allowedContentTypes: [.json]) { result in
                 importBackup(result)
             }

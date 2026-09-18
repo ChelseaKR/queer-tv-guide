@@ -15,6 +15,13 @@ struct QueerTVGuideApp: App {
                 .task {
                     await model.loadInitial()
                     await model.refresh()
+                    await ReminderScheduler.reschedule(model)
+                }
+                // Episode reminders (off unless FeatureFlags turns them on
+                // and the user did too) follow the favorites as the app
+                // leaves the foreground.
+                .onChange(of: scenePhase) { _, phase in
+                    if phase != .active { Task { await ReminderScheduler.reschedule(model) } }
                 }
                 // An app left in the background for days comes back with
                 // its data's age re-read, so a snapshot that went stale

@@ -89,7 +89,10 @@ final class SourceTreeGuardTests: XCTestCase {
     // MARK: 3. No third-party code
 
     func testImportsAreSystemOrOurs() throws {
-        let allowed: Set<String> = ["Foundation", "SwiftUI", "XCTest", "Observation", "GuideCore", "QueerTVGuide", "PackageDescription", "UIKit"]
+        // UserNotifications: Apple's local notification scheduler, for the
+        // optional episode reminders (off behind FeatureFlags). Local only:
+        // no push, no server.
+        let allowed: Set<String> = ["Foundation", "SwiftUI", "XCTest", "Observation", "GuideCore", "QueerTVGuide", "PackageDescription", "UIKit", "UserNotifications"]
         let importLine = try NSRegularExpression(pattern: #"^\s*(?:@testable\s+)?import\s+([A-Za-z_][A-Za-z0-9_]*)"#, options: [.anchorsMatchLines])
         var offenders: [String] = []
         for file in swiftFiles() {
@@ -201,6 +204,22 @@ final class SourceTreeGuardTests: XCTestCase {
         expect("NSPrivacyAccessedAPICategoryDiskSpace", usesDiskSpace, reasons: ["E174.1"])
         expect("NSPrivacyAccessedAPICategoryActiveKeyboards", usesKeyboards, reasons: ["3EC4.1"])
         XCTAssertEqual(declaredCategories.count, declared.count, "duplicate category entries")
+    }
+
+    /// Reminders are local notifications only. No remote-notification
+    /// registration, no push entitlement, no background mode: the app never
+    /// gets a device token to send anywhere.
+    func testRemindersAreLocalOnly() throws {
+        var text = ""
+        for file in swiftFiles() where !file.path.contains("Tests/") { text += try read(file) }
+        for token in ["registerForRemoteNotifications", "UNNotificationServiceExtension", "didRegisterForRemoteNotificationsWithDeviceToken", "PKPushRegistry"] {
+            XCTAssertFalse(text.contains(token), "\(token) would reach a push server")
+        }
+        for file in Repo.sourceFiles(extensions: ["entitlements", "plist", "xcconfig", "yml"]) {
+            let body = try read(file)
+            XCTAssertFalse(body.contains("aps-environment"), "\(file.lastPathComponent) asks for push")
+            XCTAssertFalse(body.contains("remote-notification"), "\(file.lastPathComponent) asks for a remote-notification background mode")
+        }
     }
 
     // MARK: 5. The product name lives in two places that agree

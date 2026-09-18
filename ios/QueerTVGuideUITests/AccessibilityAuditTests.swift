@@ -200,7 +200,7 @@ final class AccessibilityAuditTests: XCTestCase {
 
     @MainActor
     private func launch(textSize: String? = nil) -> XCUIApplication {
-        let app = XCUIApplication()
+        let app = XCUIApplication.guide()
         if let textSize {
             app.launchArguments += ["-UIPreferredContentSizeCategoryName", textSize]
         }
@@ -340,6 +340,41 @@ final class AccessibilityAuditTests: XCTestCase {
             }
             XCTAssertGreaterThan(large, small * 1.5, "\"\(row.label)\" did not grow with Dynamic Type (\(small) pt, then \(large) pt)")
         }
+    }
+
+    /// The first-run screen, top and bottom, at the default text size.
+    @MainActor
+    func testFirstRunScreenPassesTheAudit() throws {
+        let app = launchFirstRun()
+        try audit(app)
+        let finish = app.buttons["onboarding-finish"]
+        for _ in 0..<6 where !finish.isHittable { app.swipeUp() }
+        XCTAssertTrue(finish.isHittable, "Start browsing is out of reach")
+        try audit(app)
+    }
+
+    /// The first-run screen at the largest text size: it scrolls, nothing
+    /// is clipped, every font scales.
+    @MainActor
+    func testLargestTextSizeFirstRunScreenPassesDynamicTypeAndClippingAudits() throws {
+        let app = launchFirstRun(textSize: "UICTContentSizeCategoryAccessibilityXXXL")
+        try audit(app, [.dynamicType, .textClipped])
+        let finish = app.buttons["onboarding-finish"]
+        for _ in 0..<12 where !finish.isHittable { app.swipeUp() }
+        XCTAssertTrue(finish.isHittable, "Start browsing is out of reach at the largest text size")
+        try audit(app, [.dynamicType, .textClipped])
+    }
+
+    @MainActor
+    private func launchFirstRun(textSize: String? = nil) -> XCUIApplication {
+        let app = XCUIApplication()
+        app.launchArguments += ["-onboarding.v1.seen", "NO"]
+        if let textSize {
+            app.launchArguments += ["-UIPreferredContentSizeCategoryName", textSize]
+        }
+        app.launch()
+        XCTAssertTrue(app.staticTexts["onboarding-point-spoilers"].waitForExistence(timeout: 30), "no first-run screen")
+        return app
     }
 
     /// The largest accessibility text size: nothing clipped, every font

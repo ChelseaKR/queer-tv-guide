@@ -33,6 +33,10 @@ consumer of the published snapshot, would notice.
   CC BY-SA 4.0 licence. About states that neither source endorses the app.
   The snapshot's Pages index shows the licence and every source credit with
   links.
+- A short first-run screen, skippable at once, on how spoilers stay closed,
+  what "Not recorded" means, where the data comes from (LezWatch.TV and
+  TVmaze, neither endorsing the app) and what the app does not collect.
+  About opens it again.
 
 ### Changed
 

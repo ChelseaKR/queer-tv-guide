@@ -403,6 +403,65 @@ final class AccessibilityAuditTests: XCTestCase {
         try audit(app, [.dynamicType, .textClipped])
     }
 
+    static let largestTextSize = "UICTContentSizeCategoryAccessibilityXXXL"
+
+    /// The largest accessibility text size on the other tabs: Search's
+    /// catalogue, Favorites and About. Nothing clipped, every font scales.
+    @MainActor
+    func testLargestTextSizeSearchFavouritesAndAboutPassDynamicTypeAndClippingAudits() throws {
+        let app = launch(textSize: Self.largestTextSize)
+        XCTAssertTrue(app.cells.firstMatch.waitForExistence(timeout: 30), "the catalogue did not load")
+        try audit(app, [.dynamicType, .textClipped])
+
+        // Empty or not: a simulator that ran other UI tests may already hold
+        // favorites, and both states must pass.
+        app.tabBars.buttons["Favourites"].tap()
+        XCTAssertTrue(app.navigationBars["Favourites"].waitForExistence(timeout: 30))
+        try audit(app, [.dynamicType, .textClipped])
+
+        app.tabBars.buttons["About"].tap()
+        XCTAssertTrue(app.staticTexts["Privacy"].waitForExistence(timeout: 30))
+        try audit(app, [.dynamicType, .textClipped])
+    }
+
+    /// Search results (a character and its show) at the largest text size.
+    @MainActor
+    func testLargestTextSizeSearchResultsPassDynamicTypeAndClippingAudits() throws {
+        let reference = try BundledDeaths.character(recordedDeath: true)
+        let app = launch(textSize: Self.largestTextSize)
+        let search = app.searchFields.firstMatch
+        XCTAssertTrue(search.waitForExistence(timeout: 30))
+        search.tap()
+        search.typeText(reference.name + "\n")
+        let row = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "\(reference.name), from ")).firstMatch
+        XCTAssertTrue(row.waitForExistence(timeout: 30), "no search result for \(reference.name)")
+        try audit(app, [.dynamicType, .textClipped])
+    }
+
+    /// The character screen at the largest text size, reveal closed.
+    @MainActor
+    func testLargestTextSizeCharacterScreenPassesDynamicTypeAndClippingAudits() throws {
+        let reference = try BundledDeaths.character(recordedDeath: false)
+        let app = launch(textSize: Self.largestTextSize)
+        openCharacter(reference, app)
+        XCTAssertTrue(app.buttons["Reveal"].waitForExistence(timeout: 30))
+        try audit(app, [.dynamicType, .textClipped])
+    }
+
+    /// VoiceOver hears a show's years, seasons and networks as one stop, in
+    /// words: never "en dash" or "middle dot" read out of the punctuation.
+    @MainActor
+    func testShowFactsAreOneVoiceOverStopInWords() throws {
+        let app = launch()
+        XCTAssertTrue(openFirstShow(app), "did not reach a show screen")
+        let facts = app.descendants(matching: .any)
+            .matching(NSPredicate(format: "label CONTAINS 'season' OR label CONTAINS 'Seasons not recorded'")).firstMatch
+        XCTAssertTrue(facts.waitForExistence(timeout: 10), "no years-and-seasons element")
+        XCTAssertFalse(facts.label.contains("·"), facts.label)
+        XCTAssertFalse(facts.label.contains("–"), facts.label)
+        XCTAssertTrue(facts.label.hasSuffix("."), facts.label)
+    }
+
     // MARK: Spoiler safety under VoiceOver
     //
     // VoiceOver reads the accessibility tree, not the pixels. A reveal that

@@ -40,5 +40,6 @@ struct RootTabView: View {
         // (AccessibleStyle.swift).
         .legibleScrollEdges()
         .labeledContentStyle(SubduedValueLabeledContentStyle())
+        .reduceMotionRespected()
     }
 }

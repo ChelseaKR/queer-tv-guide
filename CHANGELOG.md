@@ -48,6 +48,11 @@ consumer of the published snapshot, would notice.
 
 ### Changed
 
+- VoiceOver reads a show's years, seasons and networks as one stop, in words
+  ("1995 to 2001") rather than punctuation, and each show's and character's
+  name is a heading. With Reduce Motion on, the app's own animations are
+  dropped. The accessibility audit now covers Search, its results, the
+  character screen, Favourites and About at the largest text size too.
 - A show's worth-it explanation is collapsed behind "Why? (may contain
   spoilers)", because 61 of them name a death outright.
 

@@ -37,6 +37,7 @@ struct CharacterDetailView: View {
         VStack(alignment: .leading, spacing: 6) {
             Text(character.name)
                 .font(.largeTitle.bold())
+                .accessibilityAddTraits(.isHeader)
             if !character.actors.isEmpty {
                 Text("Played by " + character.actors.compactMap(\.name).joined(separator: ", "))
                     .font(.subheadline)

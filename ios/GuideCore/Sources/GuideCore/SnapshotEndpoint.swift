@@ -30,3 +30,10 @@ public enum SnapshotEndpoint {
 public enum PrivacyPolicy {
     public static let url = URL(string: "https://chelseakr.github.io/queer-tv-guide/privacy.html")!
 }
+
+/// The support page (DECISIONS 0010): the App Store Support URL, published by
+/// the same nightly workflow onto the same Pages site. Opened in Safari via
+/// `openURL`; the app never fetches it.
+public enum SupportPage {
+    public static let url = URL(string: "https://chelseakr.github.io/queer-tv-guide/support.html")!
+}

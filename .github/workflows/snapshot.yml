@@ -102,10 +102,12 @@ jobs:
           mkdir -p site
           cp out/snapshot.v1.json site/
           cp out/snapshot.v1.json.sha256 site/
-          # The app's privacy policy (App Store Connect's Privacy Policy URL
-          # and the About screen's link). Static, no scripts, no fonts, no
+          # The app's privacy policy and support page (App Store Connect's
+          # Privacy Policy and Support URLs, and the About screen's links;
+          # DECISIONS 0007, 0010). Static, no scripts, no fonts, no
           # third-party requests.
           cp ../docs/site/privacy.html site/privacy.html
+          cp ../docs/site/support.html site/support.html
           python3 - <<'PY'
           import json
           doc = json.load(open("out/snapshot.v1.json"))
@@ -113,7 +115,7 @@ jobs:
           lw = cov["lezwatch"]
           tv = cov["tvmaze"]
           html = f"""<!doctype html><meta charset="utf-8">
-          <title>queer-tv-guide snapshot</title>
+          <title>Queer Frame snapshot</title>
           <p>{doc['licence']['notice']}</p>
           <ul>
           <li>generated_at: {doc['generated_at']}</li>
@@ -125,7 +127,8 @@ jobs:
           <ul>
           <li><a href="snapshot.v1.json">snapshot.v1.json</a></li>
           <li><a href="snapshot.v1.json.sha256">snapshot.v1.json.sha256</a></li>
-          <li><a href="privacy.html">privacy policy (the iOS app)</a></li>
+          <li><a href="privacy.html">Queer Frame privacy policy</a></li>
+          <li><a href="support.html">Queer Frame support</a></li>
           </ul>
           """
           open("site/index.html", "w").write(html)

@@ -1,4 +1,6 @@
-# queer-tv-guide (working name)
+# Queer Frame
+
+(Repository and bundle id keep the working name `queer-tv-guide`; DECISIONS 0006.)
 
 A no-account, no-telemetry iOS guide to queer TV: *does she die, is it worth
 it, where to watch, when's the next episode.*
@@ -22,7 +24,9 @@ Governance standard §4a (DG-20: the declared posture is "none").
 - `docs/` — research, decisions, licences and attributions, the App Store
   checklist.
 
-## Not yet decided
+## Not yet cleared to ship
 
-The name. "Signal" (the research's placeholder) collides with Signal Messenger
-and is not used anywhere here.
+LezWatch.TV's written OK for use in a paid app (DECISIONS 0008). The request
+is drafted in [moved to private strategy notes] and has not
+been sent. The name is settled: **Queer Frame** (DECISIONS 0006). Never
+"Signal", which collides with Signal Messenger.

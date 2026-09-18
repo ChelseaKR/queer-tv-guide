@@ -1,12 +1,10 @@
 import Foundation
 
-/// The product's human-facing display name. The name is undecided
-/// (DECISIONS 0004); this is the ONE place the placeholder is spelled out,
-/// so the eventual rename is a one-line edit here (plus renaming
-/// `PRODUCT_NAME` in `ios/Config/Product.xcconfig`, which is a clean
-/// technical identifier on purpose — see the comment there). Never
-/// Never the name DECISIONS 0004 rejects (it collides with an existing
-/// messaging app).
+/// The product's human-facing name (DECISIONS 0006). This is the
+/// one Swift source location it is spelled out; the home-screen name is
+/// `INFOPLIST_KEY_CFBundleDisplayName` in `ios/Config/Product.xcconfig`, and
+/// `SourceTreeGuardTests` checks the two agree. The repository, bundle id,
+/// `PRODUCT_NAME` and targets keep their working names on purpose.
 enum AppIdentity {
-    static let displayName = "Queer TV Guide"
+    static let displayName = "Queer Frame"
 }

@@ -203,29 +203,50 @@ final class SourceTreeGuardTests: XCTestCase {
         XCTAssertEqual(declaredCategories.count, declared.count, "duplicate category entries")
     }
 
-    // MARK: 5. Placeholder name lives in one place
+    // MARK: 5. The product name lives in two places that agree
 
-    // This guard file necessarily names the placeholder and the rejected
-    // name in its own source (to describe what it's checking for), so it
-    // excludes itself from both scans below — every other file in ios/ is
-    // still checked without exception.
+    // This guard file necessarily names the product, the old placeholder
+    // and the rejected name in its own source (to describe what it's
+    // checking for), so it excludes itself from the scans below — every
+    // other file in ios/ is still checked without exception.
     private static let thisFileName = "SourceTreeGuardTests.swift"
 
-    func testPlaceholderProductNameAppearsExactlyOnce() throws {
-        let placeholder = "Queer TV Guide"
-        var hits: [String] = []
+    /// DECISIONS 0006. The Swift constant and the home-screen display name.
+    static let productName = "Queer Frame"
+
+    private func scannedFiles() -> [URL] {
         var files = codeFiles()
         files += Repo.sourceFiles(extensions: ["json", "md", "strings"])
-        for file in files where file.lastPathComponent != Self.thisFileName {
-            let text = try read(file)
-            let n = text.components(separatedBy: placeholder).count - 1
+        return files.filter { $0.lastPathComponent != Self.thisFileName }
+    }
+
+    func testProductNameIsSpelledOutInExactlyTheTwoPlacesThatNameTheApp() throws {
+        var hits: [String] = []
+        for file in scannedFiles() {
+            let n = try read(file).components(separatedBy: Self.productName).count - 1
             if n > 0 { hits.append("\(file.lastPathComponent) ×\(n)") }
         }
-        XCTAssertEqual(hits, ["AppIdentity.swift ×1"], "the placeholder name must live only in AppIdentity.swift; found: \(hits)")
+        XCTAssertEqual(Set(hits), ["AppIdentity.swift ×1", "Product.xcconfig ×1"], "the product name must be spelled out only in AppIdentity.swift and as CFBundleDisplayName in Product.xcconfig; found: \(hits)")
+    }
+
+    func testDisplayNameAndAppIdentityAgree() throws {
+        let identity = try read(Repo.iosRoot.appendingPathComponent("QueerTVGuide/App/AppIdentity.swift"))
+        XCTAssertTrue(identity.contains("static let displayName = \"\(Self.productName)\""), "AppIdentity.displayName is not the product name")
+        let product = try read(Repo.iosRoot.appendingPathComponent("Config/Product.xcconfig"))
+        XCTAssertTrue(product.split(separator: "\n").contains { $0.trimmingCharacters(in: .whitespaces) == "INFOPLIST_KEY_CFBundleDisplayName = \(Self.productName)" }, "CFBundleDisplayName is not the product name")
+    }
+
+    func testTheOldPlaceholderNameIsGone() throws {
+        let placeholder = "Queer TV Guide"
+        var hits: [String] = []
+        for file in scannedFiles() {
+            if try read(file).contains(placeholder) { hits.append(file.lastPathComponent) }
+        }
+        XCTAssertEqual(hits, [], "the working placeholder name is still user-visible in: \(hits)")
     }
 
     func testTheWordSignalIsNotUsedAsAName() throws {
-        // DECISIONS 0004: never "Signal". (A fixture episode title is data, not a name; the check is on code files.)
+        // DECISIONS 0004/0006: never "Signal". (A fixture episode title is data, not a name; the check is on code files.)
         for file in codeFiles() where file.lastPathComponent != Self.thisFileName {
             let text = try read(file)
             XCTAssertFalse(text.contains("\"Signal\""), "\(file.lastPathComponent) uses the rejected name")

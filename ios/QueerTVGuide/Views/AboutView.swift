@@ -9,10 +9,15 @@ struct AboutView: View {
         NavigationStack {
             List {
                 Section("Privacy") {
-                    Text("No account, no analytics, no crash reporting, no third-party SDKs. Nothing leaves this device except one request for the data file this app reads — a plain, cookieless GET of a static file, sent only when you open the app or pull to refresh.")
-                        .accessibilityLabel("Privacy posture: no account, no analytics, no crash reporting, no third-party SDKs. Nothing leaves this device except one request for the data file this app reads.")
+                    Text("\(AppIdentity.displayName) collects nothing: no account, no analytics, no crash reporting, no third-party SDKs. Nothing leaves this device except one request for the data file this app reads — a plain, cookieless GET of a static file, sent only when you open the app or pull to refresh.")
+                        .accessibilityLabel("Privacy posture: \(AppIdentity.displayName) collects nothing. No account, no analytics, no crash reporting, no third-party SDKs. Nothing leaves this device except one request for the data file this app reads.")
+                    // DECISIONS 0007: say plainly who serves that file and
+                    // what a web server sees.
+                    Text("That file is served by GitHub Pages, which, like any web server, sees your IP address and logs it for security. The developer never sees that log.")
                     Text("Favourites are stored only on this device and are never sent anywhere.")
                     Button("Privacy policy") { openURL(PrivacyPolicy.url) }
+                        .accessibilityHint("Opens in Safari")
+                    Button("Support") { openURL(SupportPage.url) }
                         .accessibilityHint("Opens in Safari")
                 }
 

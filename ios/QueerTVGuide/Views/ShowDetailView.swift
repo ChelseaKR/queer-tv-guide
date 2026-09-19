@@ -29,7 +29,7 @@ struct ShowDetailView: View {
                 .navigationBarTitleDisplayMode(.inline)
                 .toolbar {
                     ToolbarItem(placement: .topBarTrailing) {
-                        FavouriteButton(kind: .show, id: show.id)
+                        FavoriteButton(kind: .show, id: show.id)
                     }
                 }
             } else {

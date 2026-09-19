@@ -16,14 +16,14 @@ final class AttributionTests: XCTestCase {
 
     // MARK: Attribution (GuideCore)
 
-    func testScheduleCreditLinksTheShowsTVmazePageAndTheLicence() throws {
+    func testScheduleCreditLinksTheShowsTVmazePageAndTheLicense() throws {
         let s = try Repo.fixture()
         let show = try XCTUnwrap(s.show(id: "lwtv:show:101"))
         let credit = try XCTUnwrap(Attribution.tvmazeCredit(for: show.schedule, in: s))
         XCTAssertEqual(credit.source.url, show.schedule.tvmazeURL)
         XCTAssertEqual(credit.source.title, "Schedule data from TVmaze")
-        XCTAssertEqual(credit.licence.title, "CC BY-SA 4.0")
-        XCTAssertEqual(credit.licence.url.path, Self.ccBySA4Path)
+        XCTAssertEqual(credit.license.title, "CC BY-SA 4.0")
+        XCTAssertEqual(credit.license.url.path, Self.ccBySA4Path)
     }
 
     func testNoScheduleMeansNoTVmazeDataAndNoCredit() throws {
@@ -77,12 +77,12 @@ final class AttributionTests: XCTestCase {
         XCTAssertTrue(lw.text.contains("LezWatch.TV does not endorse this app"))
         let tv = try XCTUnwrap(s.attribution(for: Attribution.tvmazeSource))
         XCTAssertEqual(tv.url.host, Self.tvmazeHost)
-        XCTAssertEqual(tv.licenceURL.path, Self.ccBySA4Path)
+        XCTAssertEqual(tv.licenseURL.path, Self.ccBySA4Path)
         for needle in ["CC BY-SA 4.0", "Reformatted", "without warranty", "does not endorse this app"] {
             XCTAssertTrue(tv.text.contains(needle), "TVmaze credit lacks \(needle)")
         }
-        XCTAssertEqual(s.licence.snapshot.spdx, "CC-BY-SA-4.0")
-        XCTAssertTrue(s.licence.notice.contains("LezWatch.TV") && s.licence.notice.contains("TVmaze"))
+        XCTAssertEqual(s.license.snapshot.spdx, "CC-BY-SA-4.0")
+        XCTAssertTrue(s.license.notice.contains("LezWatch.TV") && s.license.notice.contains("TVmaze"))
     }
 
     // MARK: The views render the credits (source scan; CI-visible)
@@ -96,8 +96,8 @@ final class AttributionTests: XCTestCase {
     static let rules: [Rule] = [
         Rule(file: "Views/ShowDetailView.swift", mustContain: ["LezWatchSourceLink(name: show.title, url: show.sourceURL)", "TVmazeCreditView(credit:"], why: "show screen: LezWatch.TV page link, TVmaze credit with the schedule"),
         Rule(file: "Views/CharacterDetailView.swift", mustContain: ["LezWatchSourceLink(name: character.name, url: character.sourceURL)"], why: "character screen: LezWatch.TV page link"),
-        Rule(file: "Views/FavouritesView.swift", mustContain: ["TVmazeCreditView(credit:"], why: "favourites show TVmaze next episodes"),
-        Rule(file: "Views/AboutView.swift", mustContain: ["Attribution.nonEndorsement", "openURL(item.url)", "openURL(item.licenceURL)", "Text(item.text)", "snapshot.licence.notice"], why: "About: sources named and linked, licences linked, non-endorsement"),
+        Rule(file: "Views/FavoritesView.swift", mustContain: ["TVmazeCreditView(credit:"], why: "favorites show TVmaze next episodes"),
+        Rule(file: "Views/AboutView.swift", mustContain: ["Attribution.nonEndorsement", "openURL(item.url)", "openURL(item.licenseURL)", "Text(item.text)", "snapshot.license.notice"], why: "About: sources named and linked, licenses linked, non-endorsement"),
     ]
 
     /// Any view that shows TVmaze data must also render TVmaze's credit.

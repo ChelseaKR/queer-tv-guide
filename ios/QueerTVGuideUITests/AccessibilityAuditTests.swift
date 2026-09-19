@@ -36,7 +36,7 @@ final class AccessibilityAuditTests: XCTestCase {
     ///    About 1. On other runs it attached the same 3 to the three texts
     ///    of the one row under the bar ("100 días para enamorarse", "Yes",
     ///    "· Telefe") and that 1 to About's LezWatch.TV credit under the
-    ///    bar. With `.subdued` sabotaged to a 60% grey, Search reported 19
+    ///    bar. With `.subdued` sabotaged to a 60% gray, Search reported 19
     ///    with no element, over the bound, and failed.
     /// 2. Contrast on an element resting within `tabBarBand` points above
     ///    the bar, and only when its own pixels measure at least 4.5:1 (see
@@ -151,7 +151,7 @@ final class AccessibilityAuditTests: XCTestCase {
     /// The About rows under allowance 3, by element type and label.
     static let aboutRowsThatScale: [(type: XCUIElement.ElementType, label: String)] = [
         (.staticText, "That file is served by GitHub Pages, which, like any web server, sees your IP address and logs it for security. The developer never sees that log."),
-        (.staticText, "Favourites are stored only on this device and are never sent anywhere."),
+        (.staticText, "Favorites are stored only on this device and are never sent anywhere."),
         (.button, "Privacy policy"),
         (.button, "Support"),
     ]
@@ -232,7 +232,7 @@ final class AccessibilityAuditTests: XCTestCase {
     @MainActor
     func testFilterSheetAndItsResultsPassTheAudit() throws {
         let app = launch()
-        XCTAssertTrue(app.cells.firstMatch.waitForExistence(timeout: 30), "the catalogue did not load")
+        XCTAssertTrue(app.cells.firstMatch.waitForExistence(timeout: 30), "the catalog did not load")
         let filter = app.buttons["Filter"]
         XCTAssertTrue(filter.waitForExistence(timeout: 30))
         filter.tap()
@@ -299,8 +299,8 @@ final class AccessibilityAuditTests: XCTestCase {
     @MainActor
     func testSearchScreenPassesTheAudit() throws {
         let app = launch()
-        // Audit the loaded catalogue, not the "Loading catalogue" state.
-        XCTAssertTrue(app.cells.firstMatch.waitForExistence(timeout: 30), "the catalogue did not load")
+        // Audit the loaded catalog, not the "Loading catalog" state.
+        XCTAssertTrue(app.cells.firstMatch.waitForExistence(timeout: 30), "the catalog did not load")
         try audit(app)
     }
 
@@ -357,10 +357,10 @@ final class AccessibilityAuditTests: XCTestCase {
     }
 
     @MainActor
-    func testFavouritesAndAboutPassTheAudit() throws {
+    func testFavoritesAndAboutPassTheAudit() throws {
         let app = launch()
-        app.tabBars.buttons["Favourites"].tap()
-        XCTAssertTrue(app.staticTexts["No favourites yet"].waitForExistence(timeout: 30))
+        app.tabBars.buttons["Favorites"].tap()
+        XCTAssertTrue(app.staticTexts["No favorites yet"].waitForExistence(timeout: 30))
         try audit(app)
 
         app.tabBars.buttons["About"].tap()
@@ -370,7 +370,7 @@ final class AccessibilityAuditTests: XCTestCase {
         try audit(app)
     }
 
-    // MARK: Data freshness and favourites backup (#25)
+    // MARK: Data freshness and favorites backup (#25)
 
     /// Mirrors `DataFreshnessBanner.identifier`.
     static let freshnessWarningIdentifier = "data-freshness-warning"
@@ -382,7 +382,7 @@ final class AccessibilityAuditTests: XCTestCase {
     @MainActor
     func testStaleDataWarningIsReadAsAWarningAndPassesTheAudit() throws {
         let app = launch(arguments: ["-UITestClock", "2031-01-01T00:00:00Z"])
-        XCTAssertTrue(app.cells.firstMatch.waitForExistence(timeout: 30), "the catalogue did not load")
+        XCTAssertTrue(app.cells.firstMatch.waitForExistence(timeout: 30), "the catalog did not load")
         let warning = app.descendants(matching: .any)[Self.freshnessWarningIdentifier]
         XCTAssertTrue(warning.waitForExistence(timeout: 10), "no out-of-date warning with the clock in 2031")
         XCTAssertTrue(warning.label.hasPrefix("Warning. This data is out of date. It was last updated "), warning.label)
@@ -396,35 +396,35 @@ final class AccessibilityAuditTests: XCTestCase {
     @MainActor
     func testUnknownDataAgeIsStatedNotShownAsCurrent() throws {
         let app = launch(arguments: ["-UITestClock", "2020-01-01T00:00:00Z"])
-        XCTAssertTrue(app.cells.firstMatch.waitForExistence(timeout: 30), "the catalogue did not load")
+        XCTAssertTrue(app.cells.firstMatch.waitForExistence(timeout: 30), "the catalog did not load")
         let warning = app.descendants(matching: .any)[Self.freshnessWarningIdentifier]
         XCTAssertTrue(warning.waitForExistence(timeout: 10), "no warning with the clock in 2020")
         XCTAssertTrue(warning.label.hasPrefix("Warning. This data's age is unknown. "), warning.label)
         XCTAssertFalse(Self.opensWithNo(warning.label), warning.label)
     }
 
-    /// The Favourites screen's backup menu: an icon button VoiceOver names
-    /// "Back up or restore favourites", offering Export (unavailable while
+    /// The Favorites screen's backup menu: an icon button VoiceOver names
+    /// "Back up or restore favorites", offering Export (unavailable while
     /// there is nothing to export) and Import. The screen itself is audited
-    /// by `testFavouritesAndAboutPassTheAudit`.
+    /// by `testFavoritesAndAboutPassTheAudit`.
     @MainActor
-    func testFavouritesBackUpMenuIsLabelledForVoiceOver() throws {
+    func testFavoritesBackUpMenuIsLabeledForVoiceOver() throws {
         let app = launch()
-        app.tabBars.buttons["Favourites"].tap()
-        XCTAssertTrue(app.staticTexts["No favourites yet"].waitForExistence(timeout: 30))
-        let menu = app.buttons["Back up or restore favourites"]
+        app.tabBars.buttons["Favorites"].tap()
+        XCTAssertTrue(app.staticTexts["No favorites yet"].waitForExistence(timeout: 30))
+        let menu = app.buttons["Back up or restore favorites"]
         XCTAssertTrue(menu.waitForExistence(timeout: 10), "no backup menu button")
         menu.tap()
-        let export = app.buttons["Export favourites"]
+        let export = app.buttons["Export favorites"]
         XCTAssertTrue(export.waitForExistence(timeout: 10), "the menu has no Export item")
         XCTAssertFalse(export.isEnabled, "Export is offered with nothing to export")
-        XCTAssertTrue(app.buttons["Import favourites"].exists, "the menu has no Import item")
+        XCTAssertTrue(app.buttons["Import favorites"].exists, "the menu has no Import item")
     }
 
     /// The evidence behind allowance 3 in `audit`: each About row the audit
     /// reports as "partially unsupported" grows by at least half again at
     /// the largest accessibility text size. A row set in a fixed font keeps
-    /// its height and fails here. Measured 2026-09-18: "Favourites are
+    /// its height and fails here. Measured 2026-09-18: "Favorites are
     /// stored…" 72 pt at the default size, 132 pt already at Accessibility M.
     @MainActor
     func testAboutRowsTheAuditQuestionsDoScaleWithDynamicType() throws {
@@ -505,17 +505,17 @@ final class AccessibilityAuditTests: XCTestCase {
     static let largestTextSize = "UICTContentSizeCategoryAccessibilityXXXL"
 
     /// The largest accessibility text size on the other tabs: Search's
-    /// catalogue, Favorites and About. Nothing clipped, every font scales.
+    /// catalog, Favorites and About. Nothing clipped, every font scales.
     @MainActor
-    func testLargestTextSizeSearchFavouritesAndAboutPassDynamicTypeAndClippingAudits() throws {
+    func testLargestTextSizeSearchFavoritesAndAboutPassDynamicTypeAndClippingAudits() throws {
         let app = launch(textSize: Self.largestTextSize)
-        XCTAssertTrue(app.cells.firstMatch.waitForExistence(timeout: 30), "the catalogue did not load")
+        XCTAssertTrue(app.cells.firstMatch.waitForExistence(timeout: 30), "the catalog did not load")
         try audit(app, [.dynamicType, .textClipped])
 
         // Empty or not: a simulator that ran other UI tests may already hold
         // favorites, and both states must pass.
-        app.tabBars.buttons["Favourites"].tap()
-        XCTAssertTrue(app.navigationBars["Favourites"].waitForExistence(timeout: 30))
+        app.tabBars.buttons["Favorites"].tap()
+        XCTAssertTrue(app.navigationBars["Favorites"].waitForExistence(timeout: 30))
         try audit(app, [.dynamicType, .textClipped])
 
         app.tabBars.buttons["About"].tap()
@@ -620,7 +620,7 @@ final class AccessibilityAuditTests: XCTestCase {
     }
 
     /// Allowance 2's pixel measure: #404040 text on white (the app's
-    /// `.subdued`) clears 4.5:1; the system `.secondary` grey (#8A8A8E) on
+    /// `.subdued`) clears 4.5:1; the system `.secondary` gray (#8A8A8E) on
     /// white does not.
     func testTheRenderedContrastMeasureCanFail() {
         func pixels(_ a: UInt8, _ b: UInt8) -> [UInt8] { [a, a, a, 255, b, b, b, 255] }

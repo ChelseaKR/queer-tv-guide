@@ -46,17 +46,17 @@ final class AppModelIntegrationTests: XCTestCase {
         )
     }
 
-    func testFavouritesRoundTripThroughTheRealAppModel() async {
+    func testFavoritesRoundTripThroughTheRealAppModel() async {
         let suiteName = "QueerTVGuideTests.\(UUID().uuidString)"
         let defaults = UserDefaults(suiteName: suiteName)!
         defer { defaults.removePersistentDomain(forName: suiteName) }
 
-        let model = AppModel(store: SnapshotStore(directory: try! Self.emptyDirectory(), bundledURL: Bundle.main.url(forResource: "snapshot.v1", withExtension: "json")), favourites: FavouritesStore(defaults: defaults))
+        let model = AppModel(store: SnapshotStore(directory: try! Self.emptyDirectory(), bundledURL: Bundle.main.url(forResource: "snapshot.v1", withExtension: "json")), favorites: FavoritesStore(defaults: defaults))
         await model.loadInitial()
         guard let show = model.snapshot?.shows.first else { return XCTFail("no shows in bundled snapshot") }
-        XCTAssertFalse(model.favourites.isFavourite(.show, id: show.id))
-        model.favourites.toggle(.show, id: show.id)
-        XCTAssertTrue(model.favourites.isFavourite(.show, id: show.id))
+        XCTAssertFalse(model.favorites.isFavorite(.show, id: show.id))
+        model.favorites.toggle(.show, id: show.id)
+        XCTAssertTrue(model.favorites.isFavorite(.show, id: show.id))
     }
 
     /// Import through the model the app uses, checked against the real
@@ -66,22 +66,22 @@ final class AppModelIntegrationTests: XCTestCase {
         let suiteName = "QueerTVGuideTests.\(UUID().uuidString)"
         let defaults = try XCTUnwrap(UserDefaults(suiteName: suiteName))
         defer { defaults.removePersistentDomain(forName: suiteName) }
-        let model = AppModel(store: SnapshotStore(directory: try Self.emptyDirectory(), bundledURL: Bundle.main.url(forResource: "snapshot.v1", withExtension: "json")), favourites: FavouritesStore(defaults: defaults))
+        let model = AppModel(store: SnapshotStore(directory: try Self.emptyDirectory(), bundledURL: Bundle.main.url(forResource: "snapshot.v1", withExtension: "json")), favorites: FavoritesStore(defaults: defaults))
 
-        XCTAssertThrowsError(try model.importFavourites(from: Data()), "import before the catalogue loads must refuse, not guess")
+        XCTAssertThrowsError(try model.importFavorites(from: Data()), "import before the catalog loads must refuse, not guess")
         await model.loadInitial()
         let show = try XCTUnwrap(model.snapshot?.shows.first)
         let unknown = "lwtv:show:999999999"
         XCTAssertNil(model.snapshot?.show(id: unknown), "the unknown id must really be unknown")
-        let file = try FavouritesBackup.export([
-            FavouritesStore.Entry(kind: .show, id: show.id, addedAt: Date(timeIntervalSince1970: 1_789_724_682)),
-            FavouritesStore.Entry(kind: .show, id: unknown, addedAt: Date(timeIntervalSince1970: 1_789_724_682)),
+        let file = try FavoritesBackup.export([
+            FavoritesStore.Entry(kind: .show, id: show.id, addedAt: Date(timeIntervalSince1970: 1_789_724_682)),
+            FavoritesStore.Entry(kind: .show, id: unknown, addedAt: Date(timeIntervalSince1970: 1_789_724_682)),
         ])
 
-        let summary = try model.importFavourites(from: file)
-        XCTAssertEqual(summary, "Added 1 favourite. 1 is not in this snapshot and was skipped.")
-        XCTAssertEqual(model.favourites.entries.map(\.id), [show.id])
-        XCTAssertEqual(try model.importFavourites(from: file), "No new favourites were added. 1 was already saved. 1 is not in this snapshot and was skipped.")
+        let summary = try model.importFavorites(from: file)
+        XCTAssertEqual(summary, "Added 1 favorite. 1 is not in this snapshot and was skipped.")
+        XCTAssertEqual(model.favorites.entries.map(\.id), [show.id])
+        XCTAssertEqual(try model.importFavorites(from: file), "No new favorites were added. 1 was already saved. 1 is not in this snapshot and was skipped.")
     }
 
     /// The model judges the loaded snapshot's age by its own clock, read at

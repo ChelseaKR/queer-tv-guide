@@ -67,9 +67,9 @@ IMDb id) to TVmaze. The pipeline tries, in order:
 `coverage.tvmaze.misses.ignored_by_source`. The miss rate is in
 `coverage.tvmaze` on every build and printed by the pipeline.
 
-### Attribution and licence
+### Attribution and license
 
-`attribution[]` holds one entry per source with display text, link, licence
+`attribution[]` holds one entry per source with display text, link, license
 name/URL, the terms URL and the date the terms were read. The app must show all
 of it on an attribution screen reachable from the main navigation, and must link
 every show and character to its `source_url` (LezWatch asks for a link back;
@@ -80,6 +80,10 @@ TVmaze's CC BY-SA attribution is satisfied by linking to TVmaze URLs, which
 incorporates TVmaze data, so ShareAlike attaches to the file. It does not attach
 to the app code. `licence.notice` is the plain-language version the app shows
 verbatim. Details in `docs/LICENSES-AND-ATTRIBUTION.md`.
+
+The field names `licence`, `licence_name` and `licence_url` keep their British
+spelling on purpose: they are part of the published v1 contract, and renaming
+them would break every reader of an existing file.
 
 ### Coverage
 

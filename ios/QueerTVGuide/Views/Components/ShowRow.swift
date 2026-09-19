@@ -3,7 +3,7 @@ import GuideCore
 
 struct ShowRow: View {
     let show: Show
-    /// An extra line under the row, e.g. the next episode on Favourites.
+    /// An extra line under the row, e.g. the next episode on Favorites.
     var detail: String? = nil
 
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize

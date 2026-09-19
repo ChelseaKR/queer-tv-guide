@@ -27,7 +27,7 @@ review, a social post).
 - **After the app launches:** you can also use the support link on the app's
   App Store page, the same route the privacy policy gives for questions.
 
-You can expect an acknowledgement within **72 hours** and an assessment
+You can expect an acknowledgment within **72 hours** and an assessment
 within a week. Please include what you did, what you saw, and which version
 or snapshot `content_digest` you were looking at. No bug bounty is offered.
 

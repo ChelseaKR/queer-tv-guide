@@ -3,7 +3,7 @@ import GuideCore
 
 /// The warning at the top of a list when the snapshot is older than its
 /// 48-hour SLA, or its age cannot be known (DG-04, #25). Plain words, in
-/// the body colour at full contrast, above the content it affects: data
+/// the body color at full contrast, above the content it affects: data
 /// past its SLA is never shown as current.
 ///
 /// One VoiceOver element whose label opens with "Warning", so the whole

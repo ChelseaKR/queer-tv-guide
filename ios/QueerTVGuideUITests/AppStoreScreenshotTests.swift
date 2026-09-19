@@ -13,7 +13,7 @@ final class AppStoreScreenshotTests: XCTestCase {
     /// Abbott Elementary: a running show with a next episode, a where-to-watch
     /// link and no outcome tropes.
     static let detailShowID = "lwtv:show:90395"
-    /// Running shows with a next episode, favourited for the "next episode"
+    /// Running shows with a next episode, favorited for the "next episode"
     /// shot: Abbott Elementary, Ted Lasso, Fire Country, North of North.
     static let followedShowIDs = ["lwtv:show:90395", "lwtv:show:76283", "lwtv:show:83667", "lwtv:show:98878"]
 
@@ -73,11 +73,11 @@ final class AppStoreScreenshotTests: XCTestCase {
         // 4. Next episodes for followed shows.
         for id in Self.followedShowIDs {
             app.openShow(titled: try SnapshotFacts.title(ofShow: id))
-            let add = app.buttons["Add to favourites"]
+            let add = app.buttons["Add to favorites"]
             if add.exists { add.tap() }
             backToSearch(app)
         }
-        app.tabBars.buttons["Favourites"].tap()
+        app.tabBars.buttons["Favorites"].tap()
         XCTAssertTrue(app.buttons["tvmaze-credit-link"].waitForExistence(timeout: 30))
         keep("04-next-episodes", app)
 

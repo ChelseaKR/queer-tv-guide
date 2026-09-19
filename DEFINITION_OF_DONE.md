@@ -14,7 +14,7 @@ owner). Source: QUALITY-AND-METRICS-STANDARD, "Definition of Done".
 4. Security: gitleaks, semgrep, pip-audit, osv-scanner; zizmor on workflows;
    SHA-pinned actions.
 5. Guardrails: the app's source-tree guards (one host, no third-party code,
-   privacy manifest) and the pipeline's licence gate.
+   privacy manifest) and the pipeline's license gate.
 
 ## REVIEW (the author confirms in the PR)
 

@@ -1,6 +1,6 @@
 # Data card: TVmaze
 
-DATA-GOVERNANCE-STANDARD §1 (DG-01). The licence analysis and the attribution
+DATA-GOVERNANCE-STANDARD §1 (DG-01). The license analysis and the attribution
 text live in `docs/LICENSES-AND-ATTRIBUTION.md`; this card does not repeat
 them.
 

@@ -14,10 +14,10 @@
 /.semgrep/                 @ChelseaKR
 /renovate.json             @ChelseaKR
 
-# The premise of the product: one host, no telemetry, licences before bytes.
+# The premise of the product: one host, no telemetry, licenses before bytes.
 /ios/GuideCore/Tests/GuideCoreTests/SourceTreeGuardTests.swift  @ChelseaKR
 /ios/QueerTVGuide/PrivacyInfo.xcprivacy                          @ChelseaKR
 /pipeline/src/qtv_pipeline/terms.py                              @ChelseaKR
-/pipeline/src/qtv_pipeline/licence.py                            @ChelseaKR
+/pipeline/src/qtv_pipeline/license.py                            @ChelseaKR
 /docs/terms-snapshots/                                           @ChelseaKR
 /docs/standards/                                                 @ChelseaKR

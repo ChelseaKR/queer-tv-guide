@@ -11,7 +11,7 @@ per-push and pull-request CI. It allows them on a nightly schedule "if a
 platform genuinely needs coverage".
 
 GuideCore holds all of the app's logic: decoding, search, presentation (the
-"does she die" wording), favourites and the refresh client. It uses Apple's
+"does she die" wording), favorites and the refresh client. It uses Apple's
 Foundation networking types. On Linux they live in `FoundationNetworking` and
 behave differently. Measured on 2026-09-17: `swift test` in the
 `swift:6.1-noble` image fails to compile (`URLSession`, `URLRequest` and
@@ -28,7 +28,7 @@ A nightly-only run would let a change to the app's logic merge untested.
 - It runs only when a pull request touches `ios/`, `schema/`, the root
   `Makefile` or `ci.yml`. A `changes` job on Linux decides, and the rule
   fails closed: `guidecore` is skipped only on a clean "false", so a failed,
-  cancelled or skipped `changes` job runs the tests.
+  canceled or skipped `changes` job runs the tests.
 - Every push to `main` and every manual dispatch runs it.
 - `tests/test_workflow_policy.py` allows a macOS job on pull-request CI only
   when it is listed with this ADR and is scope-gated in that way.

@@ -8,7 +8,7 @@ import copy
 
 import pytest
 
-from qtv_pipeline import licence, site_index
+from qtv_pipeline import license, site_index
 from tests.test_build_end_to_end import _run
 
 
@@ -21,7 +21,7 @@ def built_doc(tmp_path, mock_transport, no_sleep):
 
 def test_built_snapshot_meets_every_attribution_requirement(built_doc):
     doc, _cache, _out = built_doc
-    assert licence.attribution_problems(doc) == []
+    assert license.attribution_problems(doc) == []
 
 
 @pytest.mark.parametrize(
@@ -37,7 +37,7 @@ def test_built_snapshot_meets_every_attribution_requirement(built_doc):
         ),
         (
             lambda d: d["attribution"][1].update(licence_url="https://example.org/"),
-            "TVmaze attribution does not link the CC BY-SA 4.0 licence",
+            "TVmaze attribution does not link the CC BY-SA 4.0 license",
         ),
         (lambda d: d["licence"]["snapshot"].update(spdx="CC-BY-4.0"), "licence.snapshot.spdx"),
         (lambda d: d["shows"][0].update(source_url=""), "no LezWatch.TV page to link"),
@@ -49,7 +49,7 @@ def test_each_missing_credit_is_caught(built_doc, sabotage, expected):
     broken = copy.deepcopy(doc)
     sabotage(broken)
     assert broken != doc  # the sabotage landed
-    problems = licence.attribution_problems(broken)
+    problems = license.attribution_problems(broken)
     assert any(expected in p for p in problems), problems
 
 
@@ -59,16 +59,16 @@ def test_a_joined_schedule_without_a_tvmaze_url_is_caught(built_doc):
     joined = next(s for s in broken["shows"] if s["schedule"]["schedule_known"])
     joined["schedule"]["tvmaze_url"] = None
     assert any(
-        "schedule shown without a TVmaze URL" in p for p in licence.attribution_problems(broken)
+        "schedule shown without a TVmaze URL" in p for p in license.attribution_problems(broken)
     )
 
 
-def test_pages_index_shows_licence_and_linked_credits(built_doc):
+def test_pages_index_shows_license_and_linked_credits(built_doc):
     doc, _cache, _out = built_doc
     page = site_index.render_index(doc)
-    assert licence.LICENCE_NOTICE in page
-    assert f'href="{licence.SNAPSHOT_LICENCE["url"]}"' in page
-    for source in licence.ATTRIBUTION:
+    assert license.LICENSE_NOTICE in page
+    assert f'href="{license.SNAPSHOT_LICENSE["url"]}"' in page
+    for source in license.ATTRIBUTION:
         assert f'href="{source["url"]}"' in page, source["name"]
         assert f'href="{source["licence_url"]}"' in page, source["name"]
     assert "does not endorse this app" in page
@@ -87,4 +87,4 @@ def test_site_index_cli_writes_the_page(built_doc, tmp_path):
     _doc, _cache, out_dir = built_doc
     target = tmp_path / "index.html"
     assert site_index.main([str(out_dir / "snapshot.v1.json"), str(target)]) == 0
-    assert licence.LICENCE_NOTICE in target.read_text()
+    assert license.LICENSE_NOTICE in target.read_text()

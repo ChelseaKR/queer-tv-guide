@@ -18,7 +18,7 @@ How this repository handles an incident, following INCIDENT-RESPONSE-STANDARD
 
 ## Raised automatically
 
-`freshness.yml` opens a `snapshot freshness:` issue, labelled `incident` and
+`freshness.yml` opens a `snapshot freshness:` issue, labeled `incident` and
 its severity, when the published snapshot is older than 30 hours (a missed
 nightly run, SEV3), older than the 48-hour SLA (SEV2), cannot be read or
 dated (SEV2), or the last nightly run failed (SEV3). It comments on that

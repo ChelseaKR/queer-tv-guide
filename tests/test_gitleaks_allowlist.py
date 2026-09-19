@@ -1,11 +1,11 @@
 """Negative controls for the gitleaks exemptions in .gitleaks.toml.
 
 The first allowlist entry exists because `generic-api-key` reads the declaration of the
-favourites UserDefaults key in FavouritesStore.swift as a credential. These
+favorites UserDefaults key in FavoritesStore.swift as a credential. These
 tests prove the exemption is exactly that narrow: it silences that one line,
 and nothing a real secret could hide behind.
 
-Each case copies the real FavouritesStore.swift into a scratch tree at its
+Each case copies the real FavoritesStore.swift into a scratch tree at its
 real repository-relative path, applies one change, asserts the change landed,
 and runs the pinned gitleaks binary over the scratch tree. `make policy` sets
 $GITLEAKS; run through it rather than directly.
@@ -22,7 +22,7 @@ from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[1]
 CONFIG = REPO / ".gitleaks.toml"
-STORE = Path("ios/GuideCore/Sources/GuideCore/FavouritesStore.swift")
+STORE = Path("ios/GuideCore/Sources/GuideCore/FavoritesStore.swift")
 # The exempted declaration, assembled at run time: written out literally here it
 # would be the same false positive in a path the allowlist (correctly) does
 # not cover, and `make secrets` would fail on this file.

@@ -1,9 +1,9 @@
 import SwiftUI
 import GuideCore
 
-struct FavouritesView: View {
+struct FavoritesView: View {
     @Environment(AppModel.self) private var model
-    @State private var entries: [FavouritesStore.Entry] = []
+    @State private var entries: [FavoritesStore.Entry] = []
     @State private var importing = false
     @State private var importOutcome: ImportOutcome?
 
@@ -19,9 +19,9 @@ struct FavouritesView: View {
                 if let snapshot = model.snapshot {
                     if entries.isEmpty {
                         EmptyState(
-                            title: "No favourites yet",
+                            title: "No favorites yet",
                             systemImage: "star",
-                            message: "Tap the star on a show or character to save it here. Favourites stay on this device. To move them to another one, use the … menu at the top of this screen to export a backup file, then import it there."
+                            message: "Tap the star on a show or character to save it here. Favorites stay on this device. To move them to another one, use the … menu at the top of this screen to export a backup file, then import it there."
                         )
                     } else {
                         List {
@@ -54,7 +54,7 @@ struct FavouritesView: View {
                     ProgressView()
                 }
             }
-            .navigationTitle("Favourites")
+            .navigationTitle("Favorites")
             .toolbar {
                 if model.snapshot != nil {
                     ToolbarItem(placement: .topBarLeading) { backupMenu }
@@ -85,30 +85,30 @@ struct FavouritesView: View {
     private var backupMenu: some View {
         Menu {
             ShareLink(
-                item: FavouritesBackupFile(entries: entries),
-                preview: SharePreview("Favourites backup")
+                item: FavoritesBackupFile(entries: entries),
+                preview: SharePreview("Favorites backup")
             ) {
-                Label("Export favourites", systemImage: "square.and.arrow.up")
+                Label("Export favorites", systemImage: "square.and.arrow.up")
             }
             .disabled(entries.isEmpty)
-            .accessibilityHint(entries.isEmpty ? "No favourites to export yet" : "Saves your favourites to a file you choose where to keep")
+            .accessibilityHint(entries.isEmpty ? "No favorites to export yet" : "Saves your favorites to a file you choose where to keep")
             Button {
                 importing = true
             } label: {
-                Label("Import favourites", systemImage: "square.and.arrow.down")
+                Label("Import favorites", systemImage: "square.and.arrow.down")
             }
-            .accessibilityHint("Adds favourites from a backup file")
+            .accessibilityHint("Adds favorites from a backup file")
         } label: {
             // An icon, like Filter on Search: the audit reports a text
             // toolbar label as not scaling with Dynamic Type. The system
             // shows the title in the Large Content Viewer at the largest
             // sizes, and VoiceOver reads it.
-            Label("Back up or restore favourites", systemImage: "ellipsis.circle")
+            Label("Back up or restore favorites", systemImage: "ellipsis.circle")
         }
     }
 
     private func importBackup(_ result: Result<URL, Error>) {
-        let failed = "Couldn't import favourites"
+        let failed = "Couldn't import favorites"
         switch result {
         case .failure(let error):
             importOutcome = ImportOutcome(title: failed, message: error.localizedDescription)
@@ -119,10 +119,10 @@ struct FavouritesView: View {
             defer { if granted { url.stopAccessingSecurityScopedResource() } }
             do {
                 // Mapped, so an oversized file is refused by size in
-                // FavouritesBackup.parse without being read into memory.
+                // FavoritesBackup.parse without being read into memory.
                 let data = try Data(contentsOf: url, options: .mappedIfSafe)
-                let summary = try model.importFavourites(from: data)
-                importOutcome = ImportOutcome(title: "Favourites imported", message: summary)
+                let summary = try model.importFavorites(from: data)
+                importOutcome = ImportOutcome(title: "Favorites imported", message: summary)
                 reload()
             } catch {
                 importOutcome = ImportOutcome(title: failed, message: error.localizedDescription)
@@ -131,7 +131,7 @@ struct FavouritesView: View {
     }
 
     @ViewBuilder
-    private func row(for entry: FavouritesStore.Entry, snapshot: Snapshot) -> some View {
+    private func row(for entry: FavoritesStore.Entry, snapshot: Snapshot) -> some View {
         switch entry.kind {
         case .show:
             if let show = snapshot.show(id: entry.id) {
@@ -143,7 +143,7 @@ struct FavouritesView: View {
                     ShowRow(show: show, detail: Presentation.nextEpisode(show.schedule))
                 }
             } else {
-                missingRow(label: "A favourited show is not in this snapshot.")
+                missingRow(label: "A favorited show is not in this snapshot.")
             }
         case .character:
             if let character = snapshot.character(id: entry.id) {
@@ -153,7 +153,7 @@ struct FavouritesView: View {
                     CharacterRow(character: character, snapshot: snapshot)
                 }
             } else {
-                missingRow(label: "A favourited character is not in this snapshot.")
+                missingRow(label: "A favorited character is not in this snapshot.")
             }
         }
     }
@@ -165,13 +165,13 @@ struct FavouritesView: View {
     }
 
     private func reload() {
-        entries = model.favourites.entries.sorted { $0.addedAt > $1.addedAt }
+        entries = model.favorites.entries.sorted { $0.addedAt > $1.addedAt }
     }
 
     private func remove(at offsets: IndexSet) {
         for index in offsets {
             let entry = entries[index]
-            model.favourites.remove(entry.kind, id: entry.id)
+            model.favorites.remove(entry.kind, id: entry.id)
         }
         reload()
     }

@@ -55,7 +55,7 @@ lead with the two questions the app answers (§App Store search).
 
 Copy rule: no "only", "first" or other uniqueness claims about the market
 (the space has TV Time — shut down 2026-07-15 — Does the Dog Die, Serializd,
-TVmaze and Sapphic Signal). Claims about the app's own behaviour ("no
+TVmaze and Sapphic Signal). Claims about the app's own behavior ("no
 account") are fine because they are checkable.
 
 ### App Store search (ASO), 2026-09-18
@@ -171,7 +171,7 @@ asserts that no death answer is on screen. The shots are then exported:
    worth-it explanation collapsed.
 3. `docs/app-store/screenshots/03-where-to-watch.png`: the same show's
    where-to-watch links, with the LezWatch.TV and TVmaze credits.
-4. `docs/app-store/screenshots/04-next-episodes.png`: Favourites with each
+4. `docs/app-store/screenshots/04-next-episodes.png`: Favorites with each
    followed show's next episode, credited to TVmaze.
 5. `docs/app-store/screenshots/05-privacy-and-sources.png`: About, with the
    privacy posture and the sources.
@@ -196,10 +196,10 @@ This is true of the build in this PR:
   serves the file and sees requesting IPs, and that the app collects
   nothing.
 
-- No account, ever (`AppModel` never asks for identity; `FavouritesStore` is
+- No account, ever (`AppModel` never asks for identity; `FavoritesStore` is
   local `UserDefaults`, never synced).
-- **Favourites backup is a file the user holds, so it is not collection
-  (#25).** Export favourites (the … menu on Favourites) writes a JSON file of favourite ids
+- **Favorites backup is a file the user holds, so it is not collection
+  (#25).** Export favorites (the … menu on Favorites) writes a JSON file of favorite ids
   and dates and hands it to the system share sheet; the user picks where it
   goes each time, and nothing reaches the developer or any partner. Import
   reads a file the user picks. Apple: "'Collect' refers to transmitting data
@@ -252,7 +252,7 @@ https://developer.apple.com/app-store/review/guidelines/ (fetched
   elevate it beyond a repackaged website."* This app bundles the dataset
   offline, adds a spoiler-gated death reveal LezWatch's own site doesn't
   gate, adds filters (worth-it, no-recorded-deaths, has-a-watch-link) and
-  local favourites, and works with no network at all after first launch.
+  local favorites, and works with no network at all after first launch.
   The where-to-watch links are one section of a multi-section detail screen,
   not the whole app.
 - **4.3(b) Spam / "indistinguishable from what's already widely
@@ -270,7 +270,7 @@ https://developer.apple.com/app-store/review/guidelines/ (fetched
   above exclude them regardless.
 - **1.2 User-generated content.** None shipped: no comments, ratings,
   reviews, or submissions anywhere in the app (confirmed by reading every
-  screen in `ios/QueerTVGuide/Views`). Favourites are a private, local list,
+  screen in `ios/QueerTVGuide/Views`). Favorites are a private, local list,
   not content anyone else sees.
 - **5.1.1 Data collection / no login.** *"If your app doesn't include
   significant account-based features, let people use it without a login."*
@@ -315,7 +315,7 @@ https://developer.apple.com/app-store/review/guidelines/ (fetched
 
 ### App Review note (paste into "Notes" under App Review Information)
 
-> **Data sources, licences and attribution (5.2.2).** Queer Frame shows data
+> **Data sources, licenses and attribution (5.2.2).** Queer Frame shows data
 > from two public sources. It bundles a snapshot and refreshes it from one
 > static file we publish.
 >
@@ -330,13 +330,13 @@ https://developer.apple.com/app-store/review/guidelines/ (fetched
 >    licensed CC BY-SA 4.0 (https://www.tvmaze.com/api, "Licensing"). TVmaze
 >    asks for attribution by linking back to it from within the app. Every
 >    next-episode line is shown with "Schedule data from TVmaze", linked,
->    and the CC BY-SA 4.0 licence, linked.
+>    and the CC BY-SA 4.0 license, linked.
 >
 > The About screen states: "LezWatch.TV and TVmaze do not endorse this
 > app." No images or articles are used. The combined data file is itself
 > published under CC BY-SA 4.0 at
 > https://chelseakr.github.io/queer-tv-guide/snapshot.v1.json, with its
-> licence and credits. The app makes one network request, a GET of that
+> license and credits. The app makes one network request, a GET of that
 > file. It has no accounts, analytics, ads or third-party SDKs. Nothing
 > requires sign-in.
 
@@ -359,19 +359,19 @@ The brief's five screens, all present in `ios/QueerTVGuide/Views`:
    reveal), trigger warnings, characters, where-to-watch as `openURL` links,
    next episode (schedule-known vs schedule-unknown distinguished, and a
    date that has passed is called past, never "next") with TVmaze's credit
-   and licence link, plot notes behind a
+   and license link, plot notes behind a
    spoiler disclosure, attribution footer with `generated_at`.
 3. **Character detail** (`CharacterDetailView.swift`) — "View on
    LezWatch.TV" (this character's page), identity fields
    (minus the "Dead Queers" cliché, which would answer the reveal),
    "Does <name> die?" behind `SpoilerReveal` (closed by default; VoiceOver
    focus moves to the answer on reveal), shows the character appears in.
-4. **Favourites** (`FavouritesView.swift`) — local list with each show's
-   next episode, credited to TVmaze with its licence, swipe to remove, empty state explains the local-only
+4. **Favorites** (`FavoritesView.swift`) — local list with each show's
+   next episode, credited to TVmaze with its license, swipe to remove, empty state explains the local-only
    posture.
 5. **About & Privacy** (`AboutView.swift`) — the posture statement, every
-   `attribution` entry from the snapshot with its source and licence links,
-   "LezWatch.TV and TVmaze do not endorse this app", the licence notice, coverage
+   `attribution` entry from the snapshot with its source and license links,
+   "LezWatch.TV and TVmaze do not endorse this app", the license notice, coverage
    numbers, and the current snapshot's `generated_at`/origin.
 
 ## 5. Owner steps to a TestFlight build
@@ -405,7 +405,7 @@ security find-identity -v -p codesigning
 
 # 3. REQUIRED before any archive: refresh the bundled snapshot.
 #    ios/QueerTVGuide/Resources/snapshot.v1.json is the app's first-launch
-#    and offline catalogue (gitignored, never committed): a byte-for-byte
+#    and offline catalog (gitignored, never committed): a byte-for-byte
 #    copy of a pipeline-PUBLISHED snapshot (real LezWatch.TV + TVmaze data, the same bytes anyone can
 #    fetch under CC BY-SA 4.0). Re-copy the latest before archiving so the
 #    release ships current data. The target verifies the published .sha256
@@ -413,7 +413,7 @@ security find-identity -v -p codesigning
 make bundle-snapshot
 #    GuideCore's BundledSnapshotTests and the hosted
 #    AppModelIntegrationTests re-check the result (not the fixture, published
-#    by the nightly workflow, decodes with the app's decoder, real-catalogue
+#    by the nightly workflow, decodes with the app's decoder, real-catalog
 #    scale). Run them before archiving:
 make test
 
@@ -459,7 +459,7 @@ Apple account.
 
 1. **Agreements** (App Store Connect → Business): the Paid Apps agreement
    active, with banking and tax forms complete. A paid app cannot go on
-   sale without it. Enrol in the App Store Small Business Program (15%).
+   sale without it. Enroll in the App Store Small Business Program (15%).
 2. **Bundle ID** (Certificates, Identifiers & Profiles → Identifiers →
    +): explicit App ID `com.chelseakr.queertvguide`, Team `6X5YH93QNM`,
    no capabilities.

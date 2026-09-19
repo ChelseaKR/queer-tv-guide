@@ -9,7 +9,7 @@ final class PresentationTests: XCTestCase {
         XCTAssertEqual(Presentation.worthIt(nil), "Not rated")
         XCTAssertEqual(Presentation.worthIt("Yes"), "Yes")
         XCTAssertEqual(Presentation.worthIt("TBD"), "TBD")
-        XCTAssertEqual(Presentation.worthIt("Extremely"), "Extremely", "an unrecognised value is still shown, not hidden")
+        XCTAssertEqual(Presentation.worthIt("Extremely"), "Extremely", "an unrecognized value is still shown, not hidden")
         XCTAssertNotEqual(Presentation.worthIt(nil), Presentation.worthIt("No"), "unrated must never read as 'No'")
     }
 
@@ -213,7 +213,7 @@ final class PresentationTests: XCTestCase {
         XCTAssertEqual(Presentation.terms([Term(slug: "a", name: "A"), Term(slug: "b", name: "B")], empty: Presentation.noTropes), "A, B")
     }
 
-    func testGeneratedAtIsLabelled() {
+    func testGeneratedAtIsLabeled() {
         XCTAssertTrue(Presentation.generatedAt(Date(timeIntervalSince1970: 0)).hasPrefix("Data as of "))
     }
 

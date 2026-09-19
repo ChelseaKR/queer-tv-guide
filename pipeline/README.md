@@ -10,7 +10,7 @@ cd pipeline
 uv sync --all-groups
 uv run qtv terms-check                      # 1 request: the LezWatch ToS still grants reuse
 uv run qtv fetch --cache .cache             # incremental mirror (full on first run)
-uv run qtv build --cache .cache --out out   # normalise, validate, digest, coverage report
+uv run qtv build --cache .cache --out out   # normalize, validate, digest, coverage report
 uv run qtv validate out/snapshot.v1.json
 uv run pytest
 ```
@@ -41,7 +41,7 @@ What is fetched, and only this:
 - LezWatch: `wp/v2/show` and `wp/v2/character` with `_fields` trimmed to the
   data fields; the twelve `lez_*` taxonomies; `lwtv/v1/export/raw/actors/`
   (names only); `lwtv/v1/export/list/{shows,characters}/` (ids, to detect
-  deletions); `/tos/` (the licence gate). No images, no posts, no comments.
+  deletions); `/tos/` (the license gate). No images, no posts, no comments.
 - TVmaze: `/shows/{id}?embed[]=nextepisode&embed[]=previousepisode` per joined
   show; `/lookup/shows?imdb=` as a fallback join; `/updates/shows` to decide
   what to refresh. No images, no summaries, no cast.
@@ -91,7 +91,7 @@ mirror, fetches incrementally, builds, and then:
    `mirror-cache.tar.gz` to the rolling release **`snapshot-latest`**
    (`gh release upload --clobber`), and
 2. deploys `snapshot.v1.json`, its `.sha256`, and an `index.html` carrying the
-   attribution and licence notice to **GitHub Pages**.
+   attribution and license notice to **GitHub Pages**.
 
 Why both. Pages gives the app one plain static URL with an ETag, chosen while
 the repository was private (a release asset on a private repository needs a

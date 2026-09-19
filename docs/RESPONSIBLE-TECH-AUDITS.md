@@ -44,7 +44,7 @@ never infers anything about an actor.
 
 **Non-goals (this is not):** a streaming app; a social product (no accounts,
 reviews, comments or sharing of lists); a recommender that learns from
-behaviour; a source of claims about real people; a complete record of all
+behavior; a source of claims about real people; a complete record of all
 queer TV. The source covers queer women, non-binary and transgender
 characters, and the app should say so.
 
@@ -57,7 +57,7 @@ workflow from a known-good commit.
 |---|---|---|
 | No telemetry, one host, no third-party code | AUTO | `ios/GuideCore/Tests/GuideCoreTests/SourceTreeGuardTests.swift` |
 | `died` is never `false` | AUTO | `schema/snapshot.v1.json`, `pipeline/tests/test_build_end_to_end.py` |
-| Actor personal fields never stored | AUTO | `pipeline/tests/test_data_minimisation.py` (#31) |
+| Actor personal fields never stored | AUTO | `pipeline/tests/test_data_minimization.py` (#31) |
 | Source terms still grant reuse, checked every run | AUTO | `pipeline/src/qtv_pipeline/terms.py` |
 | Consequence scan and non-goals signed off (RTF-01) | REVIEW | this section; **pending (#24)** |
 
@@ -66,7 +66,7 @@ workflow from a known-good commit.
 - **Whose words.** Gender, sexuality, romantic orientation, tropes and
   "worth it" ratings are LezWatch.TV's volunteer editorial labels, shown as
   theirs and attributed. The app does not relabel or rank people.
-- **Coverage skew.** The source catalogues queer women, non-binary and trans
+- **Coverage skew.** The source catalogs queer women, non-binary and trans
   characters. Queer men are largely out of scope. Coverage leans towards
   English-language, US and UK television. The TVmaze join works for about 79%
   of shows (1,800 of 2,272 in the first full mirror), so schedules are
@@ -92,13 +92,13 @@ workflow from a known-good commit.
   GET for the snapshot to GitHub Pages. GitHub logs the IP address under its
   own policy; the developer never receives it. `docs/site/privacy.html` says
   so.
-- **On the device.** Favourites are stored in `UserDefaults`, never synced by
+- **On the device.** Favorites are stored in `UserDefaults`, never synced by
   the app, and covered by iOS data protection when the device is locked.
 - **Open question for the owner: a shared device.** For someone not out,
-  having this app, or its favourites list, visible to someone else on the same
+  having this app, or its favorites list, visible to someone else on the same
   phone is itself a disclosure. The app has no lock and no quick way to clear
-  favourites. Nothing the developer collects is at risk here; this is about
-  the user's own device. Decide whether to add a "clear favourites" control
+  favorites. Nothing the developer collects is at risk here; this is about
+  the user's own device. Decide whether to add a "clear favorites" control
   and say something in the FAQ. Also decide whether this makes the app a
   "privacy-sensitive tool" under SECURITY §2, which would add its hardened
   controls.
@@ -113,7 +113,7 @@ workflow from a known-good commit.
 
 ## D. Transparency
 
-- Every source is credited, with licence links, on the About screen, and
+- Every source is credited, with license links, on the About screen, and
   each show screen ends with an attribution footer that links to the
   sources.
 - The data's age is on every screen ("data as of"). A next-episode date that
@@ -125,7 +125,7 @@ workflow from a known-good commit.
 
 | Check | Gate | Where |
 |---|---|---|
-| Attribution text carried in every snapshot from one source | AUTO | `pipeline/src/qtv_pipeline/licence.py` feeds `attribution` and `licence`; the schema requires both |
+| Attribution text carried in every snapshot from one source | AUTO | `pipeline/src/qtv_pipeline/license.py` feeds `attribution` and `licence`; the schema requires both |
 | That text still matches `docs/LICENSES-AND-ATTRIBUTION.md` | REVIEW | no test compares them yet |
 | Honesty-of-framing review signed off (RTF-05) | REVIEW | this section and `docs/capabilities.md`; **pending (#24)** |
 

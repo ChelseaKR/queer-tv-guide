@@ -37,7 +37,7 @@ struct RootTabView: View {
         if onboardingSeen {
             tabs
         } else {
-            // The catalogue loads behind it (QueerTVGuideApp's task), so
+            // The catalog loads behind it (QueerTVGuideApp's task), so
             // Search is ready when the reader is.
             OnboardingView(finish: {
                 UserDefaults.standard.set(true, forKey: OnboardingView.seenKey)
@@ -50,12 +50,12 @@ struct RootTabView: View {
         TabView {
             SearchView()
                 .tabItem { Label("Search", systemImage: "magnifyingglass") }
-            FavouritesView()
-                .tabItem { Label("Favourites", systemImage: "star") }
+            FavoritesView()
+                .tabItem { Label("Favorites", systemImage: "star") }
             AboutView()
                 .tabItem { Label("About", systemImage: "info.circle") }
         }
-        // Every scroll view and labelled value in every tab
+        // Every scroll view and labeled value in every tab
         // (AccessibleStyle.swift).
         .legibleScrollEdges()
         .labeledContentStyle(SubduedValueLabeledContentStyle())

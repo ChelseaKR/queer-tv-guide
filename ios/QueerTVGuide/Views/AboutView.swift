@@ -15,7 +15,7 @@ struct AboutView: View {
                     // DECISIONS 0007: say plainly who serves that file and
                     // what a web server sees.
                     Text("That file is served by GitHub Pages, which, like any web server, sees your IP address and logs it for security. The developer never sees that log.")
-                    Text("Favourites are stored only on this device and are never sent anywhere.")
+                    Text("Favorites are stored only on this device and are never sent anywhere.")
                     Button("Privacy policy") { openURL(PrivacyPolicy.url) }
                         .accessibilityHint("Opens in Safari")
                     Button("Support") { openURL(SupportPage.url) }
@@ -31,12 +31,12 @@ struct AboutView: View {
                                     // otherwise (and the audit flags it).
                                     .accessibilityLabel(item.name.replacingOccurrences(of: ".", with: " "))
                                 Text(item.text)
-                                Button("Licence: \(item.licenceName)") { openURL(item.licenceURL) }
+                                Button("License: \(item.licenseName)") { openURL(item.licenseURL) }
                                     .font(.caption)
                                     .frame(minHeight: 44, alignment: .leading)
                                     .contentShape(Rectangle())
                                     .accessibilityHint("Opens in Safari")
-                                    .accessibilityIdentifier("licence-link-\(item.source)")
+                                    .accessibilityIdentifier("license-link-\(item.source)")
                                 Button(item.url.absoluteString) { openURL(item.url) }
                                     .font(.caption)
                                     // A caption-sized link is under the 44 pt
@@ -53,9 +53,9 @@ struct AboutView: View {
                         Text(Attribution.nonEndorsement)
                     }
 
-                    Section(subdued: "Licence") {
-                        Text(snapshot.licence.notice)
-                        Button(snapshot.licence.snapshot.name) { openURL(snapshot.licence.snapshot.url) }
+                    Section(subdued: "License") {
+                        Text(snapshot.license.notice)
+                        Button(snapshot.license.snapshot.name) { openURL(snapshot.license.snapshot.url) }
                             .font(.caption)
                             .frame(minHeight: 44, alignment: .leading)
                             .contentShape(Rectangle())

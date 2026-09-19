@@ -1,4 +1,4 @@
-"""The licence and attribution text the snapshot carries and the app must
+"""The license and attribution text the snapshot carries and the app must
 display. Kept as one source of truth, matching docs/LICENSES-AND-ATTRIBUTION.md
 word for word; a diff between this file and that doc is a bug."""
 
@@ -8,19 +8,20 @@ from typing import Any
 
 TERMS_READ_ON = "2026-09-13"
 
-SNAPSHOT_LICENCE = {
+SNAPSHOT_LICENSE = {
     "spdx": "CC-BY-SA-4.0",
     "name": "Creative Commons Attribution-ShareAlike 4.0 International",
     "url": "https://creativecommons.org/licenses/by-sa/4.0/",
 }
 
-LICENCE_NOTICE = (
+LICENSE_NOTICE = (
     "This dataset is published under the Creative Commons Attribution-ShareAlike "
-    "4.0 International licence. Show and character data: LezWatch.TV. Episode "
+    "4.0 International license. Show and character data: LezWatch.TV. Episode "
     "and schedule data: TVmaze (CC BY-SA 4.0). If you redistribute this file, "
     "keep this notice and these credits."
 )
 
+# "licence_name" and "licence_url" are published v1 field names: spelling kept.
 ATTRIBUTION = [
     {
         "source": "lezwatch",
@@ -32,7 +33,7 @@ ATTRIBUTION = [
             "transgender characters on TV. Used with thanks under its terms of "
             "use; LezWatch.TV does not endorse this app."
         ),
-        "licence_name": "LezWatch.TV Terms of Use (free reuse, no formal open licence)",
+        "licence_name": "LezWatch.TV Terms of Use (free reuse, no formal open license)",
         "licence_url": "https://lezwatchtv.com/tos/",
         "terms_url": "https://lezwatchtv.com/tos/",
         "terms_read_on": TERMS_READ_ON,
@@ -65,24 +66,24 @@ def attribution_problems(doc: dict[str, Any]) -> list[str]:
     - TVmaze API licensing: CC BY-SA 4.0, attribution "by linking back to
       TVmaze ... using the URLs available in the API". Every joined schedule
       carries its TVmaze URL.
-    - CC BY-SA 4.0 s.3(a)/(b): licence notice and URI, source credits, a
+    - CC BY-SA 4.0 s.3(a)/(b): license notice and URI, source credits, a
       modification notice, the warranty disclaimer.
     """
     by_source = {a.get("source"): a for a in doc.get("attribution") or []}
     return (
-        _licence_problems(doc.get("licence") or {})
+        _license_problems(doc.get("licence") or {})
         + _lezwatch_problems(by_source.get("lezwatch"))
         + _tvmaze_problems(by_source.get("tvmaze"))
         + _record_problems(doc)
     )
 
 
-def _licence_problems(lic: dict[str, Any]) -> list[str]:
+def _license_problems(lic: dict[str, Any]) -> list[str]:
     problems: list[str] = []
     snap = lic.get("snapshot") or {}
     if snap.get("spdx") != "CC-BY-SA-4.0":
         problems.append(f"licence.snapshot.spdx is {snap.get('spdx')!r}, not CC-BY-SA-4.0")
-    if snap.get("url") != SNAPSHOT_LICENCE["url"]:
+    if snap.get("url") != SNAPSHOT_LICENSE["url"]:
         problems.append("licence.snapshot.url is not the CC BY-SA 4.0 URI")
     notice = lic.get("notice") or ""
     for needle in ("LezWatch.TV", "TVmaze", "CC BY-SA 4.0", "keep this notice"):
@@ -108,8 +109,8 @@ def _tvmaze_problems(entry: dict[str, Any] | None) -> list[str]:
     problems: list[str] = []
     if not str(entry.get("url", "")).startswith("https://www.tvmaze.com/"):
         problems.append("TVmaze attribution does not link tvmaze.com")
-    if entry.get("licence_url") != SNAPSHOT_LICENCE["url"]:
-        problems.append("TVmaze attribution does not link the CC BY-SA 4.0 licence")
+    if entry.get("licence_url") != SNAPSHOT_LICENSE["url"]:
+        problems.append("TVmaze attribution does not link the CC BY-SA 4.0 license")
     required = ("CC BY-SA 4.0", "Reformatted", "without warranty", "does not endorse this app")
     problems += [
         f"TVmaze attribution text lacks {needle!r}"

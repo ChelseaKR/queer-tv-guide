@@ -47,10 +47,10 @@ struct SearchView: View {
     private var content: some View {
         switch model.loadState {
         case .loading:
-            ProgressView("Loading catalogue…")
-                .accessibilityLabel("Loading catalogue")
+            ProgressView("Loading catalog…")
+                .accessibilityLabel("Loading catalog")
         case .failed(let message):
-            EmptyState(title: "Couldn't load the catalogue", systemImage: "exclamationmark.triangle", message: message)
+            EmptyState(title: "Couldn't load the catalog", systemImage: "exclamationmark.triangle", message: message)
         case .loaded:
             if let snapshot = model.snapshot {
                 resultsList(snapshot: snapshot)

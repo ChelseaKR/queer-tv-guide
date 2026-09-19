@@ -3,13 +3,13 @@ import XCTest
 @testable import GuideCore
 
 /// The app ships `QueerTVGuide/Resources/snapshot.v1.json` as its
-/// first-launch and offline catalogue, so it is what a user sees before the
+/// first-launch and offline catalog, so it is what a user sees before the
 /// one refresh GET ever succeeds. It must be real, pipeline-published
 /// LezWatch.TV + TVmaze data — never the hand-made fixture, whose invented
 /// shows would be presented as real ones. `make bundle-snapshot` puts it
 /// there; these tests re-check it on every `swift test` (and so in CI).
 final class BundledSnapshotTests: XCTestCase {
-    /// The real catalogue is ~2,300 shows / ~7,400 characters (2026-09). The
+    /// The real catalog is ~2,300 shows / ~7,400 characters (2026-09). The
     /// floor is far below that on purpose: it only has to catch a fixture or
     /// a truncated file, not track the source's size.
     static let minimumShows = 1_000
@@ -50,13 +50,13 @@ final class BundledSnapshotTests: XCTestCase {
             return problems
         }
         if snapshot.shows.count < minimumShows {
-            problems.append("\(snapshot.shows.count) shows, below the real-catalogue floor of \(minimumShows)")
+            problems.append("\(snapshot.shows.count) shows, below the real-catalog floor of \(minimumShows)")
         }
         if snapshot.characters.count < minimumCharacters {
-            problems.append("\(snapshot.characters.count) characters, below the real-catalogue floor of \(minimumCharacters)")
+            problems.append("\(snapshot.characters.count) characters, below the real-catalog floor of \(minimumCharacters)")
         }
-        if snapshot.licence.snapshot.spdx != "CC-BY-SA-4.0" {
-            problems.append("licence.snapshot.spdx is \(snapshot.licence.snapshot.spdx), not CC-BY-SA-4.0")
+        if snapshot.license.snapshot.spdx != "CC-BY-SA-4.0" {
+            problems.append("licence.snapshot.spdx is \(snapshot.license.snapshot.spdx), not CC-BY-SA-4.0")
         }
         let sources = Set(snapshot.attribution.map(\.source))
         if sources != ["lezwatch", "tvmaze"] {
@@ -80,7 +80,7 @@ final class BundledSnapshotTests: XCTestCase {
         let problems = Self.shippabilityProblems(try Repo.fixtureData())
         XCTAssertTrue(problems.contains { $0.contains("is a fixture") }, "\(problems)")
         XCTAssertTrue(problems.contains { $0.contains("workflow_run_id") }, "\(problems)")
-        XCTAssertTrue(problems.contains { $0.contains("below the real-catalogue floor") }, "\(problems)")
+        XCTAssertTrue(problems.contains { $0.contains("below the real-catalog floor") }, "\(problems)")
     }
 
     func testALocallyBuiltSnapshotIsRefused() throws {

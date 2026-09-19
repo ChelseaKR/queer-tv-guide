@@ -23,9 +23,11 @@ needed a token to download, and it stays the app's one URL. The same bytes are
 also attached to the rolling GitHub Release `snapshot-latest` (useful for
 `gh release download` during development and as a history of checksums).
 
-The app fetches `snapshot.v1.json.sha256` first (~100 bytes), compares it with
-the digest of the bundled/cached snapshot, and only then fetches the file. That
-is the app's only network call.
+The app makes one conditional GET for `snapshot.v1.json`, sending
+`If-None-Match` with its stored ETag when available. A `304 Not Modified`
+response lets it keep the cached snapshot; a `200 OK` response provides the
+new file and ETag. The app does not fetch the `.sha256` file, which remains
+available for release and development checks.
 
 ## Reading the model
 

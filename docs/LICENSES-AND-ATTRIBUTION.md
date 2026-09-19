@@ -168,9 +168,17 @@ https://thetvdb.com/api-information first and fill the row.
 | robots.txt | `Crawl-delay: 10` for `*` | none on `api.`; `www.` irrelevant |
 | Pace used | **1 request / 10 s**, one connection | **1 request / s**, one connection, back off on 429 |
 | Full mirror | ~23 show pages + ~74 character pages at 100/page (`_fields` trimmed), 12 taxonomy lists, 1 actor export, 2 id lists, 1 ToS read ≈ **115 requests ≈ 20 min, ~10 MB** | one `/shows/{id}?embed[]=nextepisode&embed[]=previousepisode` per joined show ≈ **2,000 requests ≈ 35 min, ~4 MB** |
-| Nightly incremental | `modified_after=<cursor>` on shows and characters + the 2 id lists + taxonomies ≈ **20 requests** | shows with status Running/TBD/In Development or updated per `/updates/shows?since=day` ≈ **300 requests** |
+| Nightly incremental (measured) | `modified_after=<cursor>` on shows and characters + the 2 id lists + taxonomies: **23 requests** | shows with status Running/TBD/In Development or updated per `/updates/shows?since=day`: **670–676 requests** |
 | User-Agent | `queer-tv-guide-pipeline/<version> (+https://github.com/ChelseaKR/queer-tv-guide)` | same |
 | Reported | request count and bytes per source, in the coverage report and in `sources.*` in the snapshot | same |
+
+The nightly figures are the per-host request counters logged by the
+[September 18 run](https://github.com/ChelseaKR/queer-tv-guide/actions/runs/35371523231)
+(23 LezWatch, 670 TVmaze) and the
+[September 19 run](https://github.com/ChelseaKR/queer-tv-guide/actions/runs/35434596786)
+(23 LezWatch, 676 TVmaze). At the documented one request per second,
+676 TVmaze requests take about 11 minutes. Recheck the figures if pipeline
+changes alter the request count.
 
 Requests made on 2026-09-13 before any mirror, for reading terms and sampling
 field shapes: lezwatchtv.com 7, docs.lezwatchtv.com 3, api.tvmaze.com 3 (one
@@ -192,4 +200,3 @@ The last column names what fails if the credit is removed. CI runs the
 | CC BY-SA 4.0 s.3(b), ShareAlike on the snapshot | `snapshot.v1.json` carries `licence.snapshot` (CC-BY-SA-4.0 plus URI), `licence.notice` and `attribution[]`. Its Pages index now shows the license with a link and every source credit with links to the source, its license and its terms (`pipeline/src/qtv_pipeline/site_index.py`). | `pipeline/tests/test_attribution.py`, with negative controls |
 | Every record has something to link | Checked on the real bundled snapshot: all 2,272 shows and 7,375 characters have a lezwatchtv.com page, and every matched schedule has a TVmaze page. The pipeline check found 0 problems on the published file. | `AttributionTests.testRealSnapshot…`, `license.attribution_problems` |
 | robots.txt: `Crawl-delay: 10`; `/wp-json/` not disallowed | Crawl conduct, not attribution: the pipeline paces LezWatch.TV at one request per 10 s (see "Crawl budget" above). | `pipeline/tests/test_http.py` |
-

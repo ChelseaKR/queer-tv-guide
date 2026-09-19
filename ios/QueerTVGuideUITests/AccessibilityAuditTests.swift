@@ -63,16 +63,27 @@ final class AccessibilityAuditTests: XCTestCase {
     /// (`waitForStillScreen`), so it does not measure a screen
     /// mid-animation.
     ///
-    /// Contrast runs as its own audit, after the other checks. Run together
-    /// with them, the audit reports its contrast issues with no element:
-    /// measured on the filtered Search results, 4 of 4 contrast issues came
-    /// with no element in one `.all` audit, and all 4 came with their
-    /// element in a `.contrast` audit of the same screen a moment later.
-    /// With no element, an issue can only be excused by counting texts under
-    /// the tab bar (allowance 1). With its element, each is held to the rule
-    /// for where it is: over the bar (allowance 1, by frame), just above it
-    /// and measured from its own pixels at 4.5:1 or better (allowance 2), or
-    /// failed.
+    /// Contrast runs as its own audit, first, then the other checks. Run
+    /// together with them, the audit reports its contrast issues with no
+    /// element: measured on the filtered Search results, 4 of 4 contrast
+    /// issues came with no element in one `.all` audit, and all 4 came with
+    /// their element in a `.contrast` audit of the same screen a moment
+    /// later. With no element, an issue can only be excused by counting texts
+    /// under the tab bar (allowance 1). With its element, each is held to the
+    /// rule for where it is: over the bar (allowance 1, by frame), just above
+    /// it and measured from its own pixels at 4.5:1 or better (allowance 2),
+    /// or failed.
+    ///
+    /// First, so contrast is measured on the still screen a person sees,
+    /// before any other check has worked on it. Measured: with contrast run
+    /// after the other checks, CI (run 35407156681) reported the character
+    /// screen's navigation title "Gina" as "Contrast failed for UILabel", the
+    /// only failure of that run. That title is a standard inline navigation
+    /// title in the system's colors, and the same test passed in two CI runs
+    /// whose audit measured contrast together with everything else
+    /// (35421286344 and 35422900625). The second pass waits for a still
+    /// screen again, so it is not measured while the first pass's effects
+    /// settle.
     @MainActor
     private func audit(_ app: XCUIApplication, _ types: XCUIAccessibilityAuditType = .all) throws {
         waitForStillScreen(app)
@@ -82,9 +93,10 @@ final class AccessibilityAuditTests: XCTestCase {
         let searchFieldFrame = searchField.exists ? searchField.frame : .null
         var underBarBudget = tabBarFrame.isNull ? 0 : Self.textsUnderTabBar(app, tabBarFrame)
         let passes: [XCUIAccessibilityAuditType] = types.contains(.contrast)
-            ? [types.subtracting(.contrast), .contrast].filter { !$0.isEmpty }
+            ? [.contrast, types.subtracting(.contrast)].filter { !$0.isEmpty }
             : [types]
-        for pass in passes {
+        for (index, pass) in passes.enumerated() {
+            if index > 0 { waitForStillScreen(app) }
             try app.performAccessibilityAudit(for: pass) { issue in
                 guard let element = issue.element, element.exists else {
                     if issue.auditType == .contrast, underBarBudget > 0 {

@@ -2,11 +2,12 @@ import Foundation
 
 /// Where the snapshot lives on disk and how it is replaced.
 ///
-/// Load order: the last good *downloaded* snapshot in Application Support if
-/// it exists and decodes; otherwise the snapshot bundled with the app. A
-/// replacement is written to a temporary file in the same directory and then
-/// swapped in with a single atomic rename, so a crash mid-write can never
-/// leave a half-written file where the app will look for it.
+/// Load order: the newer, by `generated_at`, of the last good *downloaded*
+/// snapshot in Application Support (if it exists and decodes) and the
+/// snapshot bundled with the app. A replacement is written to a temporary
+/// file in the same directory and then swapped in with a single atomic
+/// rename, so a crash mid-write can never leave a half-written file where
+/// the app will look for it.
 public final class SnapshotStore: @unchecked Sendable {
     public struct Loaded: Equatable, Sendable {
         public enum Origin: Equatable, Sendable {
@@ -45,18 +46,48 @@ public final class SnapshotStore: @unchecked Sendable {
         return base.appendingPathComponent("Snapshot", isDirectory: true)
     }
 
-    /// Returns the best available snapshot. A downloaded file that no longer
-    /// decodes (e.g. after an app update that changed the supported schema
-    /// version) is ignored — not deleted — and the bundled copy is used.
+    /// Returns the freshest snapshot on hand: whichever of the last good
+    /// downloaded one and the bundled one has the later `generated_at`. An
+    /// equal date prefers the downloaded one (it carries the ETag, so the
+    /// next refresh can be conditional). After an app update that ships a
+    /// newer bundled snapshot, an older downloaded file from months ago no
+    /// longer wins, offline or not.
+    ///
+    /// A downloaded file that no longer decodes (e.g. after an app update
+    /// that changed the supported schema version) is ignored, not deleted,
+    /// and the bundled copy is used. A bundled copy that would win on date
+    /// but does not decode loses to the downloaded one. When the bundled
+    /// snapshot is what loads, its `etag` is `nil`: the bundled file has
+    /// none, and the stored ETag belongs to the downloaded file.
     public func load() throws -> Loaded {
         if let data = try? Data(contentsOf: snapshotFileURL),
-           let snapshot = try? decoder.decode(data) {
-            return Loaded(snapshot: snapshot, origin: .downloaded, etag: readETag())
+           let downloaded = try? decoder.decode(data) {
+            if let newerBundled = bundledSnapshot(newerThan: downloaded.generatedAt) {
+                return Loaded(snapshot: newerBundled, origin: .bundled, etag: nil)
+            }
+            return Loaded(snapshot: downloaded, origin: .downloaded, etag: readETag())
         }
         guard let bundledURL else { throw StoreError.bundledSnapshotMissing }
         let data = try Data(contentsOf: bundledURL)
         let snapshot = try decoder.decode(data)
         return Loaded(snapshot: snapshot, origin: .bundled, etag: nil)
+    }
+
+    /// The bundled snapshot, decoded in full, if it is dated after `date`
+    /// and is a valid snapshot; otherwise `nil`. Its date is read first from
+    /// a two-field view of the file, so the common case (the downloaded file
+    /// is the newer one) does not decode the whole bundled file a second time.
+    private func bundledSnapshot(newerThan date: Date) -> Snapshot? {
+        guard let bundledURL,
+              let data = try? Data(contentsOf: bundledURL),
+              let generatedAt = try? JSONDecoder().decode(GeneratedAtOnly.self, from: data).generatedAt.date,
+              generatedAt > date else { return nil }
+        return try? decoder.decode(data)
+    }
+
+    private struct GeneratedAtOnly: Decodable {
+        let generatedAt: TaggedDate
+        private enum CodingKeys: String, CodingKey { case generatedAt = "generated_at" }
     }
 
     /// Validates `data` as a snapshot and, only if it decodes, replaces the

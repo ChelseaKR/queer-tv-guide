@@ -18,9 +18,11 @@ struct QueerTVGuideApp: App {
                 }
                 // An app left in the background for days comes back with
                 // its data's age re-read, so a snapshot that went stale
-                // meanwhile says so (DG-04). No network request here.
+                // meanwhile says so (DG-04), and, when that data is more than
+                // ForegroundRefreshGate.staleAfter old, looks for new data
+                // once in the background: the same single GET as at launch.
                 .onChange(of: scenePhase) { _, phase in
-                    if phase == .active { model.readClock() }
+                    if phase == .active { Task { await model.refreshIfStaleOnReturn() } }
                 }
         }
     }

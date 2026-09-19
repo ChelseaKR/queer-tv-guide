@@ -44,8 +44,10 @@ public enum Attribution {
     }
 
     /// The credit for a show's schedule, or `nil` when there is no TVmaze
-    /// data to credit (the show was never matched), or the snapshot lacks a
-    /// TVmaze attribution entry.
+    /// data to credit (the show was never matched). A snapshot the app reads
+    /// always has a TVmaze attribution entry (`SnapshotDecoder` refuses one
+    /// without); only a `Snapshot` built in code can lack it, and then there
+    /// is no credit to show rather than a wrong one.
     public static func tvmazeCredit(for schedule: Schedule, in snapshot: Snapshot) -> TVmazeCredit? {
         guard schedule.scheduleKnown else { return nil }
         return tvmazeCredit(in: snapshot, showPage: schedule.tvmazeURL)

@@ -40,13 +40,26 @@ final class AttributionTests: XCTestCase {
         XCTAssertEqual(credit.source.url.path, "/")
     }
 
-    func testASnapshotWithoutTVmazesEntryYieldsNoCreditRatherThanAWrongOne() throws {
+    /// The rule that replaced "no entry means no credit": a file without
+    /// TVmaze's entry is refused, so the app never shows TVmaze's dates
+    /// uncredited (SnapshotAttributionGateTests covers the other cases, the
+    /// store and the refresher).
+    func testASnapshotWithoutTVmazesEntryIsRefusedRatherThanShownWithoutCredit() throws {
         let data = try JSONEdit.edit(try Repo.fixtureData()) { root in
             root["attribution"] = (root["attribution"] as! [[String: Any]]).filter { $0["source"] as? String != "tvmaze" }
         }
-        let s = try SnapshotDecoder().decode(data)
-        XCTAssertNil(s.attribution(for: Attribution.tvmazeSource), "the edit landed")
-        XCTAssertNil(Attribution.tvmazeCredit(in: s))
+        let sources = ((try JSONSerialization.jsonObject(with: data) as! [String: Any])["attribution"] as! [[String: Any]]).map { $0["source"] as! String }
+        XCTAssertEqual(sources, ["lezwatch"], "the edit landed")
+        XCTAssertThrowsError(try SnapshotDecoder().decode(data)) { error in
+            XCTAssertEqual(error as? SnapshotDecodingError, .malformed("attribution has no entry for source tvmaze"))
+        }
+    }
+
+    func testASnapshotWithBothEntriesStillDecodesAndCreditsBoth() throws {
+        let s = try Repo.fixture()
+        XCTAssertEqual(s.attribution.map(\.source), [Attribution.lezWatchSource, Attribution.tvmazeSource])
+        XCTAssertNotNil(s.attribution(for: Attribution.lezWatchSource))
+        XCTAssertNotNil(Attribution.tvmazeCredit(in: s))
     }
 
     func testLezWatchLinkLabelNamesTheRecord() {

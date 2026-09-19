@@ -172,7 +172,12 @@ public enum Presentation {
     /// said to be past — never presented as still upcoming. `today` is
     /// injectable for tests; the comparison is by calendar day, UTC, with a
     /// one-day grace so a broadcast-timezone date is never called past early.
-    public static func nextEpisode(_ schedule: Schedule, today: Date = Date()) -> String {
+    public static func nextEpisode(
+        _ schedule: Schedule,
+        today: Date = Date(),
+        timeZone: TimeZone = .current,
+        locale: Locale = .current
+    ) -> String {
         guard schedule.scheduleKnown else { return "Schedule unknown for this show." }
         guard let e = schedule.nextEpisode else { return "No upcoming episode is known." }
         var parts: [String] = []
@@ -180,10 +185,26 @@ public enum Presentation {
         if let t = e.name, !t.isEmpty { parts.append("“\(t)”") }
         let head = parts.isEmpty ? "Next episode" : parts.joined(separator: " ")
         guard let day = e.airdateDay else { return "\(head) — air date not recorded" }
-        if isPast(day, today: today) {
-            return "\(head) — listed for \(dayFormatter.string(from: day)), which has passed. This data may be out of date."
+        let dateText: String
+        if let instant = e.airInstant {
+            let formatter = DateFormatter()
+            formatter.locale = locale
+            formatter.timeZone = timeZone
+            formatter.dateStyle = .medium
+            formatter.timeStyle = .short
+            dateText = formatter.string(from: instant)
+        } else {
+            let formatter = DateFormatter()
+            formatter.locale = locale
+            formatter.timeZone = TimeZone(secondsFromGMT: 0)
+            formatter.dateStyle = .medium
+            formatter.timeStyle = .none
+            dateText = "\(formatter.string(from: day)) (date as TVmaze lists it, in the network's time zone)"
         }
-        return "\(head) — \(dayFormatter.string(from: day))"
+        if isPast(day, today: today) {
+            return "\(head) — listed for \(dateText), which has passed. This data may be out of date."
+        }
+        return "\(head) — \(dateText)"
     }
 
     /// True when `day` (a UTC calendar day) is more than one day before

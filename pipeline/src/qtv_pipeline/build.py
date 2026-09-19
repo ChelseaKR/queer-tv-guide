@@ -28,6 +28,13 @@ class BuildError(RuntimeError):
 
 RUN_META_PATH = "run.json"
 
+MAX_SHRINK_PERCENT = 2
+"""The most the shows or the characters may fall, against the snapshot this build
+replaces, before the build refuses (README, Build gates, gate 6). LezWatch's
+catalog only grows in ordinary weeks; two percent is about 45 shows or 147
+characters gone in one night, which is a fault far more often than an edit.
+`--allow-shrink` is the deliberate override."""
+
 
 def _now_z() -> str:
     return time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
@@ -68,20 +75,21 @@ def run_fetch(
         actor_names = lezwatch.fetch_actor_names(client, cache_dir)
         log(f"actors: {len(actor_names)} names")
 
-        show_id_list = lezwatch.fetch_id_list(client, cache_dir, kind="shows")
-        char_id_list = lezwatch.fetch_id_list(client, cache_dir, kind="characters")
-        deleted_shows = lezwatch.find_deleted(cache_dir, kind="shows", live_ids=show_id_list)
-        deleted_chars = lezwatch.find_deleted(cache_dir, kind="characters", live_ids=char_id_list)
-        paths = lezwatch.cache_paths(cache_dir)
-        for sid in deleted_shows:
-            (paths["shows"] / f"{sid}.json").unlink(missing_ok=True)
-        for cid in deleted_chars:
-            (paths["characters"] / f"{cid}.json").unlink(missing_ok=True)
-        if deleted_shows or deleted_chars:
-            log(
-                f"removed from cache (no longer on LezWatch): "
-                f"{len(deleted_shows)} shows, {len(deleted_chars)} characters"
+        for kind, total in (("shows", shows_available), ("characters", chars_available)):
+            id_list = lezwatch.fetch_id_list(client, cache_dir, kind=kind, expected_total=total)
+            outcome = lezwatch.reconcile(
+                client, cache_dir, kind=kind, live_ids=id_list, expected_total=total
             )
+            if outcome.refetched:
+                log(
+                    f"{kind}: {len(outcome.refetched)} in the id list but not the cache, fetched by id"
+                )
+            if outcome.removed:
+                log(f"{kind}: {len(outcome.removed)} removed from cache (no longer published)")
+            if outcome.kept:
+                log(
+                    f"{kind}: {len(outcome.kept)} missing from the id list but still published; kept"
+                )
 
         shows_raw = lezwatch.load_shows(cache_dir)
         joins = tvmaze.sync_shows(client, cache_dir, shows_raw, full=full)
@@ -138,10 +146,13 @@ def run_build(
     git_sha: str | None = None,
     workflow_run_id: str | None = None,
     schema_path: Path | None = None,
+    previous_path: Path | None = None,
+    allow_shrink: bool = False,
     log: Callable[[str], None] = print,
 ) -> dict[str, Any]:
     """Offline phase. No network calls. Refuses to write anything if the cache
-    is missing, empty, or the assembled snapshot fails schema validation."""
+    is missing, empty or short of the source's total, the assembled snapshot
+    fails schema validation, or it is much smaller than `previous_path`."""
     run_meta_path = cache_dir / RUN_META_PATH
     if not run_meta_path.exists():
         raise BuildError(f"{run_meta_path} missing; run `qtv fetch` before `qtv build`")
@@ -161,6 +172,7 @@ def run_build(
         raise BuildError("no shows in cache; refusing to publish an empty snapshot")
     if not chars_raw:
         raise BuildError("no characters in cache; refusing to publish an empty snapshot")
+    _check_completeness(run_meta["lezwatch"]["available"], len(shows_raw), len(chars_raw))
 
     shows = [normalize.normalize_show(raw, taxonomies_by_key) for raw in shows_raw]
     characters = [
@@ -236,8 +248,68 @@ def run_build(
     doc["content_digest"] = digest_mod.content_digest(doc)
 
     _validate(doc, schema_path or _find_schema_path(), show_ids)
+    _check_no_shrink(doc, previous_path, allow_shrink=allow_shrink, log=log)
     _write_outputs(doc, coverage, out_dir, log)
     return doc
+
+
+def _check_completeness(available: dict[str, int | None], shows: int, characters: int) -> None:
+    """Gate 3: the mirror holds at least `COMPLETENESS_FLOOR_PERCENT` of what the
+    source says it has. Checked offline from the totals the fetch recorded, so a
+    snapshot short of its own source is never built. A total the source did not
+    give cannot be checked, and an unchecked mirror is not published."""
+    for kind, held in (("shows", shows), ("characters", characters)):
+        total = available.get(kind)
+        if total is None:
+            raise BuildError(
+                f"cannot check mirror completeness: LezWatch reported no total for {kind}"
+            )
+        if held * 100 < total * lezwatch.COMPLETENESS_FLOOR_PERCENT:
+            raise BuildError(
+                f"mirror completeness: {held} of the {total} {kind} LezWatch reports are "
+                f"cached ({100 * held / total:.1f}%); at least "
+                f"{lezwatch.COMPLETENESS_FLOOR_PERCENT}% is required. Nothing is published; "
+                "the last good snapshot stays."
+            )
+
+
+def _check_no_shrink(
+    doc: dict[str, Any],
+    previous_path: Path | None,
+    *,
+    allow_shrink: bool,
+    log: Callable[[str], None],
+) -> None:
+    """Gate 6: the new snapshot has not lost more than `MAX_SHRINK_PERCENT` of its
+    shows or characters against the one it replaces. Skipped, loudly, when there
+    is no previous file to compare with."""
+    if previous_path is None:
+        log("shrink gate SKIPPED: no previous snapshot was supplied to compare with")
+        return
+    try:
+        previous = json.loads(previous_path.read_text())
+        before = {kind: len(previous[kind]) for kind in ("shows", "characters")}
+    except (OSError, ValueError, KeyError, TypeError) as exc:
+        raise BuildError(
+            f"cannot compare with the previous snapshot {previous_path}: {exc!r}"
+        ) from exc
+    for kind, old in before.items():
+        new = len(doc[kind])
+        # A shrink is new below (100 - MAX_SHRINK_PERCENT)% of old, in integers.
+        if new * 100 >= old * (100 - MAX_SHRINK_PERCENT):
+            continue
+        fell = f"{kind}: {old} in the previous snapshot, {new} now ({100 * (old - new) / old:.1f}% fewer)"
+        if allow_shrink:
+            log(f"shrink gate OVERRIDDEN by --allow-shrink: {fell}")
+            continue
+        raise BuildError(
+            f"the snapshot shrank more than {MAX_SHRINK_PERCENT}%: {fell}. Nothing is "
+            "published. If the removal is real, build with --allow-shrink."
+        )
+    log(
+        f"shrink gate: shows {before['shows']} -> {len(doc['shows'])}, "
+        f"characters {before['characters']} -> {len(doc['characters'])}"
+    )
 
 
 def _attach_schedules(

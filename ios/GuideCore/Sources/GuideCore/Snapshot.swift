@@ -359,6 +359,14 @@ public struct Episode: Codable, Equatable, Sendable, Identifiable {
         guard let airdate else { return nil }
         return ISO8601DayFormatter.date(from: airdate)
     }
+
+    /// TVmaze supplies a placeholder airstamp when it has no broadcast time.
+    /// Only an episode with both fields has a known instant.
+    public var airInstant: Date? {
+        guard let airtime, !airtime.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
+              let airstamp else { return nil }
+        return ISO8601DateFormatter().date(from: airstamp)
+    }
 }
 
 public struct ScheduleJoin: Codable, Equatable, Sendable {

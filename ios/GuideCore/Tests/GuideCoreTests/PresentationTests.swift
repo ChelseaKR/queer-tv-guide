@@ -129,6 +129,64 @@ final class PresentationTests: XCTestCase {
         XCTAssertTrue(weekAfter.contains("which has passed. This data may be out of date."), weekAfter)
     }
 
+    func testNextEpisodeUsesViewerTimeZoneForKnownInstant() {
+        // Grey's Anatomy: TVmaze lists Oct 15 at 22:00 in the network's zone.
+        let schedule = Self.episodeSchedule(airdate: "2026-10-15", airtime: "22:00", airstamp: "2026-10-16T02:00:00+00:00")
+        let cases = [
+            ("America/Los_Angeles", "Oct 15", "7:00 PM"),
+            ("Europe/London", "Oct 16", "3:00 AM"),
+            ("Asia/Tokyo", "Oct 16", "11:00 AM"),
+            ("Pacific/Auckland", "Oct 16", "3:00 PM"),
+        ]
+        for (zoneID, date, time) in cases {
+            let text = Presentation.nextEpisode(schedule, today: Self.day("2026-10-01"), timeZone: TimeZone(identifier: zoneID)!, locale: Locale(identifier: "en_US"))
+            XCTAssertTrue(text.contains(date), "\(zoneID): \(text)")
+            XCTAssertTrue(text.contains(time), "\(zoneID): \(text)")
+        }
+    }
+
+    func testNextEpisodeHandlesLocalMidnightAndDaylightSavingChange() {
+        let tokyo = TimeZone(identifier: "Asia/Tokyo")!
+        let afterMidnight = Self.episodeSchedule(airdate: "2026-10-15", airtime: "15:30", airstamp: "2026-10-15T15:30:00+00:00")
+        let midnightText = Presentation.nextEpisode(afterMidnight, today: Self.day("2026-10-01"), timeZone: tokyo, locale: Locale(identifier: "en_US"))
+        XCTAssertTrue(midnightText.contains("Oct 16"), midnightText)
+        XCTAssertTrue(midnightText.contains("12:30 AM"), midnightText)
+
+        let losAngeles = TimeZone(identifier: "America/Los_Angeles")!
+        let beforeChange = Self.episodeSchedule(airdate: "2026-11-01", airtime: "07:30", airstamp: "2026-11-01T07:30:00+00:00")
+        let afterChange = Self.episodeSchedule(airdate: "2026-11-01", airtime: "10:30", airstamp: "2026-11-01T10:30:00+00:00")
+        let beforeText = Presentation.nextEpisode(beforeChange, today: Self.day("2026-10-01"), timeZone: losAngeles, locale: Locale(identifier: "en_US"))
+        let afterText = Presentation.nextEpisode(afterChange, today: Self.day("2026-10-01"), timeZone: losAngeles, locale: Locale(identifier: "en_US"))
+        XCTAssertTrue(beforeText.contains("12:30 AM"), beforeText)
+        XCTAssertTrue(afterText.contains("2:30 AM"), afterText)
+    }
+
+    func testPlaceholderAirstampNeverBecomesBroadcastTime() {
+        // TVmaze supplies these airstamps despite airtime being null.
+        for (airdate, airstamp) in [
+            ("2026-09-21", "2026-09-21T16:00:00+00:00"), // Days of Our Lives
+            ("2026-09-23", "2026-09-23T12:00:00+00:00"), // Ted Lasso
+            ("2026-10-14", "2026-10-14T12:00:00+00:00"), // Helluva Boss
+        ] {
+            XCTAssertNil(Self.episodeSchedule(airdate: airdate, airtime: nil, airstamp: airstamp).nextEpisode?.airInstant)
+        }
+        let schedule = Self.episodeSchedule(airdate: "2026-09-23", airtime: nil, airstamp: "2026-09-23T12:00:00+00:00")
+        let text = Presentation.nextEpisode(schedule, today: Self.day("2026-09-01"), timeZone: TimeZone(identifier: "America/Los_Angeles")!, locale: Locale(identifier: "en_US"))
+        XCTAssertTrue(text.contains("Sep 23"), text)
+        XCTAssertTrue(text.contains("network's time zone"), text)
+        XCTAssertFalse(text.contains("AM"), text)
+
+        let blankTime = Self.episodeSchedule(airdate: "2026-09-23", airtime: "  ", airstamp: "2026-09-23T12:00:00+00:00")
+        XCTAssertNil(blankTime.nextEpisode?.airInstant)
+        let badStamp = Self.episodeSchedule(airdate: "2026-09-23", airtime: "12:00", airstamp: "invalid")
+        XCTAssertNil(badStamp.nextEpisode?.airInstant)
+    }
+
+    private static func episodeSchedule(airdate: String, airtime: String?, airstamp: String) -> Schedule {
+        let episode = Episode(tvmazeID: 1, season: nil, number: nil, name: nil, airdate: airdate, airtime: airtime, airstamp: airstamp, runtime: nil, url: URL(string: "https://www.tvmaze.com/episodes/1")!)
+        return Schedule(scheduleKnown: true, join: ScheduleJoin(method: .lwtvTvmazeID, matched: true), tvmazeID: 1, tvmazeURL: nil, status: nil, premiered: nil, ended: nil, network: nil, webChannel: nil, nextEpisode: episode, previousEpisode: nil)
+    }
+
     private static func day(_ ymd: String) -> Date {
         let f = ISO8601DateFormatter()
         f.formatOptions = [.withFullDate, .withDashSeparatorInDate]

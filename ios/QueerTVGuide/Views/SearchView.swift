@@ -20,7 +20,8 @@ struct SearchView: View {
 
     struct Results {
         var key: Key?
-        var hits: [SearchIndex.Hit] = []
+        var found = SearchResults()
+        var hits: [SearchIndex.Hit] { found.hits }
     }
 
     private var trimmedQuery: String { query.trimmingCharacters(in: .whitespacesAndNewlines) }
@@ -60,13 +61,13 @@ struct SearchView: View {
 
     private func updateResults(for key: Key) async {
         guard let index = model.searchIndex else { return }
-        let hits = await Task.detached(priority: .userInitiated) {
-            key.query.isEmpty
-                ? index.browse(filters: key.filters).map { SearchIndex.Hit.show($0) }
-                : index.search(key.query, filters: key.filters)
+        let found = await Task.detached(priority: .userInitiated) { () -> SearchResults in
+            guard key.query.isEmpty else { return index.results(for: key.query, filters: key.filters) }
+            // Browsing lists every show that passes, uncapped: nothing to truncate.
+            return SearchResults(hits: index.browse(filters: key.filters).map { SearchIndex.Hit.show($0) })
         }.value
         guard !Task.isCancelled else { return }
-        results = Results(key: key, hits: hits)
+        results = Results(key: key, found: found)
     }
 
     @ViewBuilder
@@ -84,6 +85,13 @@ struct SearchView: View {
             if !filters.isEmpty {
                 Section {
                     activeFiltersRow(count: settled ? hits.count : nil)
+                }
+            }
+            // Whenever the list is capped, with or without a filter: a list
+            // that stops short must not read as the whole answer.
+            if settled, let note = results.found.truncationNote() {
+                Section {
+                    truncationNote(note)
                 }
             }
             if settled, hits.isEmpty {
@@ -104,6 +112,18 @@ struct SearchView: View {
         }
         .listStyle(.plain)
         .refreshable { await model.refresh() }
+    }
+
+    /// Says the list is capped and how many matched, in words. One text
+    /// element, so VoiceOver reads it as one sentence; it wraps at any
+    /// Dynamic Type size and carries no meaning in color alone.
+    private func truncationNote(_ note: String) -> some View {
+        Text(note)
+            .font(.subheadline)
+            .foregroundStyle(.subdued)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .fixedSize(horizontal: false, vertical: true)
+            .accessibilityIdentifier("search-truncation-note")
     }
 
     /// Above the results while any filter is on: how many there are, and a

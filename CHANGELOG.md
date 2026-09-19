@@ -102,3 +102,6 @@ consumer of the published snapshot, would notice.
   who moved on after the first word heard "No". Section headings on About,
   and text scrolling toward the tab bar, now meet 4.5:1 contrast, and the
   About rows scale with Dynamic Type (#22, #28).
+- Search now says when its list is cut short. A query with more than 50 matches
+  shows "Showing the first 50 of 75 matches. Type more to narrow them." with or
+  without a filter on; it used to say so only when a filter was on (#53).

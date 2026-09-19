@@ -97,7 +97,8 @@ final class AccessibilityAuditTests: XCTestCase {
             : [types]
         for (index, pass) in passes.enumerated() {
             if index > 0 { waitForStillScreen(app) }
-            try app.performAccessibilityAudit(for: pass) { issue in
+            let budgetBeforePass = underBarBudget
+            try runPass(app, pass, resetting: { underBarBudget = budgetBeforePass }) { issue in
                 guard let element = issue.element, element.exists else {
                     if issue.auditType == .contrast, underBarBudget > 0 {
                         underBarBudget -= 1
@@ -134,6 +135,47 @@ final class AccessibilityAuditTests: XCTestCase {
                 return false
             }
         }
+    }
+
+    /// Runs one audit pass. The audit can stop without a verdict: it reports
+    /// "Audit failed to complete in time" (code -56). Measured in CI, on the
+    /// first-run screen after it was scrolled: it happened in runs 35399628927,
+    /// 35422900625 and 35450246601, and the same test passed in runs 35407156681
+    /// and 35421286344, with no reported issue in any of them; the run that
+    /// timed out last also needed 44 s to launch the app for another test. So
+    /// it tracks a slow runner, not the screen. That error is no finding:
+    /// nothing was judged. So that one error, and only it, runs the same pass
+    /// once more on a still screen. Every issue the audit does report is
+    /// judged as before and is never retried, and a second timeout fails the
+    /// test.
+    /// `resetting` puts the allowance counters back, so the second run is
+    /// judged from the same starting point as the first.
+    @MainActor
+    private func runPass(
+        _ app: XCUIApplication,
+        _ pass: XCUIAccessibilityAuditType,
+        resetting reset: () -> Void,
+        issueHandler: @escaping (XCUIAccessibilityAuditIssue) throws -> Bool
+    ) throws {
+        let started = Date()
+        do {
+            try app.performAccessibilityAudit(for: pass, issueHandler)
+        } catch let error as NSError where Self.isAuditTimeout(error) {
+            print("audit: \(Self.passName(pass)) pass stopped without a verdict after \(String(format: "%.1f", Date().timeIntervalSince(started))) s (\(error.code)); running it once more on a still screen")
+            waitForStillScreen(app)
+            reset()
+            try app.performAccessibilityAudit(for: pass, issueHandler)
+        }
+        print("audit: \(Self.passName(pass)) pass took \(String(format: "%.1f", Date().timeIntervalSince(started))) s")
+    }
+
+    static func passName(_ pass: XCUIAccessibilityAuditType) -> String {
+        pass == .contrast ? "contrast" : "non-contrast (\(pass.rawValue))"
+    }
+
+    /// `XCUIAccessibilityAuditError`'s "did not complete in time" (-56).
+    static func isAuditTimeout(_ error: NSError) -> Bool {
+        error.domain == "com.apple.xcode.xctest.accessibilityAudit" && error.code == -56
     }
 
     /// How far above the tab bar allowance 2 reaches, in points.
@@ -255,16 +297,30 @@ final class AccessibilityAuditTests: XCTestCase {
         return heading.waitForExistence(timeout: 30)
     }
 
+    /// Opens the filter sheet from Search and waits for it. Measured in CI:
+    /// on a slow runner the tap on Filter was lost, the sheet never opened,
+    /// and the test went on to audit the results behind it. One more tap when
+    /// the sheet has not appeared and the button is still there to tap; the
+    /// assertion that the sheet is open is unchanged.
+    @MainActor
+    private func openFilterSheet(_ app: XCUIApplication) {
+        let filter = app.buttons["Filter"]
+        XCTAssertTrue(filter.waitForExistence(timeout: 30), "no Filter button")
+        filter.tap()
+        let worthIt = app.buttons["Worth it: Yes"]
+        if !worthIt.waitForExistence(timeout: 10), filter.exists, filter.isHittable {
+            filter.tap()
+        }
+        XCTAssertTrue(worthIt.waitForExistence(timeout: 10), "the filter sheet did not open")
+    }
+
     /// The filter sheet, its trope picker, and the active-filters row and
     /// empty state it leads to.
     @MainActor
     func testFilterSheetAndItsResultsPassTheAudit() throws {
         let app = launch()
         XCTAssertTrue(app.cells.firstMatch.waitForExistence(timeout: 30), "the catalog did not load")
-        let filter = app.buttons["Filter"]
-        XCTAssertTrue(filter.waitForExistence(timeout: 30))
-        filter.tap()
-        XCTAssertTrue(app.buttons["Worth it: Yes"].waitForExistence(timeout: 10))
+        openFilterSheet(app)
         try audit(app)
 
         // Tropes: a searchable list of choices, none of them death-revealing.
@@ -311,10 +367,7 @@ final class AccessibilityAuditTests: XCTestCase {
     @MainActor
     func testLargestTextSizeFilterSheetPassesDynamicTypeAndClippingAudits() throws {
         let app = launch(textSize: "UICTContentSizeCategoryAccessibilityXXXL")
-        let filter = app.buttons["Filter"]
-        XCTAssertTrue(filter.waitForExistence(timeout: 30))
-        filter.tap()
-        XCTAssertTrue(app.buttons["Worth it: Yes"].waitForExistence(timeout: 10))
+        openFilterSheet(app)
         try audit(app, [.dynamicType, .textClipped])
         // The bottom of the form, where the results button sits at these
         // sizes.

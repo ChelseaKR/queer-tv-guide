@@ -251,6 +251,27 @@ public enum Presentation {
         return "\(hours / 24) days ago"
     }
 
+    /// "3 days", "6 hours", "1 hour": a length of time in whole days when it
+    /// is one, else whole hours. For the wording of `refreshTriggers` only.
+    static func span(_ seconds: TimeInterval) -> String {
+        let hours = max(1, Int((seconds / 3600).rounded()))
+        if hours >= 24, hours % 24 == 0 {
+            let days = hours / 24
+            return days == 1 ? "1 day" : "\(days) days"
+        }
+        return hours == 1 ? "1 hour" : "\(hours) hours"
+    }
+
+    /// When returning to the app looks for new data, in words, built from the
+    /// numbers `ForegroundRefreshGate` acts on so the two cannot drift:
+    /// "while its data is more than 3 days old (at most once every 6 hours)".
+    /// The out-of-date banner, the About screen, the privacy policy and the
+    /// support page all say this (ForegroundRefreshTests holds the pages to
+    /// it).
+    public static var returnRefreshRule: String {
+        "while its data is more than \(span(ForegroundRefreshGate.staleAfter)) old (at most once every \(span(ForegroundRefreshGate.minimumInterval)))"
+    }
+
     /// What a stale or unknown-age snapshot says about itself, above the
     /// content it affects. `nil` only when the data is current.
     public struct FreshnessWarning: Equatable, Sendable {
@@ -269,7 +290,7 @@ public enum Presentation {
         case .stale(let seconds):
             return FreshnessWarning(
                 title: "This data is out of date",
-                detail: "It was last updated \(age(seconds)), on \(dateTimeFormatter.string(from: date)). Next episodes and where-to-watch links may have changed since then. The app looks for new data each time it opens; pull down on Search to look now."
+                detail: "It was last updated \(age(seconds)), on \(dateTimeFormatter.string(from: date)). Next episodes and where-to-watch links may have changed since then. The app looks for new data each time it opens, and when you return to it \(returnRefreshRule). Pull down on Search to look now."
             )
         case .unknown:
             return FreshnessWarning(

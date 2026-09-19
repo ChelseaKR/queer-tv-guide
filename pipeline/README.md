@@ -31,10 +31,16 @@ wheel build. The root `make verify` runs it as `make pipeline`.
 | On 5xx / network error | retry twice with backoff, then **fail the run** | same |
 | User-Agent | `queer-tv-guide-pipeline/<version> (+https://github.com/ChelseaKR/queer-tv-guide)` | same |
 | Full mirror | ~120 requests, ~20 min, ~10 MB | ~2,000 requests, ~35 min, ~4 MB |
-| Nightly incremental | ~20 requests | ~300 requests |
+| Nightly incremental (measured) | 23 requests | 670–676 requests |
 
 Every run prints requests and bytes per host and writes them into
 `sources.*` in the snapshot.
+The nightly figures above come from the per-host request counters in the
+[September 18 run](https://github.com/ChelseaKR/queer-tv-guide/actions/runs/35371523231)
+(23 LezWatch, 670 TVmaze) and the
+[September 19 run](https://github.com/ChelseaKR/queer-tv-guide/actions/runs/35434596786)
+(23 LezWatch, 676 TVmaze). At one TVmaze request per second, 676 requests take
+about 11 minutes. Recheck these figures when pipeline changes alter the run.
 
 What is fetched, and only this:
 

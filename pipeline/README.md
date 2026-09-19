@@ -49,10 +49,30 @@ What is fetched, and only this:
 ## Incremental fetch and the cursor
 
 `cache/lezwatch/cursor.json` holds the newest `modified_gmt` seen per post
-type. The next run asks `modified_after=<cursor minus 24 h>`; the overlap is
-harmless because records are keyed by id. Deletions are detected by comparing
-the cached ids with `export/list/*` (one request each). A `--full` run ignores
-the cursor.
+type. The next run asks `modified_after=<cursor minus 24 h>` (`CURSOR_OVERLAP`
+in `lezwatch.py`). The overlap is not just tidy: LezWatch compares
+`modified_after` with the site's local time (four hours behind GMT in
+September), so the bare cursor skips a record edited within that offset after
+it. Refetching a record is harmless because records are keyed by id. The stored
+cursor itself is never padded and never moves backward. A cursor that does not
+parse means a full fetch.
+
+The cursor is a hint about what changed; `export/list/{shows,characters}/` is
+the authority on what exists, and every run reconciles the cache against it
+(`lezwatch.reconcile`):
+
+- an id the list has and the cache lacks is fetched by id (`wp/v2/<type>?include=`,
+  a hundred ids a request), whatever the cursor says, so a record the cache
+  lost or never received is healed on the next run;
+- an id the cache has and the list lacks is removed only after the site confirms
+  it is no longer published (the same `include` request with `status=publish`
+  comes back without it). A record the site still publishes stays: the list
+  can lag by a moment;
+- if a listed id is still not in the cache after that, the run fails and names
+  the ids, and nothing is published.
+
+When the cache already agrees with the list, reconciling costs no requests. A
+`--full` run ignores the cursor; the workflow's manual `full` input starts one.
 
 TVmaze is refreshed for a show when it has never been fetched, when its cached
 status is not `Ended`, or when `/updates/shows` reports a newer `updated`

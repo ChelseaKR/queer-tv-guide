@@ -15,7 +15,16 @@ name: snapshot
 on:
   schedule:
     - cron: "17 9 * * *" # ~02:17 Pacific standard time; off the hour to avoid the scheduler herd
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      full:
+        description: >-
+          Mirror everything again instead of only what changed (about 55
+          minutes; README "Crawl budget"). Use it after the mirror is
+          suspected wrong. Every record is refetched over the restored
+          cache and anything LezWatch no longer publishes is removed.
+        type: boolean
+        default: false
 
 # Read-only by default; each job is granted only the writes it uses
 # (CI-CD-STANDARD §2, CICD-04).
@@ -76,7 +85,15 @@ jobs:
 
       - name: fetch (network; respects each source's published rate limit)
         working-directory: pipeline
-        run: uv run qtv fetch --cache .cache
+        run: |
+          args=(--cache .cache)
+          if [ "$FULL_MIRROR" = "true" ]; then
+            args+=(--full)
+            echo "full mirror requested: ignoring the incremental cursor"
+          fi
+          uv run qtv fetch "${args[@]}"
+        env:
+          FULL_MIRROR: ${{ inputs.full }}
 
       - name: build (offline; validates against schema/snapshot.v1.json)
         id: build

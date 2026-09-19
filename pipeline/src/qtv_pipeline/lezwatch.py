@@ -6,19 +6,40 @@ not assume the server honors it (WP REST support for that parameter varies by
 version) — an unhonored filter just means every run refetches everything it
 would have refetched on a full run, which is slower but never wrong, and the
 build's `mode` field in the snapshot says which happened.
+
+The cursor is a hint about what changed; the id list is the authority on what
+exists. After every incremental fetch `reconcile` compares the cache with
+`export/list/*`: a listed id the cache lacks is fetched by id whatever the
+cursor says, and a cached id the list lacks is removed only after the site
+confirms it is no longer published.
 """
 
 from __future__ import annotations
 
 import json
 from dataclasses import dataclass
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any
 
-from .http import PacedClient
+from .http import FetchError, PacedClient
 
 BASE = "https://lezwatchtv.com/wp-json"
 PER_PAGE = 100
+
+CURSOR_OVERLAP = timedelta(hours=24)
+"""How far before the stored cursor an incremental request looks.
+
+The cursor is the newest `modified_gmt` seen. LezWatch compares `modified_after`
+with the site's *local* time, which trails GMT (four hours in September 2026), so
+sending the cursor as is skips a record edited within that offset after it, and
+skips it for good once a later edit moves the cursor past it. Sending the cursor
+minus a whole day is a superset of the intended window for any UTC offset (they
+span 26 hours at most, and the site's is a fixed few), and harmless: records are
+keyed by id, so a record fetched twice is written once."""
+
+CURSOR_FORMAT = "%Y-%m-%dT%H:%M:%S"
+"""WordPress's `modified_gmt` format, and the format the cursor is persisted in."""
 
 # (WP taxonomy slug, REST base / top-level field name, schema key in taxonomies{})
 TAXONOMIES: list[tuple[str, str, str]] = [
@@ -110,8 +131,16 @@ def fetch_taxonomies(client: PacedClient, cache_dir: Path) -> dict[str, list[dic
     return out
 
 
-def _post_type_cursor_key(post_type: str) -> str:
-    return post_type
+def _parse_cursor(value: str | None) -> datetime | None:
+    """The stored cursor as a time, or None when there is none or it does not
+    parse. An unreadable cursor means a full fetch: more requests, never fewer
+    records."""
+    if not value:
+        return None
+    try:
+        return datetime.strptime(value, CURSOR_FORMAT)
+    except ValueError:
+        return None
 
 
 def _list_posts(
@@ -125,11 +154,12 @@ def _list_posts(
     full: bool,
 ) -> MirrorResult:
     cache_subdir.mkdir(parents=True, exist_ok=True)
-    since = None if full else cursor.get(cursor_key)
+    stored = None if full else _parse_cursor(cursor.get(cursor_key))
+    since = None if stored is None else (stored - CURSOR_OVERLAP).strftime(CURSOR_FORMAT)
     page = 1
     fetched_count = 0
     available: int | None = None
-    newest_modified = since
+    newest_modified = None if stored is None else stored.strftime(CURSOR_FORMAT)
     while True:
         params: dict[str, Any] = {
             "per_page": PER_PAGE,
@@ -244,6 +274,107 @@ def find_deleted(cache_dir: Path, *, kind: str, live_ids: list[dict[str, Any]]) 
     cached_ids = {int(p.stem) for p in subdir.glob("*.json")}
     live_uids = {int(item["uid"]) for item in live_ids if "uid" in item}
     return sorted(cached_ids - live_uids)
+
+
+@dataclass
+class Reconciliation:
+    """What `reconcile` did to one cache, as ids, so the run can log and tests can assert."""
+
+    refetched: list[int]
+    """Listed by LezWatch, absent from the cache: fetched by id."""
+    removed: list[int]
+    """Cached, absent from the list, and confirmed no longer published: removed."""
+    kept: list[int]
+    """Cached, absent from the list, but still published (the list lags): kept."""
+
+
+_KINDS = {
+    "shows": ("show", SHOW_FIELDS),
+    "characters": ("character", CHARACTER_FIELDS),
+}
+
+
+def _fetch_published(
+    client: PacedClient, *, rest_base: str, ids: list[int], fields: str
+) -> list[dict[str, Any]]:
+    """The published records among `ids`, `PER_PAGE` ids to a request.
+
+    `include` is a core WP REST parameter; combined with `status=publish` it
+    answers "which of these are public right now?" in one request per hundred ids,
+    and omits (does not 404) an id that is trashed, a draft or gone. A server that
+    ignored `include` would answer with unrelated records, and taking "none of my
+    ids came back" from that would read a healthy record as deleted, so an answer
+    naming any id that was not asked for is refused."""
+    found: list[dict[str, Any]] = []
+    for start in range(0, len(ids), PER_PAGE):
+        batch = ids[start : start + PER_PAGE]
+        fetched = client.get(
+            f"{BASE}/wp/v2/{rest_base}",
+            params={
+                "include": ",".join(str(i) for i in batch),
+                "per_page": PER_PAGE,
+                "status": "publish",
+                "_fields": fields,
+            },
+        )
+        records = fetched.json()
+        if not isinstance(records, list) or any(
+            not isinstance(r, dict) or r.get("id") not in batch for r in records
+        ):
+            raise FetchError(
+                f"wp/v2/{rest_base}?include=... answered with records that were not asked for; "
+                "refusing to decide which records still exist from it"
+            )
+        found.extend(records)
+    return found
+
+
+def _preview(ids: list[int], limit: int = 20) -> str:
+    shown = ", ".join(str(i) for i in ids[:limit])
+    return f"{shown}, ... ({len(ids)} in all)" if len(ids) > limit else shown
+
+
+def reconcile(
+    client: PacedClient, cache_dir: Path, *, kind: str, live_ids: list[dict[str, Any]]
+) -> Reconciliation:
+    """Make the cache agree with LezWatch's id list, without trusting the list alone.
+
+    The cursor cannot heal a record the cache lost or never received (it has
+    already moved past it), and the list can lag the site by a moment. So:
+
+    1. An id the list has and the cache lacks is fetched by id, whatever the cursor says.
+    2. An id the cache has and the list lacks is removed only when the site confirms
+       it is not published; if it still is, the list is behind and the record stays.
+    3. If a listed id is still not in the cache, the run fails naming the ids: the
+       mirror is short, and publishing it would hide that.
+    """
+    rest_base, fields = _KINDS[kind]
+    subdir = _cache_paths(cache_dir)[kind]
+    subdir.mkdir(parents=True, exist_ok=True)
+    live = {int(item["uid"]) for item in live_ids if "uid" in item}
+
+    missing = sorted(live - {int(p.stem) for p in subdir.glob("*.json")})
+    refetched = []
+    for record in _fetch_published(client, rest_base=rest_base, ids=missing, fields=fields):
+        _write_json(subdir / f"{record['id']}.json", record)
+        refetched.append(int(record["id"]))
+
+    candidates = find_deleted(cache_dir, kind=kind, live_ids=live_ids)
+    published = {
+        int(r["id"])
+        for r in _fetch_published(client, rest_base=rest_base, ids=candidates, fields="id")
+    }
+    removed = [i for i in candidates if i not in published]
+    for record_id in removed:
+        (subdir / f"{record_id}.json").unlink(missing_ok=True)
+
+    unresolved = sorted(live - {int(p.stem) for p in subdir.glob("*.json")})
+    if unresolved:
+        raise FetchError(
+            f"{kind}: {len(unresolved)} id(s) in LezWatch's list are not in the mirror after "
+            f"fetching them by id: {_preview(unresolved)}. Nothing is published."
+        )
+    return Reconciliation(refetched=sorted(refetched), removed=removed, kept=sorted(published))
 
 
 def load_taxonomies(cache_dir: Path) -> dict[str, list[dict[str, Any]]]:

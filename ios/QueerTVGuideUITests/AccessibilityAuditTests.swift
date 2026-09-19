@@ -95,10 +95,10 @@ final class AccessibilityAuditTests: XCTestCase {
         let passes: [XCUIAccessibilityAuditType] = types.contains(.contrast)
             ? [.contrast, types.subtracting(.contrast)].filter { !$0.isEmpty }
             : [types]
-        for (index, pass) in passes.enumerated() {
+        for (index, checks) in passes.enumerated() {
             if index > 0 { waitForStillScreen(app) }
             let budgetBeforePass = underBarBudget
-            try runPass(app, pass, resetting: { underBarBudget = budgetBeforePass }) { issue in
+            try runPass(app, checks, resetting: { underBarBudget = budgetBeforePass }) { issue in
                 guard let element = issue.element, element.exists else {
                     if issue.auditType == .contrast, underBarBudget > 0 {
                         underBarBudget -= 1
@@ -153,24 +153,24 @@ final class AccessibilityAuditTests: XCTestCase {
     @MainActor
     private func runPass(
         _ app: XCUIApplication,
-        _ pass: XCUIAccessibilityAuditType,
+        _ checks: XCUIAccessibilityAuditType,
         resetting reset: () -> Void,
         issueHandler: @escaping (XCUIAccessibilityAuditIssue) throws -> Bool
     ) throws {
         let started = Date()
         do {
-            try app.performAccessibilityAudit(for: pass, issueHandler)
+            try app.performAccessibilityAudit(for: checks, issueHandler)
         } catch let error as NSError where Self.isAuditTimeout(error) {
-            print("audit: \(Self.passName(pass)) pass stopped without a verdict after \(String(format: "%.1f", Date().timeIntervalSince(started))) s (\(error.code)); running it once more on a still screen")
+            print("audit: \(Self.checksLabel(checks)) pass stopped without a verdict after \(String(format: "%.1f", Date().timeIntervalSince(started))) s (\(error.code)); running it once more on a still screen")
             waitForStillScreen(app)
             reset()
-            try app.performAccessibilityAudit(for: pass, issueHandler)
+            try app.performAccessibilityAudit(for: checks, issueHandler)
         }
-        print("audit: \(Self.passName(pass)) pass took \(String(format: "%.1f", Date().timeIntervalSince(started))) s")
+        print("audit: \(Self.checksLabel(checks)) pass took \(String(format: "%.1f", Date().timeIntervalSince(started))) s")
     }
 
-    static func passName(_ pass: XCUIAccessibilityAuditType) -> String {
-        pass == .contrast ? "contrast" : "non-contrast (\(pass.rawValue))"
+    static func checksLabel(_ checks: XCUIAccessibilityAuditType) -> String {
+        checks == .contrast ? "contrast" : "non-contrast (\(checks.rawValue))"
     }
 
     /// `XCUIAccessibilityAuditError`'s "did not complete in time" (-56).

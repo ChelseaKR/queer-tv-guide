@@ -24,7 +24,7 @@ struct CharacterDetailView: View {
                 .navigationBarTitleDisplayMode(.inline)
                 .toolbar {
                     ToolbarItem(placement: .topBarTrailing) {
-                        FavouriteButton(kind: .character, id: character.id)
+                        FavoriteButton(kind: .character, id: character.id)
                     }
                 }
             } else {

@@ -245,7 +245,7 @@ def test_html_to_text_never_eats_prose_that_merely_contains_angle_brackets():
     )
 
 
-def test_html_to_text_plain_text_passes_through_with_crlf_normalised():
+def test_html_to_text_plain_text_passes_through_with_crlf_normalized():
     raw = "The reveal is in the last episode.\r\n\r\nOrla is played as non-binary."
     assert (
         normalize.html_to_text(raw)

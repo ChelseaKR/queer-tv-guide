@@ -4,7 +4,7 @@ ACF (Advanced Custom Fields) values come through typed on `record["acf"]`.
 The same data is often *also* exposed on `record["meta"]` in WP's native
 single-element-array meta format (e.g. `{"lezshows_tvmaze_id": ["33320"]}`),
 and a few fields (tvmaze id, tmdb id, on-air flag) are meta-only. These
-helpers read acf first and fall back to meta, and normalise "not set" to
+helpers read acf first and fall back to meta, and normalize "not set" to
 None/empty consistently so absence never silently becomes 0, "", or false.
 """
 

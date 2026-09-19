@@ -1,4 +1,4 @@
 # Terms snapshots are evidence (App Review 5.2.2): keep the bytes exactly as
 # fetched so docs/terms-snapshots/*/SHA256SUMS keeps verifying. No EOL
-# normalisation, ever -- LezWatch serves robots.txt with CRLF line endings.
+# normalization, ever -- LezWatch serves robots.txt with CRLF line endings.
 docs/terms-snapshots/** -text

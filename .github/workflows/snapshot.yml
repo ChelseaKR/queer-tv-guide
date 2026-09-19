@@ -116,7 +116,7 @@ jobs:
           # third-party requests.
           cp ../docs/site/privacy.html site/privacy.html
           cp ../docs/site/support.html site/support.html
-          # The index carries the file's CC BY-SA 4.0 licence and every
+          # The index carries the file's CC BY-SA 4.0 license and every
           # source credit with links (qtv_pipeline/site_index.py, tested).
           uv run python -m qtv_pipeline.site_index out/snapshot.v1.json site/index.html
 

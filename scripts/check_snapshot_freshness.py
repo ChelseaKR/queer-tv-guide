@@ -19,7 +19,7 @@ about 55 minutes, and the job's timeout is 90.
   previous snapshot keeps serving, correctly dated".
 - Older than SLA (48 h): the data cards' staleness SLA is broken. SEV2, the
   README's "stale past the 48-hour SLA".
-- The latest completed nightly run did not succeed (failed, cancelled, timed
+- The latest completed nightly run did not succeed (failed, canceled, timed
   out): SEV3, even while the file is still fresh.
 - An answer nobody can give is never "fresh": a file that cannot be fetched
   or read, a date in the future, or no run history is an alarm too.

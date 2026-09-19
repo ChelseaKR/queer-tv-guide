@@ -64,12 +64,12 @@
             "name": { "const": "Creative Commons Attribution-ShareAlike 4.0 International" },
             "url": { "const": "https://creativecommons.org/licenses/by-sa/4.0/" }
           },
-          "description": "The licence this snapshot file is published under. ShareAlike attaches to the file (a database that incorporates TVmaze data, CC BY-SA 4.0 s.4(b)); it does not attach to the app code that reads it."
+          "description": "The license this snapshot file is published under. ShareAlike attaches to the file (a database that incorporates TVmaze data, CC BY-SA 4.0 s.4(b)); it does not attach to the app code that reads it."
         },
         "notice": {
           "type": "string",
           "minLength": 1,
-          "description": "Plain-language licence notice the app must show on its attribution screen, verbatim."
+          "description": "Plain-language license notice the app must show on its attribution screen, verbatim."
         }
       }
     },

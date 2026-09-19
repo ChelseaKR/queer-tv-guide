@@ -1,9 +1,9 @@
 import XCTest
 @testable import GuideCore
 
-/// DG-10: the favourites backup is documented and tested, not assumed. The
+/// DG-10: the favorites backup is documented and tested, not assumed. The
 /// round trip goes through a real file, the way a user's export does.
-final class FavouritesBackupTests: XCTestCase {
+final class FavoritesBackupTests: XCTestCase {
     private var suites: [String] = []
     private let now = Date(timeIntervalSince1970: 1_790_000_000)
 
@@ -13,14 +13,14 @@ final class FavouritesBackupTests: XCTestCase {
         super.tearDown()
     }
 
-    private func freshStore(now: Date? = nil) -> FavouritesStore {
+    private func freshStore(now: Date? = nil) -> FavoritesStore {
         let name = "GuideCoreTests.backup.\(UUID().uuidString)"
         suites.append(name)
         let clock = now ?? self.now
-        return FavouritesStore(defaults: UserDefaults(suiteName: name)!, now: { clock })
+        return FavoritesStore(defaults: UserDefaults(suiteName: name)!, now: { clock })
     }
 
-    private func isKnown(in snapshot: Snapshot) -> (FavouritesStore.Kind, String) -> Bool {
+    private func isKnown(in snapshot: Snapshot) -> (FavoritesStore.Kind, String) -> Bool {
         { kind, id in kind == .show ? snapshot.show(id: id) != nil : snapshot.character(id: id) != nil }
     }
 
@@ -30,11 +30,11 @@ final class FavouritesBackupTests: XCTestCase {
 
     // MARK: Round trip
 
-    func testRoundTripThroughAFileRestoresEveryFavourite() throws {
+    func testRoundTripThroughAFileRestoresEveryFavorite() throws {
         let snapshot = try Repo.fixture()
         var tick = now.addingTimeInterval(-3_600)
         let original = freshStore()
-        let saving = FavouritesStore(defaults: UserDefaults(suiteName: suites[0])!, now: {
+        let saving = FavoritesStore(defaults: UserDefaults(suiteName: suites[0])!, now: {
             tick = tick.addingTimeInterval(60)
             return tick
         })
@@ -43,12 +43,12 @@ final class FavouritesBackupTests: XCTestCase {
         saving.toggle(.show, id: snapshot.shows[2].id)
         let saved = saving.entries
         XCTAssertEqual(saved.count, 3)
-        XCTAssertEqual(Set(saved.map(\.addedAt)).count, 3, "each favourite has its own date to carry across")
+        XCTAssertEqual(Set(saved.map(\.addedAt)).count, 3, "each favorite has its own date to carry across")
         XCTAssertEqual(original.entries, [], "a store reads its suite once, at init")
 
-        let file = try Repo.temporaryDirectory().appendingPathComponent(FavouritesBackup.suggestedFileName)
-        try FavouritesBackup.export(saved).write(to: file)
-        let parsed = try FavouritesBackup.parse(try Data(contentsOf: file), now: now, isKnown: isKnown(in: snapshot))
+        let file = try Repo.temporaryDirectory().appendingPathComponent(FavoritesBackup.suggestedFileName)
+        try FavoritesBackup.export(saved).write(to: file)
+        let parsed = try FavoritesBackup.parse(try Data(contentsOf: file), now: now, isKnown: isKnown(in: snapshot))
         XCTAssertEqual(parsed.notInSnapshot, 0)
         XCTAssertEqual(parsed.unreadable, 0)
 
@@ -58,18 +58,18 @@ final class FavouritesBackupTests: XCTestCase {
         XCTAssertEqual(result.added, 3)
         XCTAssertEqual(result.alreadySaved, 0)
         XCTAssertEqual(restored.entries, saved, "kind, id and added date all survive the file")
-        let reopened = FavouritesStore(defaults: UserDefaults(suiteName: suites.last!)!)
+        let reopened = FavoritesStore(defaults: UserDefaults(suiteName: suites.last!)!)
         XCTAssertEqual(reopened.entries, saved, "the import was persisted, not just held in memory")
     }
 
-    /// The real snapshot the app ships: favourite a spread of its shows and
+    /// The real snapshot the app ships: favorite a spread of its shows and
     /// characters, export, import into an empty store.
     func testRoundTripOnTheBundledSnapshot() throws {
         let snapshot = try SnapshotDecoder().decode(try Data(contentsOf: Repo.bundledSnapshot))
         let store = freshStore()
         for show in snapshot.shows.prefix(40) { store.toggle(.show, id: show.id) }
         for character in snapshot.characters.suffix(40) { store.toggle(.character, id: character.id) }
-        let parsed = try FavouritesBackup.parse(try FavouritesBackup.export(store.entries), now: now, isKnown: isKnown(in: snapshot))
+        let parsed = try FavoritesBackup.parse(try FavoritesBackup.export(store.entries), now: now, isKnown: isKnown(in: snapshot))
         XCTAssertEqual(parsed.entries, store.entries)
         let restored = freshStore()
         restored.merge(parsed.entries)
@@ -81,12 +81,12 @@ final class FavouritesBackupTests: XCTestCase {
     func testIdsNotInTheSnapshotAreSkippedAndCounted() throws {
         let snapshot = try Repo.fixture()
         let entries = [
-            FavouritesStore.Entry(kind: .show, id: snapshot.shows[0].id, addedAt: now),
-            FavouritesStore.Entry(kind: .show, id: "lwtv:show:987654321", addedAt: now),
-            FavouritesStore.Entry(kind: .character, id: "lwtv:character:987654321", addedAt: now),
+            FavoritesStore.Entry(kind: .show, id: snapshot.shows[0].id, addedAt: now),
+            FavoritesStore.Entry(kind: .show, id: "lwtv:show:987654321", addedAt: now),
+            FavoritesStore.Entry(kind: .character, id: "lwtv:character:987654321", addedAt: now),
         ]
         XCTAssertNil(snapshot.show(id: "lwtv:show:987654321"), "the unknown id must really be unknown")
-        let parsed = try FavouritesBackup.parse(try FavouritesBackup.export(entries), now: now, isKnown: isKnown(in: snapshot))
+        let parsed = try FavoritesBackup.parse(try FavoritesBackup.export(entries), now: now, isKnown: isKnown(in: snapshot))
         XCTAssertEqual(parsed.entries.map(\.id), [snapshot.shows[0].id])
         XCTAssertEqual(parsed.notInSnapshot, 2)
         XCTAssertEqual(parsed.unreadable, 0)
@@ -95,17 +95,17 @@ final class FavouritesBackupTests: XCTestCase {
     // MARK: The file
 
     func testTheFileHoldsOnlyKindIdAndDate() throws {
-        let entries = [FavouritesStore.Entry(kind: .show, id: "lwtv:show:26", addedAt: Date(timeIntervalSince1970: 1_789_724_682))]
-        let data = try FavouritesBackup.export(entries)
+        let entries = [FavoritesStore.Entry(kind: .show, id: "lwtv:show:26", addedAt: Date(timeIntervalSince1970: 1_789_724_682))]
+        let data = try FavoritesBackup.export(entries)
         let root = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
         XCTAssertEqual(Set(root.keys), ["format", "version", "favourites"])
         XCTAssertEqual(root["format"] as? String, "favourites-backup")
         XCTAssertEqual(root["version"] as? Int, 1)
         let items = try XCTUnwrap(root["favourites"] as? [[String: Any]])
         XCTAssertEqual(items.count, 1)
-        XCTAssertEqual(Set(items[0].keys), ["kind", "id", "added_at"], "nothing but the favourite itself leaves in the file")
+        XCTAssertEqual(Set(items[0].keys), ["kind", "id", "added_at"], "nothing but the favorite itself leaves in the file")
         XCTAssertEqual(items[0]["added_at"] as? String, "2026-09-18T09:44:42Z")
-        XCTAssertEqual(try FavouritesBackup.export(entries), data, "the same favourites export to the same bytes")
+        XCTAssertEqual(try FavoritesBackup.export(entries), data, "the same favorites export to the same bytes")
     }
 
     // MARK: Validation
@@ -120,32 +120,32 @@ final class FavouritesBackupTests: XCTestCase {
             try json(["format": "favourites-backup", "favourites": []]),
         ]
         for data in notBackups {
-            XCTAssertThrowsError(try FavouritesBackup.parse(data, now: now, isKnown: { _, _ in true })) { error in
-                XCTAssertEqual(error as? FavouritesBackup.ImportError, .notABackup, String(decoding: data, as: UTF8.self))
+            XCTAssertThrowsError(try FavoritesBackup.parse(data, now: now, isKnown: { _, _ in true })) { error in
+                XCTAssertEqual(error as? FavoritesBackup.ImportError, .notABackup, String(decoding: data, as: UTF8.self))
             }
         }
     }
 
     func testANewerBackupVersionIsRefusedNotGuessedAt() throws {
         let data = try json(["format": "favourites-backup", "version": 2, "favourites": []])
-        XCTAssertThrowsError(try FavouritesBackup.parse(data, now: now, isKnown: { _, _ in true })) { error in
-            XCTAssertEqual(error as? FavouritesBackup.ImportError, .unsupportedVersion(2))
+        XCTAssertThrowsError(try FavoritesBackup.parse(data, now: now, isKnown: { _, _ in true })) { error in
+            XCTAssertEqual(error as? FavoritesBackup.ImportError, .unsupportedVersion(2))
         }
     }
 
     func testAnOversizedFileIsRefusedBeforeItIsParsed() {
-        let data = Data(count: FavouritesBackup.maxBytes + 1)
-        XCTAssertThrowsError(try FavouritesBackup.parse(data, now: now, isKnown: { _, _ in true })) { error in
-            XCTAssertEqual(error as? FavouritesBackup.ImportError, .tooLarge(bytes: FavouritesBackup.maxBytes + 1))
+        let data = Data(count: FavoritesBackup.maxBytes + 1)
+        XCTAssertThrowsError(try FavoritesBackup.parse(data, now: now, isKnown: { _, _ in true })) { error in
+            XCTAssertEqual(error as? FavoritesBackup.ImportError, .tooLarge(bytes: FavoritesBackup.maxBytes + 1))
         }
     }
 
     func testTooManyEntriesAreRefused() throws {
-        let items = Array(repeating: ["kind": "show", "id": "lwtv:show:1"], count: FavouritesBackup.maxEntries + 1)
+        let items = Array(repeating: ["kind": "show", "id": "lwtv:show:1"], count: FavoritesBackup.maxEntries + 1)
         let data = try json(["format": "favourites-backup", "version": 1, "favourites": items])
-        XCTAssertLessThanOrEqual(data.count, FavouritesBackup.maxBytes, "must reach the entry cap, not the size cap")
-        XCTAssertThrowsError(try FavouritesBackup.parse(data, now: now, isKnown: { _, _ in true })) { error in
-            XCTAssertEqual(error as? FavouritesBackup.ImportError, .tooManyEntries(FavouritesBackup.maxEntries + 1))
+        XCTAssertLessThanOrEqual(data.count, FavoritesBackup.maxBytes, "must reach the entry cap, not the size cap")
+        XCTAssertThrowsError(try FavoritesBackup.parse(data, now: now, isKnown: { _, _ in true })) { error in
+            XCTAssertEqual(error as? FavoritesBackup.ImportError, .tooManyEntries(FavoritesBackup.maxEntries + 1))
         }
     }
 
@@ -163,7 +163,7 @@ final class FavouritesBackupTests: XCTestCase {
             "lwtv:show:26", // not an object
         ]
         let data = try json(["format": "favourites-backup", "version": 1, "favourites": items])
-        let parsed = try FavouritesBackup.parse(data, now: now, isKnown: { _, _ in true })
+        let parsed = try FavoritesBackup.parse(data, now: now, isKnown: { _, _ in true })
         XCTAssertEqual(parsed.entries.map(\.key), ["show:lwtv:show:26"])
         XCTAssertEqual(parsed.unreadable, items.count - 1)
         XCTAssertEqual(parsed.notInSnapshot, 0)
@@ -177,7 +177,7 @@ final class FavouritesBackupTests: XCTestCase {
             ["kind": "character", "id": "lwtv:character:8", "added_at": "2099-01-01T00:00:00Z"],
         ]
         let data = try json(["format": "favourites-backup", "version": 1, "favourites": items, "future_field": true])
-        let parsed = try FavouritesBackup.parse(data, now: now, isKnown: { _, _ in true })
+        let parsed = try FavoritesBackup.parse(data, now: now, isKnown: { _, _ in true })
         XCTAssertEqual(parsed.entries.map(\.key), ["show:lwtv:show:26", "character:lwtv:character:7", "character:lwtv:character:8"])
         XCTAssertEqual(parsed.entries[0].addedAt, ISO8601DateFormatter().date(from: "2026-01-02T03:04:05Z"), "first occurrence wins")
         XCTAssertEqual(parsed.entries[1].addedAt, now, "an unreadable date becomes the import time")
@@ -189,8 +189,8 @@ final class FavouritesBackupTests: XCTestCase {
         store.toggle(.show, id: "lwtv:show:26")
         let saved = store.entries[0]
         let result = store.merge([
-            FavouritesStore.Entry(kind: .show, id: "lwtv:show:26", addedAt: Date(timeIntervalSince1970: 0)),
-            FavouritesStore.Entry(kind: .character, id: "lwtv:character:7", addedAt: now),
+            FavoritesStore.Entry(kind: .show, id: "lwtv:show:26", addedAt: Date(timeIntervalSince1970: 0)),
+            FavoritesStore.Entry(kind: .character, id: "lwtv:character:7", addedAt: now),
         ])
         XCTAssertEqual(result.added, 1)
         XCTAssertEqual(result.alreadySaved, 1)
@@ -204,13 +204,13 @@ final class FavouritesBackupTests: XCTestCase {
     /// the format marker were not in the bytes, the replacement would do
     /// nothing and the refusal below would be testing an intact file.
     func testACorruptedExportIsRefused() throws {
-        let good = try FavouritesBackup.export([FavouritesStore.Entry(kind: .show, id: "lwtv:show:26", addedAt: now)])
+        let good = try FavoritesBackup.export([FavoritesStore.Entry(kind: .show, id: "lwtv:show:26", addedAt: now)])
         let text = String(decoding: good, as: UTF8.self)
         let corrupted = Data(text.replacingOccurrences(of: "\"favourites-backup\"", with: "\"favourites-backuq\"").utf8)
         XCTAssertNotEqual(corrupted, good, "the sabotage did not land")
-        XCTAssertNoThrow(try FavouritesBackup.parse(good, now: now, isKnown: { _, _ in true }))
-        XCTAssertThrowsError(try FavouritesBackup.parse(corrupted, now: now, isKnown: { _, _ in true })) { error in
-            XCTAssertEqual(error as? FavouritesBackup.ImportError, .notABackup)
+        XCTAssertNoThrow(try FavoritesBackup.parse(good, now: now, isKnown: { _, _ in true }))
+        XCTAssertThrowsError(try FavoritesBackup.parse(corrupted, now: now, isKnown: { _, _ in true })) { error in
+            XCTAssertEqual(error as? FavoritesBackup.ImportError, .notABackup)
         }
     }
 
@@ -218,13 +218,13 @@ final class FavouritesBackupTests: XCTestCase {
     /// snapshot knows, and that one entry, and only it, is skipped.
     func testRemovingAnIdFromTheSnapshotSkipsExactlyThatEntry() throws {
         let snapshot = try Repo.fixture()
-        let entries = snapshot.shows.map { FavouritesStore.Entry(kind: .show, id: $0.id, addedAt: now) }
-        let data = try FavouritesBackup.export(entries)
+        let entries = snapshot.shows.map { FavoritesStore.Entry(kind: .show, id: $0.id, addedAt: now) }
+        let data = try FavoritesBackup.export(entries)
         var known = Set(snapshot.shows.map(\.id))
         let dropped = snapshot.shows[1].id
         XCTAssertNotNil(known.remove(dropped), "the sabotage did not land: \(dropped) was not in the known set")
         XCTAssertFalse(known.contains(dropped))
-        let parsed = try FavouritesBackup.parse(data, now: now, isKnown: { kind, id in kind == .show && known.contains(id) })
+        let parsed = try FavoritesBackup.parse(data, now: now, isKnown: { kind, id in kind == .show && known.contains(id) })
         XCTAssertEqual(parsed.notInSnapshot, 1)
         XCTAssertEqual(parsed.entries.map(\.id), entries.map(\.id).filter { $0 != dropped })
     }
@@ -232,11 +232,11 @@ final class FavouritesBackupTests: XCTestCase {
     // MARK: What the app says after an import
 
     func testImportSummaryAccountsForEveryEntry() {
-        XCTAssertEqual(Presentation.importSummary(added: 3, alreadySaved: 0, notInSnapshot: 0, unreadable: 0), "Added 3 favourites.")
+        XCTAssertEqual(Presentation.importSummary(added: 3, alreadySaved: 0, notInSnapshot: 0, unreadable: 0), "Added 3 favorites.")
         XCTAssertEqual(Presentation.importSummary(added: 1, alreadySaved: 1, notInSnapshot: 1, unreadable: 1),
-                       "Added 1 favourite. 1 was already saved. 1 is not in this snapshot and was skipped. 1 entry could not be read and was skipped.")
+                       "Added 1 favorite. 1 was already saved. 1 is not in this snapshot and was skipped. 1 entry could not be read and was skipped.")
         XCTAssertEqual(Presentation.importSummary(added: 0, alreadySaved: 2, notInSnapshot: 3, unreadable: 0),
-                       "No new favourites were added. 2 were already saved. 3 are not in this snapshot and were skipped.")
-        XCTAssertEqual(Presentation.importSummary(added: 0, alreadySaved: 0, notInSnapshot: 0, unreadable: 0), "The file lists no favourites. Nothing was added.")
+                       "No new favorites were added. 2 were already saved. 3 are not in this snapshot and were skipped.")
+        XCTAssertEqual(Presentation.importSummary(added: 0, alreadySaved: 0, notInSnapshot: 0, unreadable: 0), "The file lists no favorites. Nothing was added.")
     }
 }

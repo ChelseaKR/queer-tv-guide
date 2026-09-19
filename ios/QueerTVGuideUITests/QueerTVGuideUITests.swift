@@ -14,7 +14,7 @@ final class QueerTVGuideUITests: XCTestCase {
         app.launch()
 
         XCTAssertTrue(app.tabBars.buttons["Search"].waitForExistence(timeout: 30))
-        XCTAssertTrue(app.tabBars.buttons["Favourites"].exists)
+        XCTAssertTrue(app.tabBars.buttons["Favorites"].exists)
         XCTAssertTrue(app.tabBars.buttons["About"].exists)
     }
 
@@ -32,12 +32,12 @@ final class QueerTVGuideUITests: XCTestCase {
         XCTAssertTrue(row.waitForExistence(timeout: 30), "no row for \(show.title)")
     }
 
-    func testFavouritesTabShowsEmptyStateOnFirstLaunch() throws {
+    func testFavoritesTabShowsEmptyStateOnFirstLaunch() throws {
         let app = XCUIApplication.guide()
         app.launch()
 
-        app.tabBars.buttons["Favourites"].tap()
-        XCTAssertTrue(app.staticTexts["No favourites yet"].waitForExistence(timeout: 30))
+        app.tabBars.buttons["Favorites"].tap()
+        XCTAssertTrue(app.staticTexts["No favorites yet"].waitForExistence(timeout: 30))
     }
 
     func testAboutScreenStatesThePrivacyPosture() throws {

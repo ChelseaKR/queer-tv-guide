@@ -31,15 +31,15 @@ final class AppModel {
     /// showing the data's age redraws when it moves on.
     private(set) var clockReading: Date
 
-    let favourites: FavouritesStore
+    let favorites: FavoritesStore
     private let store: SnapshotStore
     private let refresher: SnapshotRefresher
     private let now: () -> Date
 
-    init(store: SnapshotStore, favourites: FavouritesStore = FavouritesStore(), now: @escaping () -> Date = Date.init) {
+    init(store: SnapshotStore, favorites: FavoritesStore = FavoritesStore(), now: @escaping () -> Date = Date.init) {
         self.store = store
         self.refresher = SnapshotRefresher(store: store)
-        self.favourites = favourites
+        self.favorites = favorites
         self.now = now
         self.clockReading = now()
     }
@@ -87,28 +87,28 @@ final class AppModel {
         Presentation.freshnessWarning(generatedAt: snapshot.generatedAt, freshness: freshness(of: snapshot))
     }
 
-    // MARK: Favourites backup (DG-10)
+    // MARK: Favorites backup (DG-10)
 
     enum BackupError: Error, LocalizedError {
-        case catalogueNotLoaded
+        case catalogNotLoaded
 
         var errorDescription: String? {
-            "The catalogue hasn't finished loading, so the backup can't be checked against it yet. Try again in a moment."
+            "The catalog hasn't finished loading, so the backup can't be checked against it yet. Try again in a moment."
         }
     }
 
-    /// Validates `data` as a favourites backup against the loaded snapshot,
-    /// adds the favourites that are new, and says what happened to every
+    /// Validates `data` as a favorites backup against the loaded snapshot,
+    /// adds the favorites that are new, and says what happened to every
     /// entry. Ids the snapshot does not have are skipped, never stored.
-    func importFavourites(from data: Data) throws -> String {
-        guard let snapshot else { throw BackupError.catalogueNotLoaded }
-        let parsed = try FavouritesBackup.parse(data, now: now()) { kind, id in
+    func importFavorites(from data: Data) throws -> String {
+        guard let snapshot else { throw BackupError.catalogNotLoaded }
+        let parsed = try FavoritesBackup.parse(data, now: now()) { kind, id in
             switch kind {
             case .show: snapshot.show(id: id) != nil
             case .character: snapshot.character(id: id) != nil
             }
         }
-        let merged = favourites.merge(parsed.entries)
+        let merged = favorites.merge(parsed.entries)
         return Presentation.importSummary(
             added: merged.added,
             alreadySaved: merged.alreadySaved,
@@ -119,7 +119,7 @@ final class AppModel {
 
     /// Decodes the snapshot (12.5 MB of real LezWatch + TVmaze data) and
     /// builds the search index off the main actor, so launch shows
-    /// "Loading catalogue…" instead of a frozen screen.
+    /// "Loading catalog…" instead of a frozen screen.
     func loadInitial() async {
         let store = self.store
         do {

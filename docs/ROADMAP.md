@@ -5,7 +5,7 @@ issue tracker. This file carries the per-repository ledger the portfolio
 standards ask for: the metrics table (QUALITY-AND-METRICS-STANDARD), the
 optional CI stages (CI-CD §1, CICD-29), the observability tier
 (OBSERVABILITY-STANDARD §0, OBS-21), recovery objectives (DG-13) and the
-release declaration (REL-01). Values live here; the rigour lives in
+release declaration (REL-01). Values live here; the rigor lives in
 `docs/standards/`.
 
 ## Metrics
@@ -38,7 +38,7 @@ release declaration (REL-01). Values live here; the rigour lives in
 | 1–5 format, lint, type, test, security | Applies | `make verify`; `ci.yml` and `security.yml` |
 | 6 a11y | Applies | native: the accessibility audit UI tests (#22); HTML: the Pages status page and privacy page (#12, #22) |
 | 7 perf | Undecided (#36): the registry scopes PERFORMANCE conservatively as applying; the proposal is N/A, because there is no latency contract and no web frontend, and the app reads one static file | — |
-| 8 responsible | Applies | the privacy-premise guards (`SourceTreeGuardTests`), the licence gate (`terms.py`, re-read on every pipeline run) and the `died` never-`false` schema control |
+| 8 responsible | Applies | the privacy-premise guards (`SourceTreeGuardTests`), the license gate (`terms.py`, re-read on every pipeline run) and the `died` never-`false` schema control |
 
 ## Observability
 
@@ -65,7 +65,7 @@ release declaration (REL-01). Values live here; the rigour lives in
 | Surface | RPO | RTO | How |
 |---|---|---|---|
 | Published snapshot (GitHub Pages) | 24 h (rebuilt nightly) | about 1 h | dispatch `snapshot.yml`; the mirror cache restores from the `snapshot-latest` release assets. Not exercised yet (#25). |
-| Favourites | the user's last export, or their last device backup | minutes | two mechanisms, both held by the user: the device's own iCloud or computer backup, and a file the user exports from the … menu on Favourites and imports on the same or another device. Import checks the file and skips ids not in the snapshot. Round-trip tested in `FavouritesBackupTests` (DG-10, #25). |
+| Favorites | the user's last export, or their last device backup | minutes | two mechanisms, both held by the user: the device's own iCloud or computer backup, and a file the user exports from the … menu on Favorites and imports on the same or another device. Import checks the file and skips ids not in the snapshot. Round-trip tested in `FavoritesBackupTests` (DG-10, #25). |
 
 ## Releases (REL-01)
 

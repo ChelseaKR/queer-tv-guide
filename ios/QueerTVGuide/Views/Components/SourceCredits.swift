@@ -28,7 +28,7 @@ struct LezWatchSourceLink: View {
 
 /// TVmaze's credit, shown with any TVmaze schedule or episode data: a link to
 /// TVmaze (the show's own TVmaze page when known) and to the CC BY-SA 4.0
-/// licence the data is under.
+/// license the data is under.
 struct TVmazeCreditView: View {
     let credit: Attribution.TVmazeCredit
 
@@ -54,11 +54,11 @@ struct TVmazeCreditView: View {
             .contentShape(Rectangle())
             .accessibilityHint("Opens TVmaze in Safari")
             .accessibilityIdentifier("tvmaze-credit-link")
-        Button(credit.licence.title) { openURL(credit.licence.url) }
+        Button(credit.license.title) { openURL(credit.license.url) }
             .frame(minHeight: 44, alignment: .leading)
             .contentShape(Rectangle())
-            .accessibilityLabel("Licence: \(credit.licence.title)")
-            .accessibilityHint("Opens the licence in Safari")
-            .accessibilityIdentifier("tvmaze-licence-link")
+            .accessibilityLabel("License: \(credit.license.title)")
+            .accessibilityHint("Opens the license in Safari")
+            .accessibilityIdentifier("tvmaze-license-link")
     }
 }

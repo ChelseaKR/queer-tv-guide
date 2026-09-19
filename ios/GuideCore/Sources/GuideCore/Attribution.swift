@@ -6,9 +6,9 @@ import Foundation
 /// - LezWatch.TV's terms: "link back to us, or note us by name". Every show
 ///   and character screen links to its LezWatch.TV page (`sourceURL`), and
 ///   the About screen names LezWatch.TV with a link.
-/// - TVmaze's API licence is CC BY-SA 4.0, and attribution is met "by linking
+/// - TVmaze's API license is CC BY-SA 4.0, and attribution is met "by linking
 ///   back to TVmaze from within your application". Wherever a TVmaze
-///   schedule or episode is shown, a TVmaze link and the CC BY-SA 4.0 licence
+///   schedule or episode is shown, a TVmaze link and the CC BY-SA 4.0 license
 ///   link are shown with it.
 ///
 /// Every URL comes from the snapshot itself, so no host other than the
@@ -37,10 +37,10 @@ public enum Attribution {
     public struct TVmazeCredit: Equatable, Sendable {
         /// The show's own TVmaze page when known, else TVmaze itself.
         public let source: Link
-        /// The CC BY-SA 4.0 licence.
-        public let licence: Link
+        /// The CC BY-SA 4.0 license.
+        public let license: Link
         /// For VoiceOver and for tests: the whole credit as one sentence.
-        public var spoken: String { "\(source.title), licensed \(licence.title)." }
+        public var spoken: String { "\(source.title), licensed \(license.title)." }
     }
 
     /// The credit for a show's schedule, or `nil` when there is no TVmaze
@@ -57,7 +57,7 @@ public enum Attribution {
         guard let item = snapshot.attribution(for: tvmazeSource) else { return nil }
         return TVmazeCredit(
             source: Link(title: "Schedule data from TVmaze", url: showPage ?? item.url),
-            licence: Link(title: item.licenceName, url: item.licenceURL)
+            license: Link(title: item.licenseName, url: item.licenseURL)
         )
     }
 }

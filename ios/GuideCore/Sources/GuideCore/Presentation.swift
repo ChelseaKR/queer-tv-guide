@@ -9,7 +9,7 @@ public enum Presentation {
     // MARK: Worth it / ratings
 
     /// `worthIt` is open text in the contract (observed: "Yes", "Meh", "No",
-    /// "TBD"); an unrecognised non-nil value is shown as itself rather than
+    /// "TBD"); an unrecognized non-nil value is shown as itself rather than
     /// forced into a known bucket or hidden.
     public static func worthIt(_ value: String?) -> String {
         value ?? "Not rated"
@@ -279,16 +279,16 @@ public enum Presentation {
         }
     }
 
-    // MARK: Favourites backup
+    // MARK: Favorites backup
 
     /// What an import did, counted: every entry in the file is accounted
     /// for, including the ones skipped.
     public static func importSummary(added: Int, alreadySaved: Int, notInSnapshot: Int, unreadable: Int) -> String {
         func count(_ n: Int, _ one: String, _ many: String) -> String { "\(n) \(n == 1 ? one : many)" }
         if added + alreadySaved + notInSnapshot + unreadable == 0 {
-            return "The file lists no favourites. Nothing was added."
+            return "The file lists no favorites. Nothing was added."
         }
-        var sentences = [added == 0 ? "No new favourites were added." : "Added \(count(added, "favourite", "favourites"))."]
+        var sentences = [added == 0 ? "No new favorites were added." : "Added \(count(added, "favorite", "favorites"))."]
         if alreadySaved > 0 {
             sentences.append("\(count(alreadySaved, "was", "were")) already saved.")
         }

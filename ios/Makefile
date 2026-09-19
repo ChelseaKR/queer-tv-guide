@@ -22,7 +22,7 @@ BUNDLED_SNAPSHOT := QueerTVGuide/Resources/snapshot.v1.json
 generate:
 	xcodegen generate
 
-# GuideCore (the data/decoding/search/favourites layer) is a plain Swift
+# GuideCore (the data/decoding/search/favorites layer) is a plain Swift
 # package and the fastest test loop: no simulator boot, runs on macOS.
 package-test: $(BUNDLED_SNAPSHOT)
 	cd GuideCore && swift test

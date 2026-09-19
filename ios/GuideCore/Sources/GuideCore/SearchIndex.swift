@@ -182,7 +182,7 @@ public struct SearchIndex: Sendable {
     }
 
     /// Empty or whitespace-only queries return nothing: the screen shows a
-    /// browse prompt instead of the whole catalogue.
+    /// browse prompt instead of the whole catalog.
     public func search(_ query: String, filters: Filters = Filters(), limit: Int = 50) -> [Hit] {
         let q = Self.fold(query)
         guard !q.isEmpty else { return [] }

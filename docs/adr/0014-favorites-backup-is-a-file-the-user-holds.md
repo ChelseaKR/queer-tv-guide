@@ -1,4 +1,4 @@
-# 0014. Back up favourites as a file the user holds, not a sync
+# 0014. Back up favorites as a file the user holds, not a sync
 
 - **Status:** Proposed
 - **Date:** 2026-09-18
@@ -8,10 +8,10 @@
 
 DATA-GOVERNANCE-STANDARD DG-10 asks every repository with a persistent local
 store to document a backup mechanism and test it with an export and import
-round trip (#25). Favourites are the app's only user data: a list of show and
+round trip (#25). Favorites are the app's only user data: a list of show and
 character ids with the date each was added, in `UserDefaults` under
 `favourites.v1`. They are already part of the device's own iCloud or computer
-backup, but that restores a whole device, not favourites onto a new one, and
+backup, but that restores a whole device, not favorites onto a new one, and
 the app never tested it.
 
 The product's premise is that the App Store answer "Data Not Collected" is
@@ -37,17 +37,17 @@ Three options:
 
 ## Decision
 
-- Favourites are backed up as a file, option 3. The … menu on Favourites has
-  Export favourites (a `ShareLink` of `favourites-backup.json`) and Import
-  favourites (the system file picker).
+- Favorites are backed up as a file, option 3. The … menu on Favorites has
+  Export favorites (a `ShareLink` of `favourites-backup.json`) and Import
+  favorites (the system file picker).
 - The format is JSON, `{"format": "favourites-backup", "version": 1,
   "favourites": [{"kind", "id", "added_at"}]}`, holding only what
-  `FavouritesStore` holds. No titles and no death answers, so the file gives
-  nothing away wherever it is opened. `FavouritesBackup` in GuideCore owns it.
+  `FavoritesStore` holds. No titles and no death answers, so the file gives
+  nothing away wherever it is opened. `FavoritesBackup` in GuideCore owns it.
 - Import trusts nothing: at most 4 MB and 50,000 entries, the format and
   version must match, each id must have the snapshot contract's shape for its
   kind, and an id the loaded snapshot does not have is skipped and counted,
-  never stored. Import adds to the saved favourites and keeps their dates.
+  never stored. Import adds to the saved favorites and keeps their dates.
 - No iCloud sync. The device backup stays the second mechanism, and the
   privacy policy and support page say so.
 
@@ -61,7 +61,7 @@ Three options:
   never guessed at.
 - A backup made against one snapshot can lose entries on import if LezWatch.TV
   removes a show or character. The app says how many it skipped.
-- `FavouritesBackupTests` holds the round trip (through a file, on the fixture
+- `FavoritesBackupTests` holds the round trip (through a file, on the fixture
   and on the real bundled snapshot) and the validation rules. If they move,
   this record moves with them.
 - Reopen if people ask for automatic sync across their devices. iCloud

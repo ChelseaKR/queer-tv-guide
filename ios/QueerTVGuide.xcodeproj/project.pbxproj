@@ -7,9 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		009FCE1295B36FA6B0C804FD /* FavouritesBackupFile.swift in Sources */ = {isa = PBXBuildFile; fileRef = C420AF75EFE583823113F23D /* FavouritesBackupFile.swift */; };
-		1F35C73ADB25B37C54D012A6 /* FavouriteButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D83B45C246B3923C7DA87E3 /* FavouriteButton.swift */; };
 		22C9F693C4E01B49EA8A7DC0 /* ShowDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10165D9A5F58512DBB27DE07 /* ShowDetailView.swift */; };
+		24745F73C9FB709C50F25C6C /* FavoritesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2131FBF2ABD65C4E4E4D935 /* FavoritesView.swift */; };
 		2913F2CF2572B412572BC0A0 /* CharacterDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D56562EBCC7DCEFB07B0A07D /* CharacterDetailView.swift */; };
 		29306A55EB6EA2EE7083201D /* QueerTVGuideUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE2B560D8C4AC1CFC059C157 /* QueerTVGuideUITests.swift */; };
 		2BC163CF30C059381EF045EE /* SearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFD338C39510587AB04DD0E8 /* SearchView.swift */; };
@@ -19,6 +18,7 @@
 		4C00C3BF875CE9D5217C3B19 /* AttributionUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A0BF16C0CAC9F83B9D5D31 /* AttributionUITests.swift */; };
 		5D3A44E157F7DC32569B93EE /* SearchFiltersView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E22869739CB3B5101511B36 /* SearchFiltersView.swift */; };
 		68425D95518F53E70F4F5419 /* GuideCore in Frameworks */ = {isa = PBXBuildFile; productRef = 13543BD064FB8FE28EAA03E0 /* GuideCore */; };
+		690BC4BE40AD7CA55FD6E50B /* FavoriteButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 123F3186D6AD1A3A91F25A89 /* FavoriteButton.swift */; };
 		7DFA6218C2D7D56694BCB630 /* UITestSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = C18432D587CE03BBE8A49E63 /* UITestSupport.swift */; };
 		8AAB1C2FDBFAB8562373B763 /* AboutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 657AE9A3B9D336B3F6289154 /* AboutView.swift */; };
 		96EE0A6594196C3F464850B8 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B384108A7E71C3A6C208AE15 /* OnboardingView.swift */; };
@@ -27,12 +27,12 @@
 		AAD2204F4BD58CC5046A2883 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = D6D678C521FBF48D7FBB5670 /* PrivacyInfo.xcprivacy */; };
 		AF8F6EC792B3F9C2ECA31E2C /* ShareUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0DBCB15CAC6245B11B821882 /* ShareUITests.swift */; };
 		B1D3FCC5C39C4930C7672351 /* QueerTVGuideApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D90E104D1F01789CA1519A7 /* QueerTVGuideApp.swift */; };
+		C7A7129CF35ED3A9179AB933 /* FavoritesBackupFile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 317A0D7846357B5C0505B7A1 /* FavoritesBackupFile.swift */; };
 		CF25EB2A090C6F989F6152F5 /* AppModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED002440091CA64B039DD844 /* AppModel.swift */; };
 		D28015C94277D94BAEDE595C /* SpoilerReveal.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAB4D8B056C51CE5C6F0D9E9 /* SpoilerReveal.swift */; };
 		D88FB56C0E8BA1F3BE97F88A /* DataFreshnessBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8DC91A913A9E688CFD60485 /* DataFreshnessBanner.swift */; };
 		E476019A52A508BA9D90F16B /* snapshot.v1.json in Resources */ = {isa = PBXBuildFile; fileRef = D03E4A71ECC4D5A0E8DB8BD0 /* snapshot.v1.json */; };
 		E60747319E9280CBC27E52B3 /* ShowRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = DBE1A58F2D904E39B806EA53 /* ShowRow.swift */; };
-		E7CEDA1C3DD522D60FDAE5D3 /* FavouritesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5FD48479A8521C288E302D0 /* FavouritesView.swift */; };
 		E9C6DC5A5154BC11C21F84D2 /* SourceCredits.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6CDD86F9E0EDF0464F4B6A5C /* SourceCredits.swift */; };
 		EA9CEF975F452BE75A15C0E8 /* DataStatusFooter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 750D33208053211A76D4C98D /* DataStatusFooter.swift */; };
 		EB04DEAF9C3497996207D6DA /* ShowFactsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFE225EFB270983E70A8ED55 /* ShowFactsTests.swift */; };
@@ -60,9 +60,11 @@
 /* Begin PBXFileReference section */
 		0DBCB15CAC6245B11B821882 /* ShareUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareUITests.swift; sourceTree = "<group>"; };
 		10165D9A5F58512DBB27DE07 /* ShowDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShowDetailView.swift; sourceTree = "<group>"; };
+		123F3186D6AD1A3A91F25A89 /* FavoriteButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FavoriteButton.swift; sourceTree = "<group>"; };
 		13A0BF16C0CAC9F83B9D5D31 /* AttributionUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttributionUITests.swift; sourceTree = "<group>"; };
 		2ACC89D31D7AF8C4324115F3 /* Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Debug.xcconfig; sourceTree = "<group>"; };
 		2C64C79C900805323AFCF628 /* QueerTVGuideTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = QueerTVGuideTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		317A0D7846357B5C0505B7A1 /* FavoritesBackupFile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FavoritesBackupFile.swift; sourceTree = "<group>"; };
 		42DBCBFCCCE00AF21CE2B243 /* AppModelIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppModelIntegrationTests.swift; sourceTree = "<group>"; };
 		434A3D8EBE152B96D1F24792 /* OnboardingUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingUITests.swift; sourceTree = "<group>"; };
 		45C035570157184FA03B5D6C /* AppIdentity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppIdentity.swift; sourceTree = "<group>"; };
@@ -72,7 +74,6 @@
 		6D90E104D1F01789CA1519A7 /* QueerTVGuideApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QueerTVGuideApp.swift; sourceTree = "<group>"; };
 		750D33208053211A76D4C98D /* DataStatusFooter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataStatusFooter.swift; sourceTree = "<group>"; };
 		7C7F3D8E238A2C369F0CC6B2 /* QueerTVGuideUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = QueerTVGuideUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		7D83B45C246B3923C7DA87E3 /* FavouriteButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FavouriteButton.swift; sourceTree = "<group>"; };
 		7E22869739CB3B5101511B36 /* SearchFiltersView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchFiltersView.swift; sourceTree = "<group>"; };
 		8DC448BA66E038712B00882B /* GuideCore */ = {isa = PBXFileReference; lastKnownFileType = folder; name = GuideCore; path = GuideCore; sourceTree = SOURCE_ROOT; };
 		95D825B045FC7516E54DAF0C /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -81,7 +82,6 @@
 		B384108A7E71C3A6C208AE15 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
 		BFE225EFB270983E70A8ED55 /* ShowFactsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShowFactsTests.swift; sourceTree = "<group>"; };
 		C18432D587CE03BBE8A49E63 /* UITestSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UITestSupport.swift; sourceTree = "<group>"; };
-		C420AF75EFE583823113F23D /* FavouritesBackupFile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FavouritesBackupFile.swift; sourceTree = "<group>"; };
 		C7D13B01EA5DD72032DF50DE /* AccessibilityAuditTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccessibilityAuditTests.swift; sourceTree = "<group>"; };
 		CE5E38E6D1C9D03CA948241D /* AppStoreScreenshotTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppStoreScreenshotTests.swift; sourceTree = "<group>"; };
 		CECFC0920C1F6BBA446DE631 /* App-Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "App-Release.xcconfig"; sourceTree = "<group>"; };
@@ -90,7 +90,7 @@
 		D6D678C521FBF48D7FBB5670 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		DBE1A58F2D904E39B806EA53 /* ShowRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShowRow.swift; sourceTree = "<group>"; };
 		DFD338C39510587AB04DD0E8 /* SearchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchView.swift; sourceTree = "<group>"; };
-		E5FD48479A8521C288E302D0 /* FavouritesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FavouritesView.swift; sourceTree = "<group>"; };
+		E2131FBF2ABD65C4E4E4D935 /* FavoritesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FavoritesView.swift; sourceTree = "<group>"; };
 		E8DC91A913A9E688CFD60485 /* DataFreshnessBanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataFreshnessBanner.swift; sourceTree = "<group>"; };
 		ED002440091CA64B039DD844 /* AppModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppModel.swift; sourceTree = "<group>"; };
 		F7A17255CA033EE31D78CE19 /* QueerTVGuide.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = QueerTVGuide.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -134,7 +134,7 @@
 			children = (
 				657AE9A3B9D336B3F6289154 /* AboutView.swift */,
 				D56562EBCC7DCEFB07B0A07D /* CharacterDetailView.swift */,
-				E5FD48479A8521C288E302D0 /* FavouritesView.swift */,
+				E2131FBF2ABD65C4E4E4D935 /* FavoritesView.swift */,
 				B384108A7E71C3A6C208AE15 /* OnboardingView.swift */,
 				7E22869739CB3B5101511B36 /* SearchFiltersView.swift */,
 				DFD338C39510587AB04DD0E8 /* SearchView.swift */,
@@ -188,8 +188,8 @@
 				9E750D2B2E53B7541A9D0A8C /* AccessibleStyle.swift */,
 				E8DC91A913A9E688CFD60485 /* DataFreshnessBanner.swift */,
 				750D33208053211A76D4C98D /* DataStatusFooter.swift */,
-				7D83B45C246B3923C7DA87E3 /* FavouriteButton.swift */,
-				C420AF75EFE583823113F23D /* FavouritesBackupFile.swift */,
+				123F3186D6AD1A3A91F25A89 /* FavoriteButton.swift */,
+				317A0D7846357B5C0505B7A1 /* FavoritesBackupFile.swift */,
 				DBE1A58F2D904E39B806EA53 /* ShowRow.swift */,
 				6CDD86F9E0EDF0464F4B6A5C /* SourceCredits.swift */,
 				FAB4D8B056C51CE5C6F0D9E9 /* SpoilerReveal.swift */,
@@ -390,9 +390,9 @@
 				2913F2CF2572B412572BC0A0 /* CharacterDetailView.swift in Sources */,
 				D88FB56C0E8BA1F3BE97F88A /* DataFreshnessBanner.swift in Sources */,
 				EA9CEF975F452BE75A15C0E8 /* DataStatusFooter.swift in Sources */,
-				1F35C73ADB25B37C54D012A6 /* FavouriteButton.swift in Sources */,
-				009FCE1295B36FA6B0C804FD /* FavouritesBackupFile.swift in Sources */,
-				E7CEDA1C3DD522D60FDAE5D3 /* FavouritesView.swift in Sources */,
+				690BC4BE40AD7CA55FD6E50B /* FavoriteButton.swift in Sources */,
+				C7A7129CF35ED3A9179AB933 /* FavoritesBackupFile.swift in Sources */,
+				24745F73C9FB709C50F25C6C /* FavoritesView.swift in Sources */,
 				96EE0A6594196C3F464850B8 /* OnboardingView.swift in Sources */,
 				B1D3FCC5C39C4930C7672351 /* QueerTVGuideApp.swift in Sources */,
 				5D3A44E157F7DC32569B93EE /* SearchFiltersView.swift in Sources */,

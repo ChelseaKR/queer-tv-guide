@@ -30,6 +30,12 @@ public struct Snapshot: Equatable, Sendable {
     public let shows: [Show]
     public let characters: [Character]
 
+    /// Builds a snapshot in code (tests, previews). It never traps on a
+    /// repeated id: a record whose id an earlier record already has is
+    /// dropped, so the first one wins and a `Snapshot` never holds two shows
+    /// or two characters with one id. A file that repeats an id never gets
+    /// here; `init(from:)` refuses the whole file instead (see
+    /// `SnapshotDecodingError.malformed`).
     public init(schemaVersion: String, generatedAt: Date, contentDigest: String, license: License, attribution: [AttributionItem], coverage: Coverage, taxonomies: Taxonomies, shows: [Show], characters: [Character]) {
         self.schemaVersion = schemaVersion
         self.generatedAt = generatedAt
@@ -38,11 +44,9 @@ public struct Snapshot: Equatable, Sendable {
         self.attribution = attribution
         self.coverage = coverage
         self.taxonomies = taxonomies
-        self.shows = shows
-        self.characters = characters
-        showsByID = Dictionary(uniqueKeysWithValues: shows.map { ($0.id, $0) })
-        charactersByID = Dictionary(uniqueKeysWithValues: characters.map { ($0.id, $0) })
-        characterIDsByShow = Self.indexCharactersByShow(characters)
+        self.shows = Self.keepingFirstOfEachID(shows)
+        self.characters = Self.keepingFirstOfEachID(characters)
+        (showsByID, charactersByID, characterIDsByShow) = Self.indices(shows: self.shows, characters: self.characters)
     }
 
     public func show(id: Show.ID) -> Show? { showsByID[id] }
@@ -70,6 +74,36 @@ public struct Snapshot: Equatable, Sendable {
     private let showsByID: [Show.ID: Show]
     private let charactersByID: [Character.ID: Character]
     private let characterIDsByShow: [Show.ID: [Character.ID]]
+
+    /// The lookup tables for records whose ids are already unique. Built with
+    /// `uniquingKeysWith`, never `Dictionary(uniqueKeysWithValues:)`: that
+    /// initializer traps on a repeated key, and a trap cannot be caught, so a
+    /// bad downloaded file would crash the app on every launch instead of
+    /// being rejected.
+    private static func indices(shows: [Show], characters: [Character]) -> (shows: [Show.ID: Show], characters: [Character.ID: Character], characterIDsByShow: [Show.ID: [Character.ID]]) {
+        (
+            Dictionary(shows.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first }),
+            Dictionary(characters.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first }),
+            indexCharactersByShow(characters)
+        )
+    }
+
+    /// The records in their order, minus any whose id an earlier record has.
+    private static func keepingFirstOfEachID<Record: Identifiable>(_ records: [Record]) -> [Record] where Record.ID == String {
+        var seen = Set<String>()
+        return records.filter { seen.insert($0.id).inserted }
+    }
+
+    /// The id of the first record that repeats an earlier record's id, in
+    /// document order; `nil` when every id is unique. Deterministic, so the
+    /// same bad file always names the same id.
+    private static func firstRepeatedID<Record: Identifiable>(in records: [Record]) -> String? where Record.ID == String {
+        var seen = Set<String>()
+        for record in records where !seen.insert(record.id).inserted {
+            return record.id
+        }
+        return nil
+    }
 
     private static func indexCharactersByShow(_ characters: [Character]) -> [Show.ID: [Character.ID]] {
         var index: [Show.ID: [Character.ID]] = [:]
@@ -110,11 +144,22 @@ extension Snapshot: Decodable {
         attribution = try c.decode([AttributionItem].self, forKey: .attribution)
         coverage = try c.decode(Coverage.self, forKey: .coverage)
         taxonomies = try c.decode(Taxonomies.self, forKey: .taxonomies)
-        shows = try c.decode([Show].self, forKey: .shows)
-        characters = try c.decode([Character].self, forKey: .characters)
-        showsByID = Dictionary(uniqueKeysWithValues: shows.map { ($0.id, $0) })
-        charactersByID = Dictionary(uniqueKeysWithValues: characters.map { ($0.id, $0) })
-        characterIDsByShow = Self.indexCharactersByShow(characters)
+        let decodedShows = try c.decode([Show].self, forKey: .shows)
+        let decodedCharacters = try c.decode([Character].self, forKey: .characters)
+        // The schema cannot say "unique by id" (`uniqueItems` compares whole
+        // objects), so the rule is enforced here: a file that repeats an id
+        // is refused whole, not repaired. `SnapshotStore.replace` then keeps
+        // the last good file. Which of two records with one id is right is
+        // not something the app can know.
+        if let id = Self.firstRepeatedID(in: decodedShows) {
+            throw SnapshotDecodingError.malformed("duplicate show id \(id)")
+        }
+        if let id = Self.firstRepeatedID(in: decodedCharacters) {
+            throw SnapshotDecodingError.malformed("duplicate character id \(id)")
+        }
+        shows = decodedShows
+        characters = decodedCharacters
+        (showsByID, charactersByID, characterIDsByShow) = Self.indices(shows: shows, characters: characters)
     }
 }
 

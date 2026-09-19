@@ -70,18 +70,18 @@ def run_fetch(
 
         show_id_list = lezwatch.fetch_id_list(client, cache_dir, kind="shows")
         char_id_list = lezwatch.fetch_id_list(client, cache_dir, kind="characters")
-        deleted_shows = lezwatch.find_deleted(cache_dir, kind="shows", live_ids=show_id_list)
-        deleted_chars = lezwatch.find_deleted(cache_dir, kind="characters", live_ids=char_id_list)
-        paths = lezwatch.cache_paths(cache_dir)
-        for sid in deleted_shows:
-            (paths["shows"] / f"{sid}.json").unlink(missing_ok=True)
-        for cid in deleted_chars:
-            (paths["characters"] / f"{cid}.json").unlink(missing_ok=True)
-        if deleted_shows or deleted_chars:
-            log(
-                f"removed from cache (no longer on LezWatch): "
-                f"{len(deleted_shows)} shows, {len(deleted_chars)} characters"
-            )
+        for kind, id_list in (("shows", show_id_list), ("characters", char_id_list)):
+            outcome = lezwatch.reconcile(client, cache_dir, kind=kind, live_ids=id_list)
+            if outcome.refetched:
+                log(
+                    f"{kind}: {len(outcome.refetched)} in the id list but not the cache, fetched by id"
+                )
+            if outcome.removed:
+                log(f"{kind}: {len(outcome.removed)} removed from cache (no longer published)")
+            if outcome.kept:
+                log(
+                    f"{kind}: {len(outcome.kept)} missing from the id list but still published; kept"
+                )
 
         shows_raw = lezwatch.load_shows(cache_dir)
         joins = tvmaze.sync_shows(client, cache_dir, shows_raw, full=full)

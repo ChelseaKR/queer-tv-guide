@@ -7,7 +7,7 @@ import sys
 from pathlib import Path
 
 from . import build as build_mod
-from .http import PacedClient
+from .http import FetchError, PacedClient
 
 
 def _cmd_terms_check(_args: argparse.Namespace) -> int:
@@ -22,7 +22,7 @@ def _cmd_terms_check(_args: argparse.Namespace) -> int:
 def _cmd_fetch(args: argparse.Namespace) -> int:
     try:
         build_mod.run_fetch(Path(args.cache), full=args.full, log=print)
-    except build_mod.BuildError as exc:
+    except (build_mod.BuildError, FetchError) as exc:
         print(f"fetch failed: {exc}", file=sys.stderr)
         return 1
     return 0

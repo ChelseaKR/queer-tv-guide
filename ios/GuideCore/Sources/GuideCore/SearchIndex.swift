@@ -184,8 +184,16 @@ public struct SearchIndex: Sendable {
     /// Empty or whitespace-only queries return nothing: the screen shows a
     /// browse prompt instead of the whole catalog.
     public func search(_ query: String, filters: Filters = Filters(), limit: Int = 50) -> [Hit] {
+        results(for: query, filters: filters, limit: limit).hits
+    }
+
+    /// The best `limit` hits for a query, together with how many entries
+    /// matched in all. A capped list must be able to say so: without the
+    /// total, 50 rows look like the whole answer to a query that matches 500.
+    /// One pass over the entries, same as `search`.
+    public func results(for query: String, filters: Filters = Filters(), limit: Int = 50) -> SearchResults {
         let q = Self.fold(query)
-        guard !q.isEmpty else { return [] }
+        guard !q.isEmpty else { return SearchResults() }
         let query = Query(text: q, words: Self.words(q), compact: q.replacingOccurrences(of: " ", with: ""))
         var scored: [(score: Int, order: Int, hit: Hit)] = []
         for (order, entry) in entries.enumerated() {
@@ -194,7 +202,7 @@ public struct SearchIndex: Sendable {
             scored.append((score, order, entry.hit))
         }
         scored.sort { a, b in a.score != b.score ? a.score > b.score : a.order < b.order }
-        return Array(scored.prefix(limit).map { $0.hit })
+        return SearchResults(hits: Array(scored.prefix(limit).map { $0.hit }), totalCount: scored.count)
     }
 
     /// All shows that pass the filters, alphabetical. Used for browsing when
@@ -303,4 +311,33 @@ public struct SearchIndex: Sendable {
     }
 
     private static let apostrophes: Set<Swift.Character> = ["'", "’", "‘", "ʼ", "`", "´"]
+}
+
+/// What a search found: the hits it returns (the best few, ranked) and how
+/// many entries matched in all.
+public struct SearchResults: Equatable, Sendable {
+    public let hits: [SearchIndex.Hit]
+    /// Every entry that matched and passed the filters, before the cap.
+    /// Never less than `hits.count`.
+    public let totalCount: Int
+
+    public init(hits: [SearchIndex.Hit] = [], totalCount: Int? = nil) {
+        self.hits = hits
+        self.totalCount = max(totalCount ?? hits.count, hits.count)
+    }
+
+    /// `true` when matches exist beyond the hits returned.
+    public var isTruncated: Bool { totalCount > hits.count }
+
+    /// One sentence saying the list is capped and by how much, or `nil` when
+    /// every match is in the list. Shown above the results whether or not a
+    /// filter is on: a list that stops short must not read as the whole
+    /// answer. Words only, so it reads the same to VoiceOver.
+    public func truncationNote(locale: Locale = .current) -> String? {
+        guard isTruncated else { return nil }
+        let total = totalCount.formatted(.number.locale(locale))
+        let shown = hits.count.formatted(.number.locale(locale))
+        let counted = hits.count == 1 ? "Showing the first match of \(total)." : "Showing the first \(shown) of \(total) matches."
+        return "\(counted) Type more to narrow them."
+    }
 }

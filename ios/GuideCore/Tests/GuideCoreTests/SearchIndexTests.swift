@@ -209,4 +209,141 @@ final class SearchIndexTests: XCTestCase {
         XCTAssertFalse(offered.contains("dead-queers"))
         XCTAssertEqual(offered, ["found-family", "slow-burn"])
     }
+
+    // MARK: A capped list says how many matched
+
+    /// The fixture plus `count` extra shows, "Sara Lane 1" and so on, cloned
+    /// from its first show (which has a where-to-watch link). Every second
+    /// clone has its links removed when `withoutLinks` is set.
+    private func indexWithExtraShows(_ count: Int, withoutLinks: Bool = false) throws -> SearchIndex {
+        let data = try JSONEdit.edit(try Repo.fixtureData()) { root in
+            var shows = root["shows"] as! [[String: Any]]
+            let template = shows[0]
+            for n in 1...count {
+                var clone = template
+                clone["id"] = "lwtv:show:\(9000 + n)"
+                clone["title"] = "Sara Lane \(n)"
+                clone["slug"] = "sara-lane-\(n)"
+                if withoutLinks, n.isMultiple(of: 2) { clone["watch_links"] = [] }
+                shows.append(clone)
+            }
+            root["shows"] = shows
+        }
+        return SearchIndex(snapshot: try SnapshotDecoder().decode(data))
+    }
+
+    func testTotalCountExceedsTheHitsWhenMoreThanTheCapMatch() throws {
+        let found = try indexWithExtraShows(75).results(for: "sara")
+        XCTAssertEqual(found.hits.count, 50, "the list is still capped at 50")
+        XCTAssertEqual(found.totalCount, 75, "the total is not lost")
+        XCTAssertTrue(found.isTruncated)
+        XCTAssertEqual(found.truncationNote(locale: Locale(identifier: "en_US")), "Showing the first 50 of 75 matches. Type more to narrow them.")
+    }
+
+    func testTotalCountEqualsTheHitsWhenFiftyOrFewerMatch() throws {
+        for extra in [1, 49, 50] {
+            let found = try indexWithExtraShows(extra).results(for: "sara")
+            XCTAssertEqual(found.hits.count, extra, "\(extra) extra shows")
+            XCTAssertEqual(found.totalCount, extra, "\(extra) extra shows")
+            XCTAssertFalse(found.isTruncated)
+            XCTAssertNil(found.truncationNote(), "an uncapped list carries no note (\(extra) extra shows)")
+        }
+        let none = try indexWithExtraShows(3).results(for: "no such title")
+        XCTAssertEqual(none, SearchResults())
+        XCTAssertNil(none.truncationNote())
+        // One past the cap is the smallest truncated list.
+        let justOver = try indexWithExtraShows(51).results(for: "sara")
+        XCTAssertEqual(justOver.hits.count, 50)
+        XCTAssertEqual(justOver.totalCount, 51)
+        XCTAssertEqual(justOver.truncationNote(locale: Locale(identifier: "en_US")), "Showing the first 50 of 51 matches. Type more to narrow them.")
+    }
+
+    func testTheTotalCountsOnlyWhatPassesTheFilters() throws {
+        let idx = try indexWithExtraShows(75, withoutLinks: true)
+        let unfiltered = idx.results(for: "sara")
+        XCTAssertEqual(unfiltered.totalCount, 75)
+        XCTAssertEqual(unfiltered.hits.count, 50)
+        let linked = idx.results(for: "sara", filters: .init(hasWatchLink: true))
+        XCTAssertEqual(linked.totalCount, 38, "the odd-numbered clones keep their links")
+        XCTAssertEqual(linked.hits.count, 38)
+        XCTAssertNil(linked.truncationNote(), "filtered down to under the cap, nothing is left out")
+    }
+
+    func testSearchReturnsExactlyTheHitsOfResults() throws {
+        let idx = try indexWithExtraShows(75)
+        XCTAssertEqual(idx.search("sara"), idx.results(for: "sara").hits)
+        XCTAssertEqual(idx.search("sara", limit: 5), idx.results(for: "sara", limit: 5).hits)
+        XCTAssertEqual(idx.results(for: "sara", limit: 5).totalCount, 75, "the total does not depend on the cap")
+    }
+
+    func testAnEmptyQueryFoundNothingAndSaysNothing() throws {
+        let found = try index().results(for: "   ")
+        XCTAssertEqual(found, SearchResults())
+        XCTAssertEqual(found.totalCount, 0)
+        XCTAssertNil(found.truncationNote())
+    }
+
+    func testTheNoteGroupsThousandsAndReadsOneMatchAsOne() throws {
+        let hits = Array(try index().results(for: "e").hits.prefix(2))
+        XCTAssertEqual(hits.count, 2)
+        XCTAssertEqual(SearchResults(hits: hits, totalCount: 1234).truncationNote(locale: Locale(identifier: "en_US")),
+                       "Showing the first 2 of 1,234 matches. Type more to narrow them.")
+        XCTAssertEqual(SearchResults(hits: [hits[0]], totalCount: 3).truncationNote(locale: Locale(identifier: "en_US")),
+                       "Showing the first match of 3. Type more to narrow them.")
+    }
+
+    func testATotalBelowTheHitsIsRaisedToThem() throws {
+        let hits = Array(try index().results(for: "e").hits.prefix(2))
+        XCTAssertEqual(SearchResults(hits: hits, totalCount: 1).totalCount, 2)
+        XCTAssertNil(SearchResults(hits: hits, totalCount: 1).truncationNote())
+    }
+}
+
+/// The Search screen renders the note whenever the list is capped, not only
+/// inside the filter summary row (where it used to live), as one subdued text
+/// element. A source scan, because CI's `swift test` does not run the UI
+/// tests.
+final class SearchTruncationViewTests: XCTestCase {
+    private static var searchView: URL { Repo.iosRoot.appendingPathComponent("QueerTVGuide/Views/SearchView.swift") }
+
+    static func problems(in text: String) -> [String] {
+        var problems: [String] = []
+        let lines = text.split(separator: "\n", omittingEmptySubsequences: false).map(String.init)
+        let uses = lines.filter { $0.contains("truncationNote()") }
+        if uses.count != 1 {
+            problems.append("expected the note to be read from the results in one place, found \(uses.count)")
+        }
+        for line in uses where line.contains("filters") {
+            problems.append("the note is gated on a filter: \(line.trimmingCharacters(in: .whitespaces))")
+        }
+        guard let start = lines.firstIndex(where: { $0.contains("func truncationNote(_ note: String)") }) else {
+            return problems + ["the note view is missing"]
+        }
+        let body = lines[start...].prefix(9).joined(separator: "\n")
+        for needle in ["Text(note)", ".font(.subheadline)", ".foregroundStyle(.subdued)", ".fixedSize(horizontal: false, vertical: true)"] where !body.contains(needle) {
+            problems.append("the note view lacks \(needle)")
+        }
+        if body.contains("lineLimit") || body.contains(".frame(height") || body.contains("minimumScaleFactor") {
+            problems.append("the note view limits its own size, which would cut it off at large text sizes")
+        }
+        return problems
+    }
+
+    func testTheNoteIsShownWheneverTheListIsCappedAsOneSubduedText() throws {
+        let text = try String(contentsOf: Self.searchView, encoding: .utf8)
+        XCTAssertEqual(Self.problems(in: text), [])
+    }
+
+    /// Negative controls: the scan fails when the note is tied back to the
+    /// filters, or given a size limit.
+    func testTheScanCatchesAFilterGatedNoteAndASizeLimit() throws {
+        let text = try String(contentsOf: Self.searchView, encoding: .utf8)
+        let gated = text.replacingOccurrences(of: "if settled, let note = results.found.truncationNote()", with: "if !filters.isEmpty, let note = results.found.truncationNote()")
+        XCTAssertNotEqual(gated, text, "the sabotage landed")
+        XCTAssertEqual(Self.problems(in: gated).count, 1)
+
+        let limited = text.replacingOccurrences(of: ".fixedSize(horizontal: false, vertical: true)", with: ".lineLimit(1)")
+        XCTAssertNotEqual(limited, text, "the sabotage landed")
+        XCTAssertEqual(Self.problems(in: limited).count, 2, "the fixed-size line is gone and a line limit is in")
+    }
 }

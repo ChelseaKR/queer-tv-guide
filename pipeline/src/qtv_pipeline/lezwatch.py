@@ -38,6 +38,12 @@ minus a whole day is a superset of the intended window for any UTC offset (they
 span 26 hours at most, and the site's is a fixed few), and harmless: records are
 keyed by id, so a record fetched twice is written once."""
 
+COMPLETENESS_FLOOR_PERCENT = 99
+"""The share of the source's own total (`X-WP-Total`) the mirror must hold before a
+snapshot is built (README, Build gates, gate 3), and the least an id list may
+list. One percent is about 23 shows of 2,275: room for records published between
+two requests ten seconds apart, not for a truncated answer."""
+
 CURSOR_FORMAT = "%Y-%m-%dT%H:%M:%S"
 """WordPress's `modified_gmt` format, and the format the cursor is persisted in."""
 
@@ -257,22 +263,94 @@ def fetch_actor_names(client: PacedClient, cache_dir: Path) -> dict[int, str]:
     return names
 
 
-def fetch_id_list(client: PacedClient, cache_dir: Path, *, kind: str) -> list[dict[str, Any]]:
-    """`export/list/{shows,characters}/` — ids/slugs/names only, for deletion detection."""
-    paths = _cache_paths(cache_dir)
-    fetched = client.get(f"{BASE}/lwtv/v1/export/list/{kind}/")
-    items = fetched.json()
+def _uid(item: Any) -> int | None:
+    """The integer `uid` of an id-list item, or None when it has none."""
+    if not isinstance(item, dict):
+        return None
+    uid = item.get("uid")
+    if isinstance(uid, bool) or not isinstance(uid, int | str):
+        return None
+    try:
+        return int(uid)
+    except ValueError:
+        return None
+
+
+def validate_id_list(
+    items: Any, *, kind: str, expected_total: int | None = None
+) -> list[dict[str, Any]]:
+    """The id list as a list of items each carrying a `uid`, or a FetchError.
+
+    The id list decides what is removed, so a malformed answer must stop the run
+    rather than read as "nothing exists": one that is not a list, is empty, has an
+    item without a numeric `uid` (a renamed key would otherwise make every cached
+    record look deleted), or lists fewer than `COMPLETENESS_FLOOR_PERCENT` of the
+    collection's own total, which means it was cut short."""
+    where = f"lwtv/v1/export/list/{kind}"
     if not isinstance(items, list):
-        items = []
-    _write_json(paths["ids"] / f"{kind}.json", items)
+        raise FetchError(f"{where} answered with {type(items).__name__}, not a list of records")
+    if not items:
+        raise FetchError(f"{where} answered with an empty list; refusing to treat it as no {kind}")
+    bad = [item for item in items if _uid(item) is None]
+    if bad:
+        raise FetchError(
+            f"{where}: {len(bad)} of {len(items)} items have no numeric `uid` "
+            f"(first: {json.dumps(bad[0], ensure_ascii=False)[:120]}); the list's shape changed"
+        )
+    if (
+        expected_total is not None
+        and len(items) * 100 < expected_total * COMPLETENESS_FLOOR_PERCENT
+    ):
+        raise FetchError(
+            f"{where} lists {len(items)} {kind} but the source reports {expected_total} "
+            f"(at least {COMPLETENESS_FLOOR_PERCENT}% is required); the list was cut short"
+        )
     return items
 
 
-def find_deleted(cache_dir: Path, *, kind: str, live_ids: list[dict[str, Any]]) -> list[int]:
-    """Cached records whose id no longer appears in the live id list."""
+def fetch_id_list(
+    client: PacedClient, cache_dir: Path, *, kind: str, expected_total: int | None = None
+) -> list[dict[str, Any]]:
+    """`export/list/{shows,characters}/` — ids/slugs/names only, for reconciliation.
+
+    Validated before it is used or saved (`validate_id_list`); a bad answer leaves
+    the previously saved list in place. The endpoint is not documented as
+    paginated; if the server ever announces X-WP-TotalPages we follow it."""
+    paths = _cache_paths(cache_dir)
+    items: list[Any] = []
+    page = 1
+    while True:
+        params = {"page": page} if page > 1 else {}
+        fetched = client.get(f"{BASE}/lwtv/v1/export/list/{kind}/", params=params)
+        batch = fetched.json()
+        if not isinstance(batch, list):
+            items = batch  # not a list: validate_id_list names it
+            break
+        items.extend(batch)
+        total_pages = int(fetched.headers.get("X-WP-TotalPages", "1") or "1")
+        if page >= total_pages or not batch:
+            break
+        page += 1
+    validated = validate_id_list(items, kind=kind, expected_total=expected_total)
+    _write_json(paths["ids"] / f"{kind}.json", validated)
+    return validated
+
+
+def find_deleted(
+    cache_dir: Path,
+    *,
+    kind: str,
+    live_ids: list[dict[str, Any]],
+    expected_total: int | None = None,
+) -> list[int]:
+    """Cached records whose id is not in the live id list (candidates for removal).
+
+    Raises FetchError for a list that `validate_id_list` refuses, so an empty,
+    renamed-key or truncated list can never come back as "everything is deleted"."""
+    live = validate_id_list(live_ids, kind=kind, expected_total=expected_total)
     subdir = _cache_paths(cache_dir)["shows" if kind == "shows" else "characters"]
     cached_ids = {int(p.stem) for p in subdir.glob("*.json")}
-    live_uids = {int(item["uid"]) for item in live_ids if "uid" in item}
+    live_uids = {uid for item in live if (uid := _uid(item)) is not None}
     return sorted(cached_ids - live_uids)
 
 
@@ -335,7 +413,12 @@ def _preview(ids: list[int], limit: int = 20) -> str:
 
 
 def reconcile(
-    client: PacedClient, cache_dir: Path, *, kind: str, live_ids: list[dict[str, Any]]
+    client: PacedClient,
+    cache_dir: Path,
+    *,
+    kind: str,
+    live_ids: list[dict[str, Any]],
+    expected_total: int | None = None,
 ) -> Reconciliation:
     """Make the cache agree with LezWatch's id list, without trusting the list alone.
 
@@ -351,7 +434,8 @@ def reconcile(
     rest_base, fields = _KINDS[kind]
     subdir = _cache_paths(cache_dir)[kind]
     subdir.mkdir(parents=True, exist_ok=True)
-    live = {int(item["uid"]) for item in live_ids if "uid" in item}
+    live_ids = validate_id_list(live_ids, kind=kind, expected_total=expected_total)
+    live = {uid for item in live_ids if (uid := _uid(item)) is not None}
 
     missing = sorted(live - {int(p.stem) for p in subdir.glob("*.json")})
     refetched = []
@@ -359,7 +443,9 @@ def reconcile(
         _write_json(subdir / f"{record['id']}.json", record)
         refetched.append(int(record["id"]))
 
-    candidates = find_deleted(cache_dir, kind=kind, live_ids=live_ids)
+    candidates = find_deleted(
+        cache_dir, kind=kind, live_ids=live_ids, expected_total=expected_total
+    )
     published = {
         int(r["id"])
         for r in _fetch_published(client, rest_base=rest_base, ids=candidates, fields="id")

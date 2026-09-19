@@ -94,6 +94,14 @@ consumer of the published snapshot, would notice.
   ids, and the last good snapshot stays. The three shows and ten characters the
   published snapshot lacked are fetched by id on the next run. The manual run of
   the snapshot workflow can now start a full mirror (#50).
+- The nightly build now enforces the completeness gate the pipeline README
+  promised: it refuses to publish when the mirror holds fewer than 99% of the
+  shows or characters LezWatch reports, or when either count fell by more than
+  2% against the snapshot it would replace (a maintainer can pass
+  `allow_shrink` to a manual run for a deliberate removal). A malformed, empty,
+  renamed-key or truncated id list now stops the fetch and removes nothing,
+  where it used to read as "these records were deleted". In each case the last
+  good snapshot stays published (#51).
 - VoiceOver now reads a show's network in search results, which it had been
   skipping (#6).
 - Text and accent colors meet 4.5:1 contrast. Empty states and show rows no

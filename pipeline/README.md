@@ -11,6 +11,7 @@ uv sync --all-groups
 uv run qtv terms-check                      # 1 request: the LezWatch ToS still grants reuse
 uv run qtv fetch --cache .cache             # incremental mirror (full on first run)
 uv run qtv build --cache .cache --out out   # normalize, validate, digest, coverage report
+#   add --previous <snapshot> to refuse a snapshot that shrank; --allow-shrink to override
 uv run qtv validate out/snapshot.v1.json
 uv run pytest
 ```
@@ -71,6 +72,8 @@ the authority on what exists, and every run reconciles the cache against it
 - if a listed id is still not in the cache after that, the run fails and names
   the ids, and nothing is published.
 
+The list is checked before any of this (gate 2 below), so a list that is empty,
+shaped differently or cut short can never read as "everything was deleted".
 When the cache already agrees with the list, reconciling costs no requests. A
 `--full` run ignores the cursor; the workflow's manual `full` input starts one.
 
@@ -86,13 +89,29 @@ lost cache costs one full mirror, nothing else.
 
 1. The LezWatch ToS still contains the sentence "You are welcome to use,
    reuse, and extend the data here for no fees." (`terms.py`).
-2. Every source fetch completed: no request ended in an unrecovered error.
-3. Mirror completeness: cached shows and characters ≥ 99 % of the source's
-   `X-WP-Total`, and ≥ 1 of each.
+2. Every source fetch completed: no request ended in an unrecovered error, and
+   each `export/list/{shows,characters}/` answer is a non-empty list of records
+   with numeric `uid`s that holds at least 99 % of the collection's
+   `X-WP-Total` (`lezwatch.validate_id_list`). An empty, renamed-key, truncated
+   or non-list answer stops the fetch, removes nothing from the mirror and
+   leaves the last saved list in place.
+3. Mirror completeness (`build._check_completeness`): cached shows and
+   characters ≥ 99 % of the source's `X-WP-Total` as recorded in `run.json`
+   (`COMPLETENESS_FLOOR_PERCENT`, `lezwatch.py`), and ≥ 1 of each. The failure
+   prints both numbers. A total the source did not report fails the gate: an
+   unchecked mirror is not published. Because the fetch reconciles the cache
+   with the id list, the expected result is equality; the 1 % is room for
+   records published between two requests, not for a gap.
 4. The snapshot validates against `schema/snapshot.v1.json` (which forbids
    `died: false`).
 5. Referential integrity: every `show_id` a character or show references
    exists in the snapshot.
+6. No shrink (`build._check_no_shrink`): shows and characters have not fallen
+   by more than 2 % (`MAX_SHRINK_PERCENT`, `build.py`) against the snapshot this
+   build replaces, given as `qtv build --previous <file>`. The workflow passes
+   the copy on the rolling release and, when there is none, prints a warning and
+   skips this gate. `--allow-shrink` (the workflow's `allow_shrink` input)
+   publishes a deliberate removal, and the build log says it was overridden.
 
 The join rate to TVmaze is reported, not gated: it is a property of the sources.
 Measured on the first full mirror (2026-09-13): 1,800/2,272 shows joined

@@ -35,6 +35,8 @@ def _cmd_build(args: argparse.Namespace) -> int:
             Path(args.out),
             git_sha=args.git_sha or os.environ.get("GITHUB_SHA"),
             workflow_run_id=args.workflow_run_id or os.environ.get("GITHUB_RUN_ID"),
+            previous_path=Path(args.previous) if args.previous else None,
+            allow_shrink=args.allow_shrink,
             log=print,
         )
     except build_mod.BuildError as exc:
@@ -77,6 +79,17 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--out", required=True)
     p.add_argument("--git-sha", default=None)
     p.add_argument("--workflow-run-id", default=None)
+    p.add_argument(
+        "--previous",
+        default=None,
+        help="the snapshot this build replaces; refuse to shrink shows or characters "
+        f"by more than {build_mod.MAX_SHRINK_PERCENT}%% against it (skipped, loudly, when not given)",
+    )
+    p.add_argument(
+        "--allow-shrink",
+        action="store_true",
+        help="publish a snapshot that is deliberately much smaller than --previous",
+    )
     p.set_defaults(func=_cmd_build)
 
     p = sub.add_parser("validate", help="validate a snapshot file against the schema")

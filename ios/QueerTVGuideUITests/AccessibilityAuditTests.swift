@@ -62,6 +62,28 @@ final class AccessibilityAuditTests: XCTestCase {
     /// The audit runs once two reads of the accessibility tree agree
     /// (`waitForStillScreen`), so it does not measure a screen
     /// mid-animation.
+    ///
+    /// Contrast runs as its own audit, first, then the other checks. Run
+    /// together with them, the audit reports its contrast issues with no
+    /// element: measured on the filtered Search results, 4 of 4 contrast
+    /// issues came with no element in one `.all` audit, and all 4 came with
+    /// their element in a `.contrast` audit of the same screen a moment
+    /// later. With no element, an issue can only be excused by counting texts
+    /// under the tab bar (allowance 1). With its element, each is held to the
+    /// rule for where it is: over the bar (allowance 1, by frame), just above
+    /// it and measured from its own pixels at 4.5:1 or better (allowance 2),
+    /// or failed.
+    ///
+    /// First, so contrast is measured on the still screen a person sees,
+    /// before any other check has worked on it. Measured: with contrast run
+    /// after the other checks, CI (run 35407156681) reported the character
+    /// screen's navigation title "Gina" as "Contrast failed for UILabel", the
+    /// only failure of that run. That title is a standard inline navigation
+    /// title in the system's colors, and the same test passed in two CI runs
+    /// whose audit measured contrast together with everything else
+    /// (35421286344 and 35422900625). The second pass waits for a still
+    /// screen again, so it is not measured while the first pass's effects
+    /// settle.
     @MainActor
     private func audit(_ app: XCUIApplication, _ types: XCUIAccessibilityAuditType = .all) throws {
         waitForStillScreen(app)
@@ -70,42 +92,90 @@ final class AccessibilityAuditTests: XCTestCase {
         let searchField = app.searchFields.firstMatch
         let searchFieldFrame = searchField.exists ? searchField.frame : .null
         var underBarBudget = tabBarFrame.isNull ? 0 : Self.textsUnderTabBar(app, tabBarFrame)
-        try app.performAccessibilityAudit(for: types) { issue in
-            guard let element = issue.element, element.exists else {
-                if issue.auditType == .contrast, underBarBudget > 0 {
-                    underBarBudget -= 1
-                    print("audit allowance 1: \(issue.compactDescription) with no element; \(underBarBudget) more allowed under the tab bar \(tabBarFrame)")
-                    return true
+        let passes: [XCUIAccessibilityAuditType] = types.contains(.contrast)
+            ? [.contrast, types.subtracting(.contrast)].filter { !$0.isEmpty }
+            : [types]
+        for (index, checks) in passes.enumerated() {
+            if index > 0 { waitForStillScreen(app) }
+            let budgetBeforePass = underBarBudget
+            try runPass(app, checks, resetting: { underBarBudget = budgetBeforePass }) { issue in
+                guard let element = issue.element, element.exists else {
+                    if issue.auditType == .contrast, underBarBudget > 0 {
+                        underBarBudget -= 1
+                        print("audit allowance 1: \(issue.compactDescription) with no element; \(underBarBudget) more allowed under the tab bar \(tabBarFrame)")
+                        return true
+                    }
+                    print("audit issue: \(issue.compactDescription) | \(issue.detailedDescription) | no element")
+                    return false
                 }
-                print("audit issue: \(issue.compactDescription) | \(issue.detailedDescription) | no element")
+                let frame = element.frame
+                switch issue.auditType {
+                case .contrast where !tabBarFrame.isNull && frame.intersects(tabBarFrame):
+                    underBarBudget = max(0, underBarBudget - 1)
+                    print("audit allowance 1: \(issue.compactDescription) on \(Self.describe(element)); tab bar \(tabBarFrame)")
+                    return true
+                case .contrast where !tabBarFrame.isNull
+                    && frame.maxY <= tabBarFrame.minY && frame.maxY > tabBarFrame.minY - Self.tabBarBand:
+                    if let ratio = Self.renderedContrast(of: element), ratio >= 4.5 {
+                        print("audit allowance 2: \(issue.compactDescription) on \(Self.describe(element)); drawn at \(String(format: "%.1f", ratio)):1")
+                        return true
+                    }
+                case .dynamicType where Self.aboutRowsThatScale.contains(where: { $0.type == element.elementType && $0.label == element.label }):
+                    print("audit allowance 3: \(issue.compactDescription) on \(Self.describe(element))")
+                    return true
+                case .textClipped where element.elementType == .searchField,
+                     .hitRegion where element.elementType == .button && element.label == "Clear text"
+                        && !searchFieldFrame.isNull && searchFieldFrame.contains(frame):
+                    print("audit allowance 4: \(issue.compactDescription) on \(Self.describe(element))")
+                    return true
+                default:
+                    break
+                }
+                print("audit issue: \(issue.compactDescription) | \(issue.detailedDescription) | \(Self.describe(element))")
                 return false
             }
-            let frame = element.frame
-            switch issue.auditType {
-            case .contrast where !tabBarFrame.isNull && frame.intersects(tabBarFrame):
-                underBarBudget = max(0, underBarBudget - 1)
-                print("audit allowance 1: \(issue.compactDescription) on \(Self.describe(element)); tab bar \(tabBarFrame)")
-                return true
-            case .contrast where !tabBarFrame.isNull
-                && frame.maxY <= tabBarFrame.minY && frame.maxY > tabBarFrame.minY - Self.tabBarBand:
-                if let ratio = Self.renderedContrast(of: element), ratio >= 4.5 {
-                    print("audit allowance 2: \(issue.compactDescription) on \(Self.describe(element)); drawn at \(String(format: "%.1f", ratio)):1")
-                    return true
-                }
-            case .dynamicType where Self.aboutRowsThatScale.contains(where: { $0.type == element.elementType && $0.label == element.label }):
-                print("audit allowance 3: \(issue.compactDescription) on \(Self.describe(element))")
-                return true
-            case .textClipped where element.elementType == .searchField,
-                 .hitRegion where element.elementType == .button && element.label == "Clear text"
-                    && !searchFieldFrame.isNull && searchFieldFrame.contains(frame):
-                print("audit allowance 4: \(issue.compactDescription) on \(Self.describe(element))")
-                return true
-            default:
-                break
-            }
-            print("audit issue: \(issue.compactDescription) | \(issue.detailedDescription) | \(Self.describe(element))")
-            return false
         }
+    }
+
+    /// Runs one audit pass. The audit can stop without a verdict: it reports
+    /// "Audit failed to complete in time" (code -56). Measured in CI, on the
+    /// first-run screen after it was scrolled: it happened in runs 35399628927,
+    /// 35422900625 and 35450246601, and the same test passed in runs 35407156681
+    /// and 35421286344, with no reported issue in any of them; the run that
+    /// timed out last also needed 44 s to launch the app for another test. So
+    /// it tracks a slow runner, not the screen. That error is no finding:
+    /// nothing was judged. So that one error, and only it, runs the same pass
+    /// once more on a still screen. Every issue the audit does report is
+    /// judged as before and is never retried, and a second timeout fails the
+    /// test.
+    /// `resetting` puts the allowance counters back, so the second run is
+    /// judged from the same starting point as the first.
+    @MainActor
+    private func runPass(
+        _ app: XCUIApplication,
+        _ checks: XCUIAccessibilityAuditType,
+        resetting reset: () -> Void,
+        issueHandler: @escaping (XCUIAccessibilityAuditIssue) throws -> Bool
+    ) throws {
+        let started = Date()
+        do {
+            try app.performAccessibilityAudit(for: checks, issueHandler)
+        } catch let error as NSError where Self.isAuditTimeout(error) {
+            print("audit: \(Self.checksLabel(checks)) pass stopped without a verdict after \(String(format: "%.1f", Date().timeIntervalSince(started))) s (\(error.code)); running it once more on a still screen")
+            waitForStillScreen(app)
+            reset()
+            try app.performAccessibilityAudit(for: checks, issueHandler)
+        }
+        print("audit: \(Self.checksLabel(checks)) pass took \(String(format: "%.1f", Date().timeIntervalSince(started))) s")
+    }
+
+    static func checksLabel(_ checks: XCUIAccessibilityAuditType) -> String {
+        checks == .contrast ? "contrast" : "non-contrast (\(checks.rawValue))"
+    }
+
+    /// `XCUIAccessibilityAuditError`'s "did not complete in time" (-56).
+    static func isAuditTimeout(_ error: NSError) -> Bool {
+        error.domain == "com.apple.xcode.xctest.accessibilityAudit" && error.code == -56
     }
 
     /// How far above the tab bar allowance 2 reaches, in points.
@@ -227,16 +297,30 @@ final class AccessibilityAuditTests: XCTestCase {
         return heading.waitForExistence(timeout: 30)
     }
 
+    /// Opens the filter sheet from Search and waits for it. Measured in CI:
+    /// on a slow runner the tap on Filter was lost, the sheet never opened,
+    /// and the test went on to audit the results behind it. One more tap when
+    /// the sheet has not appeared and the button is still there to tap; the
+    /// assertion that the sheet is open is unchanged.
+    @MainActor
+    private func openFilterSheet(_ app: XCUIApplication) {
+        let filter = app.buttons["Filter"]
+        XCTAssertTrue(filter.waitForExistence(timeout: 30), "no Filter button")
+        filter.tap()
+        let worthIt = app.buttons["Worth it: Yes"]
+        if !worthIt.waitForExistence(timeout: 10), filter.exists, filter.isHittable {
+            filter.tap()
+        }
+        XCTAssertTrue(worthIt.waitForExistence(timeout: 10), "the filter sheet did not open")
+    }
+
     /// The filter sheet, its trope picker, and the active-filters row and
     /// empty state it leads to.
     @MainActor
     func testFilterSheetAndItsResultsPassTheAudit() throws {
         let app = launch()
         XCTAssertTrue(app.cells.firstMatch.waitForExistence(timeout: 30), "the catalog did not load")
-        let filter = app.buttons["Filter"]
-        XCTAssertTrue(filter.waitForExistence(timeout: 30))
-        filter.tap()
-        XCTAssertTrue(app.buttons["Worth it: Yes"].waitForExistence(timeout: 10))
+        openFilterSheet(app)
         try audit(app)
 
         // Tropes: a searchable list of choices, none of them death-revealing.
@@ -283,10 +367,7 @@ final class AccessibilityAuditTests: XCTestCase {
     @MainActor
     func testLargestTextSizeFilterSheetPassesDynamicTypeAndClippingAudits() throws {
         let app = launch(textSize: "UICTContentSizeCategoryAccessibilityXXXL")
-        let filter = app.buttons["Filter"]
-        XCTAssertTrue(filter.waitForExistence(timeout: 30))
-        filter.tap()
-        XCTAssertTrue(app.buttons["Worth it: Yes"].waitForExistence(timeout: 10))
+        openFilterSheet(app)
         try audit(app, [.dynamicType, .textClipped])
         // The bottom of the form, where the results button sits at these
         // sizes.

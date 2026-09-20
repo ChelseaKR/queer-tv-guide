@@ -9,6 +9,9 @@ import GuideCore
 @Observable
 @MainActor
 final class AppModel {
+    /// Shared instance for App Intents and Spotlight indexing.
+    static var shared: AppModel!
+
     enum LoadState: Equatable {
         case loading
         case loaded
@@ -142,6 +145,7 @@ final class AppModel {
         searchIndex = index
         loadState = .loaded
         readClock()
+        SpotlightIndexer.index(snapshot: snapshot)
     }
 
     /// The app has come back to the foreground: re-reads the clock, and if

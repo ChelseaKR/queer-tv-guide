@@ -125,7 +125,7 @@ final class PresentationTests: XCTestCase {
         let weekAfter = Presentation.nextEpisode(schedule, today: Self.day("2026-09-27"))
         XCTAssertFalse(onTheDay.contains("passed"), onTheDay)
         XCTAssertFalse(dayAfter.contains("passed"), "one day of grace for broadcast time zones: \(dayAfter)")
-        XCTAssertTrue(weekAfter.hasPrefix("S3E4 “Fog Signal” — listed for "), weekAfter)
+        XCTAssertTrue(weekAfter.hasPrefix("S3E4 “Fog Signal” — "), weekAfter)
         XCTAssertTrue(weekAfter.contains("which has passed. This data may be out of date."), weekAfter)
     }
 

@@ -36,7 +36,7 @@ final class AccessibilityAuditTests: XCTestCase {
     ///    About 1. On other runs it attached the same 3 to the three texts
     ///    of the one row under the bar ("100 días para enamorarse", "Yes",
     ///    "· Telefe") and that 1 to About's LezWatch.TV credit under the
-    ///    bar. With `.subdued` sabotaged to a 60% grey, Search reported 19
+    ///    bar. With `.subdued` sabotaged to a 60% gray, Search reported 19
     ///    with no element, over the bound, and failed.
     /// 2. Contrast on an element resting within `tabBarBand` points above
     ///    the bar, and only when its own pixels measure at least 4.5:1 (see
@@ -151,7 +151,7 @@ final class AccessibilityAuditTests: XCTestCase {
     /// The About rows under allowance 3, by element type and label.
     static let aboutRowsThatScale: [(type: XCUIElement.ElementType, label: String)] = [
         (.staticText, "That file is served by GitHub Pages, which, like any web server, sees your IP address and logs it for security. The developer never sees that log."),
-        (.staticText, "Favourites are stored only on this device and are never sent anywhere."),
+        (.staticText, "Favorites are stored only on this device and are never sent anywhere."),
         (.button, "Privacy policy"),
         (.button, "Support"),
     ]
@@ -199,11 +199,12 @@ final class AccessibilityAuditTests: XCTestCase {
     }
 
     @MainActor
-    private func launch(textSize: String? = nil) -> XCUIApplication {
-        let app = XCUIApplication()
+    private func launch(textSize: String? = nil, arguments: [String] = []) -> XCUIApplication {
+        let app = XCUIApplication.guide()
         if let textSize {
             app.launchArguments += ["-UIPreferredContentSizeCategoryName", textSize]
         }
+        app.launchArguments += arguments
         app.launch()
         XCTAssertTrue(app.tabBars.buttons["Search"].waitForExistence(timeout: 30))
         return app
@@ -212,30 +213,94 @@ final class AccessibilityAuditTests: XCTestCase {
     /// Search → filter to shows with a where-to-watch link → first show.
     @MainActor @discardableResult
     private func openFirstShow(_ app: XCUIApplication) -> Bool {
-        let filter = app.buttons["Filter"]
-        guard filter.waitForExistence(timeout: 30) else { XCTFail("no Filter button"); return false }
-        filter.tap()
-        let toggle = app.buttons["Has a where-to-watch link"]
-        guard toggle.waitForExistence(timeout: 10) else { XCTFail("no where-to-watch filter"); return false }
-        toggle.tap()
-        let firstRow = app.cells.firstMatch
+        app.applyWhereToWatchFilter()
+        let firstRow = app.firstShowRow
         guard firstRow.waitForExistence(timeout: 30) else { XCTFail("filter produced no rows"); return false }
         firstRow.tap()
         let heading = app.staticTexts["Do any queer characters die?"]
         if !heading.waitForExistence(timeout: 15), firstRow.exists, firstRow.isHittable {
-            // Measured: on a loaded machine the filter menu can still be
-            // closing when the row is tapped, and that tap only closes it.
-            // One more tap on the same row; the assertion below is unchanged.
+            // Measured: on a loaded machine the filter sheet can still be
+            // closing when the row is tapped, and that tap is lost. One more
+            // tap on the same row; the assertion below is unchanged.
             firstRow.tap()
         }
         return heading.waitForExistence(timeout: 30)
     }
 
+    /// The filter sheet, its trope picker, and the active-filters row and
+    /// empty state it leads to.
+    @MainActor
+    func testFilterSheetAndItsResultsPassTheAudit() throws {
+        let app = launch()
+        XCTAssertTrue(app.cells.firstMatch.waitForExistence(timeout: 30), "the catalog did not load")
+        let filter = app.buttons["Filter"]
+        XCTAssertTrue(filter.waitForExistence(timeout: 30))
+        filter.tap()
+        XCTAssertTrue(app.buttons["Worth it: Yes"].waitForExistence(timeout: 10))
+        try audit(app)
+
+        // Tropes: a searchable list of choices, none of them death-revealing.
+        let tropes = app.buttons.matching(NSPredicate(format: "label BEGINSWITH 'Tropes'")).firstMatch
+        for _ in 0..<4 where !(tropes.exists && tropes.isHittable) { app.swipeUp() }
+        tropes.tap()
+        XCTAssertTrue(app.navigationBars["Tropes"].waitForExistence(timeout: 10))
+        XCTAssertFalse(app.buttons.matching(NSPredicate(format: "label BEGINSWITH 'Bury Your Queers'")).firstMatch.exists, "a death-revealing trope is offered")
+        try audit(app)
+        let firstTrope = app.buttons.matching(identifier: "filter-term").firstMatch
+        XCTAssertTrue(firstTrope.waitForExistence(timeout: 10))
+        firstTrope.tap()
+        XCTAssertTrue(firstTrope.isSelected, "picking a trope does not mark it selected")
+        // Back to the filter sheet (the Tropes bar's own back button, not a
+        // button on the Search bar under the sheet).
+        app.navigationBars["Tropes"].buttons.element(boundBy: 0).tap()
+
+        app.buttons["filters-show-results"].tap()
+        XCTAssertTrue(app.buttons.matching(NSPredicate(format: "label BEGINSWITH '1 filter on'")).firstMatch.waitForExistence(timeout: 30), "no active-filters row")
+        XCTAssertTrue(app.firstShowRow.waitForExistence(timeout: 30))
+        try audit(app)
+    }
+
+    /// A search that matches nothing with a filter on: the empty state says
+    /// so and offers to search without filters.
+    @MainActor
+    func testNoMatchesWithFiltersPassesTheAudit() throws {
+        let app = launch()
+        app.applyWhereToWatchFilter()
+        let search = app.searchFields.firstMatch
+        XCTAssertTrue(search.waitForExistence(timeout: 30))
+        search.tap()
+        search.typeText("zzzzqqq\n")
+        XCTAssertTrue(app.staticTexts["No matches with these filters"].waitForExistence(timeout: 30))
+        let without = app.buttons["Search without filters"]
+        XCTAssertTrue(without.exists)
+        try audit(app)
+        without.tap()
+        XCTAssertTrue(app.staticTexts["No matches"].waitForExistence(timeout: 30), "clearing the filters did not leave the plain empty state")
+    }
+
+    /// The filter sheet at the largest text size: nothing clipped, every
+    /// font scales.
+    @MainActor
+    func testLargestTextSizeFilterSheetPassesDynamicTypeAndClippingAudits() throws {
+        let app = launch(textSize: "UICTContentSizeCategoryAccessibilityXXXL")
+        let filter = app.buttons["Filter"]
+        XCTAssertTrue(filter.waitForExistence(timeout: 30))
+        filter.tap()
+        XCTAssertTrue(app.buttons["Worth it: Yes"].waitForExistence(timeout: 10))
+        try audit(app, [.dynamicType, .textClipped])
+        // The bottom of the form, where the results button sits at these
+        // sizes.
+        let showResults = app.buttons["filters-show-results"]
+        for _ in 0..<12 where !(showResults.exists && showResults.isHittable) { app.swipeUp() }
+        XCTAssertTrue(showResults.isHittable, "the results button is out of reach")
+        try audit(app, [.dynamicType, .textClipped])
+    }
+
     @MainActor
     func testSearchScreenPassesTheAudit() throws {
         let app = launch()
-        // Audit the loaded catalogue, not the "Loading catalogue" state.
-        XCTAssertTrue(app.cells.firstMatch.waitForExistence(timeout: 30), "the catalogue did not load")
+        // Audit the loaded catalog, not the "Loading catalog" state.
+        XCTAssertTrue(app.cells.firstMatch.waitForExistence(timeout: 30), "the catalog did not load")
         try audit(app)
     }
 
@@ -292,10 +357,10 @@ final class AccessibilityAuditTests: XCTestCase {
     }
 
     @MainActor
-    func testFavouritesAndAboutPassTheAudit() throws {
+    func testFavoritesAndAboutPassTheAudit() throws {
         let app = launch()
-        app.tabBars.buttons["Favourites"].tap()
-        XCTAssertTrue(app.staticTexts["No favourites yet"].waitForExistence(timeout: 30))
+        app.tabBars.buttons["Favorites"].tap()
+        XCTAssertTrue(app.staticTexts["No favorites yet"].waitForExistence(timeout: 30))
         try audit(app)
 
         app.tabBars.buttons["About"].tap()
@@ -305,10 +370,61 @@ final class AccessibilityAuditTests: XCTestCase {
         try audit(app)
     }
 
+    // MARK: Data freshness and favorites backup (#25)
+
+    /// Mirrors `DataFreshnessBanner.identifier`.
+    static let freshnessWarningIdentifier = "data-freshness-warning"
+
+    /// With the clock pinned years after any snapshot (a Debug-only launch
+    /// argument, `AppModel.uiTestClock`), Search opens with the out-of-date
+    /// warning. It is one element that VoiceOver reads as a warning, and
+    /// the screen still passes the audit.
+    @MainActor
+    func testStaleDataWarningIsReadAsAWarningAndPassesTheAudit() throws {
+        let app = launch(arguments: ["-UITestClock", "2031-01-01T00:00:00Z"])
+        XCTAssertTrue(app.cells.firstMatch.waitForExistence(timeout: 30), "the catalog did not load")
+        let warning = app.descendants(matching: .any)[Self.freshnessWarningIdentifier]
+        XCTAssertTrue(warning.waitForExistence(timeout: 10), "no out-of-date warning with the clock in 2031")
+        XCTAssertTrue(warning.label.hasPrefix("Warning. This data is out of date. It was last updated "), warning.label)
+        // The pinned clock landed: the age is counted in days, not hours.
+        XCTAssertTrue(warning.label.contains(" days ago, on "), warning.label)
+        try audit(app)
+    }
+
+    /// A clock set before the snapshot was built: the age is unknown, and
+    /// the app says so rather than calling the data current.
+    @MainActor
+    func testUnknownDataAgeIsStatedNotShownAsCurrent() throws {
+        let app = launch(arguments: ["-UITestClock", "2020-01-01T00:00:00Z"])
+        XCTAssertTrue(app.cells.firstMatch.waitForExistence(timeout: 30), "the catalog did not load")
+        let warning = app.descendants(matching: .any)[Self.freshnessWarningIdentifier]
+        XCTAssertTrue(warning.waitForExistence(timeout: 10), "no warning with the clock in 2020")
+        XCTAssertTrue(warning.label.hasPrefix("Warning. This data's age is unknown. "), warning.label)
+        XCTAssertFalse(Self.opensWithNo(warning.label), warning.label)
+    }
+
+    /// The Favorites screen's backup menu: an icon button VoiceOver names
+    /// "Back up or restore favorites", offering Export (unavailable while
+    /// there is nothing to export) and Import. The screen itself is audited
+    /// by `testFavoritesAndAboutPassTheAudit`.
+    @MainActor
+    func testFavoritesBackUpMenuIsLabeledForVoiceOver() throws {
+        let app = launch()
+        app.tabBars.buttons["Favorites"].tap()
+        XCTAssertTrue(app.staticTexts["No favorites yet"].waitForExistence(timeout: 30))
+        let menu = app.buttons["Back up or restore favorites"]
+        XCTAssertTrue(menu.waitForExistence(timeout: 10), "no backup menu button")
+        menu.tap()
+        let export = app.buttons["Export favorites"]
+        XCTAssertTrue(export.waitForExistence(timeout: 10), "the menu has no Export item")
+        XCTAssertFalse(export.isEnabled, "Export is offered with nothing to export")
+        XCTAssertTrue(app.buttons["Import favorites"].exists, "the menu has no Import item")
+    }
+
     /// The evidence behind allowance 3 in `audit`: each About row the audit
     /// reports as "partially unsupported" grows by at least half again at
     /// the largest accessibility text size. A row set in a fixed font keeps
-    /// its height and fails here. Measured 2026-09-18: "Favourites are
+    /// its height and fails here. Measured 2026-09-18: "Favorites are
     /// stored…" 72 pt at the default size, 132 pt already at Accessibility M.
     @MainActor
     func testAboutRowsTheAuditQuestionsDoScaleWithDynamicType() throws {
@@ -342,6 +458,41 @@ final class AccessibilityAuditTests: XCTestCase {
         }
     }
 
+    /// The first-run screen, top and bottom, at the default text size.
+    @MainActor
+    func testFirstRunScreenPassesTheAudit() throws {
+        let app = launchFirstRun()
+        try audit(app)
+        let finish = app.buttons["onboarding-finish"]
+        for _ in 0..<6 where !finish.isHittable { app.swipeUp() }
+        XCTAssertTrue(finish.isHittable, "Start browsing is out of reach")
+        try audit(app)
+    }
+
+    /// The first-run screen at the largest text size: it scrolls, nothing
+    /// is clipped, every font scales.
+    @MainActor
+    func testLargestTextSizeFirstRunScreenPassesDynamicTypeAndClippingAudits() throws {
+        let app = launchFirstRun(textSize: "UICTContentSizeCategoryAccessibilityXXXL")
+        try audit(app, [.dynamicType, .textClipped])
+        let finish = app.buttons["onboarding-finish"]
+        for _ in 0..<12 where !finish.isHittable { app.swipeUp() }
+        XCTAssertTrue(finish.isHittable, "Start browsing is out of reach at the largest text size")
+        try audit(app, [.dynamicType, .textClipped])
+    }
+
+    @MainActor
+    private func launchFirstRun(textSize: String? = nil) -> XCUIApplication {
+        let app = XCUIApplication()
+        app.launchArguments += ["-onboarding.v1.seen", "NO"]
+        if let textSize {
+            app.launchArguments += ["-UIPreferredContentSizeCategoryName", textSize]
+        }
+        app.launch()
+        XCTAssertTrue(app.staticTexts["onboarding-point-spoilers"].waitForExistence(timeout: 30), "no first-run screen")
+        return app
+    }
+
     /// The largest accessibility text size: nothing clipped, every font
     /// scales. Show screen, where the most text is.
     @MainActor
@@ -349,6 +500,65 @@ final class AccessibilityAuditTests: XCTestCase {
         let app = launch(textSize: "UICTContentSizeCategoryAccessibilityXXXL")
         XCTAssertTrue(openFirstShow(app), "did not reach a show screen")
         try audit(app, [.dynamicType, .textClipped])
+    }
+
+    static let largestTextSize = "UICTContentSizeCategoryAccessibilityXXXL"
+
+    /// The largest accessibility text size on the other tabs: Search's
+    /// catalog, Favorites and About. Nothing clipped, every font scales.
+    @MainActor
+    func testLargestTextSizeSearchFavoritesAndAboutPassDynamicTypeAndClippingAudits() throws {
+        let app = launch(textSize: Self.largestTextSize)
+        XCTAssertTrue(app.cells.firstMatch.waitForExistence(timeout: 30), "the catalog did not load")
+        try audit(app, [.dynamicType, .textClipped])
+
+        // Empty or not: a simulator that ran other UI tests may already hold
+        // favorites, and both states must pass.
+        app.tabBars.buttons["Favorites"].tap()
+        XCTAssertTrue(app.navigationBars["Favorites"].waitForExistence(timeout: 30))
+        try audit(app, [.dynamicType, .textClipped])
+
+        app.tabBars.buttons["About"].tap()
+        XCTAssertTrue(app.staticTexts["Privacy"].waitForExistence(timeout: 30))
+        try audit(app, [.dynamicType, .textClipped])
+    }
+
+    /// Search results (a character and its show) at the largest text size.
+    @MainActor
+    func testLargestTextSizeSearchResultsPassDynamicTypeAndClippingAudits() throws {
+        let reference = try BundledDeaths.character(recordedDeath: true)
+        let app = launch(textSize: Self.largestTextSize)
+        let search = app.searchFields.firstMatch
+        XCTAssertTrue(search.waitForExistence(timeout: 30))
+        search.tap()
+        search.typeText(reference.name + "\n")
+        let row = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "\(reference.name), from ")).firstMatch
+        XCTAssertTrue(row.waitForExistence(timeout: 30), "no search result for \(reference.name)")
+        try audit(app, [.dynamicType, .textClipped])
+    }
+
+    /// The character screen at the largest text size, reveal closed.
+    @MainActor
+    func testLargestTextSizeCharacterScreenPassesDynamicTypeAndClippingAudits() throws {
+        let reference = try BundledDeaths.character(recordedDeath: false)
+        let app = launch(textSize: Self.largestTextSize)
+        openCharacter(reference, app)
+        XCTAssertTrue(app.buttons["Reveal"].waitForExistence(timeout: 30))
+        try audit(app, [.dynamicType, .textClipped])
+    }
+
+    /// VoiceOver hears a show's years, seasons and networks as one stop, in
+    /// words: never "en dash" or "middle dot" read out of the punctuation.
+    @MainActor
+    func testShowFactsAreOneVoiceOverStopInWords() throws {
+        let app = launch()
+        XCTAssertTrue(openFirstShow(app), "did not reach a show screen")
+        let facts = app.descendants(matching: .any)
+            .matching(NSPredicate(format: "label CONTAINS 'season' OR label CONTAINS 'Seasons not recorded'")).firstMatch
+        XCTAssertTrue(facts.waitForExistence(timeout: 10), "no years-and-seasons element")
+        XCTAssertFalse(facts.label.contains("·"), facts.label)
+        XCTAssertFalse(facts.label.contains("–"), facts.label)
+        XCTAssertTrue(facts.label.hasSuffix("."), facts.label)
     }
 
     // MARK: Spoiler safety under VoiceOver
@@ -410,7 +620,7 @@ final class AccessibilityAuditTests: XCTestCase {
     }
 
     /// Allowance 2's pixel measure: #404040 text on white (the app's
-    /// `.subdued`) clears 4.5:1; the system `.secondary` grey (#8A8A8E) on
+    /// `.subdued`) clears 4.5:1; the system `.secondary` gray (#8A8A8E) on
     /// white does not.
     func testTheRenderedContrastMeasureCanFail() {
         func pixels(_ a: UInt8, _ b: UInt8) -> [UInt8] { [a, a, a, 255, b, b, b, 255] }

@@ -21,16 +21,13 @@ nightly from `main`, so a fix to the pipeline reaches it on the next run.
 **Do not put exploit details in a public place** (a public issue, an App Store
 review, a social post).
 
-- **While this repository is private:** only its collaborators can read it.
-  Open an issue here with `[security]` at the start of the title, or contact
-  the maintainer directly. GitHub's private vulnerability reporting is only available on
-  public repositories, so it is not offered here yet.
-- **After the app launches:** use the support link on the app's App Store
-  page, the same route the privacy policy gives for questions.
-- **If this repository is ever made public:** private vulnerability reporting
-  will be switched on, and this section will point to it.
+- **Here:** use GitHub's private vulnerability reporting (the **Security**
+  tab, then **Report a vulnerability**). Only the maintainer can read the
+  report. Don't open a public issue for a vulnerability.
+- **After the app launches:** you can also use the support link on the app's
+  App Store page, the same route the privacy policy gives for questions.
 
-You can expect an acknowledgement within **72 hours** and an assessment
+You can expect an acknowledgment within **72 hours** and an assessment
 within a week. Please include what you did, what you saw, and which version
 or snapshot `content_digest` you were looking at. No bug bounty is offered.
 

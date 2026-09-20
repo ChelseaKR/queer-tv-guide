@@ -4,10 +4,10 @@ name: snapshot
 # one static URL the app fetches. No users, no telemetry: this workflow's own
 # logs contain request/byte counts against the two sources and nothing else.
 #
-# Publishing target: GitHub Pages (source: this workflow), because the repo
-# is private and a Release asset would need an authenticated download -- Pages
-# on a paid plan serves a public static file from a private repo, which is
-# what a no-account app fetching one URL needs. See pipeline/README.md
+# Publishing target: GitHub Pages (source: this workflow): one stable, plain
+# static URL with an ETag, which is what a no-account app fetching one URL
+# needs. The URL was chosen while the repository was private, when a Release
+# asset would have needed an authenticated download. See pipeline/README.md
 # "Publishing" for the full rationale. The rolling GitHub Release
 # `snapshot-latest` is kept alongside it for the mirror cache and for
 # `gh release download` during development; it is not the app's URL.
@@ -116,7 +116,7 @@ jobs:
           # third-party requests.
           cp ../docs/site/privacy.html site/privacy.html
           cp ../docs/site/support.html site/support.html
-          # The index carries the file's CC BY-SA 4.0 licence and every
+          # The index carries the file's CC BY-SA 4.0 license and every
           # source credit with links (qtv_pipeline/site_index.py, tested).
           uv run python -m qtv_pipeline.site_index out/snapshot.v1.json site/index.html
 

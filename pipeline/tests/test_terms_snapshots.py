@@ -1,4 +1,4 @@
-"""The dated terms snapshots are the licence evidence (App Review 5.2.2:
+"""The dated terms snapshots are the license evidence (App Review 5.2.2:
 "Authorization must be provided upon request"). Each dated directory's
 SHA256SUMS was written when the page was read; this proves the committed
 bytes still match it.

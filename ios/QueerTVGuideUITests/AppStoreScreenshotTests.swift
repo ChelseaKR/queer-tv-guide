@@ -13,7 +13,7 @@ final class AppStoreScreenshotTests: XCTestCase {
     /// Abbott Elementary: a running show with a next episode, a where-to-watch
     /// link and no outcome tropes.
     static let detailShowID = "lwtv:show:90395"
-    /// Running shows with a next episode, favourited for the "next episode"
+    /// Running shows with a next episode, favorited for the "next episode"
     /// shot: Abbott Elementary, Ted Lasso, Fire Country, North of North.
     static let followedShowIDs = ["lwtv:show:90395", "lwtv:show:76283", "lwtv:show:83667", "lwtv:show:98878"]
 
@@ -41,11 +41,6 @@ final class AppStoreScreenshotTests: XCTestCase {
     }
 
     @MainActor
-    private func filterButton(_ app: XCUIApplication) -> XCUIElement {
-        app.buttons.matching(NSPredicate(format: "label BEGINSWITH 'Filter'")).firstMatch
-    }
-
-    @MainActor
     private func backToSearch(_ app: XCUIApplication) {
         app.navigationBars.buttons.element(boundBy: 0).tap()
         XCTAssertTrue(app.searchFields.firstMatch.waitForExistence(timeout: 30))
@@ -56,13 +51,8 @@ final class AppStoreScreenshotTests: XCTestCase {
         let app = XCUIApplication.launchedGuide()
 
         // 1. Browse: shows with a where-to-watch link.
-        filterButton(app).tap()
-        let filter = app.buttons["Has a where-to-watch link"]
-        XCTAssertTrue(filter.waitForExistence(timeout: 10))
-        filter.tap()
-        XCTAssertTrue(app.cells.firstMatch.waitForExistence(timeout: 30))
+        app.applyWhereToWatchFilter()
         keep("01-browse", app)
-        filterButton(app).tap()
         let clearFilters = app.buttons["Clear filters"]
         XCTAssertTrue(clearFilters.waitForExistence(timeout: 10))
         clearFilters.tap()
@@ -83,11 +73,11 @@ final class AppStoreScreenshotTests: XCTestCase {
         // 4. Next episodes for followed shows.
         for id in Self.followedShowIDs {
             app.openShow(titled: try SnapshotFacts.title(ofShow: id))
-            let add = app.buttons["Add to favourites"]
+            let add = app.buttons["Add to favorites"]
             if add.exists { add.tap() }
             backToSearch(app)
         }
-        app.tabBars.buttons["Favourites"].tap()
+        app.tabBars.buttons["Favorites"].tap()
         XCTAssertTrue(app.buttons["tvmaze-credit-link"].waitForExistence(timeout: 30))
         keep("04-next-episodes", app)
 

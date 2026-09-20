@@ -1,6 +1,6 @@
 """Fail when a waiver in .github/zizmor.yml no longer matches a real finding.
 
-`make workflows` runs zizmor twice. The first run honours .github/zizmor.yml
+`make workflows` runs zizmor twice. The first run honors .github/zizmor.yml
 and is the gate: any finding at medium severity or above that is not waived
 fails it. This script is the second run. It reads zizmor's JSON output for
 the same workflows with every waiver switched off, and checks that each
@@ -44,7 +44,7 @@ def parse_waivers(text: str) -> list[tuple[str, str]]:
     """(rule, workflow file name) for every `ignore:` entry.
 
     Raises ValueError on any non-blank, non-comment line the constrained
-    format does not recognise, so a reformatted config cannot make the
+    format does not recognize, so a reformatted config cannot make the
     checker see zero waivers and pass.
     """
     lines = _meaningful(text)
@@ -64,7 +64,7 @@ def parse_waivers(text: str) -> list[tuple[str, str]]:
         elif (match := ENTRY_RE.match(line)) and rule is not None:
             waivers.append((rule, match.group(1)))
         else:
-            raise ValueError(f"line {number}: unrecognised line {line!r}")
+            raise ValueError(f"line {number}: unrecognized line {line!r}")
     return waivers
 
 

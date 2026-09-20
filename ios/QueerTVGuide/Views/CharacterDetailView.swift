@@ -16,7 +16,7 @@ struct CharacterDetailView: View {
                         identity(character)
                         doesSheDie(character)
                         shows(character, snapshot: snapshot)
-                        DataStatusFooter(generatedAt: snapshot.generatedAt, refreshError: model.lastRefreshError)
+                        DataStatusFooter(snapshot: snapshot)
                     }
                     .padding()
                 }
@@ -24,7 +24,7 @@ struct CharacterDetailView: View {
                 .navigationBarTitleDisplayMode(.inline)
                 .toolbar {
                     ToolbarItem(placement: .topBarTrailing) {
-                        FavouriteButton(kind: .character, id: character.id)
+                        FavoriteButton(kind: .character, id: character.id)
                     }
                 }
             } else {
@@ -37,6 +37,7 @@ struct CharacterDetailView: View {
         VStack(alignment: .leading, spacing: 6) {
             Text(character.name)
                 .font(.largeTitle.bold())
+                .accessibilityAddTraits(.isHeader)
             if !character.actors.isEmpty {
                 Text("Played by " + character.actors.compactMap(\.name).joined(separator: ", "))
                     .font(.subheadline)

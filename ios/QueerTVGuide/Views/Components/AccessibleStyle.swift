@@ -1,7 +1,7 @@
 import SwiftUI
 import UIKit
 
-/// Colours chosen for contrast, because Xcode's accessibility audit
+/// Colors chosen for contrast, because Xcode's accessibility audit
 /// (AccessibilityAuditTests) flagged the system defaults on this app's
 /// backgrounds: `.secondary` text is ~3.4:1 on white and the default blue
 /// accent ~4.0:1, both under WCAG AA's 4.5:1 for body-size text.
@@ -17,8 +17,8 @@ extension ShapeStyle where Self == Color {
         })
     }
 
-    /// De-emphasised text that still clears 4.5:1 with margin: ~10:1 on
-    /// white and ~9:1 on the grouped-list grey in light mode, ~10:1 on black
+    /// De-emphasized text that still clears 4.5:1 with margin: ~10:1 on
+    /// white and ~9:1 on the grouped-list gray in light mode, ~10:1 on black
     /// in dark mode.
     static var subdued: Color {
         Color(uiColor: UIColor { traits in
@@ -29,7 +29,7 @@ extension ShapeStyle where Self == Color {
     }
 }
 
-/// A list section header in `.subdued`. The system's grouped-list header grey
+/// A list section header in `.subdued`. The system's grouped-list header gray
 /// measured 3.3:1 on the grouped background (#85858B on #F2F2F7, iOS 26.5),
 /// which the audit reports as "Contrast nearly passed": it clears only the
 /// large-text threshold.
@@ -51,7 +51,7 @@ extension Section where Parent == SubduedSectionHeader, Footer == EmptyView, Con
 }
 
 /// `LabeledContent` draws its value ("3 of 5", "Yes", a coverage count) in
-/// the system `.secondary` grey, measured at 3.4:1 on white (#8A8A8E). The
+/// the system `.secondary` gray, measured at 3.4:1 on white (#8A8A8E). The
 /// audit does not report it, perhaps because those rows are read as one
 /// combined element, but it is under 4.5:1 for anyone reading the screen.
 /// This style keeps the system layout (label leading, value trailing) with
@@ -93,7 +93,7 @@ private struct SubduedValueRow: View {
 extension View {
     /// iOS 26 fades scrolling content into a soft blur as it nears the
     /// floating tab bar, so text scrolling into that band is drawn lighter
-    /// than its colour. With the soft edge, the audit reported 4 contrast
+    /// than its color. With the soft edge, the audit reported 4 contrast
     /// failures at the bottom of Search. With this change and nothing else
     /// on that screen, it reported none. The hard edge keeps content at
     /// full contrast up to the bar and puts an opaque backing behind the bar
@@ -105,6 +105,26 @@ extension View {
             scrollEdgeEffectStyle(.hard, for: .bottom)
         } else {
             self
+        }
+    }
+}
+
+extension View {
+    /// With Reduce Motion on, SwiftUI animations in this subtree are
+    /// dropped: disclosure groups, list changes and reveals change at once
+    /// instead of sliding or fading. System transitions (navigation pushes,
+    /// sheets) follow the setting on their own.
+    func reduceMotionRespected() -> some View {
+        modifier(ReduceMotionRespected())
+    }
+}
+
+private struct ReduceMotionRespected: ViewModifier {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    func body(content: Content) -> some View {
+        content.transaction { transaction in
+            if reduceMotion { transaction.animation = nil }
         }
     }
 }

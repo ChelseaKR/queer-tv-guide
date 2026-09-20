@@ -5,7 +5,7 @@ issue tracker. This file carries the per-repository ledger the portfolio
 standards ask for: the metrics table (QUALITY-AND-METRICS-STANDARD), the
 optional CI stages (CI-CD §1, CICD-29), the observability tier
 (OBSERVABILITY-STANDARD §0, OBS-21), recovery objectives (DG-13) and the
-release declaration (REL-01). Values live here; the rigour lives in
+release declaration (REL-01). Values live here; the rigor lives in
 `docs/standards/`.
 
 ## Metrics
@@ -38,7 +38,7 @@ release declaration (REL-01). Values live here; the rigour lives in
 | 1–5 format, lint, type, test, security | Applies | `make verify`; `ci.yml` and `security.yml` |
 | 6 a11y | Applies | native: the accessibility audit UI tests (#22); HTML: the Pages status page and privacy page (#12, #22) |
 | 7 perf | Undecided (#36): the registry scopes PERFORMANCE conservatively as applying; the proposal is N/A, because there is no latency contract and no web frontend, and the app reads one static file | — |
-| 8 responsible | Applies | the privacy-premise guards (`SourceTreeGuardTests`), the licence gate (`terms.py`, re-read on every pipeline run) and the `died` never-`false` schema control |
+| 8 responsible | Applies | the privacy-premise guards (`SourceTreeGuardTests`), the license gate (`terms.py`, re-read on every pipeline run) and the `died` never-`false` schema control |
 
 ## Observability
 
@@ -51,7 +51,12 @@ release declaration (REL-01). Values live here; the rigour lives in
 - **App: no telemetry, by design** (`docs/DECISIONS.md` 0002). No crash
   reporting, analytics, RUM or remote logging; the tier model's OTel and Core
   Web Vitals rows are N/A for that reason. What a user can observe is shown in
-  the app: the snapshot's "data as of" time and any refresh failure.
+  the app: the snapshot's "data as of" time and age, a plain warning once it
+  is past the 48-hour SLA or its age is unknown, and any refresh failure.
+- **Staleness alarm (DG-04):** `freshness.yml` checks the published snapshot
+  every 6 hours and opens an `incident` issue when it is older than 30 hours
+  (SEV3), older than the 48-hour SLA (SEV2), or the last nightly run failed
+  (SEV3). An unreadable file or missing run history is an alarm too.
 - **No credentials or personal data in logs** (OBS-11, never N/A): the semgrep
   rule above, over Python and Swift.
 
@@ -60,7 +65,7 @@ release declaration (REL-01). Values live here; the rigour lives in
 | Surface | RPO | RTO | How |
 |---|---|---|---|
 | Published snapshot (GitHub Pages) | 24 h (rebuilt nightly) | about 1 h | dispatch `snapshot.yml`; the mirror cache restores from the `snapshot-latest` release assets. Not exercised yet (#25). |
-| Favourites | n/a: on the device only | n/a | the user's own device backup (#25) |
+| Favorites | the user's last export, or their last device backup | minutes | two mechanisms, both held by the user: the device's own iCloud or computer backup, and a file the user exports from the … menu on Favorites and imports on the same or another device. Import checks the file and skips ids not in the snapshot. Round-trip tested in `FavoritesBackupTests` (DG-10, #25). |
 
 ## Releases (REL-01)
 

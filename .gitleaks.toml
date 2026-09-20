@@ -1,12 +1,13 @@
 # gitleaks configuration (SECURITY-AND-SUPPLY-CHAIN-STANDARD §4, SEC-17/SEC-18).
-# The upstream default ruleset, plus exactly one false-positive exemption.
+# The upstream default ruleset, plus two false-positive exemptions, each for
+# one UserDefaults key declaration.
 
 [extend]
 useDefault = true
 
 # `generic-api-key` reads `defaultsKey = "favourites.v1"` as a credential: a
 # `...Key = "<string>"` assignment whose value has enough entropy. It is the
-# UserDefaults key the favourites list is stored under, not a secret.
+# UserDefaults key the favorites list is stored under, not a secret.
 #
 # The exemption is as narrow as gitleaks can express, and every condition must
 # hold at once (condition = "AND"):
@@ -21,9 +22,28 @@ useDefault = true
 # changes the value on this line, and copies this line to another file, and
 # asserts each one is still reported.
 [[allowlists]]
-description = "favourites UserDefaults key in FavouritesStore.swift is not a credential"
+description = "favorites UserDefaults key in FavoritesStore.swift is not a credential"
 targetRules = ["generic-api-key"]
 condition = "AND"
-paths = ['''^ios/GuideCore/Sources/GuideCore/FavouritesStore\.swift$''']
+# The file was FavouritesStore.swift before the American-English rename, and
+# `gitleaks git` scans that history too, so the path matches both spellings.
+paths = ['''^ios/GuideCore/Sources/GuideCore/Fav(?:ou|o)ritesStore\.swift$''']
 regexTarget = "line"
+# The key keeps its original spelling: it is persisted, so renaming it would
+# lose every saved favorite.
 regexes = ['''^\s*public static let defaultsKey = "favourites\.v1"\s*$''']
+
+# The same false positive for the new-episode reminders switch (PR #46):
+# `enabledKey = "reminders.v1.enabled"` is the UserDefaults key the person's
+# on/off choice is stored under, not a secret. The exemption has the same
+# shape as the one above: one rule, one file, one exact line.
+# `gitleaks git` walks every fetched branch, so while the reminders branch
+# exists this line is scanned on every pull request, not only on #46.
+# tests/test_gitleaks_allowlist.py holds it to the same negative controls.
+[[allowlists]]
+description = "reminders UserDefaults key in ReminderScheduler.swift is not a credential"
+targetRules = ["generic-api-key"]
+condition = "AND"
+paths = ['''^ios/QueerTVGuide/Reminders/ReminderScheduler\.swift$''']
+regexTarget = "line"
+regexes = ['''^\s*static let enabledKey = "reminders\.v1\.enabled"\s*$''']

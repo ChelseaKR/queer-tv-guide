@@ -26,7 +26,7 @@ shaping lives in `pipeline/` (Python), the app renders a contract.
 Per DATA-GOVERNANCE-STANDARD §4a the declared analytics posture is **"none"**.
 No analytics, no crash reporting, no telemetry, no accounts. Snapshot refresh
 is a GET of a static file from infrastructure Chelsea controls with access
-logging minimised and documented in the privacy notice. This is a per-product
+logging minimized and documented in the privacy notice. This is a per-product
 choice; the portfolio's other products made the opposite one the same day.
 
 ## 0003 — Paid up front, one price (2026-09-13, provisional)
@@ -63,7 +63,7 @@ It also says the app itself collects nothing. The developer never receives
 that log.
 
 **Supersedes** the clause in 0002 that the file would come "from
-infrastructure Chelsea controls with access logging minimised". The rest of
+infrastructure Chelsea controls with access logging minimized". The rest of
 0002 (posture "none") stands. The App Store privacy label stays "Data Not
 Collected": the developer collects nothing, and GitHub is a host, not a
 partner whose code is in the app.
@@ -134,11 +134,11 @@ contacted.
 - Every show and character screen links to its LezWatch.TV page
   ("View on LezWatch.TV").
 - The About screen names both sources with links, links each source's
-  licence or terms, and says "LezWatch.TV and TVmaze do not endorse this
+  license or terms, and says "LezWatch.TV and TVmaze do not endorse this
   app".
-- Wherever TVmaze data shows (a show's next episode, the Favourites list),
-  a TVmaze link and the CC BY-SA 4.0 licence link show with it.
-- The published snapshot carries its CC BY-SA 4.0 licence, notice and source
+- Wherever TVmaze data shows (a show's next episode, the Favorites list),
+  a TVmaze link and the CC BY-SA 4.0 license link show with it.
+- The published snapshot carries its CC BY-SA 4.0 license, notice and source
   credits, and so does its Pages index.
 
 The full audit is in `docs/LICENSES-AND-ATTRIBUTION.md` ("Attribution

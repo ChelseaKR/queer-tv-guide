@@ -1,11 +1,11 @@
-"""The licence gate.
+"""The license gate.
 
 Before any mirror runs, re-check that LezWatch.TV's terms of use still grant
 reuse. The grant is a sentence on a page they can edit at any time, not a
-versioned licence file, so the pipeline reads it fresh on every run rather than
+versioned license file, so the pipeline reads it fresh on every run rather than
 trusting docs/LICENSES-AND-ATTRIBUTION.md to still be true.
 
-TVmaze's grant is a stable, versioned licence (CC BY-SA 4.0) referenced by a
+TVmaze's grant is a stable, versioned license (CC BY-SA 4.0) referenced by a
 permanent URL; it is not re-fetched every run, only documented.
 """
 
@@ -20,11 +20,11 @@ GRANT_SENTENCE = "use, reuse, and extend the data here for no fees"
 
 
 class TermsChanged(RuntimeError):
-    """The LezWatch ToS no longer contains the sentence the licence review relied on.
+    """The LezWatch ToS no longer contains the sentence the license review relied on.
 
     This is a hard stop: docs/LICENSES-AND-ATTRIBUTION.md's verdict for LezWatch
     is only as good as that sentence. Nobody is contacted; the mirror does not run
-    until a human re-reads the ToS and updates the licence doc.
+    until a human re-reads the ToS and updates the license doc.
     """
 
 

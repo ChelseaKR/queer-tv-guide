@@ -10,7 +10,7 @@ cd pipeline
 uv sync --all-groups
 uv run qtv terms-check                      # 1 request: the LezWatch ToS still grants reuse
 uv run qtv fetch --cache .cache             # incremental mirror (full on first run)
-uv run qtv build --cache .cache --out out   # normalise, validate, digest, coverage report
+uv run qtv build --cache .cache --out out   # normalize, validate, digest, coverage report
 uv run qtv validate out/snapshot.v1.json
 uv run pytest
 ```
@@ -41,7 +41,7 @@ What is fetched, and only this:
 - LezWatch: `wp/v2/show` and `wp/v2/character` with `_fields` trimmed to the
   data fields; the twelve `lez_*` taxonomies; `lwtv/v1/export/raw/actors/`
   (names only); `lwtv/v1/export/list/{shows,characters}/` (ids, to detect
-  deletions); `/tos/` (the licence gate). No images, no posts, no comments.
+  deletions); `/tos/` (the license gate). No images, no posts, no comments.
 - TVmaze: `/shows/{id}?embed[]=nextepisode&embed[]=previousepisode` per joined
   show; `/lookup/shows?imdb=` as a fallback join; `/updates/shows` to decide
   what to refresh. No images, no summaries, no cast.
@@ -91,12 +91,12 @@ mirror, fetches incrementally, builds, and then:
    `mirror-cache.tar.gz` to the rolling release **`snapshot-latest`**
    (`gh release upload --clobber`), and
 2. deploys `snapshot.v1.json`, its `.sha256`, and an `index.html` carrying the
-   attribution and licence notice to **GitHub Pages**.
+   attribution and license notice to **GitHub Pages**.
 
-Why both. A release asset on a private repo needs a token to download, so it
-cannot be the URL a no-account app fetches; Pages on a Pro account serves a
-public static file from a private repo, and publishing the file openly is also
-what CC BY-SA's ShareAlike asks for (`docs/LICENSES-AND-ATTRIBUTION.md`). The
+Why both. Pages gives the app one plain static URL with an ETag, chosen while
+the repository was private (a release asset on a private repository needs a
+token to download), and publishing the file openly is also what CC BY-SA's
+ShareAlike asks for (`docs/LICENSES-AND-ATTRIBUTION.md`). The
 release keeps the cache and gives the app lane `gh release download` during
 development. A rolling tag rather than dated tags because the app needs one
 URL that never changes and dated releases would pile up 365 a year; the

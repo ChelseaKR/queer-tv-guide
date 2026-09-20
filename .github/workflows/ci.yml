@@ -129,7 +129,7 @@ jobs:
   guidecore:
     name: guidecore
     needs: changes
-    # Skipped only on a clean "false" from `changes`; a failed or cancelled
+    # Skipped only on a clean "false" from `changes`; a failed or canceled
     # scope step runs the tests rather than skipping them.
     if: ${{ !cancelled() && (needs.changes.result != 'success' || needs.changes.outputs.guidecore != 'false') }}
     runs-on: macos-26

@@ -9,7 +9,7 @@ public enum Presentation {
     // MARK: Worth it / ratings
 
     /// `worthIt` is open text in the contract (observed: "Yes", "Meh", "No",
-    /// "TBD"); an unrecognised non-nil value is shown as itself rather than
+    /// "TBD"); an unrecognized non-nil value is shown as itself rather than
     /// forced into a known bucket or hidden.
     public static func worthIt(_ value: String?) -> String {
         value ?? "Not rated"
@@ -238,6 +238,80 @@ public enum Presentation {
 
     public static func generatedAt(_ date: Date) -> String {
         "Data as of \(dateTimeFormatter.string(from: date))"
+    }
+
+    /// The data-status line on every screen that reads the snapshot: when
+    /// the data was last updated, and how long ago that was. An age that
+    /// cannot be worked out is said to be unknown, never left off (which
+    /// would read as current).
+    public static func dataAsOf(_ date: Date, freshness: DataFreshness) -> String {
+        switch freshness {
+        case .current(let seconds), .stale(let seconds):
+            return "\(generatedAt(date)) (\(age(seconds)))"
+        case .unknown:
+            return "\(generatedAt(date)) (age unknown: that is later than this device's clock)"
+        }
+    }
+
+    /// "less than an hour ago", "1 hour ago", "30 hours ago", then whole
+    /// days from two days on. Rounded down, so an age is never overstated
+    /// into the next threshold, and never understated past it either: 48
+    /// hours and one second is "2 days ago", and stale.
+    public static func age(_ seconds: TimeInterval) -> String {
+        let hours = Int(max(0, seconds) / 3600)
+        if hours < 1 { return "less than an hour ago" }
+        if hours < 48 { return hours == 1 ? "1 hour ago" : "\(hours) hours ago" }
+        return "\(hours / 24) days ago"
+    }
+
+    /// What a stale or unknown-age snapshot says about itself, above the
+    /// content it affects. `nil` only when the data is current.
+    public struct FreshnessWarning: Equatable, Sendable {
+        public let title: String
+        public let detail: String
+        /// Everything, in reading order, for one VoiceOver element. Opens
+        /// with "Warning" so a listener who moves on after the first word
+        /// still hears that something is wrong.
+        public var spoken: String { "Warning. \(title). \(detail)" }
+    }
+
+    public static func freshnessWarning(generatedAt date: Date, freshness: DataFreshness) -> FreshnessWarning? {
+        switch freshness {
+        case .current:
+            return nil
+        case .stale(let seconds):
+            return FreshnessWarning(
+                title: "This data is out of date",
+                detail: "It was last updated \(age(seconds)), on \(dateTimeFormatter.string(from: date)). Next episodes and where-to-watch links may have changed since then. The app looks for new data each time it opens; pull down on Search to look now."
+            )
+        case .unknown:
+            return FreshnessWarning(
+                title: "This data's age is unknown",
+                detail: "It is dated \(dateTimeFormatter.string(from: date)), which is later than this device's clock, so the app can't tell how old it is. Treat it as possibly out of date, and check the date and time in Settings."
+            )
+        }
+    }
+
+    // MARK: Favorites backup
+
+    /// What an import did, counted: every entry in the file is accounted
+    /// for, including the ones skipped.
+    public static func importSummary(added: Int, alreadySaved: Int, notInSnapshot: Int, unreadable: Int) -> String {
+        func count(_ n: Int, _ one: String, _ many: String) -> String { "\(n) \(n == 1 ? one : many)" }
+        if added + alreadySaved + notInSnapshot + unreadable == 0 {
+            return "The file lists no favorites. Nothing was added."
+        }
+        var sentences = [added == 0 ? "No new favorites were added." : "Added \(count(added, "favorite", "favorites"))."]
+        if alreadySaved > 0 {
+            sentences.append("\(count(alreadySaved, "was", "were")) already saved.")
+        }
+        if notInSnapshot > 0 {
+            sentences.append("\(count(notInSnapshot, "is", "are")) not in this snapshot and \(notInSnapshot == 1 ? "was" : "were") skipped.")
+        }
+        if unreadable > 0 {
+            sentences.append("\(count(unreadable, "entry", "entries")) could not be read and \(unreadable == 1 ? "was" : "were") skipped.")
+        }
+        return sentences.joined(separator: " ")
     }
 
     public static let dayFormatter: DateFormatter = {

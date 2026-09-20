@@ -2,7 +2,7 @@ import SwiftUI
 
 /// A tap-to-reveal control for spoiler content ("does she die"). Hidden by
 /// default; the user chooses to see it. Respects Reduce Motion by skipping
-/// the reveal animation, and is fully labelled for VoiceOver in both states
+/// the reveal animation, and is fully labeled for VoiceOver in both states
 /// so a screen reader user gets the same choice a sighted user does.
 ///
 /// While closed, the answer is not built at all, so it is not in the
@@ -46,5 +46,8 @@ struct SpoilerReveal<Content: View>: View {
             }
         }
         .animation(reduceMotion ? nil : .default, value: revealed)
+        // A light tap as the answer opens. It fires only on the user's own
+        // tap: `revealed` starts false and nothing else sets it.
+        .sensoryFeedback(.impact(weight: .light), trigger: revealed)
     }
 }

@@ -2,8 +2,8 @@
 
 Only the data fields the schema needs are requested (`_fields`), no images, no
 posts/comments. Incremental fetches pass `modified_after`; the pipeline does
-not assume the server honours it (WP REST support for that parameter varies by
-version) — an unhonoured filter just means every run refetches everything it
+not assume the server honors it (WP REST support for that parameter varies by
+version) — an unhonored filter just means every run refetches everything it
 would have refetched on a full run, which is slower but never wrong, and the
 build's `mode` field in the snapshot says which happened.
 """

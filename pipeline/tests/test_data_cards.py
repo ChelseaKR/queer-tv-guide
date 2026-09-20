@@ -1,6 +1,6 @@
 """DG-01: every source the snapshot credits has a committed data card.
 
-The list of sources is the pipeline's own attribution list (`licence.py`),
+The list of sources is the pipeline's own attribution list (`license.py`),
 the one the snapshot and the app display, so adding a source without a card
 fails here.
 """
@@ -11,7 +11,7 @@ from pathlib import Path
 
 import pytest
 
-from qtv_pipeline import licence
+from qtv_pipeline import license
 
 REPO = Path(__file__).resolve().parents[2]
 CARDS = REPO / "docs" / "data"
@@ -44,10 +44,10 @@ def missing_fields(card_text: str) -> list[str]:
 
 def test_the_attribution_list_names_sources() -> None:
     # Denominator: the check below must have something to check.
-    assert [a["source"] for a in licence.ATTRIBUTION] == ["lezwatch", "tvmaze"]
+    assert [a["source"] for a in license.ATTRIBUTION] == ["lezwatch", "tvmaze"]
 
 
-@pytest.mark.parametrize("source", [a["source"] for a in licence.ATTRIBUTION])
+@pytest.mark.parametrize("source", [a["source"] for a in license.ATTRIBUTION])
 def test_every_credited_source_has_a_complete_card(source: str) -> None:
     card = CARDS / f"{source}.md"
     assert card.is_file(), f"no data card for {source}: add docs/data/{source}.md"

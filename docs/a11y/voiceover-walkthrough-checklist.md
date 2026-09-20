@@ -33,7 +33,7 @@ This checklist covers those gaps.
   model and iOS version.
 - VoiceOver on (Settings > Accessibility > VoiceOver). Set the Accessibility
   Shortcut to VoiceOver so a triple-click toggles it.
-- Delete and reinstall the app first, so Favourites starts empty.
+- Delete and reinstall the app first, so Favorites starts empty.
 - Do the pass once with default settings. Then do it again with Larger Text
   at the maximum (Settings > Accessibility > Display & Text Size > Larger
   Text), Bold Text, Increase Contrast and Reduce Motion on. Do it once in
@@ -81,26 +81,44 @@ Note anything confusing, even if the task was completed.
       "Not recorded. …".
 - [ ] Going back and returning to the screen closes the reveal again.
 
-### 4. Add and remove a favourite
+### 4. Add and remove a favorite
 
-- [ ] The star button reads "Add to favourites". After a double-tap, it
-      reads "Remove from favourites". Known issue (#22): the state is in the
+- [ ] The star button reads "Add to favorites". After a double-tap, it
+      reads "Remove from favorites". Known issue (#22): the state is in the
       label, not a value or trait.
-- [ ] The Favourites tab lists the item, and its row reads the next episode.
+- [ ] The Favorites tab lists the item, and its row reads the next episode.
 - [ ] Removing the item works through the Actions rotor (swipe up or down
       to "Delete"), and through Edit.
-- [ ] Once the list is empty, "No favourites yet" and its message are read.
+- [ ] Once the list is empty, "No favorites yet" and its message are read.
+- [ ] The … menu button reads "Back up or restore favorites". Its menu
+      reads "Export favorites" (dimmed, and said to be, while the list is
+      empty) and "Import favorites".
+- [ ] Export opens the share sheet; saving to Files works with VoiceOver.
+      Import opens the file picker; after picking a backup, the alert that
+      says how many favorites were added is read out, and focus returns to
+      the list.
 
-### 5. Open a where-to-watch link
+### 5. Out-of-date data
+
+Set the device's date two weeks ahead (Settings > General > Date & Time,
+automatic off), open the app offline, and set it back afterwards.
+
+- [ ] At the top of Search, one element reads "Warning. This data is out of
+      date. It was last updated … days ago …" in full.
+- [ ] The same warning is at the top of a non-empty Favorites list.
+- [ ] The data line at the bottom of each screen reads "This data is out of
+      date." before "Data as of …".
+
+### 6. Open a where-to-watch link
 
 - [ ] Each link reads its host and the hint "Opens … in Safari".
 - [ ] A double-tap opens Safari. Returning to the app puts you back where
       you were.
 
-### 6. About, attribution and privacy
+### 7. About, attribution and privacy
 
 - [ ] Section headings are announced as headings.
-- [ ] The privacy text, data sources, licence and coverage figures are all
+- [ ] The privacy text, data sources, license and coverage figures are all
       reachable and make sense read aloud ("LezWatch.TV" reads as a name,
       not "dot T V").
 - [ ] The Privacy policy, Support and source links read as links or buttons,

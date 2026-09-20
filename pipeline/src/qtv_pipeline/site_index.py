@@ -1,6 +1,6 @@
-"""The Pages index published next to the snapshot: the file's licence, its
+"""The Pages index published next to the snapshot: the file's license, its
 source credits with links, and the files themselves. A CC BY-SA 4.0 file
-published for anyone to take carries its licence and credits where people
+published for anyone to take carries its license and credits where people
 find it, not only inside the JSON.
 
     python -m qtv_pipeline.site_index out/snapshot.v1.json site/index.html
@@ -27,7 +27,7 @@ def render_index(doc: dict[str, Any]) -> str:
     credits = "\n".join(
         "<li>"
         f"{_a(a['url'], a['name'])}: {html.escape(a['text'])} "
-        f"Licence: {_a(a['licence_url'], a['licence_name'])}. "
+        f"License: {_a(a['licence_url'], a['licence_name'])}. "
         f"Terms: {_a(a['terms_url'], a['terms_url'])} (read {html.escape(a['terms_read_on'])})."
         "</li>"
         for a in doc["attribution"]
@@ -39,7 +39,7 @@ def render_index(doc: dict[str, Any]) -> str:
 <title>Queer Frame snapshot</title>
 <h1>Queer Frame snapshot</h1>
 <p>{html.escape(lic["notice"])}</p>
-<p>Licence: {_a(lic["snapshot"]["url"], lic["snapshot"]["name"])}.</p>
+<p>License: {_a(lic["snapshot"]["url"], lic["snapshot"]["name"])}.</p>
 <h2>Sources</h2>
 <ul>
 {credits}

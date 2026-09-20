@@ -24,7 +24,7 @@ final class AttributionUITests: XCTestCase {
         XCTAssertTrue(source.waitForExistence(timeout: 10), "no LezWatch.TV link on the show screen")
         XCTAssertEqual(source.label, "View \(title) on LezWatch.TV")
         XCTAssertTrue(app.buttons["tvmaze-credit-link"].exists, "schedule shown without TVmaze's credit")
-        XCTAssertEqual(app.buttons["tvmaze-licence-link"].label, "Licence: CC BY-SA 4.0")
+        XCTAssertEqual(app.buttons["tvmaze-license-link"].label, "License: CC BY-SA 4.0")
     }
 
     @MainActor
@@ -44,38 +44,38 @@ final class AttributionUITests: XCTestCase {
     }
 
     @MainActor
-    func testAboutNamesAndLinksBothSourcesTheirLicencesAndNonEndorsement() throws {
+    func testAboutNamesAndLinksBothSourcesTheirLicensesAndNonEndorsement() throws {
         let app = XCUIApplication.launchedGuide()
         app.tabBars.buttons["About"].tap()
         XCTAssertTrue(app.staticTexts["Data sources"].waitForExistence(timeout: 30))
-        for id in ["source-link-lezwatch", "source-link-tvmaze", "licence-link-lezwatch", "licence-link-tvmaze"] {
+        for id in ["source-link-lezwatch", "source-link-tvmaze", "license-link-lezwatch", "license-link-tvmaze"] {
             let link = app.buttons[id]
             if !link.exists { app.swipeUp() }
             XCTAssertTrue(link.waitForExistence(timeout: 10), "About is missing \(id)")
         }
-        XCTAssertEqual(app.buttons["licence-link-tvmaze"].label, "Licence: CC BY-SA 4.0")
+        XCTAssertEqual(app.buttons["license-link-tvmaze"].label, "License: CC BY-SA 4.0")
         let endorsement = app.staticTexts["LezWatch.TV and TVmaze do not endorse this app."]
         if !endorsement.exists { app.swipeUp() }
         XCTAssertTrue(endorsement.waitForExistence(timeout: 10), "About lacks the non-endorsement statement")
     }
 
     @MainActor
-    func testFavouritesCreditTVmazeForTheNextEpisodesTheyShow() throws {
+    func testFavoritesCreditTVmazeForTheNextEpisodesTheyShow() throws {
         let title = try SnapshotFacts.title(ofShow: Self.referenceShowID)
         let app = XCUIApplication.launchedGuide()
         app.openShow(titled: title)
-        app.buttons["Add to favourites"].tap()
-        app.tabBars.buttons["Favourites"].tap()
+        app.buttons["Add to favorites"].tap()
+        app.tabBars.buttons["Favorites"].tap()
         let row = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", title)).firstMatch
         XCTAssertTrue(row.waitForExistence(timeout: 30))
-        let credited = app.buttons["tvmaze-credit-link"].waitForExistence(timeout: 10) && app.buttons["tvmaze-licence-link"].exists
+        let credited = app.buttons["tvmaze-credit-link"].waitForExistence(timeout: 10) && app.buttons["tvmaze-license-link"].exists
 
-        // Leave favourites empty for the other tests on this simulator.
+        // Leave favorites empty for the other tests on this simulator.
         row.swipeLeft()
         let delete = app.buttons["Delete"]
         if delete.waitForExistence(timeout: 10) { delete.tap() }
-        XCTAssertTrue(app.staticTexts["No favourites yet"].waitForExistence(timeout: 10), "the test favourite was not removed")
+        XCTAssertTrue(app.staticTexts["No favorites yet"].waitForExistence(timeout: 10), "the test favorite was not removed")
 
-        XCTAssertTrue(credited, "Favourites show TVmaze next episodes without its credit")
+        XCTAssertTrue(credited, "Favorites show TVmaze next episodes without its credit")
     }
 }

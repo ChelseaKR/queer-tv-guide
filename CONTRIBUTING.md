@@ -1,6 +1,6 @@
 # Contributing
 
-One maintainer, private repository. These notes are for her, for future
+One maintainer, public repository. These notes are for her, for future
 collaborators, and for the coding agents that work here.
 
 ## The one local gate
@@ -33,7 +33,7 @@ pre-commit install --hook-type pre-commit --hook-type pre-push
   `docs: …`). Stage files by name; never `git add -A`.
 - Update `CHANGELOG.md` under `[Unreleased]` in the same PR as a user-visible
   change.
-- A decision that is expensive to reverse (a data source, a licence, a
+- A decision that is expensive to reverse (a data source, a license, a
   platform, a guardrail, declaring a standard N/A) gets an ADR in
   `docs/adr/` (see `docs/adr/0000-record-architecture-decisions.md`).
 
@@ -49,7 +49,7 @@ Never edit `docs/standards/` by hand: it is a verbatim copy of a release, and
 
 - No accounts, analytics, crash reporting, telemetry or third-party SDKs in
   the app (`docs/DECISIONS.md` 0002). The app talks to one host.
-- Licences before bytes: a data source is used only after its terms have been
+- Licenses before bytes: a data source is used only after its terms have been
   read, quoted and snapshotted (`docs/LICENSES-AND-ATTRIBUTION.md`). Nobody
   contacts the sources.
 - A death LezWatch has not recorded is shown as not recorded, never as "no".

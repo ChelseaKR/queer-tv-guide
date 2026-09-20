@@ -18,7 +18,7 @@ import jsonschema
 from . import __version__, fields, lezwatch, normalize, terms, tvmaze
 from . import coverage as coverage_mod
 from . import digest as digest_mod
-from . import licence as licence_mod
+from . import license as license_mod
 from .http import HostCounters, PacedClient
 
 
@@ -41,7 +41,7 @@ def run_fetch(
     client_factory: Callable[..., PacedClient] = PacedClient,
 ) -> dict[str, Any]:
     """Network phase. Raises on any unrecovered fetch error or a terms change --
-    both are fatal to the run, per the crawl-budget and licence-gate rules.
+    both are fatal to the run, per the crawl-budget and license-gate rules.
 
     `client_factory` exists so tests can inject a PacedClient wired to an
     httpx.MockTransport and a no-op sleep, without any network dependency and
@@ -51,7 +51,7 @@ def run_fetch(
 
     with client_factory(log=log) as client:
         terms.check_lezwatch_terms(client)
-        log("licence gate: LezWatch ToS still grants reuse")
+        log("license gate: LezWatch ToS still grants reuse")
 
         taxonomies = lezwatch.fetch_taxonomies(client, cache_dir)
         n_terms = sum(len(v) for v in taxonomies.values())
@@ -207,8 +207,9 @@ def run_build(
             "pipeline_version": __version__,
             "run": {"git_sha": git_sha, "workflow_run_id": workflow_run_id},
         },
-        "licence": {"snapshot": licence_mod.SNAPSHOT_LICENCE, "notice": licence_mod.LICENCE_NOTICE},
-        "attribution": licence_mod.ATTRIBUTION,
+        # "licence" is a published v1 field name: spelling kept for existing readers.
+        "licence": {"snapshot": license_mod.SNAPSHOT_LICENSE, "notice": license_mod.LICENSE_NOTICE},
+        "attribution": license_mod.ATTRIBUTION,
         "sources": {
             "lezwatch": {
                 "name": "LezWatch.TV",

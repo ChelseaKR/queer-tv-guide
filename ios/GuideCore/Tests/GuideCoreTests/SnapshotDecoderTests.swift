@@ -100,7 +100,7 @@ final class SnapshotDecoderTests: XCTestCase {
 
     func testWorthItIsOpenTextNotAClosedEnum() throws {
         // The contract deliberately leaves worth_it as free text (observed:
-        // Yes/Meh/No/TBD). An unrecognised value must still decode and
+        // Yes/Meh/No/TBD). An unrecognized value must still decode and
         // still be shown — only filtering treats it as "unknown".
         let data = try JSONEdit.editShow(try Repo.fixtureData(), index: 0) { show in
             var ratings = show["ratings"] as! [String: Any]
@@ -159,7 +159,7 @@ final class SnapshotDecoderTests: XCTestCase {
     }
 
     func testLookupsAreConstantTimeNotLinearRescans() throws {
-        // Regression guard for the O(n) `first(where:)` mistake at catalogue
+        // Regression guard for the O(n) `first(where:)` mistake at catalog
         // scale (~2,300 shows / ~7,400 characters per schema/README).
         let s = try Repo.fixture()
         for _ in 0..<1000 {

@@ -10,17 +10,17 @@ final class QueerTVGuideUITests: XCTestCase {
     }
 
     func testLaunchesToSearchWithTabsPresent() throws {
-        let app = XCUIApplication()
+        let app = XCUIApplication.guide()
         app.launch()
 
         XCTAssertTrue(app.tabBars.buttons["Search"].waitForExistence(timeout: 30))
-        XCTAssertTrue(app.tabBars.buttons["Favourites"].exists)
+        XCTAssertTrue(app.tabBars.buttons["Favorites"].exists)
         XCTAssertTrue(app.tabBars.buttons["About"].exists)
     }
 
     func testSearchFindsABundledShow() throws {
         let show = try BundledData.referenceShow()
-        let app = XCUIApplication()
+        let app = XCUIApplication.guide()
         app.launch()
 
         let searchField = app.searchFields.firstMatch
@@ -32,16 +32,16 @@ final class QueerTVGuideUITests: XCTestCase {
         XCTAssertTrue(row.waitForExistence(timeout: 30), "no row for \(show.title)")
     }
 
-    func testFavouritesTabShowsEmptyStateOnFirstLaunch() throws {
-        let app = XCUIApplication()
+    func testFavoritesTabShowsEmptyStateOnFirstLaunch() throws {
+        let app = XCUIApplication.guide()
         app.launch()
 
-        app.tabBars.buttons["Favourites"].tap()
-        XCTAssertTrue(app.staticTexts["No favourites yet"].waitForExistence(timeout: 30))
+        app.tabBars.buttons["Favorites"].tap()
+        XCTAssertTrue(app.staticTexts["No favorites yet"].waitForExistence(timeout: 30))
     }
 
     func testAboutScreenStatesThePrivacyPosture() throws {
-        let app = XCUIApplication()
+        let app = XCUIApplication.guide()
         app.launch()
 
         app.tabBars.buttons["About"].tap()
@@ -57,7 +57,7 @@ final class QueerTVGuideUITests: XCTestCase {
     func testShowRowAnnouncesNetworkToVoiceOver() throws {
         let show = try BundledData.referenceShow()
         XCTAssertFalse(show.networks.isEmpty, "the reference show has no network to check")
-        let app = XCUIApplication()
+        let app = XCUIApplication.guide()
         app.launch()
 
         let searchField = app.searchFields.firstMatch

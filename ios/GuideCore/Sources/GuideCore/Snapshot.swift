@@ -23,25 +23,25 @@ public struct Snapshot: Equatable, Sendable {
     public let schemaVersion: String
     public let generatedAt: Date
     public let contentDigest: String
-    public let licence: Licence
+    public let license: License
     public let attribution: [AttributionItem]
     public let coverage: Coverage
     public let taxonomies: Taxonomies
     public let shows: [Show]
     public let characters: [Character]
 
-    public init(schemaVersion: String, generatedAt: Date, contentDigest: String, licence: Licence, attribution: [AttributionItem], coverage: Coverage, taxonomies: Taxonomies, shows: [Show], characters: [Character]) throws {
+    public init(schemaVersion: String, generatedAt: Date, contentDigest: String, license: License, attribution: [AttributionItem], coverage: Coverage, taxonomies: Taxonomies, shows: [Show], characters: [Character]) {
         self.schemaVersion = schemaVersion
         self.generatedAt = generatedAt
         self.contentDigest = contentDigest
-        self.licence = licence
+        self.license = license
         self.attribution = attribution
         self.coverage = coverage
         self.taxonomies = taxonomies
         self.shows = shows
         self.characters = characters
-        showsByID = try Self.buildIndex(shows.map { ($0.id, $0) }, label: "show")
-        charactersByID = try Self.buildIndex(characters.map { ($0.id, $0) }, label: "character")
+        showsByID = try! Self.buildIndex(shows.map { ($0.id, $0) }, label: "show")
+        charactersByID = try! Self.buildIndex(characters.map { ($0.id, $0) }, label: "character")
         characterIDsByShow = Self.indexCharactersByShow(characters)
     }
 
@@ -88,7 +88,8 @@ extension Snapshot: Decodable {
         case schemaVersion = "schema_version"
         case generatedAt = "generated_at"
         case contentDigest = "content_digest"
-        case licence
+        // Published snapshot field name: spelling kept so every v1 file still decodes.
+        case license = "licence"
         case attribution
         case coverage
         case taxonomies
@@ -105,7 +106,7 @@ extension Snapshot: Decodable {
         schemaVersion = version
         generatedAt = try c.decode(TaggedDate.self, forKey: .generatedAt).date
         contentDigest = try c.decode(String.self, forKey: .contentDigest)
-        licence = try c.decode(Licence.self, forKey: .licence)
+        license = try c.decode(License.self, forKey: .license)
         attribution = try c.decode([AttributionItem].self, forKey: .attribution)
         coverage = try c.decode(Coverage.self, forKey: .coverage)
         taxonomies = try c.decode(Taxonomies.self, forKey: .taxonomies)
@@ -183,13 +184,13 @@ public struct Taxonomies: Codable, Equatable, Sendable {
     public let stars: [TermCount]
 }
 
-public struct Licence: Codable, Equatable, Sendable {
-    public struct SnapshotLicence: Codable, Equatable, Sendable {
+public struct License: Codable, Equatable, Sendable {
+    public struct SnapshotLicense: Codable, Equatable, Sendable {
         public let spdx: String
         public let name: String
         public let url: URL
     }
-    public let snapshot: SnapshotLicence
+    public let snapshot: SnapshotLicense
     /// Plain-language notice the app shows verbatim on the About screen.
     public let notice: String
 }
@@ -200,15 +201,16 @@ public struct AttributionItem: Codable, Equatable, Sendable, Identifiable {
     public let name: String
     public let url: URL
     public let text: String
-    public let licenceName: String
-    public let licenceURL: URL
+    public let licenseName: String
+    public let licenseURL: URL
     public let termsURL: URL
     public let termsReadOn: String // YYYY-MM-DD, displayed as-is
 
     private enum CodingKeys: String, CodingKey {
         case source, name, url, text
-        case licenceName = "licence_name"
-        case licenceURL = "licence_url"
+        // Published snapshot field names: spelling kept so every v1 file still decodes.
+        case licenseName = "licence_name"
+        case licenseURL = "licence_url"
         case termsURL = "terms_url"
         case termsReadOn = "terms_read_on"
     }
@@ -279,7 +281,7 @@ public struct Ratings: Codable, Equatable, Sendable {
     /// LezWatch's verdict as recorded, open text (observed: "Yes", "Meh",
     /// "No", "TBD"); `nil` when not rated. Not a closed enum in the
     /// contract — the app must trust the shape and render new values,
-    /// falling back to the raw text for filters it doesn't recognise.
+    /// falling back to the raw text for filters it doesn't recognize.
     public let worthIt: String?
     public let worthItDetails: String?
     public let quality: Int?
@@ -295,7 +297,7 @@ public struct Ratings: Codable, Equatable, Sendable {
     }
 
     /// The known subset of `worthIt`, for filtering. `nil` covers both "not
-    /// rated" and an unrecognised value — the raw text (`worthIt`) is what
+    /// rated" and an unrecognized value — the raw text (`worthIt`) is what
     /// the UI shows either way.
     public var worthItKnown: WorthIt? {
         guard let worthIt else { return nil }

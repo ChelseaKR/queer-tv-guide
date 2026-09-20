@@ -14,14 +14,15 @@ struct QueerTVGuideApp: App {
                 .tint(.accessibleAccent)
                 .task {
                     await model.loadInitial()
+                    UpNextPublisher.publish(model)
                     await model.refresh()
-                    await ReminderScheduler.reschedule(model)
+                    UpNextPublisher.publish(model)
                 }
-                // Episode reminders (off unless FeatureFlags turns them on
-                // and the user did too) follow the favorites as the app
-                // leaves the foreground.
+                // The widget's copy of the favorites' next episodes is
+                // rewritten as the app leaves the foreground, so a star
+                // added or removed anywhere reaches the home screen.
                 .onChange(of: scenePhase) { _, phase in
-                    if phase != .active { Task { await ReminderScheduler.reschedule(model) } }
+                    if phase != .active { UpNextPublisher.publish(model) }
                 }
                 // An app left in the background for days comes back with
                 // its data's age re-read, so a snapshot that went stale

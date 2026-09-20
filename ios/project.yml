@@ -25,12 +25,52 @@ targets:
         buildPhase: resources
       - path: QueerTVGuide/PrivacyInfo.xcprivacy
         buildPhase: resources
+    # The App Group the app shares with the widget: the app writes the
+    # widget's one file there (GuideCore's UpNext). Local to the device.
+    entitlements:
+      path: QueerTVGuide/QueerTVGuide.entitlements
+      properties:
+        com.apple.security.application-groups:
+          - group.com.chelseakr.queertvguide
     dependencies:
       - package: GuideCore
         product: GuideCore
+      - target: QueerTVGuideWidgets
     settings:
       base:
         ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS: YES
+
+  # The "Up Next" home-screen widget. It reads the one file the app writes
+  # into the shared App Group container and makes no network request.
+  QueerTVGuideWidgets:
+    type: app-extension
+    platform: iOS
+    configFiles:
+      Debug: Config/Widgets-Debug.xcconfig
+      Release: Config/Widgets-Release.xcconfig
+    sources:
+      - path: QueerTVGuideWidgets
+        excludes:
+          - "PrivacyInfo.xcprivacy"
+          - "Info.plist"
+      - path: QueerTVGuideWidgets/PrivacyInfo.xcprivacy
+        buildPhase: resources
+    info:
+      path: QueerTVGuideWidgets/Info.plist
+      properties:
+        # An extension's versions must match its app's (App Store validation).
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.widgetkit-extension
+    entitlements:
+      path: QueerTVGuideWidgets/QueerTVGuideWidgets.entitlements
+      properties:
+        com.apple.security.application-groups:
+          - group.com.chelseakr.queertvguide
+    dependencies:
+      - package: GuideCore
+        product: GuideCore
 
   QueerTVGuideTests:
     type: bundle.unit-test
@@ -40,6 +80,8 @@ targets:
       Release: Config/Release.xcconfig
     sources:
       - path: QueerTVGuideTests
+      # The widget's views, so WidgetRenderTests can draw them.
+      - path: QueerTVGuideWidgets/UpNextWidgetView.swift
     dependencies:
       - target: QueerTVGuide
       # GuideCore is already statically linked into the host app this test

@@ -378,6 +378,15 @@ The brief's five screens, all present in `ios/QueerTVGuide/Views`:
    "LezWatch.TV and TVmaze do not endorse this app", the license notice, coverage
    numbers, and the current snapshot's `generated_at`/origin.
 
+Outside the app:
+
+- **Up Next widget** (`ios/QueerTVGuideWidgets/`, small and medium) — the
+  next episode of each favorite show, soonest first, from a file the app
+  writes into the shared App Group container. No network request, no death
+  data and no episode titles (the file cannot carry either; `UpNextTests`),
+  the data's date on every size, "Out of date" past the data cards' 48-hour
+  promise, and TVmaze named as the schedule's source.
+
 ## 5. Owner steps to a TestFlight build
 
 Everything through "Archive" runs with no App Store Connect access, which
@@ -399,8 +408,13 @@ xcodegen generate
 #    the Team ID; see docs/DECISIONS.md and the portfolio's fg-ios-app-store-path note).
 xcrun altool --list-apps -u "<owner apple id>" -p "<app-specific password>"
 #    …or via the App Store Connect / Developer Portal web UI:
-#    App ID: com.chelseakr.queertvguide, capabilities: none (no push, no
-#    iCloud, no App Groups — this app doesn't use any).
+#    App ID: com.chelseakr.queertvguide, capability: App Groups only, with
+#    group.com.chelseakr.queertvguide (no push, no iCloud).
+#    App ID: com.chelseakr.queertvguide.widgets (the Up Next widget
+#    extension), capability: the same App Group, nothing else.
+#    The app writes one small file there for the widget (GuideCore's
+#    UpNext); it never leaves the device. Xcode's automatic signing can
+#    register both when the team's account is signed in.
 
 # 2. Confirm a valid Distribution certificate + provisioning profile exist
 #    for Team 6X5YH93QNM (owner-run; System Settings/Keychain Access work,

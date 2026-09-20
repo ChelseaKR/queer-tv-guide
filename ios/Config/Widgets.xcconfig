@@ -1,0 +1,8 @@
+// The home-screen widget extension's identity (the "Up Next" widget). Its
+// bundle id must sit under the app's; its display name is what Settings and
+// the system show for the extension, not the app's name, which lives only in
+// Product.xcconfig and AppIdentity.swift (SourceTreeGuardTests).
+PRODUCT_NAME = QueerTVGuideWidgets
+PRODUCT_BUNDLE_IDENTIFIER = com.chelseakr.queertvguide.widgets
+INFOPLIST_KEY_CFBundleDisplayName = Up Next
+SKIP_INSTALL = YES

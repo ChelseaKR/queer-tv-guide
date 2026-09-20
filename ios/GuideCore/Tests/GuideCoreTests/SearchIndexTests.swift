@@ -5,8 +5,7 @@ final class SearchIndexTests: XCTestCase {
     private func index() throws -> SearchIndex { SearchIndex(snapshot: try Repo.fixture()) }
 
     private func titles(_ results: SearchIndex.SearchResults) -> [String] {
-        let hits = results.hits
-        hits.map {
+        results.hits.map {
             switch $0 {
             case .show(let s): return "show:\(s.title)"
             case .character(let c): return "char:\(c.name)"

@@ -82,6 +82,12 @@ consumer of the published snapshot, would notice.
   and the published snapshot are unaffected: the stored key
   (`favourites.v1`), the backup file's format tag, JSON key and file name, and
   the snapshot's `licence` field names keep their original spelling.
+- The app looks for new data when you come back to it after a few days, not
+  only when it opens or you pull down: once its data is more than 3 days old,
+  and at most once every 6 hours, in the background, with the same single
+  request as before and no alert if it fails. And when the app ships newer
+  data than an older downloaded copy, it now shows the newer one. The
+  out-of-date banner, About, the privacy policy and the support page say so.
 
 ### Fixed
 

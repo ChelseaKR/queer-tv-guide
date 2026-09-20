@@ -13,6 +13,7 @@ struct QueerTVGuideApp: App {
                 // (Views/Components/AccessibleStyle.swift).
                 .tint(.accessibleAccent)
                 .task {
+                    AppModel.shared = model
                     await model.loadInitial()
                     UpNextPublisher.publish(model)
                     await model.refresh()

@@ -9,6 +9,9 @@ import GuideCore
 @Observable
 @MainActor
 final class AppModel {
+    /// Shared instance for App Intents and Spotlight indexing.
+    static var shared: AppModel!
+
     enum LoadState: Equatable {
         case loading
         case loaded

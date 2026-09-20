@@ -177,13 +177,24 @@ public enum Presentation {
         guard let e = schedule.nextEpisode else { return "No upcoming episode is known." }
         var parts: [String] = []
         if let s = e.season, let n = e.number { parts.append("S\(s)E\(n)") }
-        if let t = e.name, !t.isEmpty { parts.append("“\(t)”") }
+        if let t = e.name, !t.isEmpty { parts.append("\u{201c}\(t)\u{201d}") }
         let head = parts.isEmpty ? "Next episode" : parts.joined(separator: " ")
-        guard let day = e.airdateDay else { return "\(head) — air date not recorded" }
-        if isPast(day, today: today) {
-            return "\(head) — listed for \(dayFormatter.string(from: day)), which has passed. This data may be out of date."
+
+        if let instant = e.airInstant {
+            let cal = Calendar(identifier: .gregorian)
+            let dayStart = cal.startOfDay(for: instant)
+            let todayStart = cal.startOfDay(for: today)
+            if dayStart < todayStart.addingTimeInterval(-86400) {
+                return "\(head) — \(instantFormatter.string(from: instant)), which has passed. This data may be out of date."
+            }
+            return "\(head) — \(instantFormatter.string(from: instant))"
         }
-        return "\(head) — \(dayFormatter.string(from: day))"
+
+        guard let day = e.airdateDay else { return "\(head) \u{2014} air date not recorded" }
+        if isPast(day, today: today) {
+            return "\(head) \u{2014} listed for \(dayFormatter.string(from: day)), which has passed. This data may be out of date."
+        }
+        return "\(head) \u{2014} \(dayFormatter.string(from: day)) (date as TVmaze lists it, in the network\u{2019}s time zone)"
     }
 
     /// True when `day` (a UTC calendar day) is more than one day before
@@ -313,6 +324,14 @@ public enum Presentation {
         let f = DateFormatter()
         f.dateStyle = .medium
         f.timeStyle = .short
+        return f
+    }()
+
+    public static let instantFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.dateStyle = .medium
+        f.timeStyle = .short
+        f.timeZone = TimeZone.current
         return f
     }()
 }

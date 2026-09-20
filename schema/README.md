@@ -23,9 +23,10 @@ needed a token to download, and it stays the app's one URL. The same bytes are
 also attached to the rolling GitHub Release `snapshot-latest` (useful for
 `gh release download` during development and as a history of checksums).
 
-The app fetches `snapshot.v1.json.sha256` first (~100 bytes), compares it with
-the digest of the bundled/cached snapshot, and only then fetches the file. That
-is the app's only network call.
+The app makes one conditional GET of the file with `If-None-Match` against the
+stored ETag (`ios/GuideCore/Sources/GuideCore/SnapshotRefresher.swift`). If the
+server returns 304 Not Modified, the cached copy is kept. That is the app's only
+network call.
 
 ## Reading the model
 

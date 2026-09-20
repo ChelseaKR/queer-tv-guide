@@ -40,13 +40,13 @@ final class AttributionTests: XCTestCase {
         XCTAssertEqual(credit.source.url.path, "/")
     }
 
-    func testASnapshotWithoutTVmazesEntryYieldsNoCreditRatherThanAWrongOne() throws {
+    func testASnapshotWithoutTVmazesEntryFailsToDecode() throws {
         let data = try JSONEdit.edit(try Repo.fixtureData()) { root in
             root["attribution"] = (root["attribution"] as! [[String: Any]]).filter { $0["source"] as? String != "tvmaze" }
         }
-        let s = try SnapshotDecoder().decode(data)
-        XCTAssertNil(s.attribution(for: Attribution.tvmazeSource), "the edit landed")
-        XCTAssertNil(Attribution.tvmazeCredit(in: s))
+        XCTAssertThrowsError(try SnapshotDecoder().decode(data)) { error in
+            XCTAssertTrue("\(error)".contains("missing attribution entry for tvmaze"), "unexpected error: \(error)")
+        }
     }
 
     func testLezWatchLinkLabelNamesTheRecord() {

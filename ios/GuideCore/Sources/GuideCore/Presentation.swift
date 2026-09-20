@@ -196,8 +196,6 @@ public enum Presentation {
         }
         return "\(head) \u{2014} \(dayFormatter.string(from: day)) (date as TVmaze lists it, in the network\u{2019}s time zone)"
     }
-        return "\(head) — \(dayFormatter.string(from: day))"
-    }
 
     /// True when `day` (a UTC calendar day) is more than one day before
     /// `today`'s UTC calendar day.

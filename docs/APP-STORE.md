@@ -186,6 +186,10 @@ refresh; the dates in "next episode" and "Data as of" are real.
 "Data Not Collected" for every category Apple's privacy label asks about.
 This is true of the build in this PR:
 
+- **New-episode reminders collect nothing.** They are local notifications
+  the device schedules itself, off until the person turns them on: no push
+  service, no device token, nothing sent off the device.
+
 - **The host sees request IPs, and the policy says so (DECISIONS 0007).**
   The snapshot is served by GitHub Pages. GitHub's own docs say "the
   visitor's IP address is logged and stored for security purposes". The

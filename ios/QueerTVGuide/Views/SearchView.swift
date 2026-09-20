@@ -219,6 +219,6 @@ struct SearchView: View {
             Label("Filter", systemImage: filters.isEmpty ? "line.3.horizontal.decrease.circle" : "line.3.horizontal.decrease.circle.fill")
         }
         .disabled(model.searchIndex == nil)
-        .accessibilityLabel(filters.isEmpty ? "Filter", "Filter (\(Self.filterSummary(filters.activeCount)))")
+        .accessibilityLabel(filters.isEmpty ? "Filter" : "Filter (\(Self.filterSummary(filters.activeCount)))")
     }
 }

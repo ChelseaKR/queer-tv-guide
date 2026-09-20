@@ -168,7 +168,7 @@ https://thetvdb.com/api-information first and fill the row.
 | robots.txt | `Crawl-delay: 10` for `*` | none on `api.`; `www.` irrelevant |
 | Pace used | **1 request / 10 s**, one connection | **1 request / s**, one connection, back off on 429 |
 | Full mirror | ~23 show pages + ~74 character pages at 100/page (`_fields` trimmed), 12 taxonomy lists, 1 actor export, 2 id lists, 1 ToS read ≈ **115 requests ≈ 20 min, ~10 MB** | one `/shows/{id}?embed[]=nextepisode&embed[]=previousepisode` per joined show ≈ **2,000 requests ≈ 35 min, ~4 MB** |
-| Nightly incremental | `modified_after=<cursor>` on shows and characters + the 2 id lists + taxonomies ≈ **20 requests** | shows with status Running/TBD/In Development or updated per `/updates/shows?since=day` ≈ **300 requests** |
+| Nightly incremental | `modified_after=<cursor>` on shows and characters + the 2 id lists + taxonomies ≈ **20 requests** | shows with status Running/TBD/In Development or updated per `/updates/shows?since=day` ≈ **670 requests** (measured 2026-09-19, run 35434596786) |
 | User-Agent | `queer-tv-guide-pipeline/<version> (+https://github.com/ChelseaKR/queer-tv-guide)` | same |
 | Reported | request count and bytes per source, in the coverage report and in `sources.*` in the snapshot | same |
 

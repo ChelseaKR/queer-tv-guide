@@ -31,7 +31,7 @@ wheel build. The root `make verify` runs it as `make pipeline`.
 | On 5xx / network error | retry twice with backoff, then **fail the run** | same |
 | User-Agent | `queer-tv-guide-pipeline/<version> (+https://github.com/ChelseaKR/queer-tv-guide)` | same |
 | Full mirror | ~120 requests, ~20 min, ~10 MB | ~2,000 requests, ~35 min, ~4 MB |
-| Nightly incremental | ~20 requests | ~300 requests |
+| Nightly incremental | ~20 requests | ~670 requests (measured 2026-09-19, run 35434596786) |
 
 Every run prints requests and bytes per host and writes them into
 `sources.*` in the snapshot.

@@ -30,7 +30,7 @@ public struct Snapshot: Equatable, Sendable {
     public let shows: [Show]
     public let characters: [Character]
 
-    public init(schemaVersion: String, generatedAt: Date, contentDigest: String, licence: Licence, attribution: [AttributionItem], coverage: Coverage, taxonomies: Taxonomies, shows: [Show], characters: [Character]) {
+    public init(schemaVersion: String, generatedAt: Date, contentDigest: String, licence: Licence, attribution: [AttributionItem], coverage: Coverage, taxonomies: Taxonomies, shows: [Show], characters: [Character]) throws {
         self.schemaVersion = schemaVersion
         self.generatedAt = generatedAt
         self.contentDigest = contentDigest
@@ -40,8 +40,8 @@ public struct Snapshot: Equatable, Sendable {
         self.taxonomies = taxonomies
         self.shows = shows
         self.characters = characters
-        showsByID = Dictionary(uniqueKeysWithValues: shows.map { ($0.id, $0) })
-        charactersByID = Dictionary(uniqueKeysWithValues: characters.map { ($0.id, $0) })
+        showsByID = try Self.buildIndex(shows.map { ($0.id, $0) }, label: "show")
+        charactersByID = try Self.buildIndex(characters.map { ($0.id, $0) }, label: "character")
         characterIDsByShow = Self.indexCharactersByShow(characters)
     }
 
@@ -111,9 +111,32 @@ extension Snapshot: Decodable {
         taxonomies = try c.decode(Taxonomies.self, forKey: .taxonomies)
         shows = try c.decode([Show].self, forKey: .shows)
         characters = try c.decode([Character].self, forKey: .characters)
-        showsByID = Dictionary(uniqueKeysWithValues: shows.map { ($0.id, $0) })
-        charactersByID = Dictionary(uniqueKeysWithValues: characters.map { ($0.id, $0) })
+        showsByID = try Self.buildIndex(shows.map { ($0.id, $0) }, label: "show")
+        charactersByID = try Self.buildIndex(characters.map { ($0.id, $0) }, label: "character")
         characterIDsByShow = Self.indexCharactersByShow(characters)
+
+        let sources = Set(attribution.map(\.source))
+        let requiredSources: Set<String> = ["lezwatch", "tvmaze"]
+        for source in requiredSources {
+            guard sources.contains(source) else {
+                throw SnapshotDecodingError.malformed("missing attribution entry for \(source)")
+            }
+        }
+        let sourceCounts = attribution.reduce(into: [String: Int]()) { $0[$1.source, default: 0] += 1 }
+        for (source, count) in sourceCounts where count > 1 {
+            throw SnapshotDecodingError.malformed("duplicate attribution entry for \(source)")
+        }
+    }
+
+    private static func buildIndex<K: Hashable, V>(_ pairs: [(K, V)], label: String) throws -> [K: V] {
+        var dict: [K: V] = [:]
+        for (key, value) in pairs {
+            if dict[key] != nil {
+                throw SnapshotDecodingError.malformed("duplicate \(label) id \(key)")
+            }
+            dict[key] = value
+        }
+        return dict
     }
 }
 
@@ -356,6 +379,16 @@ public struct Episode: Codable, Equatable, Sendable, Identifiable {
     public var airdateDay: Date? {
         guard let airdate else { return nil }
         return ISO8601DayFormatter.date(from: airdate)
+    }
+
+    /// The real broadcast instant, available only when the episode has both
+    /// a non-empty `airtime` and a parseable `airstamp`. When `airtime` is
+    /// null, `airstamp` is a placeholder (usually noon UTC), not a broadcast
+    /// time, so this property returns nil to prevent a misleading display
+    /// or notification.
+    public var airInstant: Date? {
+        guard let airtime, !airtime.isEmpty, let airstamp else { return nil }
+        return ISO8601SecondFormatter.date(from: airstamp)
     }
 }
 

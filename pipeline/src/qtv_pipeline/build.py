@@ -294,6 +294,37 @@ def _validate(doc: dict[str, Any], schema_path: Path, show_ids: set[str]) -> Non
     if dangling:
         raise BuildError(f"referential integrity: {len(dangling)} similar_show_ids not in snapshot")
 
+    _check_duplicate_ids(doc["shows"], "show")
+    _check_duplicate_ids(doc["characters"], "character")
+    _check_attribution(doc.get("attribution", []))
+
+
+def _check_attribution(attribution: list[dict[str, Any]]) -> None:
+    """Fail if attribution is missing required sources or has duplicates."""
+    required_sources = {"lezwatch", "tvmaze"}
+    sources = {item.get("source") for item in attribution}
+    for source in required_sources:
+        if source not in sources:
+            raise BuildError(f"attribution: missing required entry for {source}")
+    source_counts: dict[str, int] = {}
+    for item in attribution:
+        src = item.get("source")
+        if isinstance(src, str):
+            source_counts[src] = source_counts.get(src, 0) + 1
+    for source, count in source_counts.items():
+        if count > 1:
+            raise BuildError(f"attribution: duplicate entry for {source}")
+
+
+def _check_duplicate_ids(records: list[dict[str, Any]], label: str) -> None:
+    """Fail if any two records share the same id."""
+    seen: set[str] = set()
+    for record in records:
+        rid = record["id"]
+        if rid in seen:
+            raise BuildError(f"duplicate {label} id: {rid}")
+        seen.add(rid)
+
 
 def _write_outputs(
     doc: dict[str, Any], coverage: dict[str, Any], out_dir: Path, log: Callable[[str], None]

@@ -35,23 +35,31 @@ struct SearchView: View {
     @ViewBuilder
     private func resultsList(index: SearchIndex, snapshot: Snapshot) -> some View {
         let trimmed = query.trimmingCharacters(in: .whitespacesAndNewlines)
-        let hits: [SearchIndex.Hit] = trimmed.isEmpty
-            ? index.browse(filters: filters).map { .show($0) }
+        let searchResults: SearchIndex.SearchResults = trimmed.isEmpty
+            ? SearchIndex.SearchResults(hits: index.browse(filters: filters).map { .show($0) }, totalCount: 0)
             : index.search(trimmed, filters: filters)
 
         List {
-            if hits.isEmpty {
+            if searchResults.hits.isEmpty {
                 Section {
                     EmptyState(
                         title: trimmed.isEmpty ? "Browse or search" : "No matches",
                         systemImage: "magnifyingglass",
-                        message: trimmed.isEmpty ? "Search for a show or character, or turn on a filter to browse." : "Nothing in this snapshot matches “\(trimmed)”."
+                        message: trimmed.isEmpty ? "Search for a show or character, or turn on a filter to browse." : "Nothing in this snapshot matches \u{201c}\(trimmed)\u{201d}."
                     )
                 }
                 .listRowSeparator(.hidden)
             } else {
+                if searchResults.isCapped {
+                    Section {
+                        Text("Showing the first \(searchResults.hits.count) of \(searchResults.totalCount) matches. Type more to narrow them.")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                            .accessibilityLabel("Showing the first \(searchResults.hits.count) of \(searchResults.totalCount) matches")
+                    }
+                }
                 Section {
-                    ForEach(hits) { hit in
+                    ForEach(searchResults.hits) { hit in
                         hitRow(hit, snapshot: snapshot)
                     }
                 }

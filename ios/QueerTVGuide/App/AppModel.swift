@@ -142,6 +142,7 @@ final class AppModel {
         searchIndex = index
         loadState = .loaded
         readClock()
+        SpotlightIndexer.index(snapshot: snapshot)
     }
 
     /// The app has come back to the foreground: re-reads the clock, and if

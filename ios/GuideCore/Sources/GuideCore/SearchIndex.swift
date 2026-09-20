@@ -13,6 +13,11 @@ public struct SearchIndex: Sendable {
         public let hits: [Hit]
         public let totalCount: Int
         public var isCapped: Bool { totalCount > hits.count }
+
+        public init(hits: [Hit], totalCount: Int) {
+            self.hits = hits
+            self.totalCount = totalCount
+        }
     }
 
     public enum Hit: Equatable, Sendable, Identifiable {

@@ -19,6 +19,7 @@ struct ShowDetailView: View {
                         doAnyDie(show, snapshot: snapshot)
                         tropesAndTriggers(show)
                         characters(show, snapshot: snapshot)
+                        similarShows(show, snapshot: snapshot)
                         whereToWatch(show)
                         plot(show)
                         attributionFooter(snapshot: snapshot)
@@ -188,6 +189,24 @@ struct ShowDetailView: View {
                         CharacterDetailView(characterID: character.id)
                     } label: {
                         CharacterRow(character: character, snapshot: snapshot)
+                    }
+                }
+            }
+        }
+    }
+
+    private func similarShows(_ show: Show, snapshot: Snapshot) -> some View {
+        let similar = Array(snapshot.similarShows(to: show).prefix(8))
+        return VStack(alignment: .leading, spacing: 8) {
+            if !similar.isEmpty {
+                Text("Similar shows")
+                    .font(.headline)
+                    .accessibilityAddTraits(.isHeader)
+                ForEach(similar) { similarShow in
+                    NavigationLink {
+                        ShowDetailView(showID: similarShow.id)
+                    } label: {
+                        ShowRow(show: similarShow)
                     }
                 }
             }

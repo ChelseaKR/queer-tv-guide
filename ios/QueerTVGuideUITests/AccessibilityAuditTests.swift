@@ -141,9 +141,10 @@ final class AccessibilityAuditTests: XCTestCase {
     /// "Audit failed to complete in time" (code -56). Measured in CI, on the
     /// first-run screen after it was scrolled: it happened in runs 35399628927,
     /// 35422900625 and 35450246601, and the same test passed in runs 35407156681
-    /// and 35421286344, with no reported issue in any of them; the run that
-    /// timed out last also needed 44 s to launch the app for another test. So
-    /// it tracks a slow runner, not the screen. That error is no finding:
+    /// and 35421286344, with no reported issue in any of them. That was
+    /// first read as a slow runner; the measured cause on that screen was a
+    /// text wholly inside the top inset (`bringTextOutOfTheTopInset`). That
+    /// error is no finding:
     /// nothing was judged. So that one error, and only it, runs the same pass
     /// once more on a still screen. Every issue the audit does report is
     /// judged as before and is never retried, and a second timeout fails the
@@ -547,7 +548,53 @@ final class AccessibilityAuditTests: XCTestCase {
         let finish = app.buttons["onboarding-finish"]
         for _ in 0..<6 where !finish.isHittable { app.swipeUp() }
         XCTAssertTrue(finish.isHittable, "Start browsing is out of reach")
+        bringTextOutOfTheTopInset(app)
+        XCTAssertTrue(finish.isHittable, "Start browsing went out of reach")
         try audit(app)
+    }
+
+    /// Texts whose frame lies wholly on screen and wholly inside the top
+    /// inset (the status bar, which this page covers with an opaque strip):
+    /// on screen by frame, but not one pixel of them is visible. A text that
+    /// also reaches above the screen's edge does not stop the audit (measured:
+    /// the title at that position audited in 0.4 s).
+    @MainActor
+    static func textsInsideTheTopInset(_ app: XCUIApplication, inset: CGFloat) -> [String] {
+        app.staticTexts.allElementsBoundByIndex
+            .filter { $0.frame.minY >= 0 && $0.frame.maxY <= inset }
+            .map { String($0.label.prefix(40)) }
+    }
+
+    /// Xcode's contrast audit cannot finish while a text lies wholly inside
+    /// the top inset: it stops with "Audit failed to complete in time" and no
+    /// finding. Measured on the scrolled first-run page (iPhone 17 Pro, iOS
+    /// 26.5): with the subtitle at y 5.7 to 54.7 under a 62-point inset, the
+    /// contrast pass timed out in every run; moved to y 35.7 or lower, the
+    /// same pass finished in 0.4 s. Swiping to Start browsing ends at the
+    /// bottom of the page, which on that device puts the subtitle exactly
+    /// there. This drags the page down a little until no text is wholly
+    /// hidden, so the audit judges the screen as a person sees it. The audit
+    /// itself, its types and its rules are unchanged.
+    @MainActor
+    private func bringTextOutOfTheTopInset(_ app: XCUIApplication) {
+        let indicator = app.scrollViews.firstMatch.descendants(matching: .any)
+            .matching(NSPredicate(format: "label BEGINSWITH %@", "Vertical scroll bar")).firstMatch
+        guard indicator.exists else {
+            XCTFail("no scroll indicator to read the top inset from")
+            return
+        }
+        let inset = indicator.frame.minY
+        for _ in 0..<3 {
+            let hidden = Self.textsInsideTheTopInset(app, inset: inset)
+            if hidden.isEmpty { return }
+            print("audit: texts wholly inside the \(inset)-point top inset, moving them out: \(hidden)")
+            let start = app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
+            // Slow, then held, so the page moves by the drag and does not
+            // coast on.
+            start.press(forDuration: 0.5, thenDragTo: start.withOffset(CGVector(dx: 0, dy: inset / 2)), withVelocity: XCUIGestureVelocity(rawValue: 60), thenHoldForDuration: 1)
+            waitForStillScreen(app)
+        }
+        XCTAssertEqual(Self.textsInsideTheTopInset(app, inset: inset), [], "texts still wholly inside the top inset")
     }
 
     /// The first-run screen at the largest text size: it scrolls, nothing

@@ -21,7 +21,9 @@ measured with Python's `len()` on the JSON on 2026-10-02.
 | Description | 4,000 | `description` in the JSON | 1,327 |
 | Primary category | | Entertainment | |
 | Secondary category | | Reference | |
-| Price | | USD 4.99, paid up front. No in-app purchase, no subscription (DECISIONS 0003, 0011). | |
+| Price | | USD 4.99, paid up front. No in-app purchase, no subscription (DECISIONS 0003, 0011, confirmed in 0015). | |
+| Availability | | United States only (DECISIONS 0015), so no Digital Services Act trader declaration. | |
+| Version | | 1.0.0, build 1 (DECISIONS 0015). | |
 | Support URL | | `https://chelseakr.github.io/queer-tv-guide/support.html` | |
 | Privacy Policy URL | | `https://chelseakr.github.io/queer-tv-guide/privacy.html` | |
 | Marketing URL | | Leave empty. | |
@@ -98,7 +100,7 @@ calls a required-reason API its bundle's manifest does not declare.
 `SourceTreeGuardTests` in `swift test` hold the one-host, one-request and
 no-push rules.
 
-## Age rating answers (draft; your call)
+## Age rating answers (confirmed 2026-10-02)
 
 App Information → Age Rating. Apple's current tiers are 4+, 9+, 13+, 16+
 and 18+, and App Store Connect computes the rating from these answers. The
@@ -134,7 +136,8 @@ images and nothing explicit.
 | Simulated gambling, contests, gambling, loot boxes | None / No | |
 
 Expected result: **13+**, as `APP-STORE.md` has planned since 2026-09-17.
-These are judgment calls. Answering "None" where the table says
+The owner confirmed these answers on 2026-10-02 (DECISIONS 0015). They are
+judgment calls. Answering "None" where the table says
 "Infrequent" would understate what the plot notes say, and answering
 "Frequent" would overstate a text guide. If App Store Connect computes a
 higher rating than you want, change an answer only if it is still true.
@@ -179,5 +182,5 @@ Paid up front on the App Store. There is no in-app purchase and nothing to unloc
 | Support contact on `support.html` | Support URL (guideline 1.5) | Added on this branch (`chelsea@chelseakr.com`); live after the next nightly run. OWNER-STEPS step 5. |
 | Screenshots | Version page | Regenerate before upload: the five in `app-store/screenshots/` date from 2026-09-18 and predate the opaque status strip and filter bar (#48) and the first-run page changes (#77). OWNER-STEPS step 9. |
 | Trademark screen for "Queer Frame" | Name | Not run. OWNER-STEPS step 1. |
-| Age rating answers | App Information | Draft above; yours to confirm. |
-| Storefronts | Pricing and Availability | Yours. OWNER-STEPS step 1. |
+| Age rating answers | App Information | **Done.** Confirmed 2026-10-02 (DECISIONS 0015). |
+| Storefronts | Pricing and Availability | **Done.** United States only (DECISIONS 0015). |

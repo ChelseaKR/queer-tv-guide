@@ -32,7 +32,7 @@ search):
 | Category | Entertainment (primary), Reference (secondary) | — | §App Store search, Categories |
 | Price | **$4.99**, one-time. No IAP, no subscription. Apple Small Business Program (15%). | — | DECISIONS 0003, 0011 |
 | Devices | **iPhone only** (`TARGETED_DEVICE_FAMILY = 1`). Screenshots: iPhone only (6.9" set). iPads can still run it in iPhone compatibility mode, and App Review may test it there (2.4.1). | — | DECISIONS 0009 |
-| Age rating | **13+ expected**, computed by App Store Connect from the questionnaire answers in `APP-STORE-LISTING.md`. Apple's current tiers are 4+, 9+, 13+, 16+, 18+; "12+" no longer exists (checked 2026-09-17). | — | Apple, research §7 |
+| Age rating | **13+ expected**, computed by App Store Connect from the questionnaire answers in `APP-STORE-LISTING.md` (confirmed 2026-10-02, DECISIONS 0015). Apple's current tiers are 4+, 9+, 13+, 16+, 18+; "12+" no longer exists (checked 2026-09-17). | — | Apple, research §7 |
 | Privacy label | **"Data Not Collected"** for every category (see §2) | — | DECISIONS 0002, 0007 |
 | Privacy Policy URL | `https://chelseakr.github.io/queer-tv-guide/privacy.html`, from `docs/site/privacy.html` | — | DECISIONS 0007 |
 | Support URL | `https://chelseakr.github.io/queer-tv-guide/support.html`, from `docs/site/support.html`. Both are published by the nightly workflow and linked from the About screen. The page's contact line, `chelsea@chelseakr.com`, was added 2026-10-02. | — | DECISIONS 0010 |
@@ -301,7 +301,8 @@ https://developer.apple.com/app-store/review/guidelines/ (fetched
   restriction history for LGBTQ content on the App Store this session.
   Owner decision, not a code question: research §7 suggests limiting the
   first release to storefronts where the content is uncontroversial rather
-  than treating this as a review risk to engineer around.
+  than treating this as a review risk to engineer around. **Decided
+  2026-10-02 (DECISIONS 0015): the United States only.**
 
 ### App Review note
 

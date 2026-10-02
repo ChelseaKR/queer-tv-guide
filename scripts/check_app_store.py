@@ -37,7 +37,9 @@ Two modes:
     has its category declared, with a reason, in the manifest of the
     bundle that ships it;
   - the app icon set has every file it names, at the pixel size it names,
-    with no alpha channel, including the 1024x1024 marketing icon.
+    with no alpha channel, including the 1024x1024 marketing icon;
+  - CHANGELOG.md has a `## [X.Y.Z]` section for MARKETING_VERSION (dated,
+    or `TBD` until the release commit dates it).
 
 - With `--release-tag vX.Y.Z` (the release workflow): the preflight. The tag
   must be stable SemVer equal to MARKETING_VERSION, the build number must be
@@ -433,6 +435,13 @@ def changelog_dated(changelog: str, version: str) -> bool:
     return re.search(pattern, changelog, re.MULTILINE) is not None
 
 
+def check_changelog_has_version(version: str, changelog: str) -> list[str]:
+    """The app's MARKETING_VERSION has a CHANGELOG section, dated or TBD."""
+    if not re.search(r"^## \[" + re.escape(version) + r"\]", changelog, re.MULTILINE):
+        return [f"CHANGELOG.md has no '## [{version}]' section for MARKETING_VERSION"]
+    return []
+
+
 def check_release(
     tag: str, version: str, build: str, changelog: str, earlier_builds: Mapping[str, int]
 ) -> tuple[list[str], str]:
@@ -455,7 +464,7 @@ def check_release(
     elif not changelog_dated(changelog, tag[1:]):
         problems.append(
             f"CHANGELOG.md '## [{tag[1:]}]' has no release date (does it still say TBD?); "
-            "date it (docs/app-store/OWNER-STEPS.md, step 8)"
+            "date it (docs/app-store/OWNER-STEPS.md, step 9)"
         )
     return problems, notes
 
@@ -515,6 +524,10 @@ def readiness() -> list[str]:
             config,
         )
     problems += check_widget_info(_plist(WIDGET_INFO))
+    version = parse_xcconfig(VERSION_XCCONFIG.read_text(encoding="utf-8")).get(
+        "MARKETING_VERSION", ""
+    )
+    problems += check_changelog_has_version(version, CHANGELOG.read_text(encoding="utf-8"))
     problems += check_no_third_party(
         pbxproj,
         PROJECT_YML.read_text(encoding="utf-8"),
@@ -792,6 +805,14 @@ def self_test() -> list[str]:
             ),
         ),
         ("no notes", bool(check_release("v1.0.0", "1.0.0", "3", "## [Unreleased]\n", {})[0])),
+        (
+            "changelog has version (TBD)",
+            not check_changelog_has_version("1.0.0", changelog.replace("2026-10-01", "TBD")),
+        ),
+        (
+            "changelog lacks version",
+            bool(check_changelog_has_version("1.0.0", "## [Unreleased]\n")),
+        ),
     ]
     return [name for name, ok in cases if not ok]
 

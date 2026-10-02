@@ -24,35 +24,35 @@ against the code) is in [`docs/APP-STORE.md`](../APP-STORE.md).
 | App Group | `group.com.chelseakr.queertvguide` | both `.entitlements` files |
 | Team ID | `6X5YH93QNM` | `DEVELOPMENT_TEAM` in `ios/Config/Shared.xcconfig`. Never `ACKGM9XK9V`, which is the enrollment ID; `make appstore` fails if it appears. |
 | SKU | `queer-frame-ios` (suggested) | Any unique string; it can't be changed later. |
-| Price | USD 4.99, paid up front | DECISIONS 0003, 0011. No in-app purchase, no subscription. |
-| Version, build | `0.1.0`, build `1`, as the code says today | `MARKETING_VERSION`, `CURRENT_PROJECT_VERSION` in `ios/Config/Shared.xcconfig`. Your call (step 1). |
+| Price | USD 4.99, paid up front | DECISIONS 0003, 0011, confirmed in 0015. No in-app purchase, no subscription. |
+| Storefronts | United States only | DECISIONS 0015. No Digital Services Act trader declaration. |
+| Version, build | `1.0.0`, build `1` | `MARKETING_VERSION`, `CURRENT_PROJECT_VERSION` in `ios/Config/Shared.xcconfig`; DECISIONS 0015 |
 | Support URL | `https://chelseakr.github.io/queer-tv-guide/support.html` | DECISIONS 0010; 200 on 2026-10-02 |
 | Privacy Policy URL | `https://chelseakr.github.io/queer-tv-guide/privacy.html` | DECISIONS 0007; 200 on 2026-10-02 |
 
-## 1. Decisions that are still yours
+## 1. Decided, and what is still yours
 
-1. **Version.** The code says `0.1.0` (build 1). Trout Truck chose `1.0.0`
-   for its first App Store release. Either works; App Store users see it.
-   To use `1.0.0`, change `MARKETING_VERSION` in `ios/Config/Shared.xcconfig`
-   (the only place it is set; `make appstore` checks) in the release commit,
-   step 9.
-2. **Storefronts.** Your call. `APP-STORE.md` §3 notes that research could
-   not verify country-level restrictions on LGBTQ content and suggests
-   starting with storefronts where the content is uncontroversial. If any
-   EU storefront is on the list, App Store Connect requires a Digital
-   Services Act trader declaration, and as a trader your address, phone
-   and email are shown on the EU product page. United States only avoids
-   that.
-3. **Age rating answers.** The draft in `APP-STORE-LISTING.md` describes
-   the plot notes and tropes honestly and should come out at **13+**.
-   Confirm or change them.
-4. **Trademark screen for "Queer Frame".** None has been run. USPTO
+Decided 2026-10-02 and recorded in DECISIONS 0015:
+
+- **Version: 1.0.0**, build 1. The project already says so in every
+  target, and `CHANGELOG.md` has a `## [1.0.0] - TBD` section that step 9
+  fills in.
+- **Storefronts: United States only.** So no Digital Services Act trader
+  declaration is needed.
+- **Age rating: the answers in `APP-STORE-LISTING.md` are confirmed**,
+  expected to compute **13+**.
+- **Price: USD 4.99, paid up front**, no in-app purchase (confirmed).
+- **Support contact: kept** on the support page (step 5).
+
+Still yours:
+
+1. **Trademark screen for "Queer Frame".** None has been run. USPTO
    Trademark Search (`https://tmsearch.uspto.gov/`) for `QUEER FRAME`,
    `QUEERFRAME` and sound-alikes, live and dead, in classes 9, 41 and 42;
    then the App Store and the web for "queer frame". Record the result and
    the date under DECISIONS 0006. A conflict means renaming before
    submitting. This is a screen, not legal advice.
-5. **Optional description line** for the widget and reminders
+2. **Optional description line** for the widget and reminders
    (`APP-STORE-LISTING.md`, "Not in the description today").
 
 ## 2. Merge what the build depends on
@@ -125,11 +125,12 @@ Paste from `docs/app-store-listing.json`; answer from
 
 1. **App Information:** Subtitle; Category Primary **Entertainment**,
    Secondary **Reference**; Content Rights **Yes**, with the rights
-   (`APP-STORE-LISTING.md`, "Content rights"); **Age Rating**: your answers
-   from step 1.3.
-2. **Pricing and Availability:** price **USD 4.99** (the US base price;
-   App Store Connect fills in the other storefronts' equivalents).
-   Availability: the storefronts from step 1.2.
+   (`APP-STORE-LISTING.md`, "Content rights"); **Age Rating**: the confirmed
+   answers in the listing file (13+).
+2. **Pricing and Availability:** price **USD 4.99**, paid up front.
+   Availability: **United States** only (deselect every other country or
+   region). With no EU storefront, skip the Digital Services Act trader
+   declaration.
 3. **App Privacy:** Privacy Policy URL from the table above; "Do you or your
    third-party partners collect data from this app?" **No**. The label
    becomes **Data Not Collected**. Publish the answers.
@@ -138,15 +139,16 @@ Paste from `docs/app-store-listing.json`; answer from
 
 On a branch from `main`:
 
-1. If you chose a version other than `0.1.0`, set `MARKETING_VERSION` in
-   `ios/Config/Shared.xcconfig`. For any later upload, including a
-   re-upload of the same version after a rejection, raise
-   `CURRENT_PROJECT_VERSION` there (the release workflow refuses a build
-   number that isn't higher than every earlier tag's).
-2. In `CHANGELOG.md`, add `## [X.Y.Z] - YYYY-MM-DD` below
-   `## [Unreleased]`, with the release notes, and move what ships from
-   `[Unreleased]` into it. The release workflow refuses a missing, empty or
-   undated section.
+1. The version is already `1.0.0`, build `1`, in every target. For any
+   later upload, including a re-upload of 1.0.0 after a rejection, raise
+   `CURRENT_PROJECT_VERSION` in `ios/Config/Shared.xcconfig` (the release
+   workflow refuses a build number that isn't higher than every earlier
+   tag's).
+2. In `CHANGELOG.md`, replace `TBD` in `## [1.0.0] - TBD` with the date
+   (`YYYY-MM-DD`), replace the placeholder paragraph with the release
+   notes, and move what ships from `[Unreleased]` into it. The release
+   workflow refuses the section while it says TBD, and `make appstore`
+   fails if the app's version has no section at all.
 3. Regenerate the screenshots with no other simulator work running:
    `make -C ios bundle-snapshot`, then `make -C ios screenshots`. Look at
    the five images before committing them: every reveal must be closed.
@@ -170,11 +172,11 @@ release-signing key, whose public half is committed in
 
     git config gpg.format ssh
     git config user.signingkey ~/.ssh/github-release-signing.pub
-    git tag -s v0.1.0 -m "release: v0.1.0"
-    git push origin v0.1.0
-    gh workflow run ios-release.yml --repo ChelseaKR/queer-tv-guide -f tag=v0.1.0
+    git tag -s v1.0.0 -m "release: v1.0.0"
+    git push origin v1.0.0
+    gh workflow run ios-release.yml --repo ChelseaKR/queer-tv-guide -f tag=v1.0.0
 
-(Use your chosen version in place of `0.1.0`.) `ios-release` verifies the
+`ios-release` verifies the
 tag's signature and that it is on the dispatched commit, checks that the
 tag matches `MARKETING_VERSION`, that the build number is higher than every
 earlier release's and that the CHANGELOG section is there and dated, runs
@@ -189,7 +191,7 @@ moved.
 
 ## 11. Archive and upload from Xcode
 
-1. `git checkout v0.1.0` (the commit the workflow verified).
+1. `git checkout v1.0.0` (the commit the workflow verified).
 2. `make -C ios bundle-snapshot`: the app ships the snapshot that is
    current when you archive (it is gitignored, so the tag can't pin it).
    It checks the published checksum and refuses a fixture.

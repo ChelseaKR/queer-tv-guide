@@ -115,6 +115,8 @@ extension Snapshot: Decodable {
         showsByID = try Self.buildIndex(shows.map { ($0.id, $0) }, label: "show")
         charactersByID = try Self.buildIndex(characters.map { ($0.id, $0) }, label: "character")
         characterIDsByShow = Self.indexCharactersByShow(characters)
+
+        // Each source's credit, exactly once: SnapshotDecoder.requireEachCredit.
     }
 
     private static func buildIndex<K: Hashable, V>(_ pairs: [(K, V)], label: String) throws -> [K: V] {

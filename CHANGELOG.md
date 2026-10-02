@@ -68,6 +68,11 @@ consumer of the published snapshot, would notice.
   of each favorite show, soonest first. It reads a file the app writes on the
   device, makes no network request, never shows death data or episode
   titles, always shows the data's date, and says "Out of date" past 48 hours.
+- The support page lists a contact address.
+- The path to the App Store: `make appstore` checks the app's submission
+  settings on every change, a release workflow verifies a signed version
+  tag by archiving the app unsigned and reading it back, and
+  `docs/app-store/OWNER-STEPS.md` lists the steps only the owner can take.
 
 ### Changed
 

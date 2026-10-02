@@ -157,6 +157,41 @@ public enum Presentation {
     // MARK: Where to watch / schedule
 
     public static let noWatchLinks = "No where-to-watch link in this snapshot."
+
+    /// A where-to-watch link's host as people write it: "www.amazon.com"
+    /// becomes "amazon.com". Only a leading "www." is dropped.
+    public static func displayHost(_ host: String) -> String {
+        let lowered = host.lowercased()
+        return lowered.hasPrefix("www.") ? String(host.dropFirst(4)) : host
+    }
+
+    /// The label for a where-to-watch link: "Watch on Netflix" when one of
+    /// the show's own networks is the site's name, otherwise "Watch on
+    /// amazon.com". A link carries only its URL and host, so a name is used
+    /// only when it matches the host's site name exactly (letters and digits
+    /// only, case ignored): "Prime Video" for primevideo.com, "HBO Max" for
+    /// hbomax.com. Nothing is guessed: amazon.com is not called Prime
+    /// Video, and tv.apple.com is not called Apple TV+.
+    public static func watchLinkLabel(_ link: WatchLink, networks: [Term]) -> String {
+        "Watch on \(watchLinkService(link, networks: networks))"
+    }
+
+    /// The service name from `watchLinkLabel`, without "Watch on".
+    public static func watchLinkService(_ link: WatchLink, networks: [Term]) -> String {
+        let host = displayHost(link.host)
+        let parts = host.split(separator: ".")
+        if parts.count >= 2 {
+            let site = comparable(String(parts[parts.count - 2]))
+            if !site.isEmpty, let network = networks.first(where: { comparable($0.name) == site }) {
+                return network.name
+            }
+        }
+        return host
+    }
+
+    private static func comparable(_ text: String) -> String {
+        String(String.UnicodeScalarView(text.lowercased().unicodeScalars.filter { CharacterSet.alphanumerics.contains($0) }))
+    }
     public static let noTropes = "No tropes listed."
     public static let noTriggers = "No trigger warnings listed."
     public static let noSummary = "No summary in this snapshot."

@@ -100,6 +100,11 @@ consumer of the published snapshot, would notice.
 
 ### Fixed
 
+- Where-to-watch buttons read "Watch on Netflix" or "Watch on amazon.com"
+  instead of a bare "www.amazon.com", which VoiceOver read out letter by
+  letter and Xcode's audit reported as not human-readable. A service name is
+  used only when one of the show's own networks is the site's name;
+  otherwise the button names the site.
 - The nightly LezWatch mirror no longer loses new shows and characters. It
   looks back a full day from its cursor (LezWatch compares that cursor with the
   site's local time, so a record edited within a few hours after it was skipped

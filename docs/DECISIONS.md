@@ -52,6 +52,15 @@ snapshot URL keep their working names. None of them is shown to a user,
 and a bundle identifier cannot change once an app is registered. Resolves
 0004. Never "Signal".
 
+**Trademark screen (2026-10-02): no conflict found.** The official USPTO
+trademark search (`https://tmsearch.uspto.gov/`, a word search typed into
+the search box), the US App Store search API, and the Justia, uspto.report
+and Trademarkia mirrors found no "QUEER FRAME" mark and no app by that
+name. The nearest marks were QUEER EYE (live, classes 41 and 25, Scout
+Productions) and the dead QUEER TV and QUEER TELEVISION. This is a screen,
+not legal advice; an attorney's clearance search is the standard next step
+for certainty.
+
 ## 0007 — The snapshot stays on GitHub Pages (2026-09-17)
 
 **Decision.** `https://chelseakr.github.io/queer-tv-guide/snapshot.v1.json`
@@ -169,3 +178,4 @@ snapshot, the attribution, and the App Review note in `docs/APP-STORE.md`.
   (resolves the "still owed" line in 0010).
 
 **Still open:** a trademark screen for "Queer Frame" (the owner's).
+Update 2026-10-02: done, no conflict found (0006).

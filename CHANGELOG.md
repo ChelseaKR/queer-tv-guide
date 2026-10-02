@@ -11,6 +11,29 @@ consumer of the published snapshot, would notice.
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-10-02
+
+The first App Store release of Queer Frame for iPhone: version 1.0.0,
+build 1, USD 4.99 up front in the United States, with no in-app purchase
+and no subscription.
+
+Queer Frame is a guide to TV shows with queer characters, built on
+LezWatch.TV's records and TVmaze's episode schedules and crediting both.
+Search and filter shows by where to watch, tropes and trigger warnings;
+open a show or a character to see the details, the next episode and a
+link to the LezWatch.TV page. Whether a character dies, and whether any
+queer characters die in a show, stays closed until you tap to reveal it,
+and tropes that give a death away are kept behind the reveal too.
+Favorites stay on your iPhone and can be backed up to a file without an
+account. Optional new-episode reminders and an "Up Next" home-screen
+widget are made on the device. The app works offline from the data it
+ships with, says how old its data is, and checks for newer data with one
+request. It collects no data: no analytics, no tracking, no accounts.
+LezWatch.TV and TVmaze do not endorse the app.
+
+The detailed list below covers the app and the nightly pipeline that
+publishes its data.
+
 ### Added
 
 - A nightly pipeline mirrors LezWatch.TV (shows, characters, deaths, tropes,
@@ -155,11 +178,3 @@ consumer of the published snapshot, would notice.
   who moved on after the first word heard "No". Section headings on About,
   and text scrolling toward the tab bar, now meet 4.5:1 contrast, and the
   About rows scale with Dynamic Type (#22, #28).
-
-## [1.0.0] - TBD
-
-The first App Store release (DECISIONS 0015). Before tagging, replace `TBD`
-with the release date (`YYYY-MM-DD`), replace this paragraph with the
-release notes, and move what ships from `[Unreleased]` into this section
-(docs/app-store/OWNER-STEPS.md, step 9). The release workflow refuses this
-section while it says TBD.

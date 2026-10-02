@@ -89,6 +89,23 @@ struct OnboardingView: View {
                 .padding()
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
+            // A hard top edge, not iOS 26's soft blur: text scrolling up
+            // stays at full contrast until the strip below covers it
+            // (AccessibleStyle.swift).
+            .legibleScrollEdges(.top)
+            // This page has no navigation bar, so scrolled text ran up under
+            // the status bar and was drawn across the clock (and the
+            // accessibility audit could not finish measuring it). An opaque
+            // strip of the page's own background covers the status bar.
+            .overlay(alignment: .top) {
+                GeometryReader { proxy in
+                    Color(uiColor: .systemBackground)
+                        .frame(height: proxy.safeAreaInsets.top)
+                        .ignoresSafeArea(edges: .top)
+                }
+                .allowsHitTesting(false)
+                .accessibilityHidden(true)
+            }
         }
     }
 }

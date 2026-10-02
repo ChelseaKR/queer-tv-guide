@@ -23,7 +23,7 @@ enum UpNextPublisher {
     @discardableResult
     static func publish(_ model: AppModel, to directory: URL? = appGroupDirectory) -> Bool {
         guard let snapshot = model.snapshot, let directory else { return false }
-        let showIDs = model.favourites.entries
+        let showIDs = model.favorites.entries
             .filter { $0.kind == .show }
             .sorted { $0.addedAt > $1.addedAt }
             .map(\.id)

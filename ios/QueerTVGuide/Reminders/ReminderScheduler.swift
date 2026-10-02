@@ -43,7 +43,7 @@ enum ReminderScheduler {
         let settings = await center.notificationSettings()
         guard settings.authorizationStatus == .authorized || settings.authorizationStatus == .provisional else { return }
         await removeOurs()
-        let showIDs = model.favourites.entries.filter { $0.kind == .show }.map(\.id)
+        let showIDs = model.favorites.entries.filter { $0.kind == .show }.map(\.id)
         for reminder in EpisodeReminders.plan(favoriteShowIDs: showIDs, snapshot: snapshot, now: Date()) {
             let content = UNMutableNotificationContent()
             content.title = reminder.title

@@ -68,7 +68,10 @@ def _job_violations(
     wf: workflow_model.Workflow, job: workflow_model.Job
 ) -> set[tuple[str, str, str]]:
     found: set[tuple[str, str, str]] = set()
-    if not job.has_timeout:
+    # A job that calls a reusable workflow (`uses:` at job level) cannot set
+    # timeout-minutes; GitHub rejects the key there. The called workflow's
+    # own jobs carry the timeout.
+    if not job.has_timeout and not job.calls_reusable_workflow:
         found.add(("job-timeout", wf.name, job.name))
     if "pull_request" in wf.triggers and job.runs_on.startswith("macos"):
         allowed = (wf.name, job.name) in MACOS_PR_ALLOWED
@@ -127,6 +130,32 @@ class WorkflowPolicyTests(unittest.TestCase):
         self.assertIn("needs.changes.result != 'success'", text)
         self.assertIn("needs.changes.outputs.guidecore != 'false'", text)
         self.assertIn("!cancelled()", text)
+
+    def test_only_a_reusable_workflow_caller_skips_the_timeout(self) -> None:
+        # A step-level `uses:` (deeper indent) must not exempt a job.
+        probe = (
+            "name: probe\n"
+            "on:\n"
+            "  workflow_dispatch:\n"
+            "permissions:\n"
+            "  contents: read\n"
+            "jobs:\n"
+            "  caller:\n"
+            "    uses: owner/repo/.github/workflows/x.yml@0000000000000000000000000000000000000000\n"
+            "  steps-only:\n"
+            "    runs-on: ubuntu-latest\n"
+            "    steps:\n"
+            "      - uses: actions/checkout@0000000000000000000000000000000000000000 # v0\n"
+        )
+        real = workflow_model.WORKFLOWS
+        with tempfile.TemporaryDirectory() as probe_dir:
+            (Path(probe_dir) / "probe.yml").write_text(probe)
+            workflow_model.WORKFLOWS = Path(probe_dir)
+            try:
+                found = violations()
+            finally:
+                workflow_model.WORKFLOWS = real
+        self.assertEqual(found, {("job-timeout", "probe.yml", "steps-only")})
 
     def test_security_workflow_gates_every_commit_on_main(self) -> None:
         security = workflow_model.load(workflow_model.WORKFLOWS / "security.yml")

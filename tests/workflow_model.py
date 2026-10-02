@@ -38,6 +38,11 @@ class Job:
     def has_timeout(self) -> bool:
         return re.search(r"^    timeout-minutes:\s*\d+", self.text, re.M) is not None
 
+    @property
+    def calls_reusable_workflow(self) -> bool:
+        """True for a job whose body is `uses: <reusable workflow>`, not steps."""
+        return re.search(r"^    uses:\s*\S", self.text, re.M) is not None
+
     def run_blocks(self) -> list[str]:
         """Every `run:` body in this job, inline or block scalar."""
         blocks: list[str] = []

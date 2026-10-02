@@ -10,7 +10,7 @@ struct AboutView: View {
         NavigationStack {
             List {
                 Section(subdued: "Privacy") {
-                    Text("\(AppIdentity.displayName) collects nothing: no account, no analytics, no crash reporting, no third-party SDKs. Nothing leaves this device except one request for the data file this app reads — a plain, cookieless GET of a static file, sent only when you open the app or pull to refresh.")
+                    Text("\(AppIdentity.displayName) collects nothing: no account, no analytics, no crash reporting, no third-party SDKs. Nothing leaves this device except one request for the data file this app reads — a plain, cookieless GET of a static file, sent only when you open the app, when you pull to refresh, or when you return to the app \(Presentation.returnRefreshRule).")
                         .accessibilityLabel("Privacy posture: \(AppIdentity.displayName) collects nothing. No account, no analytics, no crash reporting, no third-party SDKs. Nothing leaves this device except one request for the data file this app reads.")
                     // DECISIONS 0007: say plainly who serves that file and
                     // what a web server sees.

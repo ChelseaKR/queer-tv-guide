@@ -172,7 +172,7 @@ struct SearchView: View {
             EmptyState(
                 title: "No matches with these filters",
                 systemImage: "magnifyingglass",
-                message: "Nothing matches “\(q)” with \(Self.filterSummary(filters.activeCount).lowercased())."
+                message: "Nothing matches \u{201c}\(q)\u{201d} with \(Self.filterSummary(filters.activeCount).lowercased())."
             )
             Button("Search without filters") { filters = SearchIndex.Filters() }
                 .buttonStyle(.bordered)
@@ -181,7 +181,7 @@ struct SearchView: View {
             EmptyState(
                 title: "No matches",
                 systemImage: "magnifyingglass",
-                message: "Nothing in this snapshot matches “\(q)”. Try part of a title, a character's name, an actor or a network."
+                message: "Nothing in this snapshot matches \u{201c}\(q)\u{201d}. Try part of a title, a character's name, an actor or a network."
             )
         }
     }

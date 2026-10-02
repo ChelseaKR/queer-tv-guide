@@ -53,4 +53,4 @@ Never edit `docs/standards/` by hand: it is a verbatim copy of a release, and
   read, quoted and snapshotted (`docs/LICENSES-AND-ATTRIBUTION.md`). Nobody
   contacts the sources.
 - A death LezWatch has not recorded is shown as not recorded, never as "no".
-- The product name is undecided; never use "Signal".
+- The product name is Queer Frame (`docs/DECISIONS.md` 0006); never use "Signal".

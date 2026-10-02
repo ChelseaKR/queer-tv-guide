@@ -59,12 +59,16 @@ test-ui: $(BUNDLED_SNAPSHOT)
 # it deliberately, with a green run. One simulator, one test at a time: a
 # starved machine makes audits time out. Point it at another simulator with
 # `make -C ios test-a11y A11Y_SIMULATOR='platform=iOS Simulator,id=<udid>'`.
+# The simulator is booted, and waited for, before the tests start
+# (scripts/boot-simulator.sh says why), and the tests run on the device it
+# booted.
 A11Y_SIMULATOR := $(SIMULATOR),OS=26.5
 
 .PHONY: test-a11y
 test-a11y: $(BUNDLED_SNAPSHOT)
+	udid="$$(scripts/boot-simulator.sh '$(A11Y_SIMULATOR)')" && \
 	xcodebuild -project $(PROJECT) -scheme $(SCHEME) \
-		-destination '$(A11Y_SIMULATOR)' -configuration Debug \
+		-destination "platform=iOS Simulator,id=$$udid" -configuration Debug \
 		-parallel-testing-enabled NO \
 		-only-testing:QueerTVGuideUITests/AccessibilityAuditTests test
 

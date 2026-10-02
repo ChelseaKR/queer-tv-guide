@@ -15,7 +15,22 @@ name: snapshot
 on:
   schedule:
     - cron: "17 9 * * *" # ~02:17 Pacific standard time; off the hour to avoid the scheduler herd
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      full:
+        description: >-
+          Mirror everything again instead of only what changed (about 55
+          minutes; README "Crawl budget"). Use it after the mirror is
+          suspected wrong. Every record is refetched over the restored
+          cache and anything LezWatch no longer publishes is removed.
+        type: boolean
+        default: false
+      allow_shrink:
+        description: >-
+          Publish even if shows or characters fell by more than 2% against the
+          snapshot on the rolling release. Only for a removal you know is real.
+        type: boolean
+        default: false
 
 # Read-only by default; each job is granted only the writes it uses
 # (CI-CD-STANDARD §2, CICD-04).
@@ -76,15 +91,40 @@ jobs:
 
       - name: fetch (network; respects each source's published rate limit)
         working-directory: pipeline
-        run: uv run qtv fetch --cache .cache
+        run: |
+          args=(--cache .cache)
+          if [ "$FULL_MIRROR" = "true" ]; then
+            args+=(--full)
+            echo "full mirror requested: ignoring the incremental cursor"
+          fi
+          uv run qtv fetch "${args[@]}"
+        env:
+          FULL_MIRROR: ${{ inputs.full }}
+
+      - name: fetch the snapshot this run would replace (baseline for the shrink gate)
+        working-directory: pipeline
+        run: |
+          if gh release download "$RELEASE_TAG" --pattern snapshot.v1.json --output previous-snapshot.json 2>/dev/null; then
+            echo "baseline for the shrink gate: the snapshot on the rolling release"
+          else
+            rm -f previous-snapshot.json
+            echo "::warning::no previous snapshot on the rolling release; the shrink gate is skipped for this run"
+          fi
+        env:
+          GH_TOKEN: ${{ github.token }}
 
       - name: build (offline; validates against schema/snapshot.v1.json)
         id: build
         working-directory: pipeline
         run: |
-          uv run qtv build --cache .cache --out out
+          args=(--cache .cache --out out)
+          if [ -f previous-snapshot.json ]; then args+=(--previous previous-snapshot.json); fi
+          if [ "$ALLOW_SHRINK" = "true" ]; then args+=(--allow-shrink); fi
+          uv run qtv build "${args[@]}"
           digest=$(python3 -c "import json; print(json.load(open('out/snapshot.v1.json'))['content_digest'])")
           echo "digest=$digest" >> "$GITHUB_OUTPUT"
+        env:
+          ALLOW_SHRINK: ${{ inputs.allow_shrink }}
 
       - name: repack mirror cache
         working-directory: pipeline

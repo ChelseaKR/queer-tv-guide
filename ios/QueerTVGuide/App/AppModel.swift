@@ -35,6 +35,9 @@ final class AppModel {
     private let store: SnapshotStore
     private let refresher: SnapshotRefresher
     private let now: () -> Date
+    /// When the app last looked for new data, and whether coming back to it
+    /// should (`ForegroundRefreshGate`). In memory only.
+    private var refreshGate = ForegroundRefreshGate()
 
     init(store: SnapshotStore, favorites: FavoritesStore = FavoritesStore(), now: @escaping () -> Date = Date.init) {
         self.store = store
@@ -141,6 +144,18 @@ final class AppModel {
         readClock()
     }
 
+    /// The app has come back to the foreground: re-reads the clock, and if
+    /// the snapshot on hand is more than `ForegroundRefreshGate.staleAfter`
+    /// old (and no look was made in the last `minimumInterval`) looks for new
+    /// data, the same single GET as `refresh()`. Called from a background
+    /// task, so nothing waits on it; offline or a bad response leaves the
+    /// snapshot as it was and shows no alert, only the footer's line.
+    func refreshIfStaleOnReturn() async {
+        readClock()
+        guard let snapshot, refreshGate.shouldRefresh(generatedAt: snapshot.generatedAt, now: clockReading) else { return }
+        await refresh()
+    }
+
     /// One GET, conditional on the stored ETag. On success and a real
     /// change, swaps in the new snapshot. On any failure — offline, a bad
     /// response, a body that fails to decode — the last good snapshot and
@@ -150,6 +165,7 @@ final class AppModel {
         guard !isRefreshing else { return }
         isRefreshing = true
         defer { isRefreshing = false }
+        refreshGate.recordAttempt(at: now())
         do {
             let outcome = try await refresher.refresh()
             if case .updated(let fresh) = outcome {

@@ -9,6 +9,17 @@ import Foundation
 /// Degrassi). Every entry's words are folded once, here, so a keystroke
 /// costs comparisons, not string building.
 public struct SearchIndex: Sendable {
+    public struct SearchResults: Equatable, Sendable {
+        public let hits: [Hit]
+        public let totalCount: Int
+        public var isCapped: Bool { totalCount > hits.count }
+
+        public init(hits: [Hit], totalCount: Int) {
+            self.hits = hits
+            self.totalCount = totalCount
+        }
+    }
+
     public enum Hit: Equatable, Sendable, Identifiable {
         case show(Show)
         case character(Character)
@@ -183,9 +194,9 @@ public struct SearchIndex: Sendable {
 
     /// Empty or whitespace-only queries return nothing: the screen shows a
     /// browse prompt instead of the whole catalog.
-    public func search(_ query: String, filters: Filters = Filters(), limit: Int = 50) -> [Hit] {
+    public func search(_ query: String, filters: Filters = Filters(), limit: Int = 50) -> SearchResults {
         let q = Self.fold(query)
-        guard !q.isEmpty else { return [] }
+        guard !q.isEmpty else { return SearchResults(hits: [], totalCount: 0) }
         let query = Query(text: q, words: Self.words(q), compact: q.replacingOccurrences(of: " ", with: ""))
         var scored: [(score: Int, order: Int, hit: Hit)] = []
         for (order, entry) in entries.enumerated() {
@@ -194,7 +205,9 @@ public struct SearchIndex: Sendable {
             scored.append((score, order, entry.hit))
         }
         scored.sort { a, b in a.score != b.score ? a.score > b.score : a.order < b.order }
-        return Array(scored.prefix(limit).map { $0.hit })
+        let totalCount = scored.count
+        let hits = Array(scored.prefix(limit).map { $0.hit })
+        return SearchResults(hits: hits, totalCount: totalCount)
     }
 
     /// All shows that pass the filters, alphabetical. Used for browsing when

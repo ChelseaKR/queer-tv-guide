@@ -60,7 +60,10 @@ consumer of the published snapshot, would notice.
   set on the device with no server, carrying no episode title and nothing
   about any character. They are off until a person turns them on from
   Favorites, and only then, after an explanation, does the app ask for
-  notification permission; it never asks at launch.
+  notification permission; it never asks at launch. A reminder comes at the
+  air time only when TVmaze records one; otherwise it comes at 10 a.m. on the
+  listed date and says the date is the network's and no air time is listed
+  (#56).
 - An "Up Next" home-screen widget (small and medium) with the next episode
   of each favorite show, soonest first. It reads a file the app writes on the
   device, makes no network request, never shows death data or episode

@@ -56,7 +56,7 @@ struct ReminderPrimingView: View {
     let finish: (_ accepted: Bool) -> Void
 
     static let points: [(image: String, text: String)] = [
-        ("calendar.badge.clock", "On the day a favorite show has a new episode listed, you get one reminder: the show's name and the episode number."),
+        ("calendar.badge.clock", "On the day a favorite show has a new episode listed, you get one reminder: the show's name and the episode number. If TVmaze lists no air time, it comes at 10 a.m. on the listed date and says so."),
         ("eye.slash", "Episode titles are left out, and nothing about any character, so a reminder cannot spoil anything on your lock screen."),
         ("iphone", "This iPhone sets the reminders itself. Nothing is sent to a server, and nothing about you leaves this phone."),
         ("arrow.clockwise", "Reminders follow the data file. If a schedule changes after your last refresh, one can be early, late or wrong."),

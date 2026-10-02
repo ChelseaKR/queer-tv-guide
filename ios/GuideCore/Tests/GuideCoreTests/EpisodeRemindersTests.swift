@@ -44,17 +44,84 @@ final class EpisodeRemindersTests: XCTestCase {
         XCTAssertEqual(EpisodeReminders.plan(favoriteShowIDs: ["lwtv:show:101"], snapshot: s, now: date("2026-09-25T00:00:00Z"), calendar: utc), [])
     }
 
-    /// With an air time, the reminder comes at the broadcast; without one,
-    /// at 10:00 local on the air date.
-    func testFireDateUsesTheAirstampElseTenInTheMorning() throws {
-        let withStamp = try editedFixture(airstamp: "2026-09-21T02:00:00+00:00")
-        let a = try XCTUnwrap(EpisodeReminders.plan(favoriteShowIDs: ["lwtv:show:101"], snapshot: withStamp, now: date("2026-09-14T00:00:00Z"), calendar: utc).first)
+    /// With a recorded air time, the reminder comes at the broadcast; with
+    /// none (here the stamp is gone too), at 10:00 local on the air date,
+    /// with words that give the date and never claim a time.
+    func testFireDateUsesTheAirTimeElseTenInTheMorning() throws {
+        let withTime = try editedFixture(airstamp: "2026-09-21T02:00:00+00:00")
+        let a = try XCTUnwrap(EpisodeReminders.plan(favoriteShowIDs: ["lwtv:show:101"], snapshot: withTime, now: date("2026-09-14T00:00:00Z"), calendar: utc).first)
         XCTAssertEqual(a.fireDate, date("2026-09-21T02:00:00Z"))
+        XCTAssertTrue(a.body.hasPrefix("S3E4 is listed to air now."), a.body)
 
-        let noStamp = try editedFixture(airstamp: nil)
-        let b = try XCTUnwrap(EpisodeReminders.plan(favoriteShowIDs: ["lwtv:show:101"], snapshot: noStamp, now: date("2026-09-14T00:00:00Z"), calendar: utc).first)
+        let dateOnly = try editedFixture(airstamp: nil)
+        let b = try XCTUnwrap(EpisodeReminders.plan(favoriteShowIDs: ["lwtv:show:101"], snapshot: dateOnly, now: date("2026-09-14T00:00:00Z"), calendar: utc).first)
         XCTAssertEqual(b.fireDate, date("2026-09-20T10:00:00Z"))
-        XCTAssertTrue(b.body.hasPrefix("S3E4 is listed for today."), b.body)
+        XCTAssertTrue(b.body.hasPrefix("S3E4 is listed for \(dayText("2026-09-20T10:00:00Z", in: utc)), the network's date, with no air time."), b.body)
+        XCTAssertFalse(b.body.contains("now"), b.body)
+        XCTAssertFalse(b.body.contains("today"), "the date is the network's, so the reminder never says today: \(b.body)")
+    }
+
+    /// TVmaze sends an `airstamp` even for an episode with no air time, and
+    /// it is a placeholder (Ted Lasso's is 12:00 UTC, 5:00 a.m. Pacific). A
+    /// reminder must not fire at it or word itself as if it were a time: it
+    /// comes at 10:00 local on the air date and says no air time is listed.
+    func testAPlaceholderAirstampIsNeverAFireTime() throws {
+        var pacific = Calendar(identifier: .gregorian)
+        pacific.timeZone = TimeZone(identifier: "America/Los_Angeles")!
+        let placeholder = try editedFixture(airstamp: "2026-09-23T12:00:00+00:00", airdate: "2026-09-23", airtime: nil)
+        let r = try XCTUnwrap(EpisodeReminders.plan(favoriteShowIDs: ["lwtv:show:101"], snapshot: placeholder, now: date("2026-09-14T00:00:00Z"), calendar: pacific).first)
+        XCTAssertEqual(r.fireDate, date("2026-09-23T17:00:00Z"), "10:00 in Los Angeles, not the placeholder's 12:00 UTC")
+        XCTAssertNotEqual(r.fireDate, date("2026-09-23T12:00:00Z"))
+        XCTAssertTrue(r.body.hasPrefix("S3E4 is listed for \(dayText("2026-09-23T17:00:00Z", in: pacific)), the network's date, with no air time."), r.body)
+        XCTAssertFalse(r.body.contains("to air now"), r.body)
+    }
+
+    /// The negative control for the test above. The same episode, the same
+    /// stamp, changed in one field only: with an air time recorded the stamp
+    /// is real and the reminder comes at it; with none it is not and the
+    /// reminder comes at 10:00 local. So the outcome depends on `airtime`
+    /// alone, and the placeholder test can fail.
+    func testOnlyARecordedAirTimeMakesTheAirstampCount() throws {
+        var pacific = Calendar(identifier: .gregorian)
+        pacific.timeZone = TimeZone(identifier: "America/Los_Angeles")!
+        let now = date("2026-09-14T00:00:00Z")
+        let stamp = "2026-09-23T12:00:00+00:00"
+        let noTime = try editedFixture(airstamp: stamp, airdate: "2026-09-23", airtime: nil)
+        let emptyTime = try editedFixture(airstamp: stamp, airdate: "2026-09-23", airtime: "")
+        let withTime = try editedFixture(airstamp: stamp, airdate: "2026-09-23", airtime: "12:00")
+        let fires = try [noTime, emptyTime, withTime].map { snapshot in
+            try XCTUnwrap(EpisodeReminders.plan(favoriteShowIDs: ["lwtv:show:101"], snapshot: snapshot, now: now, calendar: pacific).first)
+        }
+        XCTAssertEqual(fires[0].fireDate, date("2026-09-23T17:00:00Z"))
+        XCTAssertEqual(fires[1].fireDate, date("2026-09-23T17:00:00Z"), "an empty air time is no air time")
+        XCTAssertEqual(fires[2].fireDate, date("2026-09-23T12:00:00Z"), "a recorded air time makes the stamp count")
+        XCTAssertTrue(fires[2].body.hasPrefix("S3E4 is listed to air now."), fires[2].body)
+        XCTAssertNotEqual(fires[0].body, fires[2].body)
+    }
+
+    /// The real placeholders quoted in issue #56 (11 of 49 next episodes in
+    /// the 2026-09-19 snapshot have no air time), in three time zones. Each
+    /// fires at 10:00 local on its own air date; Grey's Anatomy has a real
+    /// time and fires at it.
+    func testTheRealPlaceholdersFireAtTenLocalAndTheRealTimeAtTheBroadcast() throws {
+        let cases: [(name: String, airdate: String, airtime: String?, airstamp: String)] = [
+            ("Days of Our Lives", "2026-09-21", nil, "2026-09-21T16:00:00+00:00"),
+            ("Ted Lasso", "2026-09-23", nil, "2026-09-23T12:00:00+00:00"),
+            ("Helluva Boss", "2026-10-14", nil, "2026-10-14T12:00:00+00:00"),
+        ]
+        for zone in ["America/Los_Angeles", "Asia/Tokyo", "Pacific/Auckland"] {
+            var calendar = Calendar(identifier: .gregorian)
+            calendar.timeZone = TimeZone(identifier: zone)!
+            for c in cases {
+                let episode = makeEpisode(airdate: c.airdate, airtime: c.airtime, airstamp: c.airstamp)
+                let fire = try XCTUnwrap(EpisodeReminders.fireDate(for: episode, calendar: calendar), "\(c.name) in \(zone)")
+                let parts = calendar.dateComponents([.year, .month, .day, .hour, .minute], from: fire)
+                let want = c.airdate.split(separator: "-").compactMap { Int($0) }
+                XCTAssertEqual([parts.year, parts.month, parts.day, parts.hour, parts.minute], [want[0], want[1], want[2], EpisodeReminders.fallbackHour, 0], "\(c.name) in \(zone)")
+            }
+            let greys = makeEpisode(airdate: "2026-10-15", airtime: "22:00", airstamp: "2026-10-16T02:00:00+00:00")
+            XCTAssertEqual(EpisodeReminders.fireDate(for: greys, calendar: calendar), date("2026-10-16T02:00:00Z"), zone)
+        }
     }
 
     func testNoAirDateMeansNoReminder() throws {
@@ -91,6 +158,28 @@ final class EpisodeRemindersTests: XCTestCase {
         }
     }
 
+    /// On the real snapshot, an episode with no recorded air time never has
+    /// a reminder at its placeholder stamp: it is at 10:00 local on the air
+    /// date, and its words claim no air time. (It asserts nothing about how
+    /// many such episodes there are: that changes with the data.)
+    func testRealSnapshotDateOnlyEpisodesFireAtTenLocalOnTheirDate() throws {
+        let s = try SnapshotDecoder().decode(try Data(contentsOf: Repo.bundledSnapshot))
+        let plan = EpisodeReminders.plan(favoriteShowIDs: s.shows.map(\.id), snapshot: s, now: s.generatedAt, calendar: utc, limit: .max)
+        for r in plan {
+            let episode = try XCTUnwrap(s.show(id: r.showID)?.schedule.nextEpisode)
+            let hasTime = !(episode.airtime ?? "").trimmingCharacters(in: .whitespaces).isEmpty
+            if hasTime {
+                XCTAssertEqual(r.fireDate, episode.airInstant, r.identifier)
+            } else {
+                let parts = utc.dateComponents([.year, .month, .day, .hour], from: r.fireDate)
+                let want = (episode.airdate ?? "").split(separator: "-").compactMap { Int($0) }
+                XCTAssertEqual([parts.year, parts.month, parts.day, parts.hour], want + [EpisodeReminders.fallbackHour], "\(r.identifier) is not 10:00 on its air date")
+                XCTAssertFalse(r.body.contains("to air now"), r.body)
+                XCTAssertTrue(r.body.contains("no air time"), r.body)
+            }
+        }
+    }
+
     /// The cap keeps the soonest reminders and drops only later ones. The
     /// real snapshot lists fewer than 60 upcoming episodes, so the cap is
     /// exercised with a smaller limit on the same data.
@@ -103,17 +192,37 @@ final class EpisodeRemindersTests: XCTestCase {
         XCTAssertEqual(EpisodeReminders.limit, 60, "iOS keeps at most 64 pending local notifications per app")
     }
 
-    private func editedFixture(airstamp: String?, airdate: String? = "2026-09-20") throws -> Snapshot {
+    /// The fixture's first show, its next episode edited. Its own air time
+    /// is "21:00"; pass `airtime: nil` for a JSON null.
+    private func editedFixture(airstamp: String?, airdate: String? = "2026-09-20", airtime: String? = "21:00") throws -> Snapshot {
         let data = try JSONEdit.editShow(try Repo.fixtureData(), index: 0) { show in
             var schedule = show["schedule"] as! [String: Any]
             var episode = schedule["next_episode"] as! [String: Any]
             episode["airstamp"] = airstamp ?? NSNull()
             episode["airdate"] = airdate ?? NSNull()
+            episode["airtime"] = airtime ?? NSNull()
             schedule["next_episode"] = episode
             show["schedule"] = schedule
         }
         let s = try SnapshotDecoder().decode(data)
-        XCTAssertEqual(s.shows[0].schedule.nextEpisode?.airstamp, airstamp, "the edit landed")
+        let edited = try XCTUnwrap(s.shows[0].schedule.nextEpisode)
+        XCTAssertEqual(edited.airstamp, airstamp, "the edit landed")
+        XCTAssertEqual(edited.airdate, airdate, "the edit landed")
+        XCTAssertEqual(edited.airtime, airtime, "the edit landed")
         return s
+    }
+
+    private func makeEpisode(airdate: String?, airtime: String?, airstamp: String?) -> Episode {
+        Episode(tvmazeID: 1, season: 1, number: 1, name: nil, airdate: airdate, airtime: airtime, airstamp: airstamp, runtime: nil, url: URL(fileURLWithPath: "/episodes/1"))
+    }
+
+    /// `iso` (an instant) as "Sep 20" in `calendar`'s zone: what the
+    /// reminder's words should say for that air date.
+    private func dayText(_ iso: String, in calendar: Calendar) -> String {
+        let f = DateFormatter()
+        f.calendar = calendar
+        f.timeZone = calendar.timeZone
+        f.setLocalizedDateFormatFromTemplate("MMMd")
+        return f.string(from: date(iso))
     }
 }

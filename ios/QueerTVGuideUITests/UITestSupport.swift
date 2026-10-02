@@ -60,9 +60,8 @@ extension XCUIApplication {
     /// Search tab → search `title` → open its show screen.
     @MainActor
     func openShow(titled title: String) {
-        tabBars.buttons["Search"].tap()
         let field = searchFields.firstMatch
-        XCTAssertTrue(field.waitForExistence(timeout: 30))
+        XCTAssertTrue(tabBars.buttons["Search"].tap(reaching: field))
         field.tap()
         // A previous search's text survives going back; clear it so the
         // new title is not appended to the old one.
@@ -71,8 +70,7 @@ extension XCUIApplication {
         field.typeText(title)
         let row = buttons.matching(NSPredicate(format: "label BEGINSWITH %@", title)).firstMatch
         XCTAssertTrue(row.waitForExistence(timeout: 30), "no row for \(title)")
-        row.tap()
-        XCTAssertTrue(staticTexts["Do any queer characters die?"].waitForExistence(timeout: 30), "did not reach \(title)")
+        XCTAssertTrue(row.tap(reaching: staticTexts["Do any queer characters die?"]), "did not reach \(title)")
     }
 
     /// A show row in a results list. Show rows are read "<title>. Worth it:
@@ -89,9 +87,8 @@ extension XCUIApplication {
     func applyWhereToWatchFilter(file: StaticString = #filePath, line: UInt = #line) {
         let filter = buttons.matching(NSPredicate(format: "label BEGINSWITH 'Filter'")).firstMatch
         XCTAssertTrue(filter.waitForExistence(timeout: 30), "no Filter button", file: file, line: line)
-        filter.tap()
         let toggle = buttons["Has a where-to-watch link"]
-        XCTAssertTrue(toggle.waitForExistence(timeout: 10), "no where-to-watch filter", file: file, line: line)
+        XCTAssertTrue(filter.tap(reaching: toggle), "no where-to-watch filter", file: file, line: line)
         // At accessibility text sizes the filters are taller than the screen.
         for _ in 0..<8 where !toggle.isHittable { swipeUp() }
         toggle.tap()
@@ -100,6 +97,26 @@ extension XCUIApplication {
         for _ in 0..<8 where !(showResults.exists && showResults.isHittable) { swipeUp() }
         XCTAssertTrue(showResults.waitForExistence(timeout: 10), "no Show results button", file: file, line: line)
         showResults.tap()
+        // The rows behind the sheet exist while it is still closing, and a
+        // row tapped then is lost: wait for the sheet itself to go.
+        XCTAssertTrue(showResults.waitForNonExistence(timeout: 30), "the filter sheet did not close", file: file, line: line)
         XCTAssertTrue(firstShowRow.waitForExistence(timeout: 30), "the filter left no show rows", file: file, line: line)
+    }
+}
+
+extension XCUIElement {
+    /// Taps, then waits for `destination`, an element only the screen this
+    /// tap leads to has. If it has not appeared within 15 seconds and this
+    /// element is still there to tap, the tap was lost (measured on slow CI
+    /// runners: a row tapped while a sheet was still closing, a tab tapped
+    /// during launch), so it taps once more. Returns whether the destination
+    /// appeared; callers assert on it, so a screen that never comes still
+    /// fails the test.
+    @MainActor @discardableResult
+    func tap(reaching destination: XCUIElement, timeout: TimeInterval = 30) -> Bool {
+        tap()
+        if destination.waitForExistence(timeout: min(15, timeout)) { return true }
+        if exists, isHittable { tap() }
+        return destination.waitForExistence(timeout: timeout)
     }
 }

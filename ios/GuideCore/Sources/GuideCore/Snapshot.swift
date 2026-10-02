@@ -161,17 +161,7 @@ extension Snapshot: Decodable {
         characters = decodedCharacters
         (showsByID, charactersByID, characterIDsByShow) = Self.indices(shows: shows, characters: characters)
 
-        let sources = Set(attribution.map(\.source))
-        let requiredSources: Set<String> = ["lezwatch", "tvmaze"]
-        for source in requiredSources {
-            guard sources.contains(source) else {
-                throw SnapshotDecodingError.malformed("missing attribution entry for \(source)")
-            }
-        }
-        let sourceCounts = attribution.reduce(into: [String: Int]()) { $0[$1.source, default: 0] += 1 }
-        for (source, count) in sourceCounts where count > 1 {
-            throw SnapshotDecodingError.malformed("duplicate attribution entry for \(source)")
-        }
+        // Each source's credit, exactly once: SnapshotDecoder.requireEachCredit.
     }
 }
 

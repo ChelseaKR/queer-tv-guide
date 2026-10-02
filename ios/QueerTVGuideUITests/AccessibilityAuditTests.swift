@@ -200,8 +200,14 @@ final class AccessibilityAuditTests: XCTestCase {
         return count
     }
 
-    /// Waits until two reads of the accessibility tree half a second apart
-    /// agree on every element's type, label and frame, up to 10 seconds.
+    /// Waits until the screen is still, up to 10 seconds: two reads of the
+    /// accessibility tree half a second apart agree on every element's type,
+    /// label and frame, and then two screenshots a quarter second apart are
+    /// identical. The tree alone misses a fade: frames are final while
+    /// opacity is still changing. Measured in CI (runs 36967894236 and
+    /// 36978732630): the character screen was audited mid-push, with the
+    /// navigation bar's small title "Gina" and the large title both on
+    /// screen, and both failed contrast.
     @MainActor
     private func waitForStillScreen(_ app: XCUIApplication) {
         func fingerprint(_ element: XCUIElementSnapshot) -> String {
@@ -212,9 +218,16 @@ final class AccessibilityAuditTests: XCTestCase {
         let deadline = Date().addingTimeInterval(10)
         while Date() < deadline {
             let current = (try? app.snapshot()).map(fingerprint) ?? ""
-            if !current.isEmpty, current == previous { return }
+            if !current.isEmpty, current == previous { break }
             previous = current
             Thread.sleep(forTimeInterval: 0.5)
+        }
+        var lastImage = app.screenshot().pngRepresentation
+        while Date() < deadline {
+            Thread.sleep(forTimeInterval: 0.25)
+            let image = app.screenshot().pngRepresentation
+            if image == lastImage { return }
+            lastImage = image
         }
         print("audit: the screen was still changing after 10 s; auditing anyway")
     }
@@ -287,15 +300,9 @@ final class AccessibilityAuditTests: XCTestCase {
         app.applyWhereToWatchFilter()
         let firstRow = app.firstShowRow
         guard firstRow.waitForExistence(timeout: 30) else { XCTFail("filter produced no rows"); return false }
-        firstRow.tap()
-        let heading = app.staticTexts["Do any queer characters die?"]
-        if !heading.waitForExistence(timeout: 15), firstRow.exists, firstRow.isHittable {
-            // Measured: on a loaded machine the filter sheet can still be
-            // closing when the row is tapped, and that tap is lost. One more
-            // tap on the same row; the assertion below is unchanged.
-            firstRow.tap()
-        }
-        return heading.waitForExistence(timeout: 30)
+        // Measured: on a loaded machine a tap on the row can be lost
+        // (`tap(reaching:)`).
+        return firstRow.tap(reaching: app.staticTexts["Do any queer characters die?"])
     }
 
     /// Opens the filter sheet from Search and waits for it. Measured in CI:
@@ -307,12 +314,7 @@ final class AccessibilityAuditTests: XCTestCase {
     private func openFilterSheet(_ app: XCUIApplication) {
         let filter = app.buttons["Filter"]
         XCTAssertTrue(filter.waitForExistence(timeout: 30), "no Filter button")
-        filter.tap()
-        let worthIt = app.buttons["Worth it: Yes"]
-        if !worthIt.waitForExistence(timeout: 10), filter.exists, filter.isHittable {
-            filter.tap()
-        }
-        XCTAssertTrue(worthIt.waitForExistence(timeout: 10), "the filter sheet did not open")
+        XCTAssertTrue(filter.tap(reaching: app.buttons["Worth it: Yes"]), "the filter sheet did not open")
     }
 
     /// The filter sheet, its trope picker, and the active-filters row and
@@ -327,8 +329,7 @@ final class AccessibilityAuditTests: XCTestCase {
         // Tropes: a searchable list of choices, none of them death-revealing.
         let tropes = app.buttons.matching(NSPredicate(format: "label BEGINSWITH 'Tropes'")).firstMatch
         for _ in 0..<4 where !(tropes.exists && tropes.isHittable) { app.swipeUp() }
-        tropes.tap()
-        XCTAssertTrue(app.navigationBars["Tropes"].waitForExistence(timeout: 10))
+        XCTAssertTrue(tropes.tap(reaching: app.navigationBars["Tropes"]))
         XCTAssertFalse(app.buttons.matching(NSPredicate(format: "label BEGINSWITH 'Bury Your Queers'")).firstMatch.exists, "a death-revealing trope is offered")
         try audit(app)
         let firstTrope = app.buttons.matching(identifier: "filter-term").firstMatch
@@ -337,9 +338,11 @@ final class AccessibilityAuditTests: XCTestCase {
         XCTAssertTrue(firstTrope.isSelected, "picking a trope does not mark it selected")
         // Back to the filter sheet (the Tropes bar's own back button, not a
         // button on the Search bar under the sheet).
-        app.navigationBars["Tropes"].buttons.element(boundBy: 0).tap()
+        let showResults = app.buttons["filters-show-results"]
+        XCTAssertTrue(app.navigationBars["Tropes"].buttons.element(boundBy: 0).tap(reaching: showResults), "did not get back to the filter sheet")
 
-        app.buttons["filters-show-results"].tap()
+        showResults.tap()
+        XCTAssertTrue(showResults.waitForNonExistence(timeout: 30), "the filter sheet did not close")
         XCTAssertTrue(app.buttons.matching(NSPredicate(format: "label BEGINSWITH '1 filter on'")).firstMatch.waitForExistence(timeout: 30), "no active-filters row")
         XCTAssertTrue(app.firstShowRow.waitForExistence(timeout: 30))
         try audit(app)
@@ -433,18 +436,13 @@ final class AccessibilityAuditTests: XCTestCase {
         guard row.waitForExistence(timeout: 10) else {
             throw XCTSkip("the first filtered show lists no characters in this snapshot")
         }
-        row.tap()
         // "Appears in" is on the character screen only. "Reveal" alone also
         // matches the show screen ("Do any queer characters die?"). Measured
         // in CI run 36968240658: the tap on the row was lost on a slow
         // runner, the show screen (scrolled to the row) satisfied "Reveal",
-        // and the character test audited the show screen instead. One more
-        // tap on the same row when the screen has not changed, as in
-        // `openFirstShow`; the assertions below are unchanged or stricter.
+        // and the character test audited the show screen instead.
         let appearsIn = app.staticTexts["Appears in"]
-        if !appearsIn.waitForExistence(timeout: 15), row.exists, row.isHittable {
-            row.tap()
-        }
+        row.tap(reaching: appearsIn)
         XCTAssertTrue(appearsIn.waitForExistence(timeout: 30), "did not reach the character screen")
         XCTAssertTrue(app.buttons["Reveal"].waitForExistence(timeout: 30))
         try audit(app)
@@ -453,12 +451,10 @@ final class AccessibilityAuditTests: XCTestCase {
     @MainActor
     func testFavoritesAndAboutPassTheAudit() throws {
         let app = launch()
-        app.tabBars.buttons["Favorites"].tap()
-        XCTAssertTrue(app.staticTexts["No favorites yet"].waitForExistence(timeout: 30))
+        XCTAssertTrue(app.tabBars.buttons["Favorites"].tap(reaching: app.staticTexts["No favorites yet"]))
         try audit(app)
 
-        app.tabBars.buttons["About"].tap()
-        XCTAssertTrue(app.staticTexts["Privacy"].waitForExistence(timeout: 30))
+        XCTAssertTrue(app.tabBars.buttons["About"].tap(reaching: app.staticTexts["Privacy"]))
         // The sections below Privacy appear once the snapshot has loaded.
         XCTAssertTrue(app.staticTexts["Data sources"].waitForExistence(timeout: 30))
         try audit(app)
@@ -504,8 +500,7 @@ final class AccessibilityAuditTests: XCTestCase {
     @MainActor
     func testFavoritesBackUpMenuIsLabeledForVoiceOver() throws {
         let app = launch()
-        app.tabBars.buttons["Favorites"].tap()
-        XCTAssertTrue(app.staticTexts["No favorites yet"].waitForExistence(timeout: 30))
+        XCTAssertTrue(app.tabBars.buttons["Favorites"].tap(reaching: app.staticTexts["No favorites yet"]))
         let menu = app.buttons["Back up or restore favorites"]
         XCTAssertTrue(menu.waitForExistence(timeout: 10), "no backup menu button")
         menu.tap()
@@ -525,8 +520,7 @@ final class AccessibilityAuditTests: XCTestCase {
         let sizes = ["UICTContentSizeCategoryL", "UICTContentSizeCategoryAccessibilityXXXL"]
         let heights = sizes.map { size -> [String: CGFloat] in
             let app = launch(textSize: size)
-            app.tabBars.buttons["About"].tap()
-            XCTAssertTrue(app.staticTexts["Privacy"].waitForExistence(timeout: 30))
+            XCTAssertTrue(app.tabBars.buttons["About"].tap(reaching: app.staticTexts["Privacy"]))
             var found: [String: CGFloat] = [:]
             for _ in 0..<15 {
                 for row in Self.aboutRowsThatScale where found[row.label] == nil {
@@ -654,12 +648,10 @@ final class AccessibilityAuditTests: XCTestCase {
 
         // Empty or not: a simulator that ran other UI tests may already hold
         // favorites, and both states must pass.
-        app.tabBars.buttons["Favorites"].tap()
-        XCTAssertTrue(app.navigationBars["Favorites"].waitForExistence(timeout: 30))
+        XCTAssertTrue(app.tabBars.buttons["Favorites"].tap(reaching: app.navigationBars["Favorites"]))
         try audit(app, [.dynamicType, .textClipped])
 
-        app.tabBars.buttons["About"].tap()
-        XCTAssertTrue(app.staticTexts["Privacy"].waitForExistence(timeout: 30))
+        XCTAssertTrue(app.tabBars.buttons["About"].tap(reaching: app.staticTexts["Privacy"]))
         try audit(app, [.dynamicType, .textClipped])
     }
 
@@ -804,7 +796,7 @@ final class AccessibilityAuditTests: XCTestCase {
         search.typeText(reference.name)
         let row = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "\(reference.name), from ")).firstMatch
         XCTAssertTrue(row.waitForExistence(timeout: 30), "no search result for \(reference.name)")
-        row.tap()
+        XCTAssertTrue(row.tap(reaching: app.staticTexts["Appears in"]), "did not reach \(reference.name)")
     }
 
     /// From the character screen, the "Appears in" link to its one show.
@@ -813,7 +805,7 @@ final class AccessibilityAuditTests: XCTestCase {
         let link = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", reference.showTitle)).firstMatch
         if !(link.exists && link.isHittable) { app.swipeUp() }
         XCTAssertTrue(link.waitForExistence(timeout: 10), "no link to \(reference.showTitle)")
-        link.tap()
+        XCTAssertTrue(link.tap(reaching: app.staticTexts["Do any queer characters die?"]), "did not reach \(reference.showTitle)")
     }
 
     /// Mirrors `SpoilerReveal.answerIdentifier` (the UI-test target does not

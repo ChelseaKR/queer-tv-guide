@@ -7,7 +7,7 @@ import UIKit
 /// a reminder is and is not (`ReminderPrimingView`); only "Turn on
 /// reminders" there asks the system for permission.
 struct RemindersSection: View {
-    /// Owned by FavouritesView, which presents the explanation sheet: a
+    /// Owned by FavoritesView, which presents the explanation sheet: a
     /// sheet attached inside a List row was dismissed as soon as the list
     /// redrew (measured in RemindersUITests).
     @Binding var showingPrimer: Bool

@@ -99,10 +99,16 @@ extension View {
     /// full contrast up to the bar and puts an opaque backing behind the bar
     /// itself. Earlier iOS versions have no edge effect, so nothing changes
     /// there.
+    ///
+    /// The tabs need it at the bottom. The first-run page, which has no
+    /// navigation bar, needs it at the top: there the soft edge blurred the
+    /// text scrolling up under the status bar, and the audit's contrast pass
+    /// on the scrolled page stopped with "Audit failed to complete in time"
+    /// (CI runs 35450246601 and 35451640715).
     @ViewBuilder
-    func legibleScrollEdges() -> some View {
+    func legibleScrollEdges(_ edges: VerticalEdge.Set = .bottom) -> some View {
         if #available(iOS 26.0, *) {
-            scrollEdgeEffectStyle(.hard, for: .bottom)
+            scrollEdgeEffectStyle(.hard, for: edges)
         } else {
             self
         }

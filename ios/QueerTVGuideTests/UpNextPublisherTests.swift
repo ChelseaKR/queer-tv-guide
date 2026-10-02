@@ -18,10 +18,10 @@ final class UpNextPublisherTests: XCTestCase {
         let defaults = try XCTUnwrap(UserDefaults(suiteName: suiteName))
         defer { defaults.removePersistentDomain(forName: suiteName) }
         var clock = Date(timeIntervalSince1970: 1_800_000_000)
-        let favorites = FavouritesStore(defaults: defaults, now: { clock })
+        let favorites = FavoritesStore(defaults: defaults, now: { clock })
         let model = AppModel(
             store: SnapshotStore(directory: try temporaryDirectory(), bundledURL: Bundle.main.url(forResource: "snapshot.v1", withExtension: "json")),
-            favourites: favorites
+            favorites: favorites
         )
         await model.loadInitial()
         let snapshot = try XCTUnwrap(model.snapshot)

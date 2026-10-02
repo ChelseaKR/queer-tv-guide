@@ -4,8 +4,8 @@ import XCTest
 final class SearchIndexTests: XCTestCase {
     private func index() throws -> SearchIndex { SearchIndex(snapshot: try Repo.fixture()) }
 
-    private func titles(_ hits: [SearchIndex.Hit]) -> [String] {
-        hits.map {
+    private func titles(_ results: SearchIndex.SearchResults) -> [String] {
+        results.hits.map {
             switch $0 {
             case .show(let s): return "show:\(s.title)"
             case .character(let c): return "char:\(c.name)"
@@ -14,8 +14,8 @@ final class SearchIndexTests: XCTestCase {
     }
 
     func testEmptyQueryReturnsNothing() throws {
-        XCTAssertEqual(try index().search(""), [])
-        XCTAssertEqual(try index().search("   "), [])
+        XCTAssertEqual(try index().search(""), SearchIndex.SearchResults(hits: [], totalCount: 0))
+        XCTAssertEqual(try index().search("   "), SearchIndex.SearchResults(hits: [], totalCount: 0))
     }
 
     func testFindsShowByTitlePrefix() throws {
@@ -52,7 +52,7 @@ final class SearchIndexTests: XCTestCase {
     }
 
     func testLimit() throws {
-        XCTAssertEqual(try index().search("e", limit: 2).count, 2)
+        XCTAssertEqual(try index().search("e", limit: 2).hits.count, 2)
     }
 
     func testFindsCharacterByAlternateShowName() throws {
@@ -133,7 +133,7 @@ final class SearchIndexTests: XCTestCase {
         let s = try SnapshotDecoder().decode(try Data(contentsOf: Repo.bundledSnapshot))
         let idx = SearchIndex(snapshot: s)
         for (query, id) in [("greys anatomy", "lwtv:show:"), ("xena warrior", "lwtv:show:26")] {
-            guard case .show(let show)? = idx.search(query).first else {
+            guard case .show(let show)? = idx.search(query).hits.first else {
                 XCTFail("no show first for \(query)")
                 continue
             }

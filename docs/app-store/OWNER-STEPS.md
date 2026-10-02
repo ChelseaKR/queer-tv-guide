@@ -44,15 +44,20 @@ Decided 2026-10-02 and recorded in DECISIONS 0015:
 - **Price: USD 4.99, paid up front**, no in-app purchase (confirmed).
 - **Support contact: kept** on the support page (step 5).
 
+Done 2026-10-02:
+
+- **Trademark screen for "Queer Frame": done, no conflict found**
+  (recorded under DECISIONS 0006). The official USPTO trademark search
+  (`https://tmsearch.uspto.gov/`, a word search typed into the search box),
+  the US App Store search API, and the Justia, uspto.report and Trademarkia
+  mirrors found no "QUEER FRAME" mark and no app by that name. The nearest
+  marks were QUEER EYE (live, classes 41 and 25, Scout Productions) and the
+  dead QUEER TV and QUEER TELEVISION. This is a screen, not legal advice;
+  an attorney's clearance search is the standard next step for certainty.
+
 Still yours:
 
-1. **Trademark screen for "Queer Frame".** None has been run. USPTO
-   Trademark Search (`https://tmsearch.uspto.gov/`) for `QUEER FRAME`,
-   `QUEERFRAME` and sound-alikes, live and dead, in classes 9, 41 and 42;
-   then the App Store and the web for "queer frame". Record the result and
-   the date under DECISIONS 0006. A conflict means renaming before
-   submitting. This is a screen, not legal advice.
-2. **Optional description line** for the widget and reminders
+1. **Optional description line** for the widget and reminders
    (`APP-STORE-LISTING.md`, "Not in the description today").
 
 ## 2. Merge what the build depends on

@@ -180,7 +180,7 @@ Paid up front on the App Store. There is no in-app purchase and nothing to unloc
 | Item | Blocks | Status |
 |---|---|---|
 | Support contact on `support.html` | Support URL (guideline 1.5) | Added on this branch (`chelsea@chelseakr.com`); live after the next nightly run. OWNER-STEPS step 5. |
-| Screenshots | Version page | Regenerate before upload: the five in `app-store/screenshots/` date from 2026-09-18 and predate the opaque status strip and filter bar (#48) and the first-run page changes (#77). OWNER-STEPS step 9. |
-| Trademark screen for "Queer Frame" | Name | Not run. OWNER-STEPS step 1. |
+| Screenshots | Version page | **Done.** Regenerated 2026-10-02 from the snapshot generated 2026-10-02T09:45:14Z, every reveal closed. Regenerate again if a change to a screen merges before the upload. OWNER-STEPS step 9. |
+| Trademark screen for "Queer Frame" | Name | **Done.** 2026-10-02, no conflict found (DECISIONS 0006). OWNER-STEPS step 1. |
 | Age rating answers | App Information | **Done.** Confirmed 2026-10-02 (DECISIONS 0015). |
 | Storefronts | Pricing and Availability | **Done.** United States only (DECISIONS 0015). |

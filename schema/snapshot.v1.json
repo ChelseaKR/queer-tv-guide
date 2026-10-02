@@ -120,7 +120,21 @@
                 "no_key": { "type": "integer", "minimum": 0 },
                 "ignored_by_source": { "type": "integer", "minimum": 0, "description": "LezWatch set lezshows_tvmaze_ignore." },
                 "not_found": { "type": "integer", "minimum": 0, "description": "TVmaze answered 404 for every key we had." },
+                "shared_tvmaze_id": { "type": "integer", "minimum": 0, "description": "Shows whose key resolved to a TVmaze show that another LezWatch show also resolved to. The join cannot say which one TVmaze means, so each has schedule_known: false. Listed in shared_tvmaze_ids. Added after the first v1 files; absent means not counted." },
                 "other": { "type": "integer", "minimum": 0 }
+              }
+            },
+            "shared_tvmaze_ids": {
+              "type": "array",
+              "description": "One entry per TVmaze show that more than one LezWatch show resolved to, by tvmaze_id ascending, for a person to review. Added after the first v1 files; absent means not checked.",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["tvmaze_id", "show_ids"],
+                "properties": {
+                  "tvmaze_id": { "type": "integer" },
+                  "show_ids": { "type": "array", "minItems": 2, "items": { "$ref": "#/$defs/show_id" } }
+                }
               }
             }
           }
@@ -312,7 +326,7 @@
       "properties": {
         "schedule_known": {
           "type": "boolean",
-          "description": "true iff TVmaze returned a show record for this show. When false every other field here is null and the app must say \"schedule unknown\", not \"no upcoming episode\"."
+          "description": "true iff TVmaze returned a show record for this show and no other LezWatch show resolved to the same TVmaze show (coverage.tvmaze.shared_tvmaze_ids). When false every other field here is null and the app must say \"schedule unknown\", not \"no upcoming episode\"."
         },
         "join": {
           "type": "object",

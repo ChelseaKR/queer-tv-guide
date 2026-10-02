@@ -47,14 +47,36 @@ def _json_response(data, *, status=200, headers=None):
     return httpx.Response(status, json=data, headers=headers or {})
 
 
-def build_handler(*, grant_present: bool = True):
+def _tvmaze_show_routes(bodies: dict[int, dict]):
+    """`/shows/{id}` routes that answer with the given TVmaze show bodies."""
+    return {
+        f"/shows/{tvmaze_id}": lambda _p, body=body: _json_response(body)
+        for tvmaze_id, body in bodies.items()
+    }
+
+
+def build_handler(
+    *,
+    grant_present: bool = True,
+    extra_shows: list[dict] | None = None,
+    extra_tvmaze: dict[int, dict] | None = None,
+    extra_imdb: dict[str, int] | None = None,
+):
     """A deterministic stand-in for LezWatch.TV + TVmaze, built entirely from
-    fixtures captured from the real APIs on 2026-09-13. No network is used."""
-    shows = [_load(f) for f in SHOW_FILES]
+    fixtures captured from the real APIs on 2026-09-13. No network is used.
+
+    `extra_shows` adds LezWatch shows (and their id-list entries),
+    `extra_tvmaze` adds TVmaze show bodies by id, and `extra_imdb` adds IMDb
+    lookups (IMDb id -> TVmaze id), for tests that need more than the base set."""
+    shows = [_load(f) for f in SHOW_FILES] + list(extra_shows or [])
     characters = [_load(f) for f in CHARACTER_FILES]
     taxonomies = {rb: _load(f"taxonomies/{rb}.json") for rb in TAXONOMY_REST_BASES}
     actors = _load("actors_export.json")
-    id_list_shows = _load("lezwatch_id_list_shows.json")
+    id_list_shows = _load("lezwatch_id_list_shows.json") + [
+        {"uid": s["id"], "id": f"show-{s['id']}", "name": f"Show {s['id']}"}
+        for s in extra_shows or []
+    ]
+    imdb_to_tvmaze = {"tt8888882": 55555, **(extra_imdb or {})}
     id_list_characters = _load("lezwatch_id_list_characters.json")
     tvmaze_derry = _load("tvmaze_show_derry_girls.json")
     tvmaze_imdb_only = _load("tvmaze_show_imdb_only.json")
@@ -77,8 +99,9 @@ def build_handler(*, grant_present: bool = True):
         return route
 
     def imdb_lookup(params):
-        if params.get("imdb") == "tt8888882":
-            return _json_response({"id": 55555})
+        tvmaze_id = imdb_to_tvmaze.get(params.get("imdb", ""))
+        if tvmaze_id is not None:
+            return _json_response({"id": tvmaze_id})
         return httpx.Response(404, json={"message": "not found"})
 
     routes = {
@@ -94,6 +117,7 @@ def build_handler(*, grant_present: bool = True):
         "/shows/9999999": lambda _p: httpx.Response(404, json={"message": "not found"}),
         "/lookup/shows": imdb_lookup,
     }
+    routes.update(_tvmaze_show_routes(extra_tvmaze or {}))
 
     def handler(request: httpx.Request) -> httpx.Response:
         url = request.url

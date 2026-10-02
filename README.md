@@ -12,9 +12,8 @@ product's premise is that the App Store label **"Data Not Collected"** is
 literally true: no accounts, no analytics, no third-party SDKs, favorites kept
 on the device. That is a per-product choice, recorded as the analytics posture
 "none" in `docs/DECISIONS.md` 0002. (The portfolio control it cites, DG-20 in
-DATA-GOVERNANCE-STANDARD §4a, is proposed in portfolio-standards#168 and is not
-yet in a released standard; the pinned v2.0.0 copy in `docs/standards/` has no
-§4a.)
+DATA-GOVERNANCE-STANDARD §4a, is in the pinned v3.0.1 copy in
+`docs/standards/`.)
 
 ## Quickstart
 
@@ -37,7 +36,7 @@ terms allow; see `pipeline/README.md` before running `qtv fetch`.
 
 ## Standards Conformance
 
-Held to the portfolio standards pinned in `docs/standards/` (v2.0.0). Every
+Held to the portfolio standards pinned in `docs/standards/` (v3.0.1). Every
 gap row names the open issue that tracks it. `docs/ROADMAP.md` carries the
 per-control ledger, `docs/capabilities.md` what the project may claim, and
 decisions live in `docs/DECISIONS.md` and `docs/adr/` (one number sequence,

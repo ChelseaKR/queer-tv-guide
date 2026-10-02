@@ -194,3 +194,17 @@ The last column names what fails if the credit is removed. CI runs the
 | The credits travel with the data | The app reads every credit from the snapshot itself, so a file that lacked one would show TVmaze's dates uncredited. The decoder refuses a snapshot, bundled or downloaded, that does not hold exactly one LezWatch.TV entry and one TVmaze entry (the schema cannot require that: two `lezwatch` items validate). A refused download leaves the last good file in place. | `SnapshotAttributionGateTests`, `AttributionTests.testASnapshotWithoutTVmazesEntryIsRefused…` |
 | robots.txt: `Crawl-delay: 10`; `/wp-json/` not disallowed | Crawl conduct, not attribution: the pipeline paces LezWatch.TV at one request per 10 s (see "Crawl budget" above). | `pipeline/tests/test_http.py` |
 
+## Apple's App Store badge (website only)
+
+`pipeline/src/qtv_pipeline/assets/app-store-badge.svg` is Apple's "Download
+on the App Store" badge (preferred black, US English), unmodified, as served
+by Apple's marketing tools on 2026-10-02 from
+https://toolbox.marketingtools.apple.com/api/v2/badges/download-on-the-app-store/black/en-us
+(SHA-256 a26fc5b38380272c92e9019a2eb8b45542a66814b3e2b203772db8904b9fb99f,
+pinned in `pipeline/tests/test_app_store.py`). Apple owns it; the Elastic
+License 2.0 does not apply to it. It is used under Apple's App Store
+Marketing Artwork License Agreement and the App Store Marketing Guidelines
+(https://developer.apple.com/app-store/marketing/guidelines/), which allow it
+"only in connection with Your applications that are available for download
+on the App Store". The Pages site shows it only when the `APP_STORE_LIVE`
+switch is on (`docs/app-store/OWNER-STEPS.md` step 14).

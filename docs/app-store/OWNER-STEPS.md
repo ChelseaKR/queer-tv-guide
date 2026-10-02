@@ -245,6 +245,33 @@ On the iOS App version page:
 After approval, press **Release**, then publish the draft GitHub Release
 for the same tag.
 
+## 14. Once the app is live: turn on the website's App Store badge
+
+Do this after step 13's **Release**, once
+https://apps.apple.com/us/app/id6818637465 opens the listing. The Pages site says nothing about the App Store listing until one switch,
+the `APP_STORE_LIVE` repository variable, is on. snapshot.yml reads it and
+runs `pipeline/src/qtv_pipeline/app_store.py` over the assembled site.
+Apple's badge license allows the badge only for an app that is available
+on the App Store, so it stays off until then.
+
+1. `gh variable set APP_STORE_LIVE --repo ChelseaKR/queer-tv-guide --body true`
+2. `gh workflow run snapshot.yml --repo ChelseaKR/queer-tv-guide` to
+   republish now instead of at the next nightly run.
+3. Check: `curl -s https://chelseakr.github.io/queer-tv-guide/ | grep -c apple-itunes-app`
+   prints 1, and the index shows Apple's black badge with "Queer Frame for
+   iPhone. $4.99 on the App Store."
+
+What it adds: Safari's Smart App Banner
+(`<meta name="apple-itunes-app" content="app-id=6818637465">`) on the
+index, privacy and support pages, and on the index Apple's "Download on
+the App Store" badge linking to https://apps.apple.com/us/app/id6818637465.
+No script and no analytics: this site has none.
+
+Off again: `gh variable delete APP_STORE_LIVE --repo ChelseaKR/queer-tv-guide`
+(or set it to `false`), then run snapshot.yml again. Any value other than
+`true`, `false` or empty fails the run at its first step, before anything is
+published.
+
 ## What is already done
 
 Checked 2026-10-02 against the code on this branch. `make appstore`

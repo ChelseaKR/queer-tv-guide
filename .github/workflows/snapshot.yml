@@ -70,6 +70,16 @@ jobs:
         working-directory: pipeline
         run: uv sync --all-groups
 
+      - name: check the APP_STORE_LIVE switch before anything is published
+        # Owner-set repository variable (Settings -> Secrets and variables ->
+        # Actions -> Variables). Unset, empty or "false" = off; "true" = on,
+        # once Apple has approved the app (qtv_pipeline/app_store.py). Any
+        # other value stops the run here, before the release upload.
+        working-directory: pipeline
+        run: uv run python -m qtv_pipeline.app_store --check "$APP_STORE_LIVE"
+        env:
+          APP_STORE_LIVE: ${{ vars.APP_STORE_LIVE }}
+
       - name: lint + offline tests
         working-directory: pipeline
         run: |
@@ -159,6 +169,12 @@ jobs:
           # The index carries the file's CC BY-SA 4.0 license and every
           # source credit with links (qtv_pipeline/site_index.py, tested).
           uv run python -m qtv_pipeline.site_index out/snapshot.v1.json site/index.html
+          # Off (the default): changes nothing. On: Safari's Smart App Banner
+          # on every page and Apple's App Store badge on the index
+          # (qtv_pipeline/app_store.py). Passed through env, not interpolated.
+          uv run python -m qtv_pipeline.app_store site "$APP_STORE_LIVE"
+        env:
+          APP_STORE_LIVE: ${{ vars.APP_STORE_LIVE }}
 
       - uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3.0.1
         with:

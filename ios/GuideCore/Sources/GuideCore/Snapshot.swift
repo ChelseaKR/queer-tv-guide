@@ -413,7 +413,7 @@ public struct Episode: Codable, Equatable, Sendable, Identifiable {
     /// time, so this property returns nil to prevent a misleading display
     /// or notification.
     public var airInstant: Date? {
-        guard let airtime, !airtime.isEmpty, let airstamp else { return nil }
+        guard let airtime, !airtime.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty, let airstamp else { return nil }
         return ISO8601SecondFormatter.date(from: airstamp)
     }
 }

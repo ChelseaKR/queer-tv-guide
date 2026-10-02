@@ -44,7 +44,7 @@ network call.
 | LezWatch records a death | `death.died: true`, `death_known: true`, `dates` non-empty | "Dies (2026)" |
 | LezWatch records no death | `death.died: null`, `death_known: false`, `dates: []` | "Not recorded" — never "survives" or "no" |
 | TVmaze matched, nothing scheduled | `schedule.schedule_known: true`, `next_episode: null` | "No upcoming episode" |
-| TVmaze not matched | `schedule.schedule_known: false`, everything else in `schedule` null | "Schedule unknown" |
+| TVmaze not matched, or its show is also matched to another LezWatch show | `schedule.schedule_known: false`, everything else in `schedule` null | "Schedule unknown" |
 | LezWatch has no watch link | `watch_links: []` | Nothing; never a guessed service |
 | Rating not given | `ratings.quality: null` (LezWatch stores 0 for unrated; the pipeline maps 0 → null) | "Unrated" |
 | Gender/sexuality not recorded | `gender: null` | "Not recorded" |
@@ -67,6 +67,15 @@ IMDb id) to TVmaze. The pipeline tries, in order:
 `lezshows_tvmaze_ignore` set is not joined and is counted as
 `coverage.tvmaze.misses.ignored_by_source`. The miss rate is in
 `coverage.tvmaze` on every build and printed by the pipeline.
+
+A join is by id, and nothing proves the TVmaze show is the one LezWatch means.
+When two or more LezWatch shows resolve to the same TVmaze show, at most one of
+them is right and the pipeline cannot tell which, so none of them gets that
+schedule: each has `schedule_known: false` (the app says "Schedule unknown") and
+is counted as `coverage.tvmaze.misses.shared_tvmaze_id`. Each such TVmaze show is
+listed in `coverage.tvmaze.shared_tvmaze_ids` as `{tvmaze_id, show_ids}`, for a
+person to review and fix at the source. Both fields were added after the first
+v1 files, so a reader treats their absence as "not checked", not as zero.
 
 ### Attribution and license
 

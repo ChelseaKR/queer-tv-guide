@@ -121,6 +121,18 @@ LezWatch's own docs describe hand-fixing exactly this class of mismatch via a
 "TVmaze Names" override, which this pipeline does not yet search by show name
 as a fourth fallback; that is the natural next improvement to the join rate.
 
+The join is checked, not trusted. A TVmaze show that more than one LezWatch show
+resolves to is the schedule of at most one of them, and the build cannot tell
+which, so every one of those shows gets `schedule_known: false` rather than a
+schedule that may be another show's (`build._attach_schedules`). They are
+counted as `misses.shared_tvmaze_id`, listed by TVmaze id in
+`coverage.tvmaze.shared_tvmaze_ids`, and printed one line per TVmaze id in the
+build log (`tvmaze 26865 claimed by lwtv:show:1992, lwtv:show:1995; schedule
+unknown for each`). The snapshot published 2026-09-19 had two such TVmaze shows
+and four LezWatch shows (#52). The fix belongs at the source (a manual TVmaze id
+or `lezshows_tvmaze_ignore` on LezWatch); once only one show claims the TVmaze
+show, its schedule comes back on the next build.
+
 ## Publishing
 
 `.github/workflows/snapshot.yml` runs nightly and on dispatch. It restores the
@@ -152,7 +164,8 @@ https://chelseakr.github.io/queer-tv-guide/snapshot.v1.json
 - Character with no recorded death: `died: null`, `death_known: false`. Never
   `false`; the schema rejects it.
 - Show with no watch link: `watch_links: []`. Never a guessed link.
-- TVmaze not joined: `schedule_known: false` and every schedule field null.
+- TVmaze not joined, or joined to a TVmaze show another LezWatch show also
+  joined to: `schedule_known: false` and every schedule field null.
   Joined with nothing scheduled: `schedule_known: true`, `next_episode: null`.
 - Rating 0 in LezWatch means unrated and becomes `null`.
 - Season count 0 in LezWatch means never filled in and becomes `null`.

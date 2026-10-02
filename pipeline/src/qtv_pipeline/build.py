@@ -312,15 +312,36 @@ def _check_no_shrink(
     )
 
 
+def _joined_tvmaze_id(join: dict[str, Any] | None) -> int | None:
+    if join and join.get("matched") and join.get("tvmaze_id") is not None:
+        return int(join["tvmaze_id"])
+    return None
+
+
 def _attach_schedules(
     shows: list[dict[str, Any]], joins: dict[str, dict[str, Any]], cache_dir: Path
 ) -> None:
-    """Give every show its TVmaze schedule block (unknown when not joined)."""
+    """Give every show its TVmaze schedule block (unknown when not joined).
+
+    A TVmaze show joined by more than one LezWatch show is the schedule of at
+    most one of them, and the join cannot say which (#52). Every claimant gets
+    the unknown block instead of a schedule that may be another show's, and is
+    marked `_shared_tvmaze_id` so coverage counts and lists it."""
+    claimants: dict[int, int] = {}
+    for show in shows:
+        tvmaze_id = _joined_tvmaze_id(joins.get(str(show["lwtv_id"])))
+        if tvmaze_id is not None:
+            claimants[tvmaze_id] = claimants.get(tvmaze_id, 0) + 1
+
     for show in shows:
         join = joins.get(str(show["lwtv_id"]))
+        tvmaze_id = _joined_tvmaze_id(join)
         tvmaze_show = None
-        if join and join.get("matched") and join.get("tvmaze_id") is not None:
-            tvmaze_show = tvmaze.load_tvmaze_show(cache_dir, join["tvmaze_id"])
+        show["_shared_tvmaze_id"] = None
+        if tvmaze_id is not None and claimants[tvmaze_id] > 1:
+            show["_shared_tvmaze_id"] = tvmaze_id
+        elif tvmaze_id is not None:
+            tvmaze_show = tvmaze.load_tvmaze_show(cache_dir, tvmaze_id)
         show["schedule"] = normalize.normalize_schedule(join, tvmaze_show)
 
 

@@ -4,6 +4,12 @@ Everything here is a draft for the owner to approve, edit, or reject — nothing
 in this file has been submitted anywhere. `ios/` has no App Store Connect
 access and this session did not attempt any.
 
+**Start at [`app-store/OWNER-STEPS.md`](app-store/OWNER-STEPS.md)** (2026-10-02):
+the ordered owner steps to submission. What to paste and what to answer in
+App Store Connect (App Privacy per data category, age rating, App Review
+notes) is in [`APP-STORE-LISTING.md`](APP-STORE-LISTING.md). This file keeps
+the reasoning behind the listing and the privacy check against the code.
+
 ## 1. Listing draft
 
 The owner's decisions of 2026-09-17 (DECISIONS 0006–0011, 0013) settled name,
@@ -26,22 +32,17 @@ search):
 | Category | Entertainment (primary), Reference (secondary) | — | §App Store search, Categories |
 | Price | **$4.99**, one-time. No IAP, no subscription. Apple Small Business Program (15%). | — | DECISIONS 0003, 0011 |
 | Devices | **iPhone only** (`TARGETED_DEVICE_FAMILY = 1`). Screenshots: iPhone only (6.9" set). iPads can still run it in iPhone compatibility mode, and App Review may test it there (2.4.1). | — | DECISIONS 0009 |
-| Age rating | **13+ expected**, computed by App Store Connect from the questionnaire below. Apple's current tiers are 4+, 9+, 13+, 16+, 18+; "12+" no longer exists (checked 2026-09-17). | — | Apple, research §7 |
+| Age rating | **13+ expected**, computed by App Store Connect from the questionnaire answers in `APP-STORE-LISTING.md` (confirmed 2026-10-02, DECISIONS 0015). Apple's current tiers are 4+, 9+, 13+, 16+, 18+; "12+" no longer exists (checked 2026-09-17). | — | Apple, research §7 |
 | Privacy label | **"Data Not Collected"** for every category (see §2) | — | DECISIONS 0002, 0007 |
 | Privacy Policy URL | `https://chelseakr.github.io/queer-tv-guide/privacy.html`, from `docs/site/privacy.html` | — | DECISIONS 0007 |
-| Support URL | `https://chelseakr.github.io/queer-tv-guide/support.html`, from `docs/site/support.html`. Both are published by the nightly workflow and linked from the About screen. **Still owed: a contact method on the page.** | — | DECISIONS 0010 |
+| Support URL | `https://chelseakr.github.io/queer-tv-guide/support.html`, from `docs/site/support.html`. Both are published by the nightly workflow and linked from the About screen. The page's contact line, `chelsea@chelseakr.com`, was added 2026-10-02. | — | DECISIONS 0010 |
 | Export compliance | "No" to non-exempt encryption, declared in the build (`ITSAppUsesNonExemptEncryption = NO`). | — | — |
 
-### Before submission (hard gates)
+### Before submission
 
-1. **A support contact method** on `docs/site/support.html`, currently a
-   `TODO(owner)` marker (DECISIONS 0010). `make -C ios presubmit-check`
-   fails until it is resolved, and CI puts a warning on every run. The owner
-   has deferred it; nothing invents an address.
-2. `make -C ios bundle-snapshot` then `make -C ios test` on the build you
-   archive.
-3. Screenshots from that build: `make -C ios screenshots` (§Screenshots).
-4. The owner steps in §6.
+The ordered list, with the decisions still open, is
+[`app-store/OWNER-STEPS.md`](app-store/OWNER-STEPS.md). `make appstore`
+(part of `make verify` and every pull request) checks the build side.
 
 Data use is settled: the app ships on LezWatch.TV's published terms with full
 attribution (DECISIONS 0013; the permission request of 0008 was not sent).
@@ -133,29 +134,14 @@ category's name is repeated in the keywords.
 
 [moved to private strategy notes]
 
-### Age rating questionnaire (draft answers)
+### Age rating questionnaire
 
-Apple's current age-rating flow is a set of content-frequency questions
-(none/infrequent/frequent), not free text. Draft answers, all **"None"**
-unless noted:
-
-- Sexual content or nudity: **None.** The app discusses relationships and
-  queer identity (explicitly permitted per research §7's read of 1.1.1) but
-  shows no sexual content and carries no user-generated content of any kind.
-- Mature/suggestive themes: **Infrequent/Mild** — some shows' `triggers`
-  field surfaces things like "Violence" from the source data; the app
-  states these as content notes, not depicts them.
-- Violence: **Infrequent/Mild**, same basis.
-- Horror/fear themes: **None.**
-- Gambling, alcohol/drugs, profanity: **None** (not in the data model at
-  all).
-- Unrestricted web access: **No** — the app never opens a browser in-app; it
-  hands URLs to the system via `openURL`, which is not "web access" in
-  Apple's sense (no `WKWebView`, no `SFSafariViewController` — enforced by
-  `SourceTreeGuardTests.testNoOtherNetworkOrWebPrimitives`).
-- Expected result: **13+**, Apple's nearest current tier to Sapphic
-  Signal's older 12+ rating (research §3.1), and below Groove/qcal/QLIST's
-  17+/18+. App Store Connect computes it from these answers.
+Moved to [`APP-STORE-LISTING.md`](APP-STORE-LISTING.md) on 2026-10-02 and
+rewritten for Apple's current questionnaire, with the plot-note and trope
+text measured against the live snapshot. Unrestricted web access stays
+**No**: the app never opens a browser in-app; it hands URLs to the system
+via `openURL` (no `WKWebView`, no `SFSafariViewController`, enforced by
+`SourceTreeGuardTests.testNoOtherNetworkOrWebPrimitives`).
 
 ### Screenshots (iPhone 6.9", 1320 × 2868, real data)
 
@@ -315,34 +301,15 @@ https://developer.apple.com/app-store/review/guidelines/ (fetched
   restriction history for LGBTQ content on the App Store this session.
   Owner decision, not a code question: research §7 suggests limiting the
   first release to storefronts where the content is uncontroversial rather
-  than treating this as a review risk to engineer around.
+  than treating this as a review risk to engineer around. **Decided
+  2026-10-02 (DECISIONS 0015): the United States only.**
 
-### App Review note (paste into "Notes" under App Review Information)
+### App Review note
 
-> **Data sources, licenses and attribution (5.2.2).** Queer Frame shows data
-> from two public sources. It bundles a snapshot and refreshes it from one
-> static file we publish.
->
-> 1. **LezWatch.TV** (https://lezwatchtv.com): shows, characters, recorded
->    deaths, ratings, tropes and where-to-watch links, from its public API.
->    Its terms of use (https://lezwatchtv.com/tos/) say: "You are welcome to
->    use, reuse, and extend the data here for no fees … We do ask you link
->    back to us, or note us by name." Every show and character screen links
->    to its LezWatch.TV page ("View on LezWatch.TV"), and the About screen
->    names LezWatch.TV with a link.
-> 2. **TVmaze** (https://www.tvmaze.com): episode schedules, from its API,
->    licensed CC BY-SA 4.0 (https://www.tvmaze.com/api, "Licensing"). TVmaze
->    asks for attribution by linking back to it from within the app. Every
->    next-episode line is shown with "Schedule data from TVmaze", linked,
->    and the CC BY-SA 4.0 license, linked.
->
-> The About screen states: "LezWatch.TV and TVmaze do not endorse this
-> app." No images or articles are used. The combined data file is itself
-> published under CC BY-SA 4.0 at
-> https://chelseakr.github.io/queer-tv-guide/snapshot.v1.json, with its
-> license and credits. The app makes one network request, a GET of that
-> file. It has no accounts, analytics, ads or third-party SDKs. Nothing
-> requires sign-in.
+The paste-ready note is in [`APP-STORE-LISTING.md`](APP-STORE-LISTING.md)
+("App Review notes"). It keeps the data-sources and attribution text that
+was here and adds how to see the reveal, the local reminders, the widget
+and the purchase model.
 
 ## 4. Screens this build ships (2 of 2 planned before this PR / 5 total)
 
@@ -387,134 +354,13 @@ Outside the app:
   the data's date on every size, "Out of date" past the data cards' 48-hour
   promise, and TVmaze named as the schedule's source.
 
-## 5. Owner steps to a TestFlight build
+## 5. Owner steps
 
-Everything through "Archive" runs with no App Store Connect access, which
-this session doesn't have. Steps that touch Apple's servers or the keychain
-are marked **(owner-run)** — this session could not run them and did not
-attempt to.
-
-```sh
-# 0. From ios/. Regenerate the project if project.yml changed.
-cd ios
-xcodegen generate
-
-# 1. Register the explicit App ID (owner-run; needs an authenticated
-#    App Store Connect / Developer Portal session). The bundle id keeps
-#    its working form even though the app is named Queer Frame
-#    (DECISIONS 0006): it is never shown to users and cannot change once
-#    registered.
-#    Team ID: 6X5YH93QNM (never ACKGM9XK9V — that is the enrollment id, not
-#    the Team ID; see docs/DECISIONS.md and the portfolio's fg-ios-app-store-path note).
-xcrun altool --list-apps -u "<owner apple id>" -p "<app-specific password>"
-#    …or via the App Store Connect / Developer Portal web UI:
-#    App ID: com.chelseakr.queertvguide, capability: App Groups only, with
-#    group.com.chelseakr.queertvguide (no push, no iCloud).
-#    App ID: com.chelseakr.queertvguide.widgets (the Up Next widget
-#    extension), capability: the same App Group, nothing else.
-#    The app writes one small file there for the widget (GuideCore's
-#    UpNext); it never leaves the device. Xcode's automatic signing can
-#    register both when the team's account is signed in.
-
-# 2. Confirm a valid Distribution certificate + provisioning profile exist
-#    for Team 6X5YH93QNM (owner-run; System Settings/Keychain Access work,
-#    or Xcode's Settings > Accounts > Manage Certificates).
-security find-identity -v -p codesigning
-
-# 3. REQUIRED before any archive: refresh the bundled snapshot.
-#    ios/QueerTVGuide/Resources/snapshot.v1.json is the app's first-launch
-#    and offline catalog (gitignored, never committed): a byte-for-byte
-#    copy of a pipeline-PUBLISHED snapshot (real LezWatch.TV + TVmaze data, the same bytes anyone can
-#    fetch under CC BY-SA 4.0). Re-copy the latest before archiving so the
-#    release ships current data. The target verifies the published .sha256
-#    and refuses a fixture or a locally built file (no workflow run id):
-make bundle-snapshot
-#    GuideCore's BundledSnapshotTests and the hosted
-#    AppModelIntegrationTests re-check the result (not the fixture, published
-#    by the nightly workflow, decodes with the app's decoder, real-catalog
-#    scale). Run them before archiving:
-make test
-
-# 4. Archive (device build; needs the profile from step 1-2 present
-#    locally — this session's simulator-only environment cannot run this
-#    step to completion without them).
-xcodebuild -project QueerTVGuide.xcodeproj -scheme QueerTVGuide \
-  -configuration Release -destination 'generic/platform=iOS' \
-  -archivePath build/QueerTVGuide.xcarchive \
-  DEVELOPMENT_TEAM=6X5YH93QNM \
-  archive
-
-# 5. Validate the archive against App Store Connect before uploading.
-xcodebuild -exportArchive \
-  -archivePath build/QueerTVGuide.xcarchive \
-  -exportPath build/export \
-  -exportOptionsPlist ExportOptions.plist \
-  # ExportOptions.plist (owner creates once): method=app-store-connect,
-  # teamID=6X5YH93QNM, signingStyle=automatic.
-
-# 6. Upload to App Store Connect (owner-run; needs an app-specific
-#    password or API key).
-xcrun altool --validate-app -f build/export/QueerTVGuide.ipa \
-  -t ios -u "<owner apple id>" -p "<app-specific password>"
-xcrun altool --upload-app -f build/export/QueerTVGuide.ipa \
-  -t ios -u "<owner apple id>" -p "<app-specific password>"
-
-# 7. In App Store Connect (owner-run, web UI): attach the build to a
-#    TestFlight group, fill in the "Notes for Review" text from §3 above,
-#    complete the privacy label as "Data Not Collected" per §2, set the
-#    price tier per §1, and submit for internal testing.
-```
-
-Nothing above installs, signs, or uploads anything from this session — no
-`xcrun altool`/`xcodebuild archive`/`-exportArchive` command in this section
-was run here; they are the ordered commands for the owner to run with
-Apple credentials this environment doesn't have.
-
-## 6. Owner steps to submit (the remaining, owner-only work)
-
-Nothing below was run from this repository. Each step needs the owner's
-Apple account.
-
-1. **Agreements** (App Store Connect → Business): the Paid Apps agreement
-   active, with banking and tax forms complete. A paid app cannot go on
-   sale without it. Enroll in the App Store Small Business Program (15%).
-2. **Bundle ID** (Certificates, Identifiers & Profiles → Identifiers →
-   +): explicit App ID `com.chelseakr.queertvguide`, Team `6X5YH93QNM`,
-   no capabilities.
-3. **App record** (App Store Connect → Apps → + → New App):
-   - Platform: iOS
-   - Name: **Queer Frame**
-   - Primary language: English (U.S.)
-   - Bundle ID: `com.chelseakr.queertvguide`
-   - SKU: any internal id you choose, never shown to users (for example
-     `queer-frame-ios`)
-   - User access: Full
-4. **Pricing and Availability:** price **$4.99** (USD base price, one-time).
-   Storefronts are your call (research §7 on where LGBTQ content is
-   restricted).
-5. **App Information:**
-   - Category: primary Entertainment, secondary Reference (§App Store
-     search, Categories)
-   - Age rating questionnaire: answer as in §1, which should compute **13+**
-   - Privacy Policy URL: `https://chelseakr.github.io/queer-tv-guide/privacy.html`
-6. **App Privacy:** "Data Not Collected" (§2).
-7. **Version page:**
-   - Subtitle, promotional text, description and keywords from
-     `docs/app-store-listing.json` (the secondary category is set in step
-     5, under App Information)
-   - Support URL `https://chelseakr.github.io/queer-tv-guide/support.html`,
-     **after its contact method is added** (blocker 1 above)
-   - The five screenshots in `docs/app-store/screenshots/` in the 6.9"
-     iPhone slot
-   - The App Review note above, and your own contact details for the
-     reviewer
-   - Sign-in required: No
-8. **Build:** from `ios/`, run `make bundle-snapshot`, `make test` and
-   `make presubmit-check`. Then open `QueerTVGuide.xcodeproj` in Xcode and
-   choose Product → Archive with the "Any iOS Device" destination (signing:
-   automatic, Team `6X5YH93QNM`). Then Organizer → Distribute App → App
-   Store Connect → Upload. Export compliance is answered by the build
-   (`ITSAppUsesNonExemptEncryption = NO`).
-9. **Submit:** select the processed build on the version page, then Add for
-   Review → Submit. Optionally TestFlight it internally first.
-
+Replaced on 2026-10-02 by [`app-store/OWNER-STEPS.md`](app-store/OWNER-STEPS.md),
+the one ordered list from here to "Submitted for Review". The steps that
+were here had two errors it corrects: they registered the app's ID with no
+capabilities, but the app and the widget both need the App Group; and they
+uploaded with `altool` and an app-specific password, where Xcode's
+Organizer does the same with no password on the command line. A signed tag
+and `.github/workflows/ios-release.yml` now verify each release candidate
+(unsigned archive, read back) before the owner archives it in Xcode.

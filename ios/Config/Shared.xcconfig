@@ -3,7 +3,7 @@
 // must stay per-target (App.xcconfig) or every target ends up with the same
 // product name and Xcode's build system collides on the output paths.
 DEVELOPMENT_TEAM = 6X5YH93QNM
-MARKETING_VERSION = 0.1.0
+MARKETING_VERSION = 1.0.0
 CURRENT_PROJECT_VERSION = 1
 
 IPHONEOS_DEPLOYMENT_TARGET = 17.0

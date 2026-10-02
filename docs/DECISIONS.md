@@ -1,7 +1,8 @@
 # Decisions
 
-Numbering: 0001–0004, 0006–0011 and 0013 live here. 0005 and 0012 are
-ADRs in `docs/adr/`, so they are skipped here rather than duplicated.
+Numbering: 0001–0004, 0006–0011, 0013 and 0015 live here. 0005, 0012 and
+0014 are ADRs in `docs/adr/`, so they are skipped here rather than
+duplicated.
 
 ## 0001 — Native SwiftUI, not a web shell (2026-09-13)
 
@@ -150,3 +151,21 @@ display data on your own site", and a paid app is arguably not that.
 App Review 5.2.2 may ask for authorization. The answer is the dated terms
 snapshot, the attribution, and the App Review note in `docs/APP-STORE.md`.
 
+## 0015 — First App Store release: 1.0.0, United States only, 13+ (2026-10-02)
+
+**Decision** (owner, 2026-10-02):
+- **Version 1.0.0.** `MARKETING_VERSION` is 1.0.0 in
+  `ios/Config/Shared.xcconfig`, the only place it is set, and the build
+  number stays 1. `CHANGELOG.md` has a `## [1.0.0] - TBD` section that the
+  release commit dates; the release workflow refuses it while it says TBD,
+  and `make appstore` requires a section for the app's version.
+- **Storefronts: the United States only**, so no Digital Services Act
+  trader declaration.
+- **Age rating: the draft answers in `docs/APP-STORE-LISTING.md` are
+  confirmed**, expected to compute 13+.
+- **Price confirmed:** $4.99, paid up front, no in-app purchase (0003,
+  0011).
+- **Support contact:** the support page lists `chelsea@chelseakr.com`
+  (resolves the "still owed" line in 0010).
+
+**Still open:** a trademark screen for "Queer Frame" (the owner's).

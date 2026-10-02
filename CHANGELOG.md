@@ -68,6 +68,11 @@ consumer of the published snapshot, would notice.
   of each favorite show, soonest first. It reads a file the app writes on the
   device, makes no network request, never shows death data or episode
   titles, always shows the data's date, and says "Out of date" past 48 hours.
+- The support page lists a contact address.
+- The path to the App Store: `make appstore` checks the app's submission
+  settings on every change, a release workflow verifies a signed version
+  tag by archiving the app unsigned and reading it back, and
+  `docs/app-store/OWNER-STEPS.md` lists the steps only the owner can take.
 
 ### Changed
 
@@ -150,3 +155,11 @@ consumer of the published snapshot, would notice.
   who moved on after the first word heard "No". Section headings on About,
   and text scrolling toward the tab bar, now meet 4.5:1 contrast, and the
   About rows scale with Dynamic Type (#22, #28).
+
+## [1.0.0] - TBD
+
+The first App Store release (DECISIONS 0015). Before tagging, replace `TBD`
+with the release date (`YYYY-MM-DD`), replace this paragraph with the
+release notes, and move what ships from `[Unreleased]` into this section
+(docs/app-store/OWNER-STEPS.md, step 9). The release workflow refuses this
+section while it says TBD.

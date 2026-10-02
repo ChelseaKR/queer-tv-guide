@@ -1,0 +1,286 @@
+name: ios-release
+
+# Trusted-main, signed-tag release check for the iOS app (RELEASE-AND-
+# VERSIONING REL-14, REL-29/30/31). Adapted from the same workflow in the
+# Trout Truck app's repository. Dispatch only, after the owner has pushed a
+# signed annotated tag on the tip of main:
+#
+#   git tag -s v1.0.0 -m "release: v1.0.0" && git push origin v1.0.0
+#   gh workflow run ios-release.yml -f tag=v1.0.0
+#
+# Why dispatch and not `on: push: tags`: the shared authorizer checks out
+# trusted main and refuses to run from any other ref (it asserts
+# GITHUB_REF = refs/heads/main), so a tag-push trigger would fail there.
+#
+# Why the build checks out the dispatch commit and not the tag's commit: a
+# checkout of a ref taken from an earlier job's output, followed by steps
+# that run repository scripts, is the shape CodeQL reports as
+# actions/cache-poisoning/poisonable-step. Checking out the default ref (the
+# tip of main the run was dispatched from, already verified by the
+# authorizer) and then requiring the tag's commit to equal it runs exactly
+# the same code, and nothing is ever checked out from a job output. The
+# cost: tag the tip of main and dispatch before anything else merges. If
+# main moved first, the run refuses; release tags aren't moved, so cut the
+# next patch version from the new tip.
+#
+# What it does, in order:
+# 1. authorize (shared): stable SemVer tag, an annotated tag object, signed
+#    by a key in .github/allowed_signers, on a commit that is in main.
+# 2. build (macOS): checks out the dispatch commit and refuses to go on
+#    unless the tag points at exactly that commit. Then: the release
+#    preflight (tag = MARKETING_VERSION, build number above every earlier
+#    tag's, a dated CHANGELOG section, the App Store readiness audit), the
+#    GuideCore tests (which first fetch and checksum-verify the published
+#    snapshot the app bundles), and an UNSIGNED archive of the QueerTVGuide
+#    scheme for a generic iOS device: the same Archive action the owner runs
+#    in Xcode, minus signing. It then reads the archived app and widget
+#    back: versions, display name, bundle IDs, iPhone-only, export
+#    compliance, both privacy manifests, the bundled snapshot, no StoreKit
+#    configuration, no embedded framework, and no required-reason symbol in
+#    a binary whose manifest does not declare it. The unsigned archive is
+#    never uploaded, exported or kept.
+# 3. publish: rechecks the tag object against the live repository and
+#    creates a DRAFT GitHub Release with the notes and the version stamp.
+#    The owner publishes the draft when the App Store release goes out.
+#
+# What it never does: sign, export, keep the archive, or upload to App Store
+# Connect. It holds no Apple credential and reads no secret. Archive and
+# upload stay in Xcode on the owner's Mac (docs/app-store/OWNER-STEPS.md).
+#
+# Cost: this is a public repository, so the macOS minutes are free, and it
+# runs only when dispatched for a release.
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Existing signed stable SemVer tag (vX.Y.Z)"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ios-release
+  cancel-in-progress: false
+
+jobs:
+  # A job that calls a reusable workflow cannot set timeout-minutes; the
+  # called workflow's own job has one (30 minutes).
+  authorize:
+    permissions:
+      contents: read
+    uses: ChelseaKR/.github/.github/workflows/release-authorize.yml@7be4c3e44e2acf20e8a98eeea4351c1e5d2789bc # v1.0.0
+    with:
+      tag: ${{ inputs.tag }}
+
+  build:
+    name: preflight, test and archive the app unsigned at the tagged commit
+    needs: authorize
+    runs-on: macos-26
+    # ci.yml's guidecore job (GuideCore tests plus a simulator build) runs in
+    # 17 to 20 minutes on this runner; an unsigned Release archive is
+    # comparable. A timeout reads as "cancelled", so the margin is wide.
+    timeout-minutes: 60
+    permissions:
+      contents: read
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_26.6.app/Contents/Developer
+    steps:
+      # No `ref`: this is the dispatch commit, the tip of main that the
+      # authorizer verified. See "Why the build checks out the dispatch
+      # commit" above.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # Every tag, so the preflight can compare build numbers with
+          # earlier releases.
+          fetch-depth: 0
+          persist-credentials: false
+
+      # git only, before any repository script runs: the signed tag must
+      # point at the commit this job checked out.
+      - name: the signed tag is on the commit this run checked out
+        env:
+          RELEASE_TAG: ${{ needs.authorize.outputs.release-tag }}
+          RELEASE_COMMIT: ${{ needs.authorize.outputs.release-commit }}
+        run: |
+          set -euo pipefail
+          head="$(git rev-parse HEAD)"
+          test "$head" = "$GITHUB_SHA"
+          if [ "$RELEASE_COMMIT" != "$head" ]; then
+            echo "::error::$RELEASE_TAG is on $RELEASE_COMMIT, but this run was dispatched from main at $head. Tag the tip of main and dispatch before anything else merges; if main has moved on, cut the next patch version from the new tip (release tags aren't moved)." >&2
+            exit 1
+          fi
+
+      # File reads only, so a release with no notes or a stale version
+      # fails in seconds, before the build. The version and build number
+      # live in ios/Config/Shared.xcconfig only (`make appstore` holds them
+      # there), so each earlier tag's copy of that file is its build number.
+      - name: release preflight
+        env:
+          RELEASE_TAG: ${{ needs.authorize.outputs.release-tag }}
+        run: |
+          set -euo pipefail
+          earlier=()
+          mkdir -p "$RUNNER_TEMP/earlier"
+          while IFS= read -r other; do
+            [ -n "$other" ] && [ "$other" != "$RELEASE_TAG" ] || continue
+            if git show "${other}:ios/Config/Shared.xcconfig" \
+                > "$RUNNER_TEMP/earlier/${other}.xcconfig" 2>/dev/null; then
+              earlier+=(--earlier-xcconfig "${other}=$RUNNER_TEMP/earlier/${other}.xcconfig")
+            fi
+          done < <(git tag --list 'v*')
+          python3 scripts/check_app_store.py --self-test
+          python3 scripts/check_app_store.py --release-tag "$RELEASE_TAG" \
+            --notes-out "$RUNNER_TEMP/changelog-section.md" "${earlier[@]}"
+
+      - name: lint the plists, privacy manifests and entitlements
+        run: |
+          set -euo pipefail
+          plutil -lint \
+            ios/QueerTVGuide/PrivacyInfo.xcprivacy \
+            ios/QueerTVGuide/QueerTVGuide.entitlements \
+            ios/QueerTVGuideWidgets/Info.plist \
+            ios/QueerTVGuideWidgets/PrivacyInfo.xcprivacy \
+            ios/QueerTVGuideWidgets/QueerTVGuideWidgets.entitlements
+
+      # `make guidecore` first fetches and checksum-verifies the published
+      # snapshot into ios/QueerTVGuide/Resources/ (gitignored), which the
+      # archive below bundles; BundledSnapshotTests then check it.
+      - name: swift test (GuideCore)
+        run: make guidecore
+
+      - name: unsigned Release archive for a generic iOS device
+        working-directory: ios
+        run: |
+          set -euo pipefail
+          xcodebuild -version
+          xcodebuild -project QueerTVGuide.xcodeproj -scheme QueerTVGuide \
+            -configuration Release -destination 'generic/platform=iOS' \
+            -derivedDataPath "$RUNNER_TEMP/DerivedData" \
+            -archivePath "$RUNNER_TEMP/unsigned.xcarchive" \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" \
+            archive
+
+      - name: read the archived app back
+        env:
+          RELEASE_TAG: ${{ needs.authorize.outputs.release-tag }}
+          RELEASE_COMMIT: ${{ needs.authorize.outputs.release-commit }}
+        run: |
+          set -euo pipefail
+          app="$RUNNER_TEMP/unsigned.xcarchive/Products/Applications/QueerTVGuide.app"
+          appex="$app/PlugIns/QueerTVGuideWidgets.appex"
+          version="$(plutil -extract CFBundleShortVersionString raw "$app/Info.plist")"
+          build="$(plutil -extract CFBundleVersion raw "$app/Info.plist")"
+          test "v${version}" = "$RELEASE_TAG"
+          test "$(plutil -extract CFBundleShortVersionString raw "$appex/Info.plist")" = "$version"
+          test "$(plutil -extract CFBundleVersion raw "$appex/Info.plist")" = "$build"
+          test "$(plutil -extract CFBundleDisplayName raw "$app/Info.plist")" = "Queer Frame"
+          test "$(plutil -extract CFBundleIdentifier raw "$app/Info.plist")" = "com.chelseakr.queertvguide"
+          test "$(plutil -extract CFBundleIdentifier raw "$appex/Info.plist")" = "com.chelseakr.queertvguide.widgets"
+          test "$(plutil -extract ITSAppUsesNonExemptEncryption raw "$app/Info.plist")" = "false"
+          # iPhone only (DECISIONS 0009): UIDeviceFamily is exactly [1].
+          test "$(plutil -extract UIDeviceFamily json -o - "$app/Info.plist")" = "[1]"
+          test -f "$app/PrivacyInfo.xcprivacy"
+          test -f "$appex/PrivacyInfo.xcprivacy"
+          test -f "$app/snapshot.v1.json"
+          # Paid up front, no in-app purchase (DECISIONS 0003, 0011).
+          test -z "$(find "$app" -name '*.storekit')"
+          # GuideCore is linked statically; no framework of any kind ships.
+          test ! -e "$app/Frameworks"
+          # Required-reason APIs in the binaries, against each manifest.
+          # The app calls UserDefaults, so its binary must reference the
+          # class: that is the probe's positive control. The widget's
+          # manifest declares no API, so its binary must reference none.
+          nm -u "$app/QueerTVGuide" > "$RUNNER_TEMP/app-symbols.txt"
+          nm -u "$appex/QueerTVGuideWidgets" > "$RUNNER_TEMP/widget-symbols.txt"
+          python3 - "$RUNNER_TEMP/app-symbols.txt" "$RUNNER_TEMP/widget-symbols.txt" \
+            "$app/PrivacyInfo.xcprivacy" "$appex/PrivacyInfo.xcprivacy" <<'PY'
+          import plistlib, re, sys
+          app_syms, widget_syms, app_manifest, widget_manifest = sys.argv[1:]
+          probes = {
+              "NSPrivacyAccessedAPICategoryUserDefaults": r"_OBJC_CLASS_\$_NSUserDefaults\b",
+              "NSPrivacyAccessedAPICategoryFileTimestamp": r"^\s*_(?:f|l)?stat(?:at)?(?:\$INODE64)?$|_getattrlist\b|NSFileModificationDate|NSFileCreationDate",
+              "NSPrivacyAccessedAPICategorySystemBootTime": r"_mach_(?:absolute|continuous)_time\b",
+              "NSPrivacyAccessedAPICategoryDiskSpace": r"_f?statv?fs(?:64)?\b|NSFileSystemFreeSize",
+          }
+          def declared(path):
+              with open(path, "rb") as f:
+                  m = plistlib.load(f)
+              return {e["NSPrivacyAccessedAPIType"] for e in m.get("NSPrivacyAccessedAPITypes", []) if e.get("NSPrivacyAccessedAPITypeReasons")}
+          def used(path):
+              text = open(path, encoding="utf-8").read()
+              return {c for c, p in probes.items() if re.search(p, text, re.M)}
+          app_used, widget_used = used(app_syms), used(widget_syms)
+          print("app binary:", sorted(app_used), "widget binary:", sorted(widget_used))
+          assert "NSPrivacyAccessedAPICategoryUserDefaults" in app_used, "the symbol probe found no UserDefaults in the app; the probe is broken"
+          missing = (app_used - declared(app_manifest)) | (widget_used - declared(widget_manifest))
+          assert not missing, f"required-reason APIs in a binary whose manifest does not declare them: {sorted(missing)}"
+          PY
+          mkdir -p release
+          python3 - "$version" "$build" "$RELEASE_TAG" "$RELEASE_COMMIT" \
+            "$app/snapshot.v1.json" "$(xcodebuild -version | head -1)" \
+            "$RUNNER_TEMP/changelog-section.md" <<'PY'
+          import json, sys
+          version, build, tag, commit, snapshot, xcode, section = sys.argv[1:]
+          data = json.load(open(snapshot, encoding="utf-8"))
+          stamp = {
+              "app": "Queer Frame",
+              "tag": tag,
+              "commit": commit,
+              "marketing_version": version,
+              "build": build,
+              "bundled_snapshot_generated_at": data["generated_at"],
+              "bundled_snapshot_workflow_run_id": data["build"]["run"]["workflow_run_id"],
+              "built_with": xcode,
+              "signed": False,
+              "uploaded_to_app_store_connect": False,
+          }
+          with open("release/release-stamp.json", "w", encoding="utf-8") as out:
+              json.dump(stamp, out, indent=2)
+              out.write("\n")
+          notes = open(section, encoding="utf-8").read().strip()
+          with open("release/release-notes.md", "w", encoding="utf-8") as out:
+              out.write(f"{notes}\n\n")
+              out.write(f"Version {version}, build {build}, from commit {commit}.\n")
+              out.write(f"This check bundled the snapshot generated at {data['generated_at']}; the App Store build bundles whatever snapshot is current when it is archived.\n")
+              out.write("This release was archived unsigned to verify it; the App Store build is archived, signed and uploaded from Xcode.\n")
+          PY
+          cat release/release-stamp.json
+
+      - name: upload the release notes and stamp
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: ios-release
+          path: release/
+          if-no-files-found: error
+
+  publish:
+    name: recheck the tag and draft the GitHub Release
+    needs: [authorize, build]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: ios-release
+          path: release
+
+      - name: recheck the immutable tag object and create a draft release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          # No checkout in this job, so gh needs the repository named.
+          GH_REPO: ${{ github.repository }}
+          RELEASE_TAG: ${{ needs.authorize.outputs.release-tag }}
+          TAG_OBJECT_SHA: ${{ needs.authorize.outputs.tag-object-sha }}
+        run: |
+          set -euo pipefail
+          live="$(gh api "repos/${GITHUB_REPOSITORY}/git/ref/tags/${RELEASE_TAG}" --jq .object.sha)"
+          test "$live" = "$TAG_OBJECT_SHA"
+          gh release create "$RELEASE_TAG" --draft \
+            --title "Queer Frame ${RELEASE_TAG#v}" \
+            --notes-file release/release-notes.md \
+            release/release-stamp.json

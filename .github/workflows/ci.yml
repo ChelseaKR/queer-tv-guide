@@ -6,6 +6,8 @@ name: ci
 #                own gate (lint and the offline pytest suite; no network --
 #                the fetch/build commands that talk to LezWatch/TVmaze are
 #                not run here, see snapshot.yml for the nightly mirror).
+#                Then `make appstore`, the iOS app's App Store readiness
+#                check, which reads files only and needs no Xcode.
 #   guidecore -- `make guidecore`: `swift test` on the ios/GuideCore Swift
 #                package (no external SwiftPM dependencies; its only network
 #                use is `make -C ios bundle-snapshot`, one GET of the app's
@@ -72,6 +74,11 @@ jobs:
 
       - name: make pipeline (offline; fixtures only)
         run: make pipeline
+
+      # The App Store readiness check (scripts/check_app_store.py): file
+      # reads only, so it runs here on Linux and on every pull request.
+      - name: make appstore
+        run: make appstore
 
       # Owner items that block App Store submission: TODO(owner) markers in
       # what gets published or submitted (docs/APP-STORE.md, "Before

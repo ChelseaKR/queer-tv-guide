@@ -71,7 +71,14 @@ def test_join_miss_reasons_all_represented(built_doc):
     tv = doc["coverage"]["tvmaze"]
     assert tv["shows_total"] == 5
     assert tv["joined"] == 2  # derry-girls (stored id) + imdb-only-show (imdb lookup)
-    assert tv["misses"] == {"no_key": 1, "ignored_by_source": 1, "not_found": 1, "other": 0}
+    assert tv["misses"] == {
+        "no_key": 1,
+        "ignored_by_source": 1,
+        "not_found": 1,
+        "shared_tvmaze_id": 0,
+        "other": 0,
+    }
+    assert tv["shared_tvmaze_ids"] == []
     assert tv["join_rate"] == pytest.approx(2 / 5)
 
 

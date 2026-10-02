@@ -75,7 +75,14 @@ def test_tvmaze_coverage_categorizes_every_miss_reason():
         "with_join_key": 2,
         "joined": 1,
         "join_rate": 0.25,
-        "misses": {"no_key": 1, "ignored_by_source": 1, "not_found": 1, "other": 0},
+        "misses": {
+            "no_key": 1,
+            "ignored_by_source": 1,
+            "not_found": 1,
+            "shared_tvmaze_id": 0,
+            "other": 0,
+        },
+        "shared_tvmaze_ids": [],
     }
 
 

@@ -65,12 +65,20 @@ def tvmaze_coverage(shows: list[dict[str, Any]]) -> dict[str, Any]:
         if s["schedule"]["join"]["method"] == "none" and not s["_join_ignored_by_source"]
     )
     ignored = sum(1 for s in shows if s["_join_ignored_by_source"])
+    claimants: dict[int, list[str]] = {}
+    for s in shows:
+        shared_id = s.get("_shared_tvmaze_id")
+        if shared_id is not None:
+            claimants.setdefault(shared_id, []).append(s["id"])
+    shared = sum(len(ids) for ids in claimants.values())
     not_found = sum(
         1
         for s in shows
-        if s["schedule"]["join"]["method"] != "none" and not s["schedule"]["schedule_known"]
+        if s["schedule"]["join"]["method"] != "none"
+        and not s["schedule"]["schedule_known"]
+        and s.get("_shared_tvmaze_id") is None
     )
-    other = total - joined - no_key - ignored - not_found
+    other = total - joined - no_key - ignored - not_found - shared
     return {
         "shows_total": total,
         "with_join_key": with_key,
@@ -80,9 +88,19 @@ def tvmaze_coverage(shows: list[dict[str, Any]]) -> dict[str, Any]:
             "no_key": no_key,
             "ignored_by_source": ignored,
             "not_found": not_found,
+            "shared_tvmaze_id": shared,
             "other": max(other, 0),
         },
+        "shared_tvmaze_ids": [
+            {"tvmaze_id": tvmaze_id, "show_ids": sorted(ids, key=_show_id_order)}
+            for tvmaze_id, ids in sorted(claimants.items())
+        ],
     }
+
+
+def _show_id_order(show_id: str) -> int:
+    """`lwtv:show:1992` sorts before `lwtv:show:10010`: by number, not text."""
+    return int(show_id.rsplit(":", 1)[-1])
 
 
 def summary_lines(coverage: dict[str, Any]) -> list[str]:
@@ -102,8 +120,14 @@ def summary_lines(coverage: dict[str, Any]) -> list[str]:
         f"misses -- no_key={tv['misses']['no_key']} "
         f"ignored_by_source={tv['misses']['ignored_by_source']} "
         f"not_found={tv['misses']['not_found']} "
+        f"shared_tvmaze_id={tv['misses'].get('shared_tvmaze_id', 0)} "
         f"other={tv['misses']['other']}"
     )
+    for entry in tv.get("shared_tvmaze_ids", []):
+        lines.append(
+            f"  tvmaze {entry['tvmaze_id']} claimed by {', '.join(entry['show_ids'])}; "
+            "schedule unknown for each"
+        )
     lines.append("fields present / absent:")
     for path, counts in coverage["fields"].items():
         total = counts["present"] + counts["absent"]

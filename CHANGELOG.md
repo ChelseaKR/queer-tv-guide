@@ -113,6 +113,14 @@ consumer of the published snapshot, would notice.
   reported as not human-readable. A service name is
   used only when one of the show's own networks is the site's name;
   otherwise the button names the site.
+- A show no longer displays another show's schedule. Where two LezWatch.TV
+  shows lead to the same TVmaze show, the app cannot know which one TVmaze
+  means, so both now say "Schedule unknown for this show." instead of showing
+  the same premiere date and next episode. In the snapshot of 2026-09-19 this
+  was four shows: Amar en Tiempos Revueltos and Amar es para Siempre, and A
+  Very Peculiar Practice and A Very Polish Practice. The snapshot's coverage
+  report counts these shows (`misses.shared_tvmaze_id`) and lists them by
+  TVmaze id (`shared_tvmaze_ids`), and the build log names each pair (#52).
 - The nightly LezWatch mirror no longer loses new shows and characters. It
   looks back a full day from its cursor (LezWatch compares that cursor with the
   site's local time, so a record edited within a few hours after it was skipped

@@ -18,10 +18,10 @@ final class RemindersUITests: XCTestCase {
         let title = try SnapshotFacts.title(ofShow: Self.referenceShowID)
         let app = XCUIApplication.launchedGuide(arguments: arguments)
         app.openShow(titled: title)
-        let add = app.buttons["Add to favourites"]
+        let add = app.buttons["Add to favorites"]
         if add.waitForExistence(timeout: 5) { add.tap() }
-        XCTAssertTrue(app.buttons["Remove from favourites"].waitForExistence(timeout: 10))
-        app.tabBars.buttons["Favourites"].tap()
+        XCTAssertTrue(app.buttons["Remove from favorites"].waitForExistence(timeout: 10))
+        app.tabBars.buttons["Favorites"].tap()
         XCTAssertTrue(app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", title)).firstMatch.waitForExistence(timeout: 30))
         return app
     }

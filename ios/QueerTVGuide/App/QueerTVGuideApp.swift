@@ -14,13 +14,23 @@ struct QueerTVGuideApp: App {
                 .tint(.accessibleAccent)
                 .task {
                     await model.loadInitial()
+                    UpNextPublisher.publish(model)
                     await model.refresh()
+                    UpNextPublisher.publish(model)
+                }
+                // The widget's copy of the favorites' next episodes is
+                // rewritten as the app leaves the foreground, so a star
+                // added or removed anywhere reaches the home screen.
+                .onChange(of: scenePhase) { _, phase in
+                    if phase != .active { UpNextPublisher.publish(model) }
                 }
                 // An app left in the background for days comes back with
                 // its data's age re-read, so a snapshot that went stale
-                // meanwhile says so (DG-04). No network request here.
+                // meanwhile says so (DG-04), and, when that data is more than
+                // ForegroundRefreshGate.staleAfter old, looks for new data
+                // once in the background: the same single GET as at launch.
                 .onChange(of: scenePhase) { _, phase in
-                    if phase == .active { model.readClock() }
+                    if phase == .active { Task { await model.refreshIfStaleOnReturn() } }
                 }
         }
     }

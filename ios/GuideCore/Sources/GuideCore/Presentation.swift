@@ -177,13 +177,24 @@ public enum Presentation {
         guard let e = schedule.nextEpisode else { return "No upcoming episode is known." }
         var parts: [String] = []
         if let s = e.season, let n = e.number { parts.append("S\(s)E\(n)") }
-        if let t = e.name, !t.isEmpty { parts.append("“\(t)”") }
+        if let t = e.name, !t.isEmpty { parts.append("\u{201c}\(t)\u{201d}") }
         let head = parts.isEmpty ? "Next episode" : parts.joined(separator: " ")
-        guard let day = e.airdateDay else { return "\(head) — air date not recorded" }
-        if isPast(day, today: today) {
-            return "\(head) — listed for \(dayFormatter.string(from: day)), which has passed. This data may be out of date."
+
+        if let instant = e.airInstant {
+            let cal = Calendar(identifier: .gregorian)
+            let dayStart = cal.startOfDay(for: instant)
+            let todayStart = cal.startOfDay(for: today)
+            if dayStart < todayStart.addingTimeInterval(-86400) {
+                return "\(head) — \(instantFormatter.string(from: instant)), which has passed. This data may be out of date."
+            }
+            return "\(head) — \(instantFormatter.string(from: instant))"
         }
-        return "\(head) — \(dayFormatter.string(from: day))"
+
+        guard let day = e.airdateDay else { return "\(head) \u{2014} air date not recorded" }
+        if isPast(day, today: today) {
+            return "\(head) \u{2014} listed for \(dayFormatter.string(from: day)), which has passed. This data may be out of date."
+        }
+        return "\(head) \u{2014} \(dayFormatter.string(from: day)) (date as TVmaze lists it, in the network\u{2019}s time zone)"
     }
 
     /// True when `day` (a UTC calendar day) is more than one day before
@@ -251,6 +262,27 @@ public enum Presentation {
         return "\(hours / 24) days ago"
     }
 
+    /// "3 days", "6 hours", "1 hour": a length of time in whole days when it
+    /// is one, else whole hours. For the wording of `refreshTriggers` only.
+    static func span(_ seconds: TimeInterval) -> String {
+        let hours = max(1, Int((seconds / 3600).rounded()))
+        if hours >= 24, hours % 24 == 0 {
+            let days = hours / 24
+            return days == 1 ? "1 day" : "\(days) days"
+        }
+        return hours == 1 ? "1 hour" : "\(hours) hours"
+    }
+
+    /// When returning to the app looks for new data, in words, built from the
+    /// numbers `ForegroundRefreshGate` acts on so the two cannot drift:
+    /// "while its data is more than 3 days old (at most once every 6 hours)".
+    /// The out-of-date banner, the About screen, the privacy policy and the
+    /// support page all say this (ForegroundRefreshTests holds the pages to
+    /// it).
+    public static var returnRefreshRule: String {
+        "while its data is more than \(span(ForegroundRefreshGate.staleAfter)) old (at most once every \(span(ForegroundRefreshGate.minimumInterval)))"
+    }
+
     /// What a stale or unknown-age snapshot says about itself, above the
     /// content it affects. `nil` only when the data is current.
     public struct FreshnessWarning: Equatable, Sendable {
@@ -269,7 +301,7 @@ public enum Presentation {
         case .stale(let seconds):
             return FreshnessWarning(
                 title: "This data is out of date",
-                detail: "It was last updated \(age(seconds)), on \(dateTimeFormatter.string(from: date)). Next episodes and where-to-watch links may have changed since then. The app looks for new data each time it opens; pull down on Search to look now."
+                detail: "It was last updated \(age(seconds)), on \(dateTimeFormatter.string(from: date)). Next episodes and where-to-watch links may have changed since then. The app looks for new data each time it opens, and when you return to it \(returnRefreshRule). Pull down on Search to look now."
             )
         case .unknown:
             return FreshnessWarning(
@@ -313,6 +345,14 @@ public enum Presentation {
         let f = DateFormatter()
         f.dateStyle = .medium
         f.timeStyle = .short
+        return f
+    }()
+
+    public static let instantFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.dateStyle = .medium
+        f.timeStyle = .short
+        f.timeZone = TimeZone.current
         return f
     }()
 }

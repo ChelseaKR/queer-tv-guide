@@ -88,8 +88,9 @@ workflow from a known-good commit.
 - **Personal data processed by the developer: none.** No accounts, analytics,
   crash reporting or identifiers (`docs/DECISIONS.md` 0002). The data tier is
   L1 (public reference data; `docs/data/`, #31).
-- **The one request.** Opening the app, or pulling to refresh, sends one HTTPS
-  GET for the snapshot to GitHub Pages. GitHub logs the IP address under its
+- **The one request.** Opening the app, pulling to refresh, or returning to
+  the app while its data is more than 3 days old (at most once every 6 hours)
+  sends one HTTPS GET for the snapshot to GitHub Pages. GitHub logs the IP address under its
   own policy; the developer never receives it. `docs/site/privacy.html` says
   so.
 - **On the device.** Favorites are stored in `UserDefaults`, never synced by

@@ -21,6 +21,7 @@ struct SearchView: View {
     struct Results {
         var key: Key?
         var hits: [SearchIndex.Hit] = []
+        var totalCount: Int = 0
     }
 
     private var trimmedQuery: String { query.trimmingCharacters(in: .whitespacesAndNewlines) }
@@ -60,18 +61,20 @@ struct SearchView: View {
 
     private func updateResults(for key: Key) async {
         guard let index = model.searchIndex else { return }
-        let hits = await Task.detached(priority: .userInitiated) {
+        let searchResults = await Task.detached(priority: .userInitiated) {
             key.query.isEmpty
-                ? index.browse(filters: key.filters).map { SearchIndex.Hit.show($0) }
+                ? SearchIndex.SearchResults(hits: index.browse(filters: key.filters).map { .show($0) }, totalCount: 0)
                 : index.search(key.query, filters: key.filters)
         }.value
         guard !Task.isCancelled else { return }
-        results = Results(key: key, hits: hits)
+        results = Results(key: key, hits: searchResults.hits, totalCount: searchResults.totalCount)
     }
 
     @ViewBuilder
     private func resultsList(snapshot: Snapshot) -> some View {
         let hits = results.hits
+        let totalCount = results.totalCount
+        let isCapped = totalCount > hits.count
         let settled = results.key == key
         List {
             // DG-04: data past its SLA, or of unknown age, says so above
@@ -92,6 +95,14 @@ struct SearchView: View {
                 }
                 .listRowSeparator(.hidden)
             } else {
+                if settled && isCapped {
+                    Section {
+                        Text("Showing the first \(hits.count) of \(totalCount) matches. Type more to narrow them.")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                            .accessibilityLabel("Showing the first \(hits.count) of \(totalCount) matches")
+                    }
+                }
                 Section {
                     ForEach(hits) { hit in
                         hitRow(hit, snapshot: snapshot)
@@ -152,7 +163,7 @@ struct SearchView: View {
             EmptyState(
                 title: "No matches with these filters",
                 systemImage: "magnifyingglass",
-                message: "Nothing matches “\(q)” with \(Self.filterSummary(filters.activeCount).lowercased())."
+                message: "Nothing matches \u{201c}\(q)\u{201d} with \(Self.filterSummary(filters.activeCount).lowercased())."
             )
             Button("Search without filters") { filters = SearchIndex.Filters() }
                 .buttonStyle(.bordered)
@@ -161,7 +172,7 @@ struct SearchView: View {
             EmptyState(
                 title: "No matches",
                 systemImage: "magnifyingglass",
-                message: "Nothing in this snapshot matches “\(q)”. Try part of a title, a character's name, an actor or a network."
+                message: "Nothing in this snapshot matches \u{201c}\(q)\u{201d}. Try part of a title, a character's name, an actor or a network."
             )
         }
     }

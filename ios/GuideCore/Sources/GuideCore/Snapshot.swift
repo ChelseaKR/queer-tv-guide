@@ -160,6 +160,18 @@ extension Snapshot: Decodable {
         shows = decodedShows
         characters = decodedCharacters
         (showsByID, charactersByID, characterIDsByShow) = Self.indices(shows: shows, characters: characters)
+
+        let sources = Set(attribution.map(\.source))
+        let requiredSources: Set<String> = ["lezwatch", "tvmaze"]
+        for source in requiredSources {
+            guard sources.contains(source) else {
+                throw SnapshotDecodingError.malformed("missing attribution entry for \(source)")
+            }
+        }
+        let sourceCounts = attribution.reduce(into: [String: Int]()) { $0[$1.source, default: 0] += 1 }
+        for (source, count) in sourceCounts where count > 1 {
+            throw SnapshotDecodingError.malformed("duplicate attribution entry for \(source)")
+        }
     }
 }
 
@@ -403,6 +415,16 @@ public struct Episode: Codable, Equatable, Sendable, Identifiable {
     public var airdateDay: Date? {
         guard let airdate else { return nil }
         return ISO8601DayFormatter.date(from: airdate)
+    }
+
+    /// The real broadcast instant, available only when the episode has both
+    /// a non-empty `airtime` and a parseable `airstamp`. When `airtime` is
+    /// null, `airstamp` is a placeholder (usually noon UTC), not a broadcast
+    /// time, so this property returns nil to prevent a misleading display
+    /// or notification.
+    public var airInstant: Date? {
+        guard let airtime, !airtime.isEmpty, let airstamp else { return nil }
+        return ISO8601SecondFormatter.date(from: airstamp)
     }
 }
 

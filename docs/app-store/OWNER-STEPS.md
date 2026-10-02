@@ -88,10 +88,12 @@ Guideline 1.5 asks for a Support URL that gives an easy way to reach you.
 This site has no build variable for it: `docs/site/support.html` is a static
 page the nightly `snapshot` workflow copies as it is, so no
 `gh variable set` is involved. This branch adds the address you chose on
-2026-10-01, `chelsea@chelseakr.com`, to the Contact section of the support
-page and to the privacy policy, in its own commit. Check the two lines, and
-after the next nightly run check that both live pages show them.
-`make -C ios presubmit-check` passes once no `TODO(owner)` marker is left.
+2026-10-01, `chelsea@chelseakr.com`, as a `mailto:` line in the Contact
+section of the support page, in its own commit; the privacy policy already
+sends questions to that page. Check the line, and after the next nightly
+run check that the live page shows it. If you drop that commit, the
+`TODO(owner)` marker comes back and `make -C ios presubmit-check` fails
+again until a contact is added.
 
 ## 6. Register the identifiers
 

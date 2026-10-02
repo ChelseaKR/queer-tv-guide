@@ -12,6 +12,10 @@ than how the YAML is written:
   left without a verdict;
 - macOS runners stay off pull-request CI (CI-CD §11b);
 - a `run:` body with a pipe sets pipefail (Actions' default shell does not);
+- a `run:` body under `set -u` never expands an array bare: macOS runners
+  ship bash 3.2, where `"${a[@]}"` on an empty array is an "unbound variable"
+  error, so it must be written `${a[@]+"${a[@]}"}` (the first release, with
+  no earlier tags, died this way);
 - the job that runs gitleaks over history checks out the whole history.
 
 A known violation that cannot be fixed yet goes in WAIVERS with the issue
@@ -45,6 +49,22 @@ MACOS_PR_ALLOWED: dict[tuple[str, str], str] = {
 }
 
 PIPE = re.compile(r"(?<![|])\|(?![|])")
+NOUNSET = re.compile(r"\bset\s+-[a-zA-Z]*u|\bset\s+-o\s+nounset\b")
+ARRAY_EXPANSION = re.compile(r"\$\{\w+\[[@*]\]\}")
+GUARDED_ARRAY = re.compile(r'\$\{(\w+)\[([@*])\]\+"\$\{\1\[\2\]\}"\}')
+
+
+def unguarded_array_expansions(body: str) -> list[str]:
+    """Lines of a `set -u` run body that expand an array without the guard.
+
+    bash 3.2 (the macOS runners' /bin/bash) treats `"${a[@]}"` on an empty
+    array as unbound; `${a[@]+"${a[@]}"}` expands to nothing instead.
+    """
+    if not NOUNSET.search(body):
+        return []
+    return [
+        line for line in body.splitlines() if ARRAY_EXPANSION.search(GUARDED_ARRAY.sub("", line))
+    ]
 
 
 def _workflow_violations(wf: workflow_model.Workflow) -> set[tuple[str, str, str]]:
@@ -82,6 +102,8 @@ def _job_violations(
     unsafe_pipe = any(PIPE.search(b) and "pipefail" not in b for b in bodies)
     if unsafe_pipe and "shell: bash" not in job.text:
         found.add(("pipe-without-pipefail", wf.name, job.name))
+    if any(unguarded_array_expansions(b) for b in bodies):
+        found.add(("array-under-nounset", wf.name, job.name))
     scans_history = any(re.search(r"\bmake\b[^\n]*\bsecrets\b", b) for b in bodies)
     full_clone = any("fetch-depth: 0" in c for c in job.checkout_blocks())
     if scans_history and not full_clone:
@@ -179,7 +201,9 @@ class WorkflowPolicyTests(unittest.TestCase):
             "    steps:\n"
             "      - uses: actions/checkout@0000000000000000000000000000000000000000 # v0\n"
             "      - run: |\n"
+            "          set -u\n"
             "          make secrets\n"
+            '          printf "%s" "${args[@]}"\n'
             "          curl -s example.invalid | sh || true\n"
             "        continue-on-error: true\n"
         )
@@ -221,8 +245,28 @@ class WorkflowPolicyTests(unittest.TestCase):
                 "macos-on-pull-request",
                 "pipe-without-pipefail",
                 "shallow-history-scan",
+                "array-under-nounset",
             },
         )
+
+    def test_array_guard_detector(self) -> None:
+        # The bare form under set -u is caught; the bash-3.2-safe guard, a
+        # length check, and a body without set -u are not.
+        bare = 'set -euo pipefail\nfoo "${earlier[@]}"'
+        self.assertEqual(unguarded_array_expansions(bare), ['foo "${earlier[@]}"'])
+        self.assertEqual(unguarded_array_expansions('set -u\necho "${a[*]}"'), ['echo "${a[*]}"'])
+        safe = 'set -euo pipefail\nfoo ${earlier[@]+"${earlier[@]}"} "${#earlier[@]}"'
+        self.assertEqual(unguarded_array_expansions(safe), [])
+        self.assertEqual(unguarded_array_expansions('set -e\nfoo "${args[@]}"'), [])
+
+    def test_release_preflight_is_safe_with_no_earlier_tags(self) -> None:
+        # The first release has no earlier v* tags, so `earlier` is empty.
+        release = workflow_model.load(workflow_model.WORKFLOWS / "ios-release.yml")
+        bodies = [b for job in release.jobs.values() for b in job.run_blocks()]
+        preflight = [b for b in bodies if "earlier=()" in b]
+        self.assertEqual(len(preflight), 1, "release preflight step not found")
+        self.assertIn('${earlier[@]+"${earlier[@]}"}', preflight[0])
+        self.assertEqual(unguarded_array_expansions(preflight[0]), [])
 
 
 if __name__ == "__main__":

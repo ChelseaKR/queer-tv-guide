@@ -434,6 +434,18 @@ final class AccessibilityAuditTests: XCTestCase {
             throw XCTSkip("the first filtered show lists no characters in this snapshot")
         }
         row.tap()
+        // "Appears in" is on the character screen only. "Reveal" alone also
+        // matches the show screen ("Do any queer characters die?"). Measured
+        // in CI run 36968240658: the tap on the row was lost on a slow
+        // runner, the show screen (scrolled to the row) satisfied "Reveal",
+        // and the character test audited the show screen instead. One more
+        // tap on the same row when the screen has not changed, as in
+        // `openFirstShow`; the assertions below are unchanged or stricter.
+        let appearsIn = app.staticTexts["Appears in"]
+        if !appearsIn.waitForExistence(timeout: 15), row.exists, row.isHittable {
+            row.tap()
+        }
+        XCTAssertTrue(appearsIn.waitForExistence(timeout: 30), "did not reach the character screen")
         XCTAssertTrue(app.buttons["Reveal"].waitForExistence(timeout: 30))
         try audit(app)
     }

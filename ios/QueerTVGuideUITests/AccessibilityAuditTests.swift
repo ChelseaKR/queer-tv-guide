@@ -424,6 +424,38 @@ final class AccessibilityAuditTests: XCTestCase {
         try audit(app)
     }
 
+    /// The where-to-watch buttons, on purpose: they are below the fold, so
+    /// the show-screen audit above never reaches them. Their labels were the
+    /// bare host ("www.amazon.com"), which the audit reports as "Label not
+    /// human-readable" (CI run 36968240658). The filter used by
+    /// `openFirstShow` keeps only shows with a where-to-watch link.
+    ///
+    /// Scrolled that far, the show's earlier texts ("Share this show",
+    /// "Ratings", "Worth it") sit under the navigation bar, and the contrast
+    /// audit fails them there (measured locally; a hard top scroll edge did
+    /// not change it). They pass where a person reads them, in the show
+    /// screen's audit above. So this test runs every other audit type on the
+    /// scrolled screen, and measures each where-to-watch button's own
+    /// contrast from its pixels at 4.5:1, the same measure allowance 2 uses.
+    @MainActor
+    func testWhereToWatchLinksPassTheAudit() throws {
+        let app = launch()
+        XCTAssertTrue(openFirstShow(app), "did not reach a show screen")
+        let links = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Watch on "))
+        let first = links.firstMatch
+        XCTAssertTrue(first.waitForExistence(timeout: 10), "no where-to-watch button on a show filtered to have one")
+        for _ in 0..<8 where !first.isHittable { app.swipeUp() }
+        XCTAssertTrue(first.isHittable, "the where-to-watch button is out of reach")
+        waitForStillScreen(app)
+        for link in links.allElementsBoundByIndex where link.isHittable {
+            XCTAssertFalse(link.label.hasPrefix("Watch on www."), link.label)
+            let ratio = try XCTUnwrap(Self.renderedContrast(of: link), "could not measure \(link.label)")
+            print("audit: \(link.label) drawn at \(String(format: "%.1f", ratio)):1")
+            XCTAssertGreaterThanOrEqual(ratio, 4.5, link.label)
+        }
+        try audit(app, XCUIAccessibilityAuditType.all.subtracting(.contrast))
+    }
+
     @MainActor
     func testCharacterScreenPassesTheAudit() throws {
         let app = launch()

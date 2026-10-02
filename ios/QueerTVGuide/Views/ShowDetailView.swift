@@ -225,12 +225,15 @@ struct ShowDetailView: View {
                 ForEach(show.watchLinks) { link in
                     // Link out only — this never plays or embeds video
                     // (App Review 5.2.3): openURL hands off to Safari.
+                    // "Watch on Netflix", or "Watch on amazon.com" when no
+                    // network of the show names the site (Presentation).
                     Button {
                         openURL(link.url)
                     } label: {
-                        Label(link.host, systemImage: "arrow.up.forward.square")
+                        Label(Presentation.watchLinkLabel(link, networks: show.networks), systemImage: "arrow.up.forward.square")
                     }
-                    .accessibilityHint("Opens \(link.host) in Safari")
+                    .accessibilityHint("Opens \(Presentation.displayHost(link.host)) in Safari")
+                    .accessibilityAddTraits(.isLink)
                 }
             }
         }

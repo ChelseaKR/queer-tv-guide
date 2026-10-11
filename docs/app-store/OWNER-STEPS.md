@@ -232,8 +232,14 @@ yourself → install on your iPhone, then check:
 On the iOS App version page:
 
 1. **Screenshots → iPhone 6.9" Display:** the five PNGs in
-   `docs/app-store/screenshots/`, in numbered order. iPhone only, so no
-   iPad set.
+   `docs/app-store/screenshots/`, in numbered order. **iPad 13" Display:**
+   required since the app also runs on iPad (DECISIONS 0016). App Store
+   Connect will not submit the version without a 13-inch iPad set. Shoot
+   it from the iPad Pro 13-inch (M5) simulator at 2064 x 2752 (portrait)
+   or 2752 x 2064 (landscape), reveals closed, the same five screens. The
+   lane's evidence shots in `_agent-tools/remediate-2026-10-11/qf-ios-parity/screenshots/`
+   are not store screenshots: they are for review of the layout, with a
+   test status bar.
 2. **Promotional Text, Description, Keywords, Support URL, Copyright:**
    from the JSON and the listing file.
 3. **Build:** **+** → the uploaded build.
@@ -244,6 +250,24 @@ On the iOS App version page:
 
 After approval, press **Release**, then publish the draft GitHub Release
 for the same tag.
+
+## 13a. Mac availability (Apple silicon, "Designed for iPad")
+
+DECISIONS 0016 makes the app available on Apple silicon Macs as the iPad
+app, unchanged. There is no Mac build to upload: it is the same binary.
+
+1. **Pricing and Availability → iPhone and iPad Apps on Apple Silicon
+   Macs:** make sure **Make this app available** is ticked for Queer Frame.
+   It is an App Store Connect checkbox, not a build setting, and it is the
+   only switch.
+2. Before ticking it, run the app on a Mac: in Xcode choose the run
+   destination **My Mac (Designed for iPad)** and run. The window resizes
+   like an iPad in Stage Manager, the menu bar has a **Go** menu (Search
+   Command-1, Favorites Command-2, About Command-3, Check for New Data
+   Command-R), and reminders arrive as Mac notifications.
+3. The Up Next widget does not come to the Mac with the iPad app on every
+   macOS version. Check it there, and do not promise it in Mac-facing
+   copy.
 
 ## 14. Once the app is live: turn on the website's App Store badge
 
@@ -280,8 +304,8 @@ re-checks the first six on every `make verify` and every pull request.
 - One version and one integer build number for every target, set only in
   `ios/Config/Shared.xcconfig`; the widget's Info.plist takes both from
   the build settings, and the app's Info.plist is generated from them.
-- iPhone only (`TARGETED_DEVICE_FAMILY = 1` in every target and
-  configuration), team `6X5YH93QNM` for device builds, iOS 17.0 minimum.
+- iPhone and iPad (`TARGETED_DEVICE_FAMILY = 1,2` in every target and
+  configuration, all four iPad orientations, DECISIONS 0016), team `6X5YH93QNM` for device builds, iOS 17.0 minimum.
 - Export compliance declared (`ITSAppUsesNonExemptEncryption` NO), a
   generated launch screen, display name `Queer Frame`, and no background
   mode.

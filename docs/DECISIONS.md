@@ -102,7 +102,7 @@ ask" rule, for this one question. The nightly mirror and the published
 CC BY-SA snapshot continue as before, and the email tells LezWatch.TV about
 both.
 
-## 0009 — iPhone only (2026-09-17)
+## 0009 — iPhone only (2026-09-17) — replaced by 0016
 
 **Decision.** The app targets iPhone only (`TARGETED_DEVICE_FAMILY = 1`), not
 iPad.
@@ -179,3 +179,34 @@ snapshot, the attribution, and the App Review note in `docs/APP-STORE.md`.
 
 **Still open:** a trademark screen for "Queer Frame" (the owner's).
 Update 2026-10-02: done, no conflict found (0006).
+
+## 0016 — iPhone, iPad and Apple silicon Mac (2026-10-11)
+
+**Decision** (owner, 2026-10-11, "do 2"): Queer Frame runs on iPhone **and
+iPad**, and is offered on Apple silicon Macs as the iPad app ("Designed for
+iPad"). This replaces 0009 (iPhone only).
+
+**What changed in the build.**
+- `TARGETED_DEVICE_FAMILY = 1,2` for every target (`ios/Config/Shared.xcconfig`).
+  `scripts/check_app_store.py` and `AppStoreReadinessTests` now require it.
+- All four orientations on iPad (`INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad`),
+  which iPad multitasking requires. No `UIRequiresFullScreen`.
+- At regular width, Search and Favorites are a split view: the list in a
+  sidebar column, the show or character beside it. At compact width
+  (iPhone, or a narrow iPad split) they are the same single stack as before.
+- Show and character screens, the first-run pages and About keep a readable
+  column (720 points for text screens, 560 for the first-run pages) centered
+  on wide screens, instead of phone layouts stretched edge to edge.
+- A Go menu with keyboard shortcuts (Command-1/2/3 for the tabs, Command-R to
+  check for new data), shown by holding Command on an iPad keyboard and in
+  the Mac menu bar. Pointer hover comes from the system controls.
+- Copy that said "this iPhone" or "this phone" says "this device".
+
+**Consequences.**
+- App Store Connect requires a 13-inch iPad screenshot set before the version
+  can be submitted (OWNER-STEPS step 13).
+- Mac availability is the App Store Connect checkbox under Pricing and
+  Availability (OWNER-STEPS step 13a). There is no separate Mac build.
+- The listing JSON's `devices` is `["iPhone", "iPad"]`.
+- iPhone screenshots and the iPhone experience are unchanged.
+

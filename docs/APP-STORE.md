@@ -31,7 +31,7 @@ search):
 | Description | see the JSON | 1,329 / 4,000 | first paragraph rewritten, §App Store search |
 | Category | Entertainment (primary), Reference (secondary) | — | §App Store search, Categories |
 | Price | **$4.99**, one-time. No IAP, no subscription. Apple Small Business Program (15%). | — | DECISIONS 0003, 0011 |
-| Devices | **iPhone only** (`TARGETED_DEVICE_FAMILY = 1`). Screenshots: iPhone only (6.9" set). iPads can still run it in iPhone compatibility mode, and App Review may test it there (2.4.1). | — | DECISIONS 0009 |
+| Devices | **iPhone and iPad** (`TARGETED_DEVICE_FAMILY = 1,2`), and Apple silicon Macs as "Designed for iPad" (an App Store Connect checkbox). Screenshots: iPhone 6.9" set **and** iPad 13" set. | — | DECISIONS 0016 (replaces 0009) |
 | Age rating | **13+ expected**, computed by App Store Connect from the questionnaire answers in `APP-STORE-LISTING.md` (confirmed 2026-10-02, DECISIONS 0015). Apple's current tiers are 4+, 9+, 13+, 16+, 18+; "12+" no longer exists (checked 2026-09-17). | — | Apple, research §7 |
 | Privacy label | **"Data Not Collected"** for every category (see §2) | — | DECISIONS 0002, 0007 |
 | Privacy Policy URL | `https://chelseakr.github.io/queer-tv-guide/privacy.html`, from `docs/site/privacy.html` | — | DECISIONS 0007 |
@@ -163,8 +163,8 @@ asserts that no death answer is on screen. The shots are then exported:
    privacy posture and the sources.
 
 The shows used have no outcome tropes on screen (their trope list is
-"None!"), and every reveal and collapsible stays closed. iPhone only
-(DECISIONS 0009): no iPad set. Re-shoot after any UI change or snapshot
+"None!"), and every reveal and collapsible stays closed. The iPad 13"
+set is still owed (DECISIONS 0016, OWNER-STEPS step 13). Re-shoot after any UI change or snapshot
 refresh; the dates in "next episode" and "Data as of" are real.
 
 ## 2. Privacy label

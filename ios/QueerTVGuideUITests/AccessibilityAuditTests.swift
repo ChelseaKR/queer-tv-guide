@@ -143,7 +143,8 @@ final class AccessibilityAuditTests: XCTestCase {
     /// 35422900625 and 35450246601, and the same test passed in runs 35407156681
     /// and 35421286344, with no reported issue in any of them. That was
     /// first read as a slow runner; the measured cause on that screen was a
-    /// text wholly inside the top inset (`bringTextOutOfTheTopInset`). That
+    /// text wholly inside the top inset of the old one-page first-run screen
+    /// (replaced by the pager, whose pages scroll below their own top bar). That
     /// error is no finding:
     /// nothing was judged. So that one error, and only it, runs the same pass
     /// once more on a still screen. Every issue the audit does report is
@@ -578,73 +579,38 @@ final class AccessibilityAuditTests: XCTestCase {
         }
     }
 
-    /// The first-run screen, top and bottom, at the default text size.
+    /// Every page of the first-run pager at the default text size, reached
+    /// with Next, as a VoiceOver or Switch Control user would.
     @MainActor
     func testFirstRunScreenPassesTheAudit() throws {
         let app = launchFirstRun()
-        try audit(app)
-        let finish = app.buttons["onboarding-finish"]
-        for _ in 0..<6 where !finish.isHittable { app.swipeUp() }
-        XCTAssertTrue(finish.isHittable, "Start browsing is out of reach")
-        bringTextOutOfTheTopInset(app)
-        XCTAssertTrue(finish.isHittable, "Start browsing went out of reach")
-        try audit(app)
+        try auditEveryFirstRunPage(app)
     }
 
-    /// Texts whose frame lies wholly on screen and wholly inside the top
-    /// inset (the status bar, which this page covers with an opaque strip):
-    /// on screen by frame, but not one pixel of them is visible. A text that
-    /// also reaches above the screen's edge does not stop the audit (measured:
-    /// the title at that position audited in 0.4 s).
+    /// Next through every page, auditing each, and end on the last page
+    /// with "Start browsing" in reach.
     @MainActor
-    static func textsInsideTheTopInset(_ app: XCUIApplication, inset: CGFloat) -> [String] {
-        app.staticTexts.allElementsBoundByIndex
-            .filter { $0.frame.minY >= 0 && $0.frame.maxY <= inset }
-            .map { String($0.label.prefix(40)) }
-    }
-
-    /// Xcode's contrast audit cannot finish while a text lies wholly inside
-    /// the top inset: it stops with "Audit failed to complete in time" and no
-    /// finding. Measured on the scrolled first-run page (iPhone 17 Pro, iOS
-    /// 26.5): with the subtitle at y 5.7 to 54.7 under a 62-point inset, the
-    /// contrast pass timed out in every run; moved to y 35.7 or lower, the
-    /// same pass finished in 0.4 s. Swiping to Start browsing ends at the
-    /// bottom of the page, which on that device puts the subtitle exactly
-    /// there. This drags the page down a little until no text is wholly
-    /// hidden, so the audit judges the screen as a person sees it. The audit
-    /// itself, its types and its rules are unchanged.
-    @MainActor
-    private func bringTextOutOfTheTopInset(_ app: XCUIApplication) {
-        let indicator = app.scrollViews.firstMatch.descendants(matching: .any)
-            .matching(NSPredicate(format: "label BEGINSWITH %@", "Vertical scroll bar")).firstMatch
-        guard indicator.exists else {
-            XCTFail("no scroll indicator to read the top inset from")
-            return
-        }
-        let inset = indicator.frame.minY
-        for _ in 0..<3 {
-            let hidden = Self.textsInsideTheTopInset(app, inset: inset)
-            if hidden.isEmpty { return }
-            print("audit: texts wholly inside the \(inset)-point top inset, moving them out: \(hidden)")
-            let start = app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
-            // Slow, then held, so the page moves by the drag and does not
-            // coast on.
-            start.press(forDuration: 0.5, thenDragTo: start.withOffset(CGVector(dx: 0, dy: inset / 2)), withVelocity: XCUIGestureVelocity(rawValue: 60), thenHoldForDuration: 1)
+    private func auditEveryFirstRunPage(_ app: XCUIApplication, _ types: XCUIAccessibilityAuditType = .all) throws {
+        let next = app.buttons["onboarding-next"]
+        for page in 0..<5 {
             waitForStillScreen(app)
+            try audit(app, types)
+            if page < 4 {
+                XCTAssertTrue(next.isHittable, "Next is out of reach on page \(page + 1)")
+                next.tap()
+            }
         }
-        XCTAssertEqual(Self.textsInsideTheTopInset(app, inset: inset), [], "texts still wholly inside the top inset")
+        let finish = app.buttons["onboarding-finish"]
+        XCTAssertTrue(finish.waitForExistence(timeout: 10), "no Start browsing on the last page")
+        XCTAssertTrue(finish.isHittable, "Start browsing is out of reach")
     }
 
-    /// The first-run screen at the largest text size: it scrolls, nothing
-    /// is clipped, every font scales.
+    /// The first-run pager at the largest text size: every page scrolls,
+    /// nothing is clipped, every font scales, and the buttons stay in reach.
     @MainActor
     func testLargestTextSizeFirstRunScreenPassesDynamicTypeAndClippingAudits() throws {
         let app = launchFirstRun(textSize: "UICTContentSizeCategoryAccessibilityXXXL")
-        try audit(app, [.dynamicType, .textClipped])
-        let finish = app.buttons["onboarding-finish"]
-        for _ in 0..<12 where !finish.isHittable { app.swipeUp() }
-        XCTAssertTrue(finish.isHittable, "Start browsing is out of reach at the largest text size")
-        try audit(app, [.dynamicType, .textClipped])
+        try auditEveryFirstRunPage(app, [.dynamicType, .textClipped])
     }
 
     @MainActor

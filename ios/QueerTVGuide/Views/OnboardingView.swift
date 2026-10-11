@@ -1,14 +1,25 @@
 import SwiftUI
 import GuideCore
 
-/// The first-run screen: how spoilers are kept closed, what "not recorded"
-/// means, where the data comes from, and what the app does not collect. One
-/// short scrolling page rather than a carousel, so VoiceOver reads it top to
-/// bottom, it reflows at every text size, and there is nothing to animate.
+/// The first-run screen: a short native pager. A welcome page, then one
+/// page each on how spoilers are kept closed, what "not recorded" means,
+/// where the data comes from, and what the app does not collect.
+///
+/// Built so the pager costs nothing in accessibility (it replaced a single
+/// scrolling page that was chosen for exactly these reasons):
+/// - Next and Back are real buttons, so nobody needs the swipe. A swipe
+///   works too, and each change of page is a light selection tap.
+/// - Each page is its own scroll view, so it reflows at every text size,
+///   AX5 included, and the buttons stack at accessibility sizes.
+/// - VoiceOver hears "Page 2 of 5", and focus moves to the new page's
+///   heading after Next or Back, so the page is read from its top.
+/// - Reduce Motion: pages change without the slide, and the symbols do
+///   not bounce.
+///
 /// Skippable from the first moment; About opens it again.
 struct OnboardingView: View {
-    /// Called by "Start browsing" and "Skip" on first run, and "Done" when
-    /// opened again from About.
+    /// Called by "Start browsing" and "Skip" on first run, and "Done" or
+    /// "Close" when opened again from About.
     let finish: () -> Void
     var isFirstRun = true
 
@@ -50,33 +61,98 @@ struct OnboardingView: View {
         ),
     ]
 
+    /// The welcome page is page 0; the points follow.
+    static var pageCount: Int { points.count + 1 }
+
+    @State private var page = 0
+    @AccessibilityFocusState private var focusedPage: Int?
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
+    private var isLastPage: Bool { page == Self.pageCount - 1 }
+
     var body: some View {
-        NavigationStack {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 28) {
-                    // In the page, not the toolbar: Xcode's audit reports a
-                    // toolbar text button as not scaling with Dynamic Type.
-                    if isFirstRun {
-                        HStack {
-                            Spacer()
-                            Button("Skip", action: finish)
-                                .font(.body.weight(.semibold))
-                                .frame(minHeight: 44)
-                                .contentShape(Rectangle())
-                                .accessibilityHint("Starts browsing. About shows this again.")
-                        }
+        VStack(spacing: 0) {
+            topBar
+            TabView(selection: $page) {
+                OnboardingPage(
+                    systemImage: "sparkles.tv",
+                    title: "Welcome to \(AppIdentity.displayName)",
+                    message: "A spoiler-safe guide to queer characters on TV. Here is how it works, in four short pages.",
+                    identifier: "onboarding-welcome",
+                    isCurrent: page == 0,
+                    focus: $focusedPage,
+                    index: 0
+                )
+                .tag(0)
+                ForEach(Array(Self.points.enumerated()), id: \.element.id) { offset, point in
+                    OnboardingPage(
+                        systemImage: point.systemImage,
+                        title: point.title,
+                        message: point.body,
+                        identifier: "onboarding-point-\(point.id)",
+                        isCurrent: page == offset + 1,
+                        focus: $focusedPage,
+                        index: offset + 1
+                    )
+                    .tag(offset + 1)
+                }
+            }
+            .tabViewStyle(.page(indexDisplayMode: .never))
+            bottomBar
+        }
+        .background(Color(uiColor: .systemBackground))
+        .sensoryFeedback(.selection, trigger: page)
+        // After Next, Back or a swipe, VoiceOver starts the new page at its
+        // heading instead of staying on the button.
+        .onChange(of: page) { _, newPage in focusedPage = newPage }
+    }
+
+    private func go(to newPage: Int) {
+        let target = min(max(newPage, 0), Self.pageCount - 1)
+        withAnimation(reduceMotion ? nil : .snappy) { page = target }
+    }
+
+    @ViewBuilder
+    private var topBar: some View {
+        HStack {
+            Spacer()
+            // In the page, not a toolbar: Xcode's audit reports a toolbar
+            // text button as not scaling with Dynamic Type.
+            Button(isFirstRun ? "Skip" : "Close", action: finish)
+                .font(.body.weight(.semibold))
+                .frame(minHeight: 44)
+                .contentShape(Rectangle())
+                .accessibilityHint(isFirstRun ? "Starts browsing. About shows this again." : "Goes back to About.")
+                .accessibilityIdentifier("onboarding-skip")
+        }
+        .padding(.horizontal)
+        // Shown on the last page too, so the corner never jumps; there,
+        // "Start browsing" below does the same thing.
+        .opacity(isLastPage && isFirstRun ? 0 : 1)
+        .accessibilityHidden(isLastPage && isFirstRun)
+    }
+
+    private var bottomBar: some View {
+        VStack(spacing: 14) {
+            PageIndicator(count: Self.pageCount, current: page)
+            let layout = dynamicTypeSize.isAccessibilitySize
+                ? AnyLayout(VStackLayout(spacing: 10))
+                : AnyLayout(HStackLayout(spacing: 12))
+            layout {
+                if page > 0 {
+                    Button {
+                        go(to: page - 1)
+                    } label: {
+                        Text("Back")
+                            .font(.headline)
+                            .frame(maxWidth: .infinity)
                     }
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("Welcome to \(AppIdentity.displayName)")
-                            .font(.largeTitle.bold())
-                            .accessibilityAddTraits(.isHeader)
-                        Text("A spoiler-safe guide to queer characters on TV.")
-                            .font(.title3)
-                            .foregroundStyle(.subdued)
-                    }
-                    ForEach(Self.points) { point in
-                        OnboardingPoint(point: point)
-                    }
+                    .buttonStyle(.bordered)
+                    .controlSize(.large)
+                    .accessibilityIdentifier("onboarding-back")
+                }
+                if isLastPage {
                     Button(action: finish) {
                         Text(isFirstRun ? "Start browsing" : "Done")
                             .font(.headline)
@@ -85,48 +161,99 @@ struct OnboardingView: View {
                     .buttonStyle(.borderedProminent)
                     .controlSize(.large)
                     .accessibilityIdentifier("onboarding-finish")
+                } else {
+                    Button {
+                        go(to: page + 1)
+                    } label: {
+                        Text("Next")
+                            .font(.headline)
+                            .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .controlSize(.large)
+                    .accessibilityIdentifier("onboarding-next")
                 }
-                .padding()
-                .frame(maxWidth: .infinity, alignment: .leading)
             }
-            // This page has no navigation bar, so scrolled text ran up under
-            // the status bar and was drawn across the clock (and the
-            // accessibility audit could not finish measuring it). An opaque
-            // strip of the page's own background covers the status bar.
-            .overlay(alignment: .top) {
-                GeometryReader { proxy in
-                    Color(uiColor: .systemBackground)
-                        .frame(height: proxy.safeAreaInsets.top)
-                        .ignoresSafeArea(edges: .top)
+        }
+        .padding(.horizontal)
+        .padding(.top, 8)
+        .padding(.bottom, 12)
+    }
+}
+
+/// One page: a large symbol in a tinted disc, a heading, and its text, in
+/// its own scroll view so it reflows at every text size.
+private struct OnboardingPage: View {
+    let systemImage: String
+    let title: String
+    let message: String
+    let identifier: String
+    let isCurrent: Bool
+    var focus: AccessibilityFocusState<Int?>.Binding
+    let index: Int
+
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
+    var body: some View {
+        // Centered while the text is short enough to read that way; at
+        // accessibility sizes a paragraph reads better from the left.
+        let alignment: TextAlignment = dynamicTypeSize.isAccessibilitySize ? .leading : .center
+        GeometryReader { proxy in
+        ScrollView {
+            VStack(spacing: 24) {
+                Image(systemName: systemImage)
+                    .font(.system(size: 56, weight: .regular))
+                    .foregroundStyle(.accessibleAccent)
+                    .symbolEffect(.bounce, options: .nonRepeating, value: reduceMotion ? false : isCurrent)
+                    .frame(width: 120, height: 120)
+                    .background(Circle().fill(Color.accessibleAccent.opacity(0.12)))
+                    .accessibilityHidden(true)
+                VStack(alignment: dynamicTypeSize.isAccessibilitySize ? .leading : .center, spacing: 12) {
+                    Text(title)
+                        .font(.title.bold())
+                        .multilineTextAlignment(alignment)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .accessibilityAddTraits(.isHeader)
+                        .accessibilityIdentifier(identifier)
+                        .accessibilityFocused(focus, equals: index)
+                    Text(message)
+                        .font(.body)
+                        .foregroundStyle(.subdued)
+                        .multilineTextAlignment(alignment)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
-                .allowsHitTesting(false)
-                .accessibilityHidden(true)
+                .frame(maxWidth: .infinity, alignment: dynamicTypeSize.isAccessibilitySize ? .leading : .center)
             }
+            .padding(.horizontal, 24)
+            .padding(.bottom, 24)
+            // Centered in the page while it fits; taller than the page (large
+            // text), it starts at the top and scrolls.
+            .frame(minHeight: proxy.size.height)
+        }
+        .scrollBounceBehavior(.basedOnSize)
         }
     }
 }
 
-private struct OnboardingPoint: View {
-    let point: OnboardingView.Point
+/// Dots for sighted readers; one "Page 2 of 5" element for VoiceOver.
+private struct PageIndicator: View {
+    let count: Int
+    let current: Int
+
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
-        HStack(alignment: .firstTextBaseline, spacing: 14) {
-            Image(systemName: point.systemImage)
-                .font(.title2)
-                .foregroundStyle(.accessibleAccent)
-                .frame(minWidth: 32)
-                .accessibilityHidden(true)
-            VStack(alignment: .leading, spacing: 6) {
-                // A heading VoiceOver's rotor can jump between, then its
-                // text; the icon is decoration.
-                Text(point.title)
-                    .font(.headline)
-                    .accessibilityAddTraits(.isHeader)
-                    .accessibilityIdentifier("onboarding-point-\(point.id)")
-                Text(point.body)
-                    .font(.body)
-                    .fixedSize(horizontal: false, vertical: true)
+        HStack(spacing: 8) {
+            ForEach(0..<count, id: \.self) { index in
+                Capsule()
+                    .fill(index == current ? Color.accessibleAccent : Color.subdued.opacity(0.35))
+                    .frame(width: index == current ? 22 : 8, height: 8)
             }
         }
+        .animation(reduceMotion ? nil : .snappy, value: current)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("Page \(current + 1) of \(count)")
+        .accessibilityIdentifier("onboarding-page-indicator")
     }
 }

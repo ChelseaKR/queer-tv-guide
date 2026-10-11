@@ -621,7 +621,7 @@ final class AccessibilityAuditTests: XCTestCase {
             app.launchArguments += ["-UIPreferredContentSizeCategoryName", textSize]
         }
         app.launch()
-        XCTAssertTrue(app.staticTexts["onboarding-point-spoilers"].waitForExistence(timeout: 30), "no first-run screen")
+        XCTAssertTrue(app.staticTexts["onboarding-welcome"].waitForExistence(timeout: 30), "no first-run screen")
         return app
     }
 

@@ -134,7 +134,7 @@ struct OnboardingView: View {
     }
 
     private var bottomBar: some View {
-        VStack(spacing: 14) {
+        VStack(spacing: 4) {
             PageIndicator(count: Self.pageCount, current: page)
             let layout = dynamicTypeSize.isAccessibilitySize
                 ? AnyLayout(VStackLayout(spacing: 10))
@@ -257,6 +257,10 @@ private struct PageIndicator: View {
             }
         }
         .animation(reduceMotion ? nil : .snappy, value: current)
+        // VoiceOver can land on it, so it gets a full-size target (the
+        // audit's minimum), with the dots drawn in the middle.
+        .frame(minWidth: 44, minHeight: 44)
+        .contentShape(Rectangle())
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("Page \(current + 1) of \(count)")
         .accessibilityIdentifier("onboarding-page-indicator")

@@ -13,6 +13,11 @@ consumer of the published snapshot, would notice.
 
 ### Added
 
+- Queer Frame now runs on iPad, in every orientation and alongside other
+  apps, and on Mac computers with Apple silicon. On a wide screen, Search
+  and Favorites show the list and the show you picked side by side, and
+  text keeps a readable width. With a keyboard, Command-1, 2 and 3 switch
+  between Search, Favorites and About, and Command-R checks for new data.
 - The first-run introduction is now five short pages you move through with
   Next and Back or a swipe: a welcome, then how spoilers stay closed, what
   "Not recorded" means, where the data comes from, and what the app does not

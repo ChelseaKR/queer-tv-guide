@@ -19,14 +19,17 @@ final class AppStoreReadinessTests: XCTestCase {
         return out
     }
 
-    /// DECISIONS 0009: iPhone only. No iPad family, no iPad-only keys left
-    /// behind, and the iPhone orientations declared.
-    func testIPhoneOnly() throws {
+    /// DECISIONS 0016: iPhone and iPad. Both orientation lists declared, and
+    /// iPad's has all four, which iPad multitasking requires (without them
+    /// App Store validation asks for UIRequiresFullScreen).
+    func testIPhoneAndIPad() throws {
         let shared = try settings("Shared.xcconfig")
         let product = try settings("Product.xcconfig")
-        XCTAssertEqual(shared["TARGETED_DEVICE_FAMILY"], "1", "iPhone only (DECISIONS 0009)")
-        XCTAssertNil(product["INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad"], "an iPad key on an iPhone-only target")
+        XCTAssertEqual(shared["TARGETED_DEVICE_FAMILY"], "1,2", "iPhone and iPad (DECISIONS 0016)")
         XCTAssertNotNil(product["INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone"])
+        let iPad = Set((product["INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad"] ?? "").split(separator: " ").map(String.init))
+        XCTAssertEqual(iPad, ["UIInterfaceOrientationPortrait", "UIInterfaceOrientationPortraitUpsideDown", "UIInterfaceOrientationLandscapeLeft", "UIInterfaceOrientationLandscapeRight"])
+        XCTAssertNil(product["INFOPLIST_KEY_UIRequiresFullScreen"], "full screen only would opt out of iPad multitasking")
     }
 
     func testExportComplianceAndCategoryAreDeclared() throws {
@@ -127,8 +130,8 @@ final class AppStoreReadinessTests: XCTestCase {
     func testListingMatchesTheBuild() throws {
         let l = try listing()
         XCTAssertEqual(l["name"] as? String, try productName(), "App Store name must be the app's display name")
-        XCTAssertEqual(l["devices"] as? [String], ["iPhone"], "DECISIONS 0009")
-        XCTAssertEqual(try settings("Shared.xcconfig")["TARGETED_DEVICE_FAMILY"], "1")
+        XCTAssertEqual(l["devices"] as? [String], ["iPhone", "iPad"], "DECISIONS 0016")
+        XCTAssertEqual(try settings("Shared.xcconfig")["TARGETED_DEVICE_FAMILY"], "1,2")
         XCTAssertEqual(l["support_url"] as? String, SupportPage.url.absoluteString)
         XCTAssertEqual(l["privacy_policy_url"] as? String, PrivacyPolicy.url.absoluteString)
         XCTAssertEqual(l["price_usd"] as? String, "4.99", "DECISIONS 0011")

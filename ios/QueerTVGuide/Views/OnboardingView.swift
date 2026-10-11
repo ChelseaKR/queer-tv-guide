@@ -56,7 +56,7 @@ struct OnboardingView: View {
         Point(
             id: "privacy",
             systemImage: "lock.shield",
-            title: "Nothing about you leaves this phone",
+            title: "Nothing about you leaves this device",
             body: "No account, no analytics, no tracking. Favorites stay on this device. The app downloads one data file, the same file for everyone."
         ),
     ]
@@ -175,6 +175,8 @@ struct OnboardingView: View {
                 }
             }
         }
+        .frame(maxWidth: 560)
+        .frame(maxWidth: .infinity)
         .padding(.horizontal)
         .padding(.top, 8)
         .padding(.bottom, 12)
@@ -225,6 +227,9 @@ private struct OnboardingPage: View {
                 }
                 .frame(maxWidth: .infinity, alignment: dynamicTypeSize.isAccessibilitySize ? .leading : .center)
             }
+            // A column, not a banner, on iPad and Mac.
+            .frame(maxWidth: 560)
+            .frame(maxWidth: .infinity)
             .padding(.horizontal, 24)
             .padding(.bottom, 24)
             // Centered in the page while it fits; taller than the page (large

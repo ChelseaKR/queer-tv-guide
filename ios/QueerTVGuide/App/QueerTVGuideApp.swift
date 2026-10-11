@@ -44,6 +44,22 @@ struct QueerTVGuideApp: App {
                     if phase == .active { Task { await model.refreshIfStaleOnReturn() } }
                 }
         }
+        // A hardware keyboard on iPad, and the menu bar on a Mac: the tabs
+        // and the one refresh, with the shortcuts the system shows when
+        // Command is held (DECISIONS 0016).
+        .commands {
+            CommandMenu("Go") {
+                Button("Search") { appDelegate.router.tab = .search }
+                    .keyboardShortcut("1", modifiers: .command)
+                Button("Favorites") { appDelegate.router.tab = .favorites }
+                    .keyboardShortcut("2", modifiers: .command)
+                Button("About") { appDelegate.router.tab = .about }
+                    .keyboardShortcut("3", modifiers: .command)
+                Divider()
+                Button("Check for New Data") { Task { await model.requestedRefresh() } }
+                    .keyboardShortcut("r", modifiers: .command)
+            }
+        }
     }
 }
 

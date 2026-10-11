@@ -28,7 +28,11 @@ struct SearchView: View {
     private var key: Key { Key(query: trimmedQuery, filters: filters, generatedAt: model.snapshot?.generatedAt) }
 
     var body: some View {
-        NavigationStack {
+        AdaptiveNavigation(
+            placeholderTitle: "Choose a show",
+            placeholderSystemImage: "sparkles.tv",
+            placeholderMessage: "Pick a show or character from the list to see it here."
+        ) {
             content
                 .navigationTitle("Search")
                 .searchable(text: $query, prompt: "Shows, characters, actors")

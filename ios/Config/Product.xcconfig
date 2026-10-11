@@ -14,14 +14,15 @@ PRODUCT_BUNDLE_IDENTIFIER = com.chelseakr.queertvguide
 INFOPLIST_KEY_CFBundleDisplayName = Queer Frame
 
 // App Store submission keys the generated Info.plist was missing.
-// - Orientations: iPhone only (DECISIONS 0009, TARGETED_DEVICE_FAMILY = 1
-//   in Shared.xcconfig): portrait and landscape, no upside-down, as Xcode's
-//   own template.
+// - Orientations: on iPhone, portrait and landscape, no upside-down, as
+//   Xcode's own template. On iPad every orientation, which iPad multitasking
+//   (Split View, Slide Over, Stage Manager) requires (DECISIONS 0016).
 // - Export compliance: the app's one network call is HTTPS through
 //   URLSession, and it contains no encryption of its own, so it uses no
 //   non-exempt encryption. Declaring it here answers App Store Connect's
 //   question for every build.
 // - Category: Entertainment, per docs/APP-STORE.md §1.
 INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight
+INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight
 INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO
 INFOPLIST_KEY_LSApplicationCategoryType = public.app-category.entertainment

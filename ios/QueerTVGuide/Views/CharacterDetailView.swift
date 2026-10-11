@@ -19,6 +19,8 @@ struct CharacterDetailView: View {
                         DataStatusFooter(snapshot: snapshot)
                     }
                     .padding()
+                    // Lines stay readable on iPad and Mac (DECISIONS 0016).
+                    .readableWidth()
                 }
                 .navigationTitle(character.name)
                 .navigationBarTitleDisplayMode(.inline)

@@ -16,7 +16,11 @@ struct FavoritesView: View {
     }
 
     var body: some View {
-        NavigationStack {
+        AdaptiveNavigation(
+            placeholderTitle: "Choose a favorite",
+            placeholderSystemImage: "star",
+            placeholderMessage: "Pick a show or character from your favorites to see it here."
+        ) {
             Group {
                 if let snapshot = model.snapshot {
                     if entries.isEmpty {

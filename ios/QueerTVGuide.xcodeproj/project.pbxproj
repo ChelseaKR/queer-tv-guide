@@ -29,9 +29,11 @@
 		70A3F22074E39C363F93C763 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE5B9E6D70CFC3BC6AA7334A /* AppDelegate.swift */; };
 		7DFA6218C2D7D56694BCB630 /* UITestSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = C18432D587CE03BBE8A49E63 /* UITestSupport.swift */; };
 		820FD19F27E06A5CAC4B2F00 /* AppLinkUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F41A6DE2A5606B399AC5B2C5 /* AppLinkUITests.swift */; };
+		83AF5964290BEC6350400AD2 /* RefreshProblemUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A53311422A998D12F93FC7FF /* RefreshProblemUITests.swift */; };
 		884A38B08784AE25577C9DEA /* UpNextPublisherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88113C51CA0C0F6B09A5E54B /* UpNextPublisherTests.swift */; };
 		8AAB1C2FDBFAB8562373B763 /* AboutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 657AE9A3B9D336B3F6289154 /* AboutView.swift */; };
 		8E6684539DE41C84F0D59856 /* AppRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EB3F6EAC96573972FCEB2D0 /* AppRouter.swift */; };
+		911D028481AF85F8ADC359E5 /* ParityEvidenceScreenshotTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27DAE74FC583FBF77F0311B0 /* ParityEvidenceScreenshotTests.swift */; };
 		91648E1B5AEDA5977C20677A /* RemindersSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92255AA20E991B5EBF896664 /* RemindersSection.swift */; };
 		933ED8FAF5A7F5190F303040 /* GuideCore in Frameworks */ = {isa = PBXBuildFile; productRef = 16A57CD5B69D5D502A021530 /* GuideCore */; };
 		96EE0A6594196C3F464850B8 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B384108A7E71C3A6C208AE15 /* OnboardingView.swift */; };
@@ -42,6 +44,7 @@
 		AF8F6EC792B3F9C2ECA31E2C /* ShareUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0DBCB15CAC6245B11B821882 /* ShareUITests.swift */; };
 		B1D3FCC5C39C4930C7672351 /* QueerTVGuideApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D90E104D1F01789CA1519A7 /* QueerTVGuideApp.swift */; };
 		B777FF35630AE0BD13BDF1DC /* FeatureFlags.swift in Sources */ = {isa = PBXBuildFile; fileRef = C590EBCBB2603A2A43F8B4DD /* FeatureFlags.swift */; };
+		B995FD95F2AC7DF689C0812A /* AdaptiveLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA40101CA4AE655F8FD35982 /* AdaptiveLayout.swift */; };
 		C7A7129CF35ED3A9179AB933 /* FavoritesBackupFile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 317A0D7846357B5C0505B7A1 /* FavoritesBackupFile.swift */; };
 		CF25EB2A090C6F989F6152F5 /* AppModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED002440091CA64B039DD844 /* AppModel.swift */; };
 		D28015C94277D94BAEDE595C /* SpoilerReveal.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAB4D8B056C51CE5C6F0D9E9 /* SpoilerReveal.swift */; };
@@ -100,6 +103,7 @@
 		10165D9A5F58512DBB27DE07 /* ShowDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShowDetailView.swift; sourceTree = "<group>"; };
 		123F3186D6AD1A3A91F25A89 /* FavoriteButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FavoriteButton.swift; sourceTree = "<group>"; };
 		13A0BF16C0CAC9F83B9D5D31 /* AttributionUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttributionUITests.swift; sourceTree = "<group>"; };
+		27DAE74FC583FBF77F0311B0 /* ParityEvidenceScreenshotTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParityEvidenceScreenshotTests.swift; sourceTree = "<group>"; };
 		2ACC89D31D7AF8C4324115F3 /* Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Debug.xcconfig; sourceTree = "<group>"; };
 		2C64C79C900805323AFCF628 /* QueerTVGuideTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = QueerTVGuideTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		317A0D7846357B5C0505B7A1 /* FavoritesBackupFile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FavoritesBackupFile.swift; sourceTree = "<group>"; };
@@ -126,6 +130,8 @@
 		92255AA20E991B5EBF896664 /* RemindersSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemindersSection.swift; sourceTree = "<group>"; };
 		95D825B045FC7516E54DAF0C /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		9E750D2B2E53B7541A9D0A8C /* AccessibleStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccessibleStyle.swift; sourceTree = "<group>"; };
+		A53311422A998D12F93FC7FF /* RefreshProblemUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RefreshProblemUITests.swift; sourceTree = "<group>"; };
+		AA40101CA4AE655F8FD35982 /* AdaptiveLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdaptiveLayout.swift; sourceTree = "<group>"; };
 		AE2B560D8C4AC1CFC059C157 /* QueerTVGuideUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QueerTVGuideUITests.swift; sourceTree = "<group>"; };
 		B11B7DDC306A074C01E19076 /* ReminderScheduler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReminderScheduler.swift; sourceTree = "<group>"; };
 		B384108A7E71C3A6C208AE15 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
@@ -224,7 +230,9 @@
 				CE5E38E6D1C9D03CA948241D /* AppStoreScreenshotTests.swift */,
 				13A0BF16C0CAC9F83B9D5D31 /* AttributionUITests.swift */,
 				434A3D8EBE152B96D1F24792 /* OnboardingUITests.swift */,
+				27DAE74FC583FBF77F0311B0 /* ParityEvidenceScreenshotTests.swift */,
 				AE2B560D8C4AC1CFC059C157 /* QueerTVGuideUITests.swift */,
+				A53311422A998D12F93FC7FF /* RefreshProblemUITests.swift */,
 				FFAB66A1983ACFC1FA470837 /* RemindersUITests.swift */,
 				0DBCB15CAC6245B11B821882 /* ShareUITests.swift */,
 				C18432D587CE03BBE8A49E63 /* UITestSupport.swift */,
@@ -263,6 +271,7 @@
 			isa = PBXGroup;
 			children = (
 				9E750D2B2E53B7541A9D0A8C /* AccessibleStyle.swift */,
+				AA40101CA4AE655F8FD35982 /* AdaptiveLayout.swift */,
 				E8DC91A913A9E688CFD60485 /* DataFreshnessBanner.swift */,
 				750D33208053211A76D4C98D /* DataStatusFooter.swift */,
 				123F3186D6AD1A3A91F25A89 /* FavoriteButton.swift */,
@@ -513,7 +522,9 @@
 				A8E093E39E4BB59B74F7D3E1 /* AppStoreScreenshotTests.swift in Sources */,
 				4C00C3BF875CE9D5217C3B19 /* AttributionUITests.swift in Sources */,
 				F66F0DC4CF25AC277B21105E /* OnboardingUITests.swift in Sources */,
+				911D028481AF85F8ADC359E5 /* ParityEvidenceScreenshotTests.swift in Sources */,
 				29306A55EB6EA2EE7083201D /* QueerTVGuideUITests.swift in Sources */,
+				83AF5964290BEC6350400AD2 /* RefreshProblemUITests.swift in Sources */,
 				29F9B1846DEBD2C9B91A104A /* RemindersUITests.swift in Sources */,
 				AF8F6EC792B3F9C2ECA31E2C /* ShareUITests.swift in Sources */,
 				7DFA6218C2D7D56694BCB630 /* UITestSupport.swift in Sources */,
@@ -526,6 +537,7 @@
 			files = (
 				8AAB1C2FDBFAB8562373B763 /* AboutView.swift in Sources */,
 				35299370D6D51D2B89FE3532 /* AccessibleStyle.swift in Sources */,
+				B995FD95F2AC7DF689C0812A /* AdaptiveLayout.swift in Sources */,
 				70A3F22074E39C363F93C763 /* AppDelegate.swift in Sources */,
 				30C7D17533AA5FC8407B1F24 /* AppIdentity.swift in Sources */,
 				CF25EB2A090C6F989F6152F5 /* AppModel.swift in Sources */,
@@ -575,7 +587,7 @@
 		};
 		787377F4AD314594AA4627E9 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			productRef = "TEMP_2DF9154D-30A7-4483-88D6-A4FE8A453FD8" /* GuideCore */;
+			productRef = "TEMP_3A706E3C-D215-4E98-A3F4-00103AFFBD1D" /* GuideCore */;
 		};
 		FDEF029D89D55214348A5D55 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -898,7 +910,7 @@
 			isa = XCSwiftPackageProductDependency;
 			productName = GuideCore;
 		};
-		"TEMP_2DF9154D-30A7-4483-88D6-A4FE8A453FD8" /* GuideCore */ = {
+		"TEMP_3A706E3C-D215-4E98-A3F4-00103AFFBD1D" /* GuideCore */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = GuideCore;
 		};

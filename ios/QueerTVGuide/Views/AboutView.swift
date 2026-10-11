@@ -91,6 +91,8 @@ struct AboutView: View {
             }
             // Pull to check for a newer data file (the one GET).
             .refreshable { await model.requestedRefresh() }
+            // Rows keep a readable width on iPad and Mac (DECISIONS 0016).
+            .readableListWidth()
             .navigationTitle("About \(AppIdentity.displayName)")
             .sheet(isPresented: $showingIntroduction) {
                 OnboardingView(finish: { showingIntroduction = false }, isFirstRun: false)

@@ -30,7 +30,7 @@ struct RemindersSection: View {
                     }
                 }
             ))
-            .accessibilityHint("Reminds you on the day a favorite show has a new episode listed. Set on this iPhone only.")
+            .accessibilityHint("Reminds you on the day a favorite show has a new episode listed. Set on this device only.")
             .task(id: storedOn) {
                 deniedInSettings = storedOn ? false : await ReminderScheduler.isDeniedInSettings()
             }
@@ -44,7 +44,7 @@ struct RemindersSection: View {
                 }
             }
         } footer: {
-            Text("Reminders are set on this iPhone and follow the data file, so a schedule changed since the last refresh can make one wrong.")
+            Text("Reminders are set on this device and follow the data file, so a schedule changed since the last refresh can make one wrong.")
                 .foregroundStyle(.subdued)
         }
     }
@@ -58,7 +58,7 @@ struct ReminderPrimingView: View {
     static let points: [(image: String, text: String)] = [
         ("calendar.badge.clock", "On the day a favorite show has a new episode listed, you get one reminder: the show's name and the episode number. If TVmaze lists no air time, it comes at 10 a.m. on the listed date and says so."),
         ("eye.slash", "Episode titles are left out, and nothing about any character, so a reminder cannot spoil anything on your lock screen."),
-        ("iphone", "This iPhone sets the reminders itself. Nothing is sent to a server, and nothing about you leaves this phone."),
+        ("iphone", "This device sets the reminders itself. Nothing is sent to a server, and nothing about you leaves it."),
         ("arrow.clockwise", "Reminders follow the data file. If a schedule changes after your last refresh, one can be early, late or wrong."),
     ]
 

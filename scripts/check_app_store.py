@@ -18,8 +18,8 @@ Two modes:
   - every target resolves to one MARKETING_VERSION (X.Y.Z) and one integer
     CURRENT_PROJECT_VERSION, both set only in ios/Config/Shared.xcconfig (an
     extension whose version differs from its app is rejected on upload);
-  - every target is iPhone-only (TARGETED_DEVICE_FAMILY = 1, DECISIONS
-    0009) and signs device builds with team 6X5YH93QNM, and the enrollment
+  - every target is iPhone and iPad (TARGETED_DEVICE_FAMILY = 1,2, DECISIONS
+    0016) and signs device builds with team 6X5YH93QNM, and the enrollment
     ID appears nowhere in the build files;
   - the app's generated Info.plist declares export compliance
     (ITSAppUsesNonExemptEncryption NO), a launch screen, the display name
@@ -265,8 +265,8 @@ def check_targets(resolved: Mapping[tuple[str, str], Mapping[str, str]]) -> list
     if not resolved:
         return ["no target build configurations were read from project.pbxproj"]
     for (target, config), s in sorted(resolved.items()):
-        if s.get("TARGETED_DEVICE_FAMILY") != "1":
-            problems.append(f"{target}/{config}: TARGETED_DEVICE_FAMILY must be 1 (iPhone)")
+        if s.get("TARGETED_DEVICE_FAMILY") != "1,2":
+            problems.append(f"{target}/{config}: TARGETED_DEVICE_FAMILY must be 1,2 (iPhone and iPad)")
         if s.get("DEVELOPMENT_TEAM") != TEAM_ID:
             problems.append(f"{target}/{config}: DEVELOPMENT_TEAM must be {TEAM_ID}")
         for key, value in s.items():
@@ -608,7 +608,7 @@ def _self_test_resolve(shared: str) -> dict[tuple[str, str], dict[str, str]]:
 
 def self_test() -> list[str]:
     """Each check must reject its bad input and accept its good one."""
-    shared = f"DEVELOPMENT_TEAM = {TEAM_ID}\nMARKETING_VERSION = 1.0.0\nCURRENT_PROJECT_VERSION = 3\nTARGETED_DEVICE_FAMILY = 1\n"
+    shared = f"DEVELOPMENT_TEAM = {TEAM_ID}\nMARKETING_VERSION = 1.0.0\nCURRENT_PROJECT_VERSION = 3\nTARGETED_DEVICE_FAMILY = 1,2\n"
     good = _self_test_resolve(shared)
     app = {
         "GENERATE_INFOPLIST_FILE": "YES",

@@ -25,6 +25,8 @@ struct ShowDetailView: View {
                         attributionFooter(snapshot: snapshot)
                     }
                     .padding()
+                    // Lines stay readable on iPad and Mac (DECISIONS 0016).
+                    .readableWidth()
                 }
                 .navigationTitle(show.title)
                 .navigationBarTitleDisplayMode(.inline)

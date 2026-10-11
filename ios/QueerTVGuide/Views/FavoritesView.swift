@@ -3,6 +3,7 @@ import GuideCore
 
 struct FavoritesView: View {
     @Environment(AppModel.self) private var model
+    @Environment(AppRouter.self) private var router
     @State private var entries: [FavoritesStore.Entry] = []
     @State private var showingReminderPrimer = false
     @State private var importing = false
@@ -54,7 +55,7 @@ struct FavoritesView: View {
                         }
                         // Pull for the latest next-episode dates: the same
                         // one GET as Search, nothing else.
-                        .refreshable { await model.refresh() }
+                        .refreshable { await model.requestedRefresh() }
                     }
                 } else {
                     ProgressView()
@@ -77,6 +78,14 @@ struct FavoritesView: View {
                     showingReminderPrimer = false
                     guard accepted else { return }
                     Task { _ = await ReminderScheduler.enable(model) }
+                }
+            }
+            // A widget row or a reminder opens its show here, pushed over
+            // Favorites, so Back comes back to the list (AppRouter).
+            .navigationDestination(item: Bindable(router).favoritesLink) { link in
+                switch link {
+                case .show(let id): ShowDetailView(showID: id)
+                case .character(let id): CharacterDetailView(characterID: id)
                 }
             }
             .fileImporter(isPresented: $importing, allowedContentTypes: [.json]) { result in

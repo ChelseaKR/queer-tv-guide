@@ -33,6 +33,11 @@ struct ShowDetailView: View {
                         FavoriteButton(kind: .show, id: show.id)
                     }
                 }
+            } else if model.snapshot == nil {
+                // Opened from a widget or a reminder at launch, before the
+                // catalog has loaded: wait for it rather than say "not found".
+                ProgressView("Loading catalog…")
+                    .accessibilityLabel("Loading catalog")
             } else {
                 EmptyState(title: "Show not found", systemImage: "questionmark.square.dashed")
             }

@@ -2,6 +2,7 @@ import SwiftUI
 
 @main
 struct QueerTVGuideApp: App {
+    @UIApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
     @State private var model = AppModel.live()
     @Environment(\.scenePhase) private var scenePhase
 
@@ -9,6 +10,10 @@ struct QueerTVGuideApp: App {
         WindowGroup {
             RootTabView()
                 .environment(model)
+                .environment(appDelegate.router)
+                // A widget row's `queerframe://show/<id>` link (AppLink).
+                // Anything that is not one of this app's links is ignored.
+                .onOpenURL { url in appDelegate.router.open(url: url) }
                 // Contrast-checked tint for every link, button and row
                 // (Views/Components/AccessibleStyle.swift).
                 .tint(.accessibleAccent)
@@ -48,6 +53,8 @@ struct RootTabView: View {
     /// sets the key (UI tests) decides the start without pinning it.
     @State private var onboardingSeen = UserDefaults.standard.bool(forKey: OnboardingView.seenKey)
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(AppModel.self) private var model
+    @Environment(AppRouter.self) private var router
 
     var body: some View {
         if onboardingSeen {
@@ -63,18 +70,29 @@ struct RootTabView: View {
     }
 
     private var tabs: some View {
-        TabView {
+        @Bindable var router = router
+        return TabView(selection: $router.tab) {
             SearchView()
                 .tabItem { Label("Search", systemImage: "magnifyingglass") }
+                .tag(AppRouter.Tab.search)
             FavoritesView()
                 .tabItem { Label("Favorites", systemImage: "star") }
+                .tag(AppRouter.Tab.favorites)
             AboutView()
                 .tabItem { Label("About", systemImage: "info.circle") }
+                .tag(AppRouter.Tab.about)
         }
         // Every scroll view and labeled value in every tab
         // (AccessibleStyle.swift).
         .legibleScrollEdges()
         .labeledContentStyle(SubduedValueLabeledContentStyle())
         .reduceMotionRespected()
+        // A refresh the person asked for (pull to refresh, Try again) ends
+        // in a tap they can feel: success when the data is current, a
+        // warning when the look failed. Once here, not per screen, so one
+        // refresh is one tap. iOS skips it when System Haptics is off.
+        .sensoryFeedback(trigger: model.requestedRefreshesFinished) { _, _ in
+            model.lastRefreshProblem == nil ? .success : .warning
+        }
     }
 }

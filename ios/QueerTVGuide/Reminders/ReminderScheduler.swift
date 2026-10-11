@@ -49,6 +49,9 @@ enum ReminderScheduler {
             content.title = reminder.title
             content.body = reminder.body
             content.sound = .default
+            // A tap opens this show (AppDelegate). Only the snapshot's id,
+            // which the app looks up locally.
+            content.userInfo = [AppLink.reminderShowIDKey: reminder.showID]
             let when = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute, .second], from: reminder.fireDate)
             let trigger = UNCalendarNotificationTrigger(dateMatching: when, repeats: false)
             try? await center.add(UNNotificationRequest(identifier: reminder.identifier, content: content, trigger: trigger))

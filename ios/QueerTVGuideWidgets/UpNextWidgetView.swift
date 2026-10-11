@@ -46,6 +46,7 @@ struct UpNextWidgetView: View {
         // in the app.
         .dynamicTypeSize(...DynamicTypeSize.xxLarge)
         .containerBackground(.background, for: .widget)
+        .widgetURL(smallWidgetURL)
     }
 
     private var header: some View {
@@ -66,15 +67,33 @@ struct UpNextWidgetView: View {
     private func rows(_ upNext: UpNext) -> some View {
         let ordered = upNext.ordered(today: entry.date)
         ForEach(ordered.prefix(capacity)) { item in
-            row(item)
-                .accessibilityElement(children: .ignore)
-                .accessibilityLabel(UpNextPresentation.spoken(item, today: entry.date))
+            // Each row opens its show in the app (AppLink). The small
+            // widget is one tap target, so it takes its one row's link
+            // through `widgetURL` (`body`) instead.
+            if family == .systemSmall {
+                spokenRow(item)
+            } else {
+                Link(destination: AppLink.show(item.showID).url) { spokenRow(item) }
+            }
         }
         if let more = UpNextPresentation.more(ordered.count - capacity, missing: upNext.missingShowCount) {
             Text(more)
                 .font(.caption2)
                 .foregroundStyle(WidgetColors.subdued)
         }
+    }
+
+    private func spokenRow(_ item: UpNext.Item) -> some View {
+        row(item)
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(UpNextPresentation.spoken(item, today: entry.date))
+    }
+
+    /// The link the whole small widget opens: its one show, or nil (the
+    /// app opens where it was) when there is none.
+    var smallWidgetURL: URL? {
+        guard family == .systemSmall, let first = entry.upNext?.ordered(today: entry.date).first else { return nil }
+        return AppLink.show(first.showID).url
     }
 
     /// Small: the title over its episode line. Medium: one line each, the

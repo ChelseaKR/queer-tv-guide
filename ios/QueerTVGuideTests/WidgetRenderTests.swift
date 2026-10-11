@@ -76,4 +76,17 @@ final class WidgetRenderTests: XCTestCase {
             XCTAssertFalse(titles.contains(item.title), "\(item.title) is a real show")
         }
     }
+
+    /// A tap on the small widget opens the one show it lists, the soonest;
+    /// the medium widget links each row instead, so it sets no single URL.
+    func testTheSmallWidgetOpensItsShowAndTheMediumLinksPerRow() throws {
+        let upNext = try realUpNext()
+        let entry = UpNextEntry(date: Date(), upNext: upNext)
+        let first = try XCTUnwrap(upNext.ordered(today: entry.date).first)
+        let small = UpNextWidgetView(entry: entry, familyOverride: .systemSmall)
+        XCTAssertEqual(small.smallWidgetURL, AppLink.show(first.showID).url)
+        XCTAssertEqual(small.smallWidgetURL.flatMap(AppLink.init(url:)), .show(first.showID))
+        XCTAssertNil(UpNextWidgetView(entry: entry, familyOverride: .systemMedium).smallWidgetURL)
+        XCTAssertNil(UpNextWidgetView(entry: UpNextEntry(date: Date(), upNext: nil), familyOverride: .systemSmall).smallWidgetURL)
+    }
 }

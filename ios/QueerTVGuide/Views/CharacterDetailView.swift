@@ -27,6 +27,11 @@ struct CharacterDetailView: View {
                         FavoriteButton(kind: .character, id: character.id)
                     }
                 }
+            } else if model.snapshot == nil {
+                // Opened from a widget or a reminder at launch, before the
+                // catalog has loaded: wait for it rather than say "not found".
+                ProgressView("Loading catalog…")
+                    .accessibilityLabel("Loading catalog")
             } else {
                 EmptyState(title: "Character not found", systemImage: "questionmark.square.dashed")
             }

@@ -21,10 +21,25 @@ targets:
       - path: QueerTVGuide
         excludes:
           - "Resources/snapshot.v1.json"
+          - "Info.plist"
       - path: QueerTVGuide/Resources/snapshot.v1.json
         buildPhase: resources
       - path: QueerTVGuide/PrivacyInfo.xcprivacy
         buildPhase: resources
+    # Most of the app's Info.plist is generated from INFOPLIST_KEY_*
+    # settings (Config/). This file adds what has no such setting: the
+    # app's own URL scheme, `queerframe://`, which the widget's rows and
+    # GuideCore's AppLink use to open a show. In-app only; it names no host.
+    # Versions come from the build settings, as the widget's do.
+    info:
+      path: QueerTVGuide/Info.plist
+      properties:
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        CFBundleURLTypes:
+          - CFBundleURLName: com.chelseakr.queertvguide
+            CFBundleURLSchemes:
+              - queerframe
     # The App Group the app shares with the widget: the app writes the
     # widget's one file there (GuideCore's UpNext). Local to the device.
     entitlements:

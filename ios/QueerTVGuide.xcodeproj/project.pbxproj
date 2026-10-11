@@ -26,9 +26,12 @@
 		68425D95518F53E70F4F5419 /* GuideCore in Frameworks */ = {isa = PBXBuildFile; productRef = 13543BD064FB8FE28EAA03E0 /* GuideCore */; };
 		690BC4BE40AD7CA55FD6E50B /* FavoriteButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 123F3186D6AD1A3A91F25A89 /* FavoriteButton.swift */; };
 		69503986E8D186306BA9FEC4 /* UpNextPublisher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8470466FB9EBD014FBF632A7 /* UpNextPublisher.swift */; };
+		70A3F22074E39C363F93C763 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE5B9E6D70CFC3BC6AA7334A /* AppDelegate.swift */; };
 		7DFA6218C2D7D56694BCB630 /* UITestSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = C18432D587CE03BBE8A49E63 /* UITestSupport.swift */; };
+		820FD19F27E06A5CAC4B2F00 /* AppLinkUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F41A6DE2A5606B399AC5B2C5 /* AppLinkUITests.swift */; };
 		884A38B08784AE25577C9DEA /* UpNextPublisherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88113C51CA0C0F6B09A5E54B /* UpNextPublisherTests.swift */; };
 		8AAB1C2FDBFAB8562373B763 /* AboutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 657AE9A3B9D336B3F6289154 /* AboutView.swift */; };
+		8E6684539DE41C84F0D59856 /* AppRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EB3F6EAC96573972FCEB2D0 /* AppRouter.swift */; };
 		91648E1B5AEDA5977C20677A /* RemindersSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92255AA20E991B5EBF896664 /* RemindersSection.swift */; };
 		933ED8FAF5A7F5190F303040 /* GuideCore in Frameworks */ = {isa = PBXBuildFile; productRef = 16A57CD5B69D5D502A021530 /* GuideCore */; };
 		96EE0A6594196C3F464850B8 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B384108A7E71C3A6C208AE15 /* OnboardingView.swift */; };
@@ -111,6 +114,7 @@
 		697A4919D8BA06853433EBE3 /* Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Release.xcconfig; sourceTree = "<group>"; };
 		6CDD86F9E0EDF0464F4B6A5C /* SourceCredits.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SourceCredits.swift; sourceTree = "<group>"; };
 		6D90E104D1F01789CA1519A7 /* QueerTVGuideApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QueerTVGuideApp.swift; sourceTree = "<group>"; };
+		6EB3F6EAC96573972FCEB2D0 /* AppRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppRouter.swift; sourceTree = "<group>"; };
 		750D33208053211A76D4C98D /* DataStatusFooter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataStatusFooter.swift; sourceTree = "<group>"; };
 		7C7F3D8E238A2C369F0CC6B2 /* QueerTVGuideUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = QueerTVGuideUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		7E22869739CB3B5101511B36 /* SearchFiltersView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchFiltersView.swift; sourceTree = "<group>"; };
@@ -143,6 +147,8 @@
 		E219F9051E6235BF05534BED /* WidgetRenderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetRenderTests.swift; sourceTree = "<group>"; };
 		E8DC91A913A9E688CFD60485 /* DataFreshnessBanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataFreshnessBanner.swift; sourceTree = "<group>"; };
 		ED002440091CA64B039DD844 /* AppModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppModel.swift; sourceTree = "<group>"; };
+		EE5B9E6D70CFC3BC6AA7334A /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		F41A6DE2A5606B399AC5B2C5 /* AppLinkUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLinkUITests.swift; sourceTree = "<group>"; };
 		F7A17255CA033EE31D78CE19 /* QueerTVGuide.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = QueerTVGuide.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		FAB4D8B056C51CE5C6F0D9E9 /* SpoilerReveal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpoilerReveal.swift; sourceTree = "<group>"; };
 		FEEDA5D1A765419CCE2D7E56 /* App-Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "App-Debug.xcconfig"; sourceTree = "<group>"; };
@@ -172,8 +178,10 @@
 		205FB0D5A4434F7DC4A3A1B5 /* App */ = {
 			isa = PBXGroup;
 			children = (
+				EE5B9E6D70CFC3BC6AA7334A /* AppDelegate.swift */,
 				45C035570157184FA03B5D6C /* AppIdentity.swift */,
 				ED002440091CA64B039DD844 /* AppModel.swift */,
+				6EB3F6EAC96573972FCEB2D0 /* AppRouter.swift */,
 				C590EBCBB2603A2A43F8B4DD /* FeatureFlags.swift */,
 				6D90E104D1F01789CA1519A7 /* QueerTVGuideApp.swift */,
 				8470466FB9EBD014FBF632A7 /* UpNextPublisher.swift */,
@@ -212,6 +220,7 @@
 			isa = PBXGroup;
 			children = (
 				C7D13B01EA5DD72032DF50DE /* AccessibilityAuditTests.swift */,
+				F41A6DE2A5606B399AC5B2C5 /* AppLinkUITests.swift */,
 				CE5E38E6D1C9D03CA948241D /* AppStoreScreenshotTests.swift */,
 				13A0BF16C0CAC9F83B9D5D31 /* AttributionUITests.swift */,
 				434A3D8EBE152B96D1F24792 /* OnboardingUITests.swift */,
@@ -500,6 +509,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				A3D1463E24AE8A6F0737D48C /* AccessibilityAuditTests.swift in Sources */,
+				820FD19F27E06A5CAC4B2F00 /* AppLinkUITests.swift in Sources */,
 				A8E093E39E4BB59B74F7D3E1 /* AppStoreScreenshotTests.swift in Sources */,
 				4C00C3BF875CE9D5217C3B19 /* AttributionUITests.swift in Sources */,
 				F66F0DC4CF25AC277B21105E /* OnboardingUITests.swift in Sources */,
@@ -516,8 +526,10 @@
 			files = (
 				8AAB1C2FDBFAB8562373B763 /* AboutView.swift in Sources */,
 				35299370D6D51D2B89FE3532 /* AccessibleStyle.swift in Sources */,
+				70A3F22074E39C363F93C763 /* AppDelegate.swift in Sources */,
 				30C7D17533AA5FC8407B1F24 /* AppIdentity.swift in Sources */,
 				CF25EB2A090C6F989F6152F5 /* AppModel.swift in Sources */,
+				8E6684539DE41C84F0D59856 /* AppRouter.swift in Sources */,
 				2913F2CF2572B412572BC0A0 /* CharacterDetailView.swift in Sources */,
 				D88FB56C0E8BA1F3BE97F88A /* DataFreshnessBanner.swift in Sources */,
 				EA9CEF975F452BE75A15C0E8 /* DataStatusFooter.swift in Sources */,
@@ -563,7 +575,7 @@
 		};
 		787377F4AD314594AA4627E9 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			productRef = "TEMP_77AD2F42-D961-4E5D-AF47-8EF9741ED698" /* GuideCore */;
+			productRef = "TEMP_2DF9154D-30A7-4483-88D6-A4FE8A453FD8" /* GuideCore */;
 		};
 		FDEF029D89D55214348A5D55 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -637,6 +649,7 @@
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CODE_SIGN_ENTITLEMENTS = QueerTVGuide/QueerTVGuide.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				INFOPLIST_FILE = QueerTVGuide/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -699,6 +712,7 @@
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CODE_SIGN_ENTITLEMENTS = QueerTVGuide/QueerTVGuide.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				INFOPLIST_FILE = QueerTVGuide/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -884,7 +898,7 @@
 			isa = XCSwiftPackageProductDependency;
 			productName = GuideCore;
 		};
-		"TEMP_77AD2F42-D961-4E5D-AF47-8EF9741ED698" /* GuideCore */ = {
+		"TEMP_2DF9154D-30A7-4483-88D6-A4FE8A453FD8" /* GuideCore */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = GuideCore;
 		};

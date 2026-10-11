@@ -146,7 +146,7 @@ higher rating than you want, change an answer only if it is still true.
 
 Paste everything between the two rules into App Review Information →
 Notes. Sign-in required: **off** (there are no accounts). The limit is
-4,000 characters; this block is 2,664, measured with Python's `len()` on
+4,000 characters; this block is 2,748, measured with Python's `len()` on
 the text between the rules.
 
 ---
@@ -165,10 +165,10 @@ NETWORK AND PRIVACY
 The app makes one network request: an HTTPS GET of the data file above, when the app opens, on pull to refresh, or when it returns to the foreground with data more than 3 days old (at most every 6 hours). It is conditional on an ETag, so an unchanged file transfers nothing. No accounts, analytics, ads or third-party SDKs. Privacy label: Data Not Collected.
 
 REMINDERS ARE LOCAL
-New-episode reminders are local notifications scheduled on the iPhone. There is no push service, no APNs and no device token, and no background mode. To see them: favorite a show, open Favorites, and turn on "New-episode reminders"; the app explains first, and iOS asks for notification permission only then, never at launch.
+New-episode reminders are local notifications scheduled on the iPhone. There is no push service, no APNs and no device token, and no background mode. To see them: favorite a show, open Favorites, and turn on "New-episode reminders"; the app explains first, and iOS asks for notification permission only then, never at launch. Tapping a reminder opens its show.
 
 WIDGET
-The Up Next widget reads one small file the app writes into its own App Group container. It makes no network request.
+The Up Next widget reads one small file the app writes into its own App Group container. It makes no network request. Tapping a show on it opens that show in the app.
 
 PURCHASE
 Paid up front on the App Store. There is no in-app purchase and nothing to unlock.

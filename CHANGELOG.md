@@ -11,6 +11,28 @@ consumer of the published snapshot, would notice.
 
 ## [Unreleased]
 
+### Added
+
+- The first-run introduction is now five short pages you move through with
+  Next and Back or a swipe: a welcome, then how spoilers stay closed, what
+  "Not recorded" means, where the data comes from, and what the app does not
+  collect. Each page scrolls at large text sizes, VoiceOver hears "Page 2 of
+  5" and starts each page at its heading, and with Reduce Motion on the pages
+  change without sliding. Skip is there from the first page, and About opens
+  it again.
+- Tapping a show on the Up Next widget, or tapping an episode reminder,
+  opens that show in the app, over the Favorites list.
+- A reminder that arrives while the app is open now shows as a banner.
+
+### Changed
+
+- When the app can't check for new data, the footer now says why in plain
+  words (this device is offline, the data server can't be reached, or a new
+  file failed the app's checks) and that the data on screen stays, with a
+  Try again button. It used to show the system's error message.
+- A refresh you ask for (pull to refresh or Try again) ends with a light
+  success or warning tap.
+
 ### Fixed
 
 - The release workflow's preflight no longer fails on the first release.

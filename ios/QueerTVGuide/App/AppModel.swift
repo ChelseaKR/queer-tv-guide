@@ -81,6 +81,17 @@ final class AppModel {
         return nil
     }
 
+    #if DEBUG
+    private static func uiTestRefreshProblem() -> RefreshProblem? {
+        switch UserDefaults.standard.string(forKey: "UITestRefreshProblem") {
+        case "offline": .offline
+        case "unreachable": .unreachable
+        case "unusable": .unusable
+        default: nil
+        }
+    }
+    #endif
+
     // MARK: Data freshness (DG-04)
 
     func readClock() {
@@ -180,6 +191,17 @@ final class AppModel {
         isRefreshing = true
         defer { isRefreshing = false }
         refreshGate.recordAttempt(at: now())
+        #if DEBUG
+        // UI tests only: `-UITestRefreshProblem offline|unreachable|unusable`
+        // makes every look fail that way without touching the network, so
+        // the footer's words and Try again can be tested and shown. A
+        // Release build never reads it.
+        if let forced = Self.uiTestRefreshProblem() {
+            lastRefreshProblem = forced
+            readClock()
+            return
+        }
+        #endif
         do {
             let outcome = try await refresher.refresh()
             if case .updated(let fresh) = outcome {

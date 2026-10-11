@@ -208,14 +208,14 @@ final class ForegroundRefreshTests: XCTestCase {
     }
 
     /// A failed look on return is not an alert: the only place the app shows
-    /// the last refresh error is the data footer's one line.
+    /// the last refresh problem is the data footer.
     func testARefreshErrorIsNeverShownAsAnAlert() throws {
         var readers: [String] = []
         for file in Repo.sourceFiles(extensions: ["swift"]) where file.path.contains("/ios/QueerTVGuide/Views/") {
             let text = try String(contentsOf: file, encoding: .utf8)
-            if text.contains("lastRefreshError") { readers.append(file.lastPathComponent) }
-            if text.contains("lastRefreshError"), text.contains(".alert(") || text.contains("confirmationDialog(") {
-                XCTFail("\(file.lastPathComponent) reads lastRefreshError and shows an alert")
+            if text.contains("lastRefreshProblem") { readers.append(file.lastPathComponent) }
+            if text.contains("lastRefreshProblem"), text.contains(".alert(") || text.contains("confirmationDialog(") {
+                XCTFail("\(file.lastPathComponent) reads lastRefreshProblem and shows an alert")
             }
         }
         XCTAssertEqual(readers, ["DataStatusFooter.swift"])

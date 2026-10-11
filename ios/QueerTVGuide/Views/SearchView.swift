@@ -114,7 +114,7 @@ struct SearchView: View {
             }
         }
         .listStyle(.plain)
-        .refreshable { await model.refresh() }
+        .refreshable { await model.requestedRefresh() }
     }
 
     /// Above the results while any filter is on: how many there are, and a

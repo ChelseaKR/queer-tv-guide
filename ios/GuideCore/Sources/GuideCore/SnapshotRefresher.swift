@@ -20,14 +20,17 @@ public final class SnapshotRefresher: @unchecked Sendable {
     public enum RefreshError: Error, Equatable, LocalizedError {
         case httpStatus(Int)
         case notHTTP
-        case transport(String)
+        /// The request never got an answer. `offline` is true when the
+        /// system said there is no connection at all (`RefreshProblem`
+        /// words the two differently).
+        case transport(String, offline: Bool)
         case rejected(String)
 
         public var errorDescription: String? {
             switch self {
             case .httpStatus(let code): return "The data file server answered HTTP \(code)."
             case .notHTTP: return "The data file server did not answer over HTTP."
-            case .transport(let s): return s
+            case .transport(let s, _): return s
             case .rejected(let s): return s
             }
         }
@@ -81,7 +84,7 @@ public final class SnapshotRefresher: @unchecked Sendable {
         do {
             (data, response) = try await session.data(for: request)
         } catch {
-            throw RefreshError.transport(error.localizedDescription)
+            throw RefreshError.transport(error.localizedDescription, offline: RefreshProblem.isOffline(error))
         }
         guard let http = response as? HTTPURLResponse else { throw RefreshError.notHTTP }
         switch http.statusCode {

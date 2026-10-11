@@ -82,15 +82,15 @@ struct AboutView: View {
                     LabeledContent("App", value: "\(Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "—") (\(Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "—"))")
                 }
 
-                // The first-run page again, last, so the sections above keep
+                // The first-run pages again, last, so the sections above keep
                 // their place.
                 Section {
                     Button("How \(AppIdentity.displayName) works") { showingIntroduction = true }
-                        .accessibilityHint("Spoilers, sources and privacy, in one page")
+                        .accessibilityHint("Spoilers, sources and privacy, in five short pages")
                 }
             }
             // Pull to check for a newer data file (the one GET).
-            .refreshable { await model.refresh() }
+            .refreshable { await model.requestedRefresh() }
             .navigationTitle("About \(AppIdentity.displayName)")
             .sheet(isPresented: $showingIntroduction) {
                 OnboardingView(finish: { showingIntroduction = false }, isFirstRun: false)

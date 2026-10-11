@@ -22,8 +22,15 @@ final class AppModel {
     private(set) var snapshot: Snapshot?
     private(set) var loadState: LoadState = .loading
     private(set) var origin: SnapshotStore.Loaded.Origin?
-    private(set) var lastRefreshError: String?
+    /// Why the last look for new data failed, in terms a person can act
+    /// on; nil after one that worked (new data, or none newer).
+    private(set) var lastRefreshProblem: RefreshProblem?
     private(set) var isRefreshing = false
+    /// Counts refreshes the person asked for (pull to refresh, Try again)
+    /// as they finish, so a view can answer each one with a haptic. Launch
+    /// and return-to-foreground refreshes do not count: nobody is waiting
+    /// on those.
+    private(set) var requestedRefreshesFinished = 0
     private(set) var searchIndex: SearchIndex?
     /// When the clock was last read for judging the snapshot's age: at
     /// load, after every refresh, and each time the app comes to the
@@ -156,10 +163,17 @@ final class AppModel {
         await refresh()
     }
 
+    /// A refresh the person asked for: the same one GET, then a count that
+    /// views watch for a success or warning haptic.
+    func requestedRefresh() async {
+        await refresh()
+        requestedRefreshesFinished += 1
+    }
+
     /// One GET, conditional on the stored ETag. On success and a real
     /// change, swaps in the new snapshot. On any failure — offline, a bad
     /// response, a body that fails to decode — the last good snapshot and
-    /// its `generated_at` stay exactly as they were; only `lastRefreshError`
+    /// its `generated_at` stay exactly as they were; only `lastRefreshProblem`
     /// changes, so the UI can say a refresh failed without losing data.
     func refresh() async {
         guard !isRefreshing else { return }
@@ -177,9 +191,9 @@ final class AppModel {
                 }.value
                 apply(fresh, origin: .downloaded, index: index)
             }
-            lastRefreshError = nil
+            lastRefreshProblem = nil
         } catch {
-            lastRefreshError = error.localizedDescription
+            lastRefreshProblem = RefreshProblem(error)
         }
         readClock()
     }

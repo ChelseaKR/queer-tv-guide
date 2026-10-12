@@ -13,7 +13,7 @@ consumer of the published snapshot, would notice.
 
 ### Added
 
-- Queer Frame for Android (DECISIONS 0018, proposed): a native app with the
+- Queer Frame for Android (DECISIONS 0018): a native app with the
   iPhone app's features, the same data file and the same privacy posture.
   Search and filters, show and character pages with the closed "does she
   die" reveal, favorites with backup files that move between iPhone and

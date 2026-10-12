@@ -180,12 +180,12 @@ snapshot, the attribution, and the App Review note in `docs/APP-STORE.md`.
 **Still open:** a trademark screen for "Queer Frame" (the owner's).
 Update 2026-10-02: done, no conflict found (0006).
 
-## 0018 — A native Android app with parity to iOS (proposed, 2026-10-12)
+## 0018 — A native Android app with parity to iOS (2026-10-12)
 
-**Status: proposed.** The owner asked on 2026-10-12 for an Android app with
-full parity with the iOS app. The code is on `feat/android-app`; the Play
-listing, signing and the Data safety form are the owner's (no Play Console
-action has been taken).
+**Status: accepted (owner, 2026-10-12).** The owner asked on 2026-10-12 for
+an Android app with full parity with the iOS app, and accepted this record
+the same day, with the answers under "Owner answers" below. The Play
+listing, signing and the Data safety form are the owner's.
 
 **Decision.** Queer Frame for Android is native Kotlin, Jetpack Compose and
 Material 3, in `android/`, not a web shell (as 0001 for iOS). Package name
@@ -228,10 +228,24 @@ stated in the privacy policy as on iOS.
 **Distribution.** Paid on Google Play at the US price equivalent of $4.99,
 no in-app purchase, no ads, United States only (0011, 0015).
 
-**Not included.** Play's In-App Review prompt waits on 0017: if the owner
-accepts the iOS rating prompt, the same `ReviewPromptPolicy` can be ported;
-until then the About row is the only ask. Android App Links (verified
-https links) wait on the owner deciding on universal links.
+**Owner answers (2026-10-12).**
+- **Ratings: the About row only.** "Rate Queer Frame" opens the Play
+  listing. No Play In-App Review: that library
+  (`com.google.android.play:review`) is Google Play code, and the app links
+  none, whatever 0017 decides for iOS. The app's libraries are AndroidX and
+  Kotlin's open-source ones; no Google Play services, Play Core or Firebase
+  library, which `SourceGuardTest` holds the build to.
+- **No Google cloud backup for favorites.** Favorites, the first-run flag
+  and the reminder switch are excluded from cloud backup and move only in a
+  device-to-device transfer (`res/xml/data_extraction_rules.xml`,
+  `backup_rules.xml`), as built.
+- **Links: the custom scheme only.** `queerframe://show/<id>` and
+  `queerframe://character/<id>`. Android App Links (verified https links)
+  wait on the universal-links decision for iOS.
+- **Privacy policy.** `docs/site/privacy.html` gains an Android section
+  (drafted with this record): the same one request, local reminders, no
+  cloud backup of favorites, and that Android's standard User-Agent names
+  the Android version and device model.
 
 **CI.** The `android` job runs `make android` on Linux on every run; the
 emulator tests run locally (`make -C android instrumented`).

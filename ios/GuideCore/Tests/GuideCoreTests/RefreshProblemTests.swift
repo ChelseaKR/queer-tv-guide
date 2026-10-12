@@ -31,7 +31,7 @@ final class RefreshProblemTests: XCTestCase {
     /// and none of them passes a raw system error through.
     func testEveryMessageSaysTheDataStays() {
         for problem: RefreshProblem in [.offline, .unreachable, .unusable] {
-            XCTAssertTrue(problem.message.hasSuffix("The data below stays as it is."), problem.message)
+            XCTAssertTrue(problem.message.hasSuffix("The data on screen stays as it is."), problem.message)
             XCTAssertFalse(problem.message.contains("HTTP"), problem.message)
             XCTAssertFalse(problem.message.contains("iPhone"), "the app also runs on iPad in compatibility mode")
         }

@@ -67,6 +67,10 @@ final class ParityEvidenceScreenshotTests: XCTestCase {
 
             XCTAssertTrue(app.searchFields.firstMatch.waitForExistence(timeout: 60))
             shot("search", name, o)
+            tab(app, "About")
+            sleep(2)
+            shot("about", name, o)
+            tab(app, "Search")
             let field = app.searchFields.firstMatch
             field.tap()
             field.typeText(title)
@@ -88,10 +92,6 @@ final class ParityEvidenceScreenshotTests: XCTestCase {
             app.open(try XCTUnwrap(URL(string: "queerframe://show/\(id)")))
             _ = app.staticTexts["Do any queer characters die?"].waitForExistence(timeout: 60)
             shot("link-opens-show-over-favorites", name, o)
-
-            tab(app, "About")
-            sleep(2)
-            shot("about", name, o)
             app.terminate()
         }
     }

@@ -50,11 +50,11 @@ public enum RefreshProblem: Equatable, Sendable {
     public var message: String {
         switch self {
         case .offline:
-            return "Couldn't check for new data: this device is offline. The data below stays as it is."
+            return "Couldn't check for new data: this device is offline. The data on screen stays as it is."
         case .unreachable:
-            return "Couldn't reach the data server. The data below stays as it is."
+            return "Couldn't reach the data server. The data on screen stays as it is."
         case .unusable:
-            return "A new data file arrived but failed the app's checks, so it wasn't used. The data below stays as it is."
+            return "A new data file arrived but failed the app's checks, so it wasn't used. The data on screen stays as it is."
         }
     }
 }

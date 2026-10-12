@@ -180,16 +180,16 @@ snapshot, the attribution, and the App Review note in `docs/APP-STORE.md`.
 **Still open:** a trademark screen for "Queer Frame" (the owner's).
 Update 2026-10-02: done, no conflict found (0006).
 
-## 0017 — The system rating prompt may use StoreKit's review API (proposed, 2026-10-12)
+## 0017 — The system rating prompt may use StoreKit's review API (accepted, 2026-10-12)
 
-**Status: proposed. It needs the owner's sign-off, because it amends 0003.**
+**Status: accepted (owner, 2026-10-12). It amends 0003.**
 0003 reads: "One-time purchase at the App Store, no IAP, no subscription:
 no StoreKit code, no receipt validation, nothing to phone home about." Its
 reason is the purchase: nothing to buy inside the app, nothing to verify,
 nothing to report. The rating prompt is none of those, but "no StoreKit
 code" says no to it as written.
 
-**Proposed decision.** 0003 keeps its purchase rule and loses its blanket
+**Decision.** 0003 keeps its purchase rule and loses its blanket
 "no StoreKit code": the app may import StoreKit in exactly one file,
 `ios/QueerTVGuide/App/ReviewRequest.swift`, for SwiftUI's `requestReview`
 action and nothing else. No StoreKit purchase, product, receipt or

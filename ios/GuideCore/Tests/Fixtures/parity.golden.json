@@ -1,0 +1,4791 @@
+{
+  "backup" : {
+    "entries" : [
+      {
+        "added_at" : "2026-09-18T09:44:42Z",
+        "id" : "lwtv:show:101",
+        "kind" : "show"
+      },
+      {
+        "added_at" : "2026-09-19T10:00:00Z",
+        "id" : "lwtv:character:203",
+        "kind" : "character"
+      }
+    ],
+    "export" : "{\n  \"favourites\" : [\n    {\n      \"added_at\" : \"2026-09-18T09:44:42Z\",\n      \"id\" : \"lwtv:show:101\",\n      \"kind\" : \"show\"\n    },\n    {\n      \"added_at\" : \"2026-09-19T10:00:00Z\",\n      \"id\" : \"lwtv:character:203\",\n      \"kind\" : \"character\"\n    }\n  ],\n  \"format\" : \"favourites-backup\",\n  \"version\" : 1\n}",
+    "export_empty" : "{\n  \"favourites\" : [\n\n  ],\n  \"format\" : \"favourites-backup\",\n  \"version\" : 1\n}",
+    "well_formed" : [
+      {
+        "as_character" : false,
+        "as_show" : true,
+        "id" : "lwtv:show:1"
+      },
+      {
+        "as_character" : false,
+        "as_show" : false,
+        "id" : "lwtv:show:"
+      },
+      {
+        "as_character" : false,
+        "as_show" : false,
+        "id" : "lwtv:show:12a"
+      },
+      {
+        "as_character" : true,
+        "as_show" : false,
+        "id" : "lwtv:character:1"
+      },
+      {
+        "as_character" : false,
+        "as_show" : false,
+        "id" : "lwtv:show:1234567890123"
+      },
+      {
+        "as_character" : false,
+        "as_show" : true,
+        "id" : "lwtv:show:123456789012"
+      },
+      {
+        "as_character" : false,
+        "as_show" : false,
+        "id" : "show:1"
+      },
+      {
+        "as_character" : false,
+        "as_show" : false,
+        "id" : "lwtv:show:١"
+      }
+    ]
+  },
+  "clocks" : [
+    "2026-09-14T00:00:00Z",
+    "2026-09-21T03:00:00Z",
+    "2026-09-25T00:00:00Z"
+  ],
+  "favorites" : [
+    "lwtv:show:101",
+    "lwtv:show:101",
+    "lwtv:show:104",
+    "lwtv:show:102",
+    "lwtv:show:103",
+    "lwtv:show:gone"
+  ],
+  "fixture" : "ios/GuideCore/Tests/Fixtures/snapshot.fixture.json",
+  "format" : "queer-frame-parity",
+  "freshness" : [
+    {
+      "data_as_of" : "Data as of Sep 13, 2026 at 8:00 PM (age unknown: that is later than this device's clock)",
+      "offset_seconds" : -7200,
+      "return_refresh" : [
+        true,
+        false,
+        false
+      ],
+      "state" : "unknown",
+      "warning" : {
+        "detail" : "It is dated Sep 13, 2026 at 8:00 PM, which is later than this device's clock, so the app can't tell how old it is. Treat it as possibly out of date, and check the date and time in Settings.",
+        "spoken" : "Warning. This data's age is unknown. It is dated Sep 13, 2026 at 8:00 PM, which is later than this device's clock, so the app can't tell how old it is. Treat it as possibly out of date, and check the date and time in Settings.",
+        "title" : "This data's age is unknown"
+      },
+      "widget_age" : "Data age unknown",
+      "zone" : "UTC"
+    },
+    {
+      "data_as_of" : "Data as of Sep 13, 2026 at 8:00 PM (age unknown: that is later than this device's clock)",
+      "offset_seconds" : -3601,
+      "return_refresh" : [
+        true,
+        false,
+        false
+      ],
+      "state" : "unknown",
+      "warning" : {
+        "detail" : "It is dated Sep 13, 2026 at 8:00 PM, which is later than this device's clock, so the app can't tell how old it is. Treat it as possibly out of date, and check the date and time in Settings.",
+        "spoken" : "Warning. This data's age is unknown. It is dated Sep 13, 2026 at 8:00 PM, which is later than this device's clock, so the app can't tell how old it is. Treat it as possibly out of date, and check the date and time in Settings.",
+        "title" : "This data's age is unknown"
+      },
+      "widget_age" : "Data age unknown",
+      "zone" : "UTC"
+    },
+    {
+      "data_as_of" : "Data as of Sep 13, 2026 at 8:00 PM (less than an hour ago)",
+      "offset_seconds" : -3600,
+      "return_refresh" : [
+        false,
+        false,
+        false
+      ],
+      "state" : "current",
+      "warning" : null,
+      "widget_age" : "Data as of Sep 13",
+      "zone" : "UTC"
+    },
+    {
+      "data_as_of" : "Data as of Sep 13, 2026 at 8:00 PM (less than an hour ago)",
+      "offset_seconds" : -1800,
+      "return_refresh" : [
+        false,
+        false,
+        false
+      ],
+      "state" : "current",
+      "warning" : null,
+      "widget_age" : "Data as of Sep 13",
+      "zone" : "UTC"
+    },
+    {
+      "data_as_of" : "Data as of Sep 13, 2026 at 8:00 PM (less than an hour ago)",
+      "offset_seconds" : 0,
+      "return_refresh" : [
+        false,
+        false,
+        false
+      ],
+      "state" : "current",
+      "warning" : null,
+      "widget_age" : "Data as of Sep 13",
+      "zone" : "UTC"
+    },
+    {
+      "data_as_of" : "Data as of Sep 13, 2026 at 8:00 PM (less than an hour ago)",
+      "offset_seconds" : 3599,
+      "return_refresh" : [
+        false,
+        false,
+        false
+      ],
+      "state" : "current",
+      "warning" : null,
+      "widget_age" : "Data as of Sep 13",
+      "zone" : "UTC"
+    },
+    {
+      "data_as_of" : "Data as of Sep 13, 2026 at 8:00 PM (1 hour ago)",
+      "offset_seconds" : 3600,
+      "return_refresh" : [
+        false,
+        false,
+        false
+      ],
+      "state" : "current",
+      "warning" : null,
+      "widget_age" : "Data as of Sep 13",
+      "zone" : "UTC"
+    },
+    {
+      "data_as_of" : "Data as of Sep 13, 2026 at 8:00 PM (24 hours ago)",
+      "offset_seconds" : 86400,
+      "return_refresh" : [
+        false,
+        false,
+        false
+      ],
+      "state" : "current",
+      "warning" : null,
+      "widget_age" : "Data as of Sep 13",
+      "zone" : "UTC"
+    },
+    {
+      "data_as_of" : "Data as of Sep 13, 2026 at 8:00 PM (2 days ago)",
+      "offset_seconds" : 172800,
+      "return_refresh" : [
+        false,
+        false,
+        false
+      ],
+      "state" : "current",
+      "warning" : null,
+      "widget_age" : "Data as of Sep 13",
+      "zone" : "UTC"
+    },
+    {
+      "data_as_of" : "Data as of Sep 13, 2026 at 8:00 PM (2 days ago)",
+      "offset_seconds" : 172801,
+      "return_refresh" : [
+        false,
+        false,
+        false
+      ],
+      "state" : "stale",
+      "warning" : {
+        "detail" : "It was last updated 2 days ago, on Sep 13, 2026 at 8:00 PM. Next episodes and where-to-watch links may have changed since then. The app looks for new data each time it opens, and when you return to it while its data is more than 3 days old (at most once every 6 hours). Pull down on Search to look now.",
+        "spoken" : "Warning. This data is out of date. It was last updated 2 days ago, on Sep 13, 2026 at 8:00 PM. Next episodes and where-to-watch links may have changed since then. The app looks for new data each time it opens, and when you return to it while its data is more than 3 days old (at most once every 6 hours). Pull down on Search to look now.",
+        "title" : "This data is out of date"
+      },
+      "widget_age" : "Out of date: data as of Sep 13",
+      "zone" : "UTC"
+    },
+    {
+      "data_as_of" : "Data as of Sep 13, 2026 at 8:00 PM (3 days ago)",
+      "offset_seconds" : 259200,
+      "return_refresh" : [
+        false,
+        true,
+        false
+      ],
+      "state" : "stale",
+      "warning" : {
+        "detail" : "It was last updated 3 days ago, on Sep 13, 2026 at 8:00 PM. Next episodes and where-to-watch links may have changed since then. The app looks for new data each time it opens, and when you return to it while its data is more than 3 days old (at most once every 6 hours). Pull down on Search to look now.",
+        "spoken" : "Warning. This data is out of date. It was last updated 3 days ago, on Sep 13, 2026 at 8:00 PM. Next episodes and where-to-watch links may have changed since then. The app looks for new data each time it opens, and when you return to it while its data is more than 3 days old (at most once every 6 hours). Pull down on Search to look now.",
+        "title" : "This data is out of date"
+      },
+      "widget_age" : "Out of date: data as of Sep 13",
+      "zone" : "UTC"
+    },
+    {
+      "data_as_of" : "Data as of Sep 13, 2026 at 8:00 PM (3 days ago)",
+      "offset_seconds" : 259201,
+      "return_refresh" : [
+        true,
+        false,
+        true
+      ],
+      "state" : "stale",
+      "warning" : {
+        "detail" : "It was last updated 3 days ago, on Sep 13, 2026 at 8:00 PM. Next episodes and where-to-watch links may have changed since then. The app looks for new data each time it opens, and when you return to it while its data is more than 3 days old (at most once every 6 hours). Pull down on Search to look now.",
+        "spoken" : "Warning. This data is out of date. It was last updated 3 days ago, on Sep 13, 2026 at 8:00 PM. Next episodes and where-to-watch links may have changed since then. The app looks for new data each time it opens, and when you return to it while its data is more than 3 days old (at most once every 6 hours). Pull down on Search to look now.",
+        "title" : "This data is out of date"
+      },
+      "widget_age" : "Out of date: data as of Sep 13",
+      "zone" : "UTC"
+    },
+    {
+      "data_as_of" : "Data as of Sep 13, 2026 at 8:00 PM (10 days ago)",
+      "offset_seconds" : 864000,
+      "return_refresh" : [
+        true,
+        false,
+        true
+      ],
+      "state" : "stale",
+      "warning" : {
+        "detail" : "It was last updated 10 days ago, on Sep 13, 2026 at 8:00 PM. Next episodes and where-to-watch links may have changed since then. The app looks for new data each time it opens, and when you return to it while its data is more than 3 days old (at most once every 6 hours). Pull down on Search to look now.",
+        "spoken" : "Warning. This data is out of date. It was last updated 10 days ago, on Sep 13, 2026 at 8:00 PM. Next episodes and where-to-watch links may have changed since then. The app looks for new data each time it opens, and when you return to it while its data is more than 3 days old (at most once every 6 hours). Pull down on Search to look now.",
+        "title" : "This data is out of date"
+      },
+      "widget_age" : "Out of date: data as of Sep 13",
+      "zone" : "UTC"
+    },
+    {
+      "data_as_of" : "Data as of Sep 13, 2026 at 1:00 PM (age unknown: that is later than this device's clock)",
+      "offset_seconds" : -7200,
+      "return_refresh" : [
+        true,
+        false,
+        false
+      ],
+      "state" : "unknown",
+      "warning" : {
+        "detail" : "It is dated Sep 13, 2026 at 1:00 PM, which is later than this device's clock, so the app can't tell how old it is. Treat it as possibly out of date, and check the date and time in Settings.",
+        "spoken" : "Warning. This data's age is unknown. It is dated Sep 13, 2026 at 1:00 PM, which is later than this device's clock, so the app can't tell how old it is. Treat it as possibly out of date, and check the date and time in Settings.",
+        "title" : "This data's age is unknown"
+      },
+      "widget_age" : "Data age unknown",
+      "zone" : "America/Los_Angeles"
+    },
+    {
+      "data_as_of" : "Data as of Sep 13, 2026 at 1:00 PM (age unknown: that is later than this device's clock)",
+      "offset_seconds" : -3601,
+      "return_refresh" : [
+        true,
+        false,
+        false
+      ],
+      "state" : "unknown",
+      "warning" : {
+        "detail" : "It is dated Sep 13, 2026 at 1:00 PM, which is later than this device's clock, so the app can't tell how old it is. Treat it as possibly out of date, and check the date and time in Settings.",
+        "spoken" : "Warning. This data's age is unknown. It is dated Sep 13, 2026 at 1:00 PM, which is later than this device's clock, so the app can't tell how old it is. Treat it as possibly out of date, and check the date and time in Settings.",
+        "title" : "This data's age is unknown"
+      },
+      "widget_age" : "Data age unknown",
+      "zone" : "America/Los_Angeles"
+    },
+    {
+      "data_as_of" : "Data as of Sep 13, 2026 at 1:00 PM (less than an hour ago)",
+      "offset_seconds" : -3600,
+      "return_refresh" : [
+        false,
+        false,
+        false
+      ],
+      "state" : "current",
+      "warning" : null,
+      "widget_age" : "Data as of Sep 13",
+      "zone" : "America/Los_Angeles"
+    },
+    {
+      "data_as_of" : "Data as of Sep 13, 2026 at 1:00 PM (less than an hour ago)",
+      "offset_seconds" : -1800,
+      "return_refresh" : [
+        false,
+        false,
+        false
+      ],
+      "state" : "current",
+      "warning" : null,
+      "widget_age" : "Data as of Sep 13",
+      "zone" : "America/Los_Angeles"
+    },
+    {
+      "data_as_of" : "Data as of Sep 13, 2026 at 1:00 PM (less than an hour ago)",
+      "offset_seconds" : 0,
+      "return_refresh" : [
+        false,
+        false,
+        false
+      ],
+      "state" : "current",
+      "warning" : null,
+      "widget_age" : "Data as of Sep 13",
+      "zone" : "America/Los_Angeles"
+    },
+    {
+      "data_as_of" : "Data as of Sep 13, 2026 at 1:00 PM (less than an hour ago)",
+      "offset_seconds" : 3599,
+      "return_refresh" : [
+        false,
+        false,
+        false
+      ],
+      "state" : "current",
+      "warning" : null,
+      "widget_age" : "Data as of Sep 13",
+      "zone" : "America/Los_Angeles"
+    },
+    {
+      "data_as_of" : "Data as of Sep 13, 2026 at 1:00 PM (1 hour ago)",
+      "offset_seconds" : 3600,
+      "return_refresh" : [
+        false,
+        false,
+        false
+      ],
+      "state" : "current",
+      "warning" : null,
+      "widget_age" : "Data as of Sep 13",
+      "zone" : "America/Los_Angeles"
+    },
+    {
+      "data_as_of" : "Data as of Sep 13, 2026 at 1:00 PM (24 hours ago)",
+      "offset_seconds" : 86400,
+      "return_refresh" : [
+        false,
+        false,
+        false
+      ],
+      "state" : "current",
+      "warning" : null,
+      "widget_age" : "Data as of Sep 13",
+      "zone" : "America/Los_Angeles"
+    },
+    {
+      "data_as_of" : "Data as of Sep 13, 2026 at 1:00 PM (2 days ago)",
+      "offset_seconds" : 172800,
+      "return_refresh" : [
+        false,
+        false,
+        false
+      ],
+      "state" : "current",
+      "warning" : null,
+      "widget_age" : "Data as of Sep 13",
+      "zone" : "America/Los_Angeles"
+    },
+    {
+      "data_as_of" : "Data as of Sep 13, 2026 at 1:00 PM (2 days ago)",
+      "offset_seconds" : 172801,
+      "return_refresh" : [
+        false,
+        false,
+        false
+      ],
+      "state" : "stale",
+      "warning" : {
+        "detail" : "It was last updated 2 days ago, on Sep 13, 2026 at 1:00 PM. Next episodes and where-to-watch links may have changed since then. The app looks for new data each time it opens, and when you return to it while its data is more than 3 days old (at most once every 6 hours). Pull down on Search to look now.",
+        "spoken" : "Warning. This data is out of date. It was last updated 2 days ago, on Sep 13, 2026 at 1:00 PM. Next episodes and where-to-watch links may have changed since then. The app looks for new data each time it opens, and when you return to it while its data is more than 3 days old (at most once every 6 hours). Pull down on Search to look now.",
+        "title" : "This data is out of date"
+      },
+      "widget_age" : "Out of date: data as of Sep 13",
+      "zone" : "America/Los_Angeles"
+    },
+    {
+      "data_as_of" : "Data as of Sep 13, 2026 at 1:00 PM (3 days ago)",
+      "offset_seconds" : 259200,
+      "return_refresh" : [
+        false,
+        true,
+        false
+      ],
+      "state" : "stale",
+      "warning" : {
+        "detail" : "It was last updated 3 days ago, on Sep 13, 2026 at 1:00 PM. Next episodes and where-to-watch links may have changed since then. The app looks for new data each time it opens, and when you return to it while its data is more than 3 days old (at most once every 6 hours). Pull down on Search to look now.",
+        "spoken" : "Warning. This data is out of date. It was last updated 3 days ago, on Sep 13, 2026 at 1:00 PM. Next episodes and where-to-watch links may have changed since then. The app looks for new data each time it opens, and when you return to it while its data is more than 3 days old (at most once every 6 hours). Pull down on Search to look now.",
+        "title" : "This data is out of date"
+      },
+      "widget_age" : "Out of date: data as of Sep 13",
+      "zone" : "America/Los_Angeles"
+    },
+    {
+      "data_as_of" : "Data as of Sep 13, 2026 at 1:00 PM (3 days ago)",
+      "offset_seconds" : 259201,
+      "return_refresh" : [
+        true,
+        false,
+        true
+      ],
+      "state" : "stale",
+      "warning" : {
+        "detail" : "It was last updated 3 days ago, on Sep 13, 2026 at 1:00 PM. Next episodes and where-to-watch links may have changed since then. The app looks for new data each time it opens, and when you return to it while its data is more than 3 days old (at most once every 6 hours). Pull down on Search to look now.",
+        "spoken" : "Warning. This data is out of date. It was last updated 3 days ago, on Sep 13, 2026 at 1:00 PM. Next episodes and where-to-watch links may have changed since then. The app looks for new data each time it opens, and when you return to it while its data is more than 3 days old (at most once every 6 hours). Pull down on Search to look now.",
+        "title" : "This data is out of date"
+      },
+      "widget_age" : "Out of date: data as of Sep 13",
+      "zone" : "America/Los_Angeles"
+    },
+    {
+      "data_as_of" : "Data as of Sep 13, 2026 at 1:00 PM (10 days ago)",
+      "offset_seconds" : 864000,
+      "return_refresh" : [
+        true,
+        false,
+        true
+      ],
+      "state" : "stale",
+      "warning" : {
+        "detail" : "It was last updated 10 days ago, on Sep 13, 2026 at 1:00 PM. Next episodes and where-to-watch links may have changed since then. The app looks for new data each time it opens, and when you return to it while its data is more than 3 days old (at most once every 6 hours). Pull down on Search to look now.",
+        "spoken" : "Warning. This data is out of date. It was last updated 10 days ago, on Sep 13, 2026 at 1:00 PM. Next episodes and where-to-watch links may have changed since then. The app looks for new data each time it opens, and when you return to it while its data is more than 3 days old (at most once every 6 hours). Pull down on Search to look now.",
+        "title" : "This data is out of date"
+      },
+      "widget_age" : "Out of date: data as of Sep 13",
+      "zone" : "America/Los_Angeles"
+    },
+    {
+      "data_as_of" : "Data as of Sep 13, 2026 at 4:00 PM (age unknown: that is later than this device's clock)",
+      "offset_seconds" : -7200,
+      "return_refresh" : [
+        true,
+        false,
+        false
+      ],
+      "state" : "unknown",
+      "warning" : {
+        "detail" : "It is dated Sep 13, 2026 at 4:00 PM, which is later than this device's clock, so the app can't tell how old it is. Treat it as possibly out of date, and check the date and time in Settings.",
+        "spoken" : "Warning. This data's age is unknown. It is dated Sep 13, 2026 at 4:00 PM, which is later than this device's clock, so the app can't tell how old it is. Treat it as possibly out of date, and check the date and time in Settings.",
+        "title" : "This data's age is unknown"
+      },
+      "widget_age" : "Data age unknown",
+      "zone" : "America/New_York"
+    },
+    {
+      "data_as_of" : "Data as of Sep 13, 2026 at 4:00 PM (age unknown: that is later than this device's clock)",
+      "offset_seconds" : -3601,
+      "return_refresh" : [
+        true,
+        false,
+        false
+      ],
+      "state" : "unknown",
+      "warning" : {
+        "detail" : "It is dated Sep 13, 2026 at 4:00 PM, which is later than this device's clock, so the app can't tell how old it is. Treat it as possibly out of date, and check the date and time in Settings.",
+        "spoken" : "Warning. This data's age is unknown. It is dated Sep 13, 2026 at 4:00 PM, which is later than this device's clock, so the app can't tell how old it is. Treat it as possibly out of date, and check the date and time in Settings.",
+        "title" : "This data's age is unknown"
+      },
+      "widget_age" : "Data age unknown",
+      "zone" : "America/New_York"
+    },
+    {
+      "data_as_of" : "Data as of Sep 13, 2026 at 4:00 PM (less than an hour ago)",
+      "offset_seconds" : -3600,
+      "return_refresh" : [
+        false,
+        false,
+        false
+      ],
+      "state" : "current",
+      "warning" : null,
+      "widget_age" : "Data as of Sep 13",
+      "zone" : "America/New_York"
+    },
+    {
+      "data_as_of" : "Data as of Sep 13, 2026 at 4:00 PM (less than an hour ago)",
+      "offset_seconds" : -1800,
+      "return_refresh" : [
+        false,
+        false,
+        false
+      ],
+      "state" : "current",
+      "warning" : null,
+      "widget_age" : "Data as of Sep 13",
+      "zone" : "America/New_York"
+    },
+    {
+      "data_as_of" : "Data as of Sep 13, 2026 at 4:00 PM (less than an hour ago)",
+      "offset_seconds" : 0,
+      "return_refresh" : [
+        false,
+        false,
+        false
+      ],
+      "state" : "current",
+      "warning" : null,
+      "widget_age" : "Data as of Sep 13",
+      "zone" : "America/New_York"
+    },
+    {
+      "data_as_of" : "Data as of Sep 13, 2026 at 4:00 PM (less than an hour ago)",
+      "offset_seconds" : 3599,
+      "return_refresh" : [
+        false,
+        false,
+        false
+      ],
+      "state" : "current",
+      "warning" : null,
+      "widget_age" : "Data as of Sep 13",
+      "zone" : "America/New_York"
+    },
+    {
+      "data_as_of" : "Data as of Sep 13, 2026 at 4:00 PM (1 hour ago)",
+      "offset_seconds" : 3600,
+      "return_refresh" : [
+        false,
+        false,
+        false
+      ],
+      "state" : "current",
+      "warning" : null,
+      "widget_age" : "Data as of Sep 13",
+      "zone" : "America/New_York"
+    },
+    {
+      "data_as_of" : "Data as of Sep 13, 2026 at 4:00 PM (24 hours ago)",
+      "offset_seconds" : 86400,
+      "return_refresh" : [
+        false,
+        false,
+        false
+      ],
+      "state" : "current",
+      "warning" : null,
+      "widget_age" : "Data as of Sep 13",
+      "zone" : "America/New_York"
+    },
+    {
+      "data_as_of" : "Data as of Sep 13, 2026 at 4:00 PM (2 days ago)",
+      "offset_seconds" : 172800,
+      "return_refresh" : [
+        false,
+        false,
+        false
+      ],
+      "state" : "current",
+      "warning" : null,
+      "widget_age" : "Data as of Sep 13",
+      "zone" : "America/New_York"
+    },
+    {
+      "data_as_of" : "Data as of Sep 13, 2026 at 4:00 PM (2 days ago)",
+      "offset_seconds" : 172801,
+      "return_refresh" : [
+        false,
+        false,
+        false
+      ],
+      "state" : "stale",
+      "warning" : {
+        "detail" : "It was last updated 2 days ago, on Sep 13, 2026 at 4:00 PM. Next episodes and where-to-watch links may have changed since then. The app looks for new data each time it opens, and when you return to it while its data is more than 3 days old (at most once every 6 hours). Pull down on Search to look now.",
+        "spoken" : "Warning. This data is out of date. It was last updated 2 days ago, on Sep 13, 2026 at 4:00 PM. Next episodes and where-to-watch links may have changed since then. The app looks for new data each time it opens, and when you return to it while its data is more than 3 days old (at most once every 6 hours). Pull down on Search to look now.",
+        "title" : "This data is out of date"
+      },
+      "widget_age" : "Out of date: data as of Sep 13",
+      "zone" : "America/New_York"
+    },
+    {
+      "data_as_of" : "Data as of Sep 13, 2026 at 4:00 PM (3 days ago)",
+      "offset_seconds" : 259200,
+      "return_refresh" : [
+        false,
+        true,
+        false
+      ],
+      "state" : "stale",
+      "warning" : {
+        "detail" : "It was last updated 3 days ago, on Sep 13, 2026 at 4:00 PM. Next episodes and where-to-watch links may have changed since then. The app looks for new data each time it opens, and when you return to it while its data is more than 3 days old (at most once every 6 hours). Pull down on Search to look now.",
+        "spoken" : "Warning. This data is out of date. It was last updated 3 days ago, on Sep 13, 2026 at 4:00 PM. Next episodes and where-to-watch links may have changed since then. The app looks for new data each time it opens, and when you return to it while its data is more than 3 days old (at most once every 6 hours). Pull down on Search to look now.",
+        "title" : "This data is out of date"
+      },
+      "widget_age" : "Out of date: data as of Sep 13",
+      "zone" : "America/New_York"
+    },
+    {
+      "data_as_of" : "Data as of Sep 13, 2026 at 4:00 PM (3 days ago)",
+      "offset_seconds" : 259201,
+      "return_refresh" : [
+        true,
+        false,
+        true
+      ],
+      "state" : "stale",
+      "warning" : {
+        "detail" : "It was last updated 3 days ago, on Sep 13, 2026 at 4:00 PM. Next episodes and where-to-watch links may have changed since then. The app looks for new data each time it opens, and when you return to it while its data is more than 3 days old (at most once every 6 hours). Pull down on Search to look now.",
+        "spoken" : "Warning. This data is out of date. It was last updated 3 days ago, on Sep 13, 2026 at 4:00 PM. Next episodes and where-to-watch links may have changed since then. The app looks for new data each time it opens, and when you return to it while its data is more than 3 days old (at most once every 6 hours). Pull down on Search to look now.",
+        "title" : "This data is out of date"
+      },
+      "widget_age" : "Out of date: data as of Sep 13",
+      "zone" : "America/New_York"
+    },
+    {
+      "data_as_of" : "Data as of Sep 13, 2026 at 4:00 PM (10 days ago)",
+      "offset_seconds" : 864000,
+      "return_refresh" : [
+        true,
+        false,
+        true
+      ],
+      "state" : "stale",
+      "warning" : {
+        "detail" : "It was last updated 10 days ago, on Sep 13, 2026 at 4:00 PM. Next episodes and where-to-watch links may have changed since then. The app looks for new data each time it opens, and when you return to it while its data is more than 3 days old (at most once every 6 hours). Pull down on Search to look now.",
+        "spoken" : "Warning. This data is out of date. It was last updated 10 days ago, on Sep 13, 2026 at 4:00 PM. Next episodes and where-to-watch links may have changed since then. The app looks for new data each time it opens, and when you return to it while its data is more than 3 days old (at most once every 6 hours). Pull down on Search to look now.",
+        "title" : "This data is out of date"
+      },
+      "widget_age" : "Out of date: data as of Sep 13",
+      "zone" : "America/New_York"
+    },
+    {
+      "data_as_of" : "Data as of Sep 14, 2026 at 5:00 AM (age unknown: that is later than this device's clock)",
+      "offset_seconds" : -7200,
+      "return_refresh" : [
+        true,
+        false,
+        false
+      ],
+      "state" : "unknown",
+      "warning" : {
+        "detail" : "It is dated Sep 14, 2026 at 5:00 AM, which is later than this device's clock, so the app can't tell how old it is. Treat it as possibly out of date, and check the date and time in Settings.",
+        "spoken" : "Warning. This data's age is unknown. It is dated Sep 14, 2026 at 5:00 AM, which is later than this device's clock, so the app can't tell how old it is. Treat it as possibly out of date, and check the date and time in Settings.",
+        "title" : "This data's age is unknown"
+      },
+      "widget_age" : "Data age unknown",
+      "zone" : "Asia/Tokyo"
+    },
+    {
+      "data_as_of" : "Data as of Sep 14, 2026 at 5:00 AM (age unknown: that is later than this device's clock)",
+      "offset_seconds" : -3601,
+      "return_refresh" : [
+        true,
+        false,
+        false
+      ],
+      "state" : "unknown",
+      "warning" : {
+        "detail" : "It is dated Sep 14, 2026 at 5:00 AM, which is later than this device's clock, so the app can't tell how old it is. Treat it as possibly out of date, and check the date and time in Settings.",
+        "spoken" : "Warning. This data's age is unknown. It is dated Sep 14, 2026 at 5:00 AM, which is later than this device's clock, so the app can't tell how old it is. Treat it as possibly out of date, and check the date and time in Settings.",
+        "title" : "This data's age is unknown"
+      },
+      "widget_age" : "Data age unknown",
+      "zone" : "Asia/Tokyo"
+    },
+    {
+      "data_as_of" : "Data as of Sep 14, 2026 at 5:00 AM (less than an hour ago)",
+      "offset_seconds" : -3600,
+      "return_refresh" : [
+        false,
+        false,
+        false
+      ],
+      "state" : "current",
+      "warning" : null,
+      "widget_age" : "Data as of Sep 13",
+      "zone" : "Asia/Tokyo"
+    },
+    {
+      "data_as_of" : "Data as of Sep 14, 2026 at 5:00 AM (less than an hour ago)",
+      "offset_seconds" : -1800,
+      "return_refresh" : [
+        false,
+        false,
+        false
+      ],
+      "state" : "current",
+      "warning" : null,
+      "widget_age" : "Data as of Sep 13",
+      "zone" : "Asia/Tokyo"
+    },
+    {
+      "data_as_of" : "Data as of Sep 14, 2026 at 5:00 AM (less than an hour ago)",
+      "offset_seconds" : 0,
+      "return_refresh" : [
+        false,
+        false,
+        false
+      ],
+      "state" : "current",
+      "warning" : null,
+      "widget_age" : "Data as of Sep 13",
+      "zone" : "Asia/Tokyo"
+    },
+    {
+      "data_as_of" : "Data as of Sep 14, 2026 at 5:00 AM (less than an hour ago)",
+      "offset_seconds" : 3599,
+      "return_refresh" : [
+        false,
+        false,
+        false
+      ],
+      "state" : "current",
+      "warning" : null,
+      "widget_age" : "Data as of Sep 13",
+      "zone" : "Asia/Tokyo"
+    },
+    {
+      "data_as_of" : "Data as of Sep 14, 2026 at 5:00 AM (1 hour ago)",
+      "offset_seconds" : 3600,
+      "return_refresh" : [
+        false,
+        false,
+        false
+      ],
+      "state" : "current",
+      "warning" : null,
+      "widget_age" : "Data as of Sep 13",
+      "zone" : "Asia/Tokyo"
+    },
+    {
+      "data_as_of" : "Data as of Sep 14, 2026 at 5:00 AM (24 hours ago)",
+      "offset_seconds" : 86400,
+      "return_refresh" : [
+        false,
+        false,
+        false
+      ],
+      "state" : "current",
+      "warning" : null,
+      "widget_age" : "Data as of Sep 13",
+      "zone" : "Asia/Tokyo"
+    },
+    {
+      "data_as_of" : "Data as of Sep 14, 2026 at 5:00 AM (2 days ago)",
+      "offset_seconds" : 172800,
+      "return_refresh" : [
+        false,
+        false,
+        false
+      ],
+      "state" : "current",
+      "warning" : null,
+      "widget_age" : "Data as of Sep 13",
+      "zone" : "Asia/Tokyo"
+    },
+    {
+      "data_as_of" : "Data as of Sep 14, 2026 at 5:00 AM (2 days ago)",
+      "offset_seconds" : 172801,
+      "return_refresh" : [
+        false,
+        false,
+        false
+      ],
+      "state" : "stale",
+      "warning" : {
+        "detail" : "It was last updated 2 days ago, on Sep 14, 2026 at 5:00 AM. Next episodes and where-to-watch links may have changed since then. The app looks for new data each time it opens, and when you return to it while its data is more than 3 days old (at most once every 6 hours). Pull down on Search to look now.",
+        "spoken" : "Warning. This data is out of date. It was last updated 2 days ago, on Sep 14, 2026 at 5:00 AM. Next episodes and where-to-watch links may have changed since then. The app looks for new data each time it opens, and when you return to it while its data is more than 3 days old (at most once every 6 hours). Pull down on Search to look now.",
+        "title" : "This data is out of date"
+      },
+      "widget_age" : "Out of date: data as of Sep 13",
+      "zone" : "Asia/Tokyo"
+    },
+    {
+      "data_as_of" : "Data as of Sep 14, 2026 at 5:00 AM (3 days ago)",
+      "offset_seconds" : 259200,
+      "return_refresh" : [
+        false,
+        true,
+        false
+      ],
+      "state" : "stale",
+      "warning" : {
+        "detail" : "It was last updated 3 days ago, on Sep 14, 2026 at 5:00 AM. Next episodes and where-to-watch links may have changed since then. The app looks for new data each time it opens, and when you return to it while its data is more than 3 days old (at most once every 6 hours). Pull down on Search to look now.",
+        "spoken" : "Warning. This data is out of date. It was last updated 3 days ago, on Sep 14, 2026 at 5:00 AM. Next episodes and where-to-watch links may have changed since then. The app looks for new data each time it opens, and when you return to it while its data is more than 3 days old (at most once every 6 hours). Pull down on Search to look now.",
+        "title" : "This data is out of date"
+      },
+      "widget_age" : "Out of date: data as of Sep 13",
+      "zone" : "Asia/Tokyo"
+    },
+    {
+      "data_as_of" : "Data as of Sep 14, 2026 at 5:00 AM (3 days ago)",
+      "offset_seconds" : 259201,
+      "return_refresh" : [
+        true,
+        false,
+        true
+      ],
+      "state" : "stale",
+      "warning" : {
+        "detail" : "It was last updated 3 days ago, on Sep 14, 2026 at 5:00 AM. Next episodes and where-to-watch links may have changed since then. The app looks for new data each time it opens, and when you return to it while its data is more than 3 days old (at most once every 6 hours). Pull down on Search to look now.",
+        "spoken" : "Warning. This data is out of date. It was last updated 3 days ago, on Sep 14, 2026 at 5:00 AM. Next episodes and where-to-watch links may have changed since then. The app looks for new data each time it opens, and when you return to it while its data is more than 3 days old (at most once every 6 hours). Pull down on Search to look now.",
+        "title" : "This data is out of date"
+      },
+      "widget_age" : "Out of date: data as of Sep 13",
+      "zone" : "Asia/Tokyo"
+    },
+    {
+      "data_as_of" : "Data as of Sep 14, 2026 at 5:00 AM (10 days ago)",
+      "offset_seconds" : 864000,
+      "return_refresh" : [
+        true,
+        false,
+        true
+      ],
+      "state" : "stale",
+      "warning" : {
+        "detail" : "It was last updated 10 days ago, on Sep 14, 2026 at 5:00 AM. Next episodes and where-to-watch links may have changed since then. The app looks for new data each time it opens, and when you return to it while its data is more than 3 days old (at most once every 6 hours). Pull down on Search to look now.",
+        "spoken" : "Warning. This data is out of date. It was last updated 10 days ago, on Sep 14, 2026 at 5:00 AM. Next episodes and where-to-watch links may have changed since then. The app looks for new data each time it opens, and when you return to it while its data is more than 3 days old (at most once every 6 hours). Pull down on Search to look now.",
+        "title" : "This data is out of date"
+      },
+      "widget_age" : "Out of date: data as of Sep 13",
+      "zone" : "Asia/Tokyo"
+    },
+    {
+      "data_as_of" : "Data as of Sep 14, 2026 at 8:00 AM (age unknown: that is later than this device's clock)",
+      "offset_seconds" : -7200,
+      "return_refresh" : [
+        true,
+        false,
+        false
+      ],
+      "state" : "unknown",
+      "warning" : {
+        "detail" : "It is dated Sep 14, 2026 at 8:00 AM, which is later than this device's clock, so the app can't tell how old it is. Treat it as possibly out of date, and check the date and time in Settings.",
+        "spoken" : "Warning. This data's age is unknown. It is dated Sep 14, 2026 at 8:00 AM, which is later than this device's clock, so the app can't tell how old it is. Treat it as possibly out of date, and check the date and time in Settings.",
+        "title" : "This data's age is unknown"
+      },
+      "widget_age" : "Data age unknown",
+      "zone" : "Pacific/Auckland"
+    },
+    {
+      "data_as_of" : "Data as of Sep 14, 2026 at 8:00 AM (age unknown: that is later than this device's clock)",
+      "offset_seconds" : -3601,
+      "return_refresh" : [
+        true,
+        false,
+        false
+      ],
+      "state" : "unknown",
+      "warning" : {
+        "detail" : "It is dated Sep 14, 2026 at 8:00 AM, which is later than this device's clock, so the app can't tell how old it is. Treat it as possibly out of date, and check the date and time in Settings.",
+        "spoken" : "Warning. This data's age is unknown. It is dated Sep 14, 2026 at 8:00 AM, which is later than this device's clock, so the app can't tell how old it is. Treat it as possibly out of date, and check the date and time in Settings.",
+        "title" : "This data's age is unknown"
+      },
+      "widget_age" : "Data age unknown",
+      "zone" : "Pacific/Auckland"
+    },
+    {
+      "data_as_of" : "Data as of Sep 14, 2026 at 8:00 AM (less than an hour ago)",
+      "offset_seconds" : -3600,
+      "return_refresh" : [
+        false,
+        false,
+        false
+      ],
+      "state" : "current",
+      "warning" : null,
+      "widget_age" : "Data as of Sep 13",
+      "zone" : "Pacific/Auckland"
+    },
+    {
+      "data_as_of" : "Data as of Sep 14, 2026 at 8:00 AM (less than an hour ago)",
+      "offset_seconds" : -1800,
+      "return_refresh" : [
+        false,
+        false,
+        false
+      ],
+      "state" : "current",
+      "warning" : null,
+      "widget_age" : "Data as of Sep 13",
+      "zone" : "Pacific/Auckland"
+    },
+    {
+      "data_as_of" : "Data as of Sep 14, 2026 at 8:00 AM (less than an hour ago)",
+      "offset_seconds" : 0,
+      "return_refresh" : [
+        false,
+        false,
+        false
+      ],
+      "state" : "current",
+      "warning" : null,
+      "widget_age" : "Data as of Sep 13",
+      "zone" : "Pacific/Auckland"
+    },
+    {
+      "data_as_of" : "Data as of Sep 14, 2026 at 8:00 AM (less than an hour ago)",
+      "offset_seconds" : 3599,
+      "return_refresh" : [
+        false,
+        false,
+        false
+      ],
+      "state" : "current",
+      "warning" : null,
+      "widget_age" : "Data as of Sep 13",
+      "zone" : "Pacific/Auckland"
+    },
+    {
+      "data_as_of" : "Data as of Sep 14, 2026 at 8:00 AM (1 hour ago)",
+      "offset_seconds" : 3600,
+      "return_refresh" : [
+        false,
+        false,
+        false
+      ],
+      "state" : "current",
+      "warning" : null,
+      "widget_age" : "Data as of Sep 13",
+      "zone" : "Pacific/Auckland"
+    },
+    {
+      "data_as_of" : "Data as of Sep 14, 2026 at 8:00 AM (24 hours ago)",
+      "offset_seconds" : 86400,
+      "return_refresh" : [
+        false,
+        false,
+        false
+      ],
+      "state" : "current",
+      "warning" : null,
+      "widget_age" : "Data as of Sep 13",
+      "zone" : "Pacific/Auckland"
+    },
+    {
+      "data_as_of" : "Data as of Sep 14, 2026 at 8:00 AM (2 days ago)",
+      "offset_seconds" : 172800,
+      "return_refresh" : [
+        false,
+        false,
+        false
+      ],
+      "state" : "current",
+      "warning" : null,
+      "widget_age" : "Data as of Sep 13",
+      "zone" : "Pacific/Auckland"
+    },
+    {
+      "data_as_of" : "Data as of Sep 14, 2026 at 8:00 AM (2 days ago)",
+      "offset_seconds" : 172801,
+      "return_refresh" : [
+        false,
+        false,
+        false
+      ],
+      "state" : "stale",
+      "warning" : {
+        "detail" : "It was last updated 2 days ago, on Sep 14, 2026 at 8:00 AM. Next episodes and where-to-watch links may have changed since then. The app looks for new data each time it opens, and when you return to it while its data is more than 3 days old (at most once every 6 hours). Pull down on Search to look now.",
+        "spoken" : "Warning. This data is out of date. It was last updated 2 days ago, on Sep 14, 2026 at 8:00 AM. Next episodes and where-to-watch links may have changed since then. The app looks for new data each time it opens, and when you return to it while its data is more than 3 days old (at most once every 6 hours). Pull down on Search to look now.",
+        "title" : "This data is out of date"
+      },
+      "widget_age" : "Out of date: data as of Sep 13",
+      "zone" : "Pacific/Auckland"
+    },
+    {
+      "data_as_of" : "Data as of Sep 14, 2026 at 8:00 AM (3 days ago)",
+      "offset_seconds" : 259200,
+      "return_refresh" : [
+        false,
+        true,
+        false
+      ],
+      "state" : "stale",
+      "warning" : {
+        "detail" : "It was last updated 3 days ago, on Sep 14, 2026 at 8:00 AM. Next episodes and where-to-watch links may have changed since then. The app looks for new data each time it opens, and when you return to it while its data is more than 3 days old (at most once every 6 hours). Pull down on Search to look now.",
+        "spoken" : "Warning. This data is out of date. It was last updated 3 days ago, on Sep 14, 2026 at 8:00 AM. Next episodes and where-to-watch links may have changed since then. The app looks for new data each time it opens, and when you return to it while its data is more than 3 days old (at most once every 6 hours). Pull down on Search to look now.",
+        "title" : "This data is out of date"
+      },
+      "widget_age" : "Out of date: data as of Sep 13",
+      "zone" : "Pacific/Auckland"
+    },
+    {
+      "data_as_of" : "Data as of Sep 14, 2026 at 8:00 AM (3 days ago)",
+      "offset_seconds" : 259201,
+      "return_refresh" : [
+        true,
+        false,
+        true
+      ],
+      "state" : "stale",
+      "warning" : {
+        "detail" : "It was last updated 3 days ago, on Sep 14, 2026 at 8:00 AM. Next episodes and where-to-watch links may have changed since then. The app looks for new data each time it opens, and when you return to it while its data is more than 3 days old (at most once every 6 hours). Pull down on Search to look now.",
+        "spoken" : "Warning. This data is out of date. It was last updated 3 days ago, on Sep 14, 2026 at 8:00 AM. Next episodes and where-to-watch links may have changed since then. The app looks for new data each time it opens, and when you return to it while its data is more than 3 days old (at most once every 6 hours). Pull down on Search to look now.",
+        "title" : "This data is out of date"
+      },
+      "widget_age" : "Out of date: data as of Sep 13",
+      "zone" : "Pacific/Auckland"
+    },
+    {
+      "data_as_of" : "Data as of Sep 14, 2026 at 8:00 AM (10 days ago)",
+      "offset_seconds" : 864000,
+      "return_refresh" : [
+        true,
+        false,
+        true
+      ],
+      "state" : "stale",
+      "warning" : {
+        "detail" : "It was last updated 10 days ago, on Sep 14, 2026 at 8:00 AM. Next episodes and where-to-watch links may have changed since then. The app looks for new data each time it opens, and when you return to it while its data is more than 3 days old (at most once every 6 hours). Pull down on Search to look now.",
+        "spoken" : "Warning. This data is out of date. It was last updated 10 days ago, on Sep 14, 2026 at 8:00 AM. Next episodes and where-to-watch links may have changed since then. The app looks for new data each time it opens, and when you return to it while its data is more than 3 days old (at most once every 6 hours). Pull down on Search to look now.",
+        "title" : "This data is out of date"
+      },
+      "widget_age" : "Out of date: data as of Sep 13",
+      "zone" : "Pacific/Auckland"
+    }
+  ],
+  "locale" : "en_US",
+  "presentation" : {
+    "ages" : [
+      {
+        "seconds" : -5,
+        "text" : "less than an hour ago"
+      },
+      {
+        "seconds" : 0,
+        "text" : "less than an hour ago"
+      },
+      {
+        "seconds" : 3599,
+        "text" : "less than an hour ago"
+      },
+      {
+        "seconds" : 3600,
+        "text" : "1 hour ago"
+      },
+      {
+        "seconds" : 7199,
+        "text" : "1 hour ago"
+      },
+      {
+        "seconds" : 7200,
+        "text" : "2 hours ago"
+      },
+      {
+        "seconds" : 86400,
+        "text" : "24 hours ago"
+      },
+      {
+        "seconds" : 172799,
+        "text" : "47 hours ago"
+      },
+      {
+        "seconds" : 172800,
+        "text" : "2 days ago"
+      },
+      {
+        "seconds" : 172801,
+        "text" : "2 days ago"
+      },
+      {
+        "seconds" : 259200,
+        "text" : "3 days ago"
+      },
+      {
+        "seconds" : 864000,
+        "text" : "10 days ago"
+      }
+    ],
+    "characters" : {
+      "lwtv:character:201" : {
+        "death" : "Not recorded. This snapshot does not record a death for Mara Quill.",
+        "death_short" : "Death not recorded",
+        "tropes_shown" : [
+          "Slow Burn"
+        ]
+      },
+      "lwtv:character:202" : {
+        "death" : "Not recorded. This snapshot does not record a death for Inés Varga.",
+        "death_short" : "Death not recorded",
+        "tropes_shown" : [
+
+        ]
+      },
+      "lwtv:character:203" : {
+        "death" : "Yes. Odile Brandt dies (2017).",
+        "death_short" : "Dies",
+        "tropes_shown" : [
+          "Bury Your Gays"
+        ]
+      },
+      "lwtv:character:204" : {
+        "death" : "Not recorded. This snapshot does not record a death for Thea Marsh.",
+        "death_short" : "Death not recorded",
+        "tropes_shown" : [
+
+        ]
+      },
+      "lwtv:character:205" : {
+        "death" : "Not recorded. This snapshot does not record a death for Juno Adeyemi.",
+        "death_short" : "Death not recorded",
+        "tropes_shown" : [
+
+        ]
+      }
+    },
+    "import_summaries" : [
+      {
+        "added" : 0,
+        "already_saved" : 0,
+        "not_in_snapshot" : 0,
+        "text" : "The file lists no favorites. Nothing was added.",
+        "unreadable" : 0
+      },
+      {
+        "added" : 1,
+        "already_saved" : 0,
+        "not_in_snapshot" : 0,
+        "text" : "Added 1 favorite.",
+        "unreadable" : 0
+      },
+      {
+        "added" : 3,
+        "already_saved" : 1,
+        "not_in_snapshot" : 0,
+        "text" : "Added 3 favorites. 1 was already saved.",
+        "unreadable" : 0
+      },
+      {
+        "added" : 0,
+        "already_saved" : 2,
+        "not_in_snapshot" : 1,
+        "text" : "No new favorites were added. 2 were already saved. 1 is not in this snapshot and was skipped. 1 entry could not be read and was skipped.",
+        "unreadable" : 1
+      },
+      {
+        "added" : 2,
+        "already_saved" : 0,
+        "not_in_snapshot" : 3,
+        "text" : "Added 2 favorites. 3 are not in this snapshot and were skipped. 2 entries could not be read and were skipped.",
+        "unreadable" : 2
+      },
+      {
+        "added" : 0,
+        "already_saved" : 1,
+        "not_in_snapshot" : 0,
+        "text" : "No new favorites were added. 1 was already saved.",
+        "unreadable" : 0
+      }
+    ],
+    "no_characters" : "No characters listed for this show.",
+    "no_watch_links" : "No where-to-watch link in this snapshot.",
+    "non_endorsement" : "LezWatch.TV and TVmaze do not endorse this app.",
+    "return_refresh_rule" : "while its data is more than 3 days old (at most once every 6 hours)",
+    "seasons" : [
+      {
+        "n" : -1,
+        "text" : "Seasons not recorded"
+      },
+      {
+        "n" : 0,
+        "text" : "Seasons not recorded"
+      },
+      {
+        "n" : 1,
+        "text" : "1 season"
+      },
+      {
+        "n" : 2,
+        "text" : "2 seasons"
+      },
+      {
+        "n" : 12,
+        "text" : "12 seasons"
+      },
+      {
+        "n" : null,
+        "text" : "Seasons not recorded"
+      }
+    ],
+    "shows" : {
+      "lwtv:show:101" : {
+        "death_coverage" : {
+          "any_recorded_death" : false,
+          "has_characters" : true
+        },
+        "deaths" : {
+          "headline" : "Not recorded. This snapshot does not record a death for any of the 2 listed characters.",
+          "lines" : [
+
+          ],
+          "notes" : [
+
+          ],
+          "spoken" : "Not recorded. This snapshot does not record a death for any of the 2 listed characters."
+        },
+        "deaths_summary" : "Not recorded for any of the 2 listed characters.",
+        "lezwatch_link_label" : "View Harbor Lights on LezWatch.TV",
+        "quality" : "4 of 5",
+        "rating_quality" : "Quality: 4 of 5",
+        "realness" : "5 of 5",
+        "score" : "Score 42 (an ordinal LezWatch ranking, not a percentage)",
+        "screentime" : "4 of 5",
+        "seasons" : "3 seasons",
+        "share_url" : "https://lezwatchtv.com/show/harbor-lights/",
+        "triggers" : "No trigger warnings listed.",
+        "tropes_shown" : "Slow Burn, Found Family",
+        "tvmaze_credit" : {
+          "license_title" : "CC BY-SA 4.0",
+          "license_url" : "https://creativecommons.org/licenses/by-sa/4.0/",
+          "source_title" : "Schedule data from TVmaze",
+          "source_url" : "https://www.tvmaze.com/shows/5001/harbor-lights",
+          "spoken" : "Schedule data from TVmaze, licensed CC BY-SA 4.0."
+        },
+        "watch_links" : [
+          {
+            "display_host" : "example.com",
+            "label" : "Watch on example.com"
+          }
+        ],
+        "worth_it" : "Yes",
+        "years" : "2021 – present"
+      },
+      "lwtv:show:102" : {
+        "death_coverage" : {
+          "any_recorded_death" : true,
+          "has_characters" : true
+        },
+        "deaths" : {
+          "headline" : "1 of 2 listed characters has a recorded death.",
+          "lines" : [
+            "Odile Brandt dies (2017)."
+          ],
+          "notes" : [
+
+          ],
+          "spoken" : "1 of 2 listed characters has a recorded death. Odile Brandt dies (2017)."
+        },
+        "deaths_summary" : "1 of 2 listed characters dies: Odile Brandt.",
+        "lezwatch_link_label" : "View The Cartographers on LezWatch.TV",
+        "quality" : "3 of 5",
+        "rating_quality" : "Quality: 3 of 5",
+        "realness" : "Not rated",
+        "score" : "Score 18 (an ordinal LezWatch ranking, not a percentage)",
+        "screentime" : "2 of 5",
+        "seasons" : "2 seasons",
+        "share_url" : "https://lezwatchtv.com/show/the-cartographers/",
+        "triggers" : "Violence",
+        "tropes_shown" : "Bury Your Gays",
+        "tvmaze_credit" : {
+          "license_title" : "CC BY-SA 4.0",
+          "license_url" : "https://creativecommons.org/licenses/by-sa/4.0/",
+          "source_title" : "Schedule data from TVmaze",
+          "source_url" : "https://www.tvmaze.com/shows/5002/the-cartographers",
+          "spoken" : "Schedule data from TVmaze, licensed CC BY-SA 4.0."
+        },
+        "watch_links" : [
+
+        ],
+        "worth_it" : "Meh",
+        "years" : "2016 – 2018"
+      },
+      "lwtv:show:103" : {
+        "death_coverage" : {
+          "any_recorded_death" : false,
+          "has_characters" : true
+        },
+        "deaths" : {
+          "headline" : "Not recorded. This snapshot does not record a death for the one listed character.",
+          "lines" : [
+
+          ],
+          "notes" : [
+
+          ],
+          "spoken" : "Not recorded. This snapshot does not record a death for the one listed character."
+        },
+        "deaths_summary" : "Not recorded for any of the 1 listed character.",
+        "lezwatch_link_label" : "View Salt & Ember on LezWatch.TV",
+        "quality" : "Not rated",
+        "rating_quality" : "Quality: not rated",
+        "realness" : "Not rated",
+        "score" : "No score recorded",
+        "screentime" : "Not rated",
+        "seasons" : "Seasons not recorded",
+        "share_url" : "https://lezwatchtv.com/show/salt-and-ember/",
+        "triggers" : "No trigger warnings listed.",
+        "tropes_shown" : "No tropes listed.",
+        "tvmaze_credit" : null,
+        "watch_links" : [
+
+        ],
+        "worth_it" : "Not rated",
+        "years" : "Air dates not recorded"
+      },
+      "lwtv:show:104" : {
+        "death_coverage" : {
+          "any_recorded_death" : false,
+          "has_characters" : false
+        },
+        "deaths" : {
+          "headline" : "Not recorded. This snapshot does not list any queer characters for this show.",
+          "lines" : [
+
+          ],
+          "notes" : [
+
+          ],
+          "spoken" : "Not recorded. This snapshot does not list any queer characters for this show."
+        },
+        "deaths_summary" : "Not recorded. This snapshot does not list any queer characters for this show.",
+        "lezwatch_link_label" : "View Night Shift Radio on LezWatch.TV",
+        "quality" : "2 of 5",
+        "rating_quality" : "Quality: 2 of 5",
+        "realness" : "3 of 5",
+        "score" : "Score 9 (an ordinal LezWatch ranking, not a percentage)",
+        "screentime" : "5 of 5",
+        "seasons" : "1 season",
+        "share_url" : "https://lezwatchtv.com/show/night-shift-radio/",
+        "triggers" : "No trigger warnings listed.",
+        "tropes_shown" : "No tropes listed.",
+        "tvmaze_credit" : {
+          "license_title" : "CC BY-SA 4.0",
+          "license_url" : "https://creativecommons.org/licenses/by-sa/4.0/",
+          "source_title" : "Schedule data from TVmaze",
+          "source_url" : "https://www.tvmaze.com/shows/5004/night-shift-radio",
+          "spoken" : "Schedule data from TVmaze, licensed CC BY-SA 4.0."
+        },
+        "watch_links" : [
+          {
+            "display_host" : "example.com",
+            "label" : "Watch on example.com"
+          },
+          {
+            "display_host" : "store.example.org",
+            "label" : "Watch on store.example.org"
+          }
+        ],
+        "worth_it" : "No",
+        "years" : "2024 – present"
+      }
+    },
+    "spans" : [
+      {
+        "seconds" : 3600,
+        "text" : "1 hour"
+      },
+      {
+        "seconds" : 21600,
+        "text" : "6 hours"
+      },
+      {
+        "seconds" : 86400,
+        "text" : "1 day"
+      },
+      {
+        "seconds" : 259200,
+        "text" : "3 days"
+      },
+      {
+        "seconds" : 90000,
+        "text" : "25 hours"
+      },
+      {
+        "seconds" : 1800,
+        "text" : "1 hour"
+      }
+    ],
+    "tvmaze_general_credit" : {
+      "license_title" : "CC BY-SA 4.0",
+      "license_url" : "https://creativecommons.org/licenses/by-sa/4.0/",
+      "source_title" : "Schedule data from TVmaze",
+      "source_url" : "https://www.tvmaze.com/"
+    },
+    "widget_more" : [
+      {
+        "count" : 0,
+        "missing" : 0,
+        "text" : null
+      },
+      {
+        "count" : 2,
+        "missing" : 0,
+        "text" : "+2 more"
+      },
+      {
+        "count" : 0,
+        "missing" : 1,
+        "text" : "1 not in this data"
+      },
+      {
+        "count" : 2,
+        "missing" : 1,
+        "text" : "+2 more, 1 not in this data"
+      }
+    ],
+    "years" : [
+      {
+        "end" : null,
+        "on_air" : "unknown",
+        "start" : null,
+        "text" : "Air dates not recorded"
+      },
+      {
+        "end" : null,
+        "on_air" : "yes",
+        "start" : 2001,
+        "text" : "2001 – present"
+      },
+      {
+        "end" : null,
+        "on_air" : "no",
+        "start" : 2001,
+        "text" : "2001 – ongoing status not recorded"
+      },
+      {
+        "end" : null,
+        "on_air" : "unknown",
+        "start" : 2001,
+        "text" : "2001 – ongoing status not recorded"
+      },
+      {
+        "end" : 2001,
+        "on_air" : "no",
+        "start" : 1995,
+        "text" : "1995 – 2001"
+      },
+      {
+        "end" : 2001,
+        "on_air" : "no",
+        "start" : null,
+        "text" : "Ended 2001"
+      },
+      {
+        "end" : null,
+        "on_air" : "no",
+        "start" : null,
+        "text" : "Air dates not recorded"
+      }
+    ]
+  },
+  "search" : {
+    "browse" : [
+      {
+        "active_count" : 0,
+        "example_hits" : [
+          "show:lwtv:show:101",
+          "show:lwtv:show:102",
+          "show:lwtv:show:104",
+          "character:lwtv:character:201",
+          "character:lwtv:character:202",
+          "character:lwtv:character:203",
+          "character:lwtv:character:204"
+        ],
+        "harbor_hits" : [
+          "show:lwtv:show:101",
+          "character:lwtv:character:201",
+          "character:lwtv:character:202"
+        ],
+        "name" : "none",
+        "shows" : [
+          "lwtv:show:101",
+          "lwtv:show:104",
+          "lwtv:show:103",
+          "lwtv:show:102"
+        ]
+      },
+      {
+        "active_count" : 1,
+        "example_hits" : [
+          "show:lwtv:show:101",
+          "character:lwtv:character:201",
+          "character:lwtv:character:202"
+        ],
+        "harbor_hits" : [
+          "show:lwtv:show:101",
+          "character:lwtv:character:201",
+          "character:lwtv:character:202"
+        ],
+        "name" : "no_recorded_deaths",
+        "shows" : [
+          "lwtv:show:101",
+          "lwtv:show:103"
+        ]
+      },
+      {
+        "active_count" : 1,
+        "example_hits" : [
+          "show:lwtv:show:101",
+          "character:lwtv:character:201",
+          "character:lwtv:character:202"
+        ],
+        "harbor_hits" : [
+          "show:lwtv:show:101",
+          "character:lwtv:character:201",
+          "character:lwtv:character:202"
+        ],
+        "name" : "worth_it_yes",
+        "shows" : [
+          "lwtv:show:101"
+        ]
+      },
+      {
+        "active_count" : 2,
+        "example_hits" : [
+          "show:lwtv:show:101",
+          "show:lwtv:show:102",
+          "character:lwtv:character:201",
+          "character:lwtv:character:202",
+          "character:lwtv:character:203",
+          "character:lwtv:character:204"
+        ],
+        "harbor_hits" : [
+          "show:lwtv:show:101",
+          "character:lwtv:character:201",
+          "character:lwtv:character:202"
+        ],
+        "name" : "worth_it_yes_meh",
+        "shows" : [
+          "lwtv:show:101",
+          "lwtv:show:102"
+        ]
+      },
+      {
+        "active_count" : 1,
+        "example_hits" : [
+
+        ],
+        "harbor_hits" : [
+
+        ],
+        "name" : "worth_it_tbd",
+        "shows" : [
+
+        ]
+      },
+      {
+        "active_count" : 1,
+        "example_hits" : [
+          "show:lwtv:show:101",
+          "show:lwtv:show:104",
+          "character:lwtv:character:201",
+          "character:lwtv:character:202"
+        ],
+        "harbor_hits" : [
+          "show:lwtv:show:101",
+          "character:lwtv:character:201",
+          "character:lwtv:character:202"
+        ],
+        "name" : "has_watch_link",
+        "shows" : [
+          "lwtv:show:101",
+          "lwtv:show:104"
+        ]
+      },
+      {
+        "active_count" : 1,
+        "example_hits" : [
+          "show:lwtv:show:101",
+          "show:lwtv:show:104",
+          "character:lwtv:character:201",
+          "character:lwtv:character:202"
+        ],
+        "harbor_hits" : [
+          "show:lwtv:show:101",
+          "character:lwtv:character:201",
+          "character:lwtv:character:202"
+        ],
+        "name" : "host_example_com",
+        "shows" : [
+          "lwtv:show:101",
+          "lwtv:show:104"
+        ]
+      },
+      {
+        "active_count" : 1,
+        "example_hits" : [
+          "show:lwtv:show:104"
+        ],
+        "harbor_hits" : [
+
+        ],
+        "name" : "host_store_example_org",
+        "shows" : [
+          "lwtv:show:104"
+        ]
+      },
+      {
+        "active_count" : 1,
+        "example_hits" : [
+          "show:lwtv:show:101",
+          "character:lwtv:character:201",
+          "character:lwtv:character:202"
+        ],
+        "harbor_hits" : [
+          "show:lwtv:show:101",
+          "character:lwtv:character:201",
+          "character:lwtv:character:202"
+        ],
+        "name" : "trope_slow_burn",
+        "shows" : [
+          "lwtv:show:101"
+        ]
+      },
+      {
+        "active_count" : 1,
+        "example_hits" : [
+          "show:lwtv:show:101",
+          "show:lwtv:show:104",
+          "character:lwtv:character:201",
+          "character:lwtv:character:202"
+        ],
+        "harbor_hits" : [
+          "show:lwtv:show:101",
+          "character:lwtv:character:201",
+          "character:lwtv:character:202"
+        ],
+        "name" : "hide_violence",
+        "shows" : [
+          "lwtv:show:101",
+          "lwtv:show:104",
+          "lwtv:show:103"
+        ]
+      },
+      {
+        "active_count" : 7,
+        "example_hits" : [
+          "show:lwtv:show:101",
+          "character:lwtv:character:201",
+          "character:lwtv:character:202"
+        ],
+        "harbor_hits" : [
+          "show:lwtv:show:101",
+          "character:lwtv:character:201",
+          "character:lwtv:character:202"
+        ],
+        "name" : "all",
+        "shows" : [
+          "lwtv:show:101"
+        ]
+      }
+    ],
+    "filter_options" : {
+      "trigger_warnings" : [
+        {
+          "name" : "Violence",
+          "show_count" : 1,
+          "slug" : "violence"
+        }
+      ],
+      "tropes" : [
+        {
+          "name" : "Found Family",
+          "show_count" : 1,
+          "slug" : "found-family"
+        },
+        {
+          "name" : "Slow Burn",
+          "show_count" : 1,
+          "slug" : "slow-burn"
+        }
+      ],
+      "watch_hosts" : [
+        {
+          "key" : "example.com",
+          "show_count" : 2
+        },
+        {
+          "key" : "store.example.org",
+          "show_count" : 1
+        }
+      ]
+    },
+    "folds" : [
+      {
+        "folded" : "greys anatomy",
+        "text" : "Grey’s Anatomy"
+      },
+      {
+        "folded" : "xena warrior princess",
+        "text" : "Xena: Warrior Princess"
+      },
+      {
+        "folded" : "salt and ember",
+        "text" : "Salt & Ember"
+      },
+      {
+        "folded" : "ines varga",
+        "text" : "INÉS  Varga"
+      },
+      {
+        "folded" : "full width",
+        "text" : "Ｆｕｌｌ ｗｉｄｔｈ"
+      },
+      {
+        "folded" : "rocknroll",
+        "text" : "rock'n'roll"
+      },
+      {
+        "folded" : "l a law",
+        "text" : "L.A. Law"
+      },
+      {
+        "folded" : "ooku",
+        "text" : "Ōoku"
+      },
+      {
+        "folded" : "spaced out",
+        "text" : "  spaced   out  "
+      }
+    ],
+    "queries" : [
+      {
+        "hits" : [
+          "show:lwtv:show:101",
+          "character:lwtv:character:201",
+          "character:lwtv:character:202"
+        ],
+        "limit_2_hits" : [
+          "show:lwtv:show:101",
+          "character:lwtv:character:201"
+        ],
+        "limit_2_total" : 3,
+        "no_recorded_deaths_hits" : [
+          "show:lwtv:show:101",
+          "character:lwtv:character:201",
+          "character:lwtv:character:202"
+        ],
+        "query" : "harbor",
+        "total" : 3
+      },
+      {
+        "hits" : [
+          "show:lwtv:show:101",
+          "character:lwtv:character:201",
+          "character:lwtv:character:202"
+        ],
+        "limit_2_hits" : [
+          "show:lwtv:show:101",
+          "character:lwtv:character:201"
+        ],
+        "limit_2_total" : 3,
+        "no_recorded_deaths_hits" : [
+          "show:lwtv:show:101",
+          "character:lwtv:character:201",
+          "character:lwtv:character:202"
+        ],
+        "query" : "HARBOR lights",
+        "total" : 3
+      },
+      {
+        "hits" : [
+          "show:lwtv:show:101",
+          "character:lwtv:character:201",
+          "character:lwtv:character:202"
+        ],
+        "limit_2_hits" : [
+          "show:lwtv:show:101",
+          "character:lwtv:character:201"
+        ],
+        "limit_2_total" : 3,
+        "no_recorded_deaths_hits" : [
+          "show:lwtv:show:101",
+          "character:lwtv:character:201",
+          "character:lwtv:character:202"
+        ],
+        "query" : "lights harbor",
+        "total" : 3
+      },
+      {
+        "hits" : [
+          "show:lwtv:show:101",
+          "character:lwtv:character:201",
+          "character:lwtv:character:202"
+        ],
+        "limit_2_hits" : [
+          "show:lwtv:show:101",
+          "character:lwtv:character:201"
+        ],
+        "limit_2_total" : 3,
+        "no_recorded_deaths_hits" : [
+          "show:lwtv:show:101",
+          "character:lwtv:character:201",
+          "character:lwtv:character:202"
+        ],
+        "query" : "Harbor Lights",
+        "total" : 3
+      },
+      {
+        "hits" : [
+          "character:lwtv:character:202"
+        ],
+        "limit_2_hits" : [
+          "character:lwtv:character:202"
+        ],
+        "limit_2_total" : 1,
+        "no_recorded_deaths_hits" : [
+          "character:lwtv:character:202"
+        ],
+        "query" : "ines",
+        "total" : 1
+      },
+      {
+        "hits" : [
+          "character:lwtv:character:202"
+        ],
+        "limit_2_hits" : [
+          "character:lwtv:character:202"
+        ],
+        "limit_2_total" : 1,
+        "no_recorded_deaths_hits" : [
+          "character:lwtv:character:202"
+        ],
+        "query" : "INÉS",
+        "total" : 1
+      },
+      {
+        "hits" : [
+          "show:lwtv:show:103",
+          "character:lwtv:character:205"
+        ],
+        "limit_2_hits" : [
+          "show:lwtv:show:103",
+          "character:lwtv:character:205"
+        ],
+        "limit_2_total" : 2,
+        "no_recorded_deaths_hits" : [
+          "show:lwtv:show:103",
+          "character:lwtv:character:205"
+        ],
+        "query" : "salt and",
+        "total" : 2
+      },
+      {
+        "hits" : [
+          "show:lwtv:show:103",
+          "character:lwtv:character:205"
+        ],
+        "limit_2_hits" : [
+          "show:lwtv:show:103",
+          "character:lwtv:character:205"
+        ],
+        "limit_2_total" : 2,
+        "no_recorded_deaths_hits" : [
+          "show:lwtv:show:103",
+          "character:lwtv:character:205"
+        ],
+        "query" : "salt & ember",
+        "total" : 2
+      },
+      {
+        "hits" : [
+          "show:lwtv:show:103",
+          "character:lwtv:character:205"
+        ],
+        "limit_2_hits" : [
+          "show:lwtv:show:103",
+          "character:lwtv:character:205"
+        ],
+        "limit_2_total" : 2,
+        "no_recorded_deaths_hits" : [
+          "show:lwtv:show:103",
+          "character:lwtv:character:205"
+        ],
+        "query" : "salt ember",
+        "total" : 2
+      },
+      {
+        "hits" : [
+          "show:lwtv:show:101",
+          "show:lwtv:show:102",
+          "show:lwtv:show:104",
+          "character:lwtv:character:201",
+          "character:lwtv:character:202",
+          "character:lwtv:character:203",
+          "character:lwtv:character:204"
+        ],
+        "limit_2_hits" : [
+          "show:lwtv:show:101",
+          "show:lwtv:show:102"
+        ],
+        "limit_2_total" : 7,
+        "no_recorded_deaths_hits" : [
+          "show:lwtv:show:101",
+          "character:lwtv:character:201",
+          "character:lwtv:character:202"
+        ],
+        "query" : "x",
+        "total" : 7
+      },
+      {
+        "hits" : [
+          "character:lwtv:character:201"
+        ],
+        "limit_2_hits" : [
+          "character:lwtv:character:201"
+        ],
+        "limit_2_total" : 1,
+        "no_recorded_deaths_hits" : [
+          "character:lwtv:character:201"
+        ],
+        "query" : "mara quill",
+        "total" : 1
+      },
+      {
+        "hits" : [
+          "character:lwtv:character:201"
+        ],
+        "limit_2_hits" : [
+          "character:lwtv:character:201"
+        ],
+        "limit_2_total" : 1,
+        "no_recorded_deaths_hits" : [
+          "character:lwtv:character:201"
+        ],
+        "query" : "quill mara",
+        "total" : 1
+      },
+      {
+        "hits" : [
+
+        ],
+        "limit_2_hits" : [
+
+        ],
+        "limit_2_total" : 0,
+        "no_recorded_deaths_hits" : [
+
+        ],
+        "query" : "  ",
+        "total" : 0
+      },
+      {
+        "hits" : [
+
+        ],
+        "limit_2_hits" : [
+
+        ],
+        "limit_2_total" : 0,
+        "no_recorded_deaths_hits" : [
+
+        ],
+        "query" : "",
+        "total" : 0
+      },
+      {
+        "hits" : [
+
+        ],
+        "limit_2_hits" : [
+
+        ],
+        "limit_2_total" : 0,
+        "no_recorded_deaths_hits" : [
+
+        ],
+        "query" : "zzz",
+        "total" : 0
+      },
+      {
+        "hits" : [
+          "show:lwtv:show:101",
+          "show:lwtv:show:102",
+          "show:lwtv:show:104"
+        ],
+        "limit_2_hits" : [
+          "show:lwtv:show:101",
+          "show:lwtv:show:102"
+        ],
+        "limit_2_total" : 3,
+        "no_recorded_deaths_hits" : [
+          "show:lwtv:show:101"
+        ],
+        "query" : "example network",
+        "total" : 3
+      },
+      {
+        "hits" : [
+          "character:lwtv:character:201",
+          "character:lwtv:character:202",
+          "character:lwtv:character:203",
+          "character:lwtv:character:204"
+        ],
+        "limit_2_hits" : [
+          "character:lwtv:character:201",
+          "character:lwtv:character:202"
+        ],
+        "limit_2_total" : 4,
+        "no_recorded_deaths_hits" : [
+          "character:lwtv:character:201",
+          "character:lwtv:character:202"
+        ],
+        "query" : "example actor",
+        "total" : 4
+      },
+      {
+        "hits" : [
+          "show:lwtv:show:102",
+          "character:lwtv:character:203",
+          "character:lwtv:character:204"
+        ],
+        "limit_2_hits" : [
+          "show:lwtv:show:102",
+          "character:lwtv:character:203"
+        ],
+        "limit_2_total" : 3,
+        "no_recorded_deaths_hits" : [
+
+        ],
+        "query" : "cartographers",
+        "total" : 3
+      },
+      {
+        "hits" : [
+          "show:lwtv:show:102",
+          "character:lwtv:character:204",
+          "character:lwtv:character:203"
+        ],
+        "limit_2_hits" : [
+          "show:lwtv:show:102",
+          "character:lwtv:character:204"
+        ],
+        "limit_2_total" : 3,
+        "no_recorded_deaths_hits" : [
+
+        ],
+        "query" : "the",
+        "total" : 3
+      },
+      {
+        "hits" : [
+          "show:lwtv:show:104"
+        ],
+        "limit_2_hits" : [
+          "show:lwtv:show:104"
+        ],
+        "limit_2_total" : 1,
+        "no_recorded_deaths_hits" : [
+
+        ],
+        "query" : "night-shift",
+        "total" : 1
+      },
+      {
+        "hits" : [
+          "show:lwtv:show:104"
+        ],
+        "limit_2_hits" : [
+          "show:lwtv:show:104"
+        ],
+        "limit_2_total" : 1,
+        "no_recorded_deaths_hits" : [
+
+        ],
+        "query" : "nightshift",
+        "total" : 1
+      },
+      {
+        "hits" : [
+          "show:lwtv:show:103",
+          "character:lwtv:character:205",
+          "show:lwtv:show:101",
+          "show:lwtv:show:102",
+          "show:lwtv:show:104",
+          "character:lwtv:character:201",
+          "character:lwtv:character:202",
+          "character:lwtv:character:203",
+          "character:lwtv:character:204"
+        ],
+        "limit_2_hits" : [
+          "show:lwtv:show:103",
+          "character:lwtv:character:205"
+        ],
+        "limit_2_total" : 9,
+        "no_recorded_deaths_hits" : [
+          "show:lwtv:show:103",
+          "character:lwtv:character:205",
+          "show:lwtv:show:101",
+          "character:lwtv:character:201",
+          "character:lwtv:character:202"
+        ],
+        "query" : "a",
+        "total" : 9
+      }
+    ],
+    "watch_host_keys" : [
+      {
+        "host" : "www.Netflix.com",
+        "key" : "netflix.com"
+      },
+      {
+        "host" : "netflix.com",
+        "key" : "netflix.com"
+      },
+      {
+        "host" : "WWW.example.org",
+        "key" : "example.org"
+      },
+      {
+        "host" : "store.example.org",
+        "key" : "store.example.org"
+      },
+      {
+        "host" : "www",
+        "key" : "www"
+      }
+    ]
+  },
+  "variants" : [
+    {
+      "by_zone" : {
+        "America/Los_Angeles" : {
+          "2026-09-14T00:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — Sep 20, 2026 at 6:00 PM",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "No upcoming episode is known."
+            },
+            "reminders" : [
+              {
+                "body" : "S3E4 is listed to air now. Schedule from TVmaze, data as of Sep 13; it may have changed.",
+                "fire_at" : "2026-09-21T01:00:00Z",
+                "identifier" : "episode-reminder.lwtv:show:101.900001",
+                "show_id" : "lwtv:show:101",
+                "title" : "Harbor Lights"
+              }
+            ]
+          },
+          "2026-09-21T03:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — Sep 20, 2026 at 6:00 PM",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "No upcoming episode is known."
+            },
+            "reminders" : [
+
+            ]
+          },
+          "2026-09-25T00:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — Sep 20, 2026 at 6:00 PM, which has passed. This data may be out of date.",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "No upcoming episode is known."
+            },
+            "reminders" : [
+
+            ]
+          }
+        },
+        "America/New_York" : {
+          "2026-09-14T00:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — Sep 20, 2026 at 9:00 PM",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "No upcoming episode is known."
+            },
+            "reminders" : [
+              {
+                "body" : "S3E4 is listed to air now. Schedule from TVmaze, data as of Sep 13; it may have changed.",
+                "fire_at" : "2026-09-21T01:00:00Z",
+                "identifier" : "episode-reminder.lwtv:show:101.900001",
+                "show_id" : "lwtv:show:101",
+                "title" : "Harbor Lights"
+              }
+            ]
+          },
+          "2026-09-21T03:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — Sep 20, 2026 at 9:00 PM",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "No upcoming episode is known."
+            },
+            "reminders" : [
+
+            ]
+          },
+          "2026-09-25T00:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — Sep 20, 2026 at 9:00 PM, which has passed. This data may be out of date.",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "No upcoming episode is known."
+            },
+            "reminders" : [
+
+            ]
+          }
+        },
+        "Asia/Tokyo" : {
+          "2026-09-14T00:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — Sep 21, 2026 at 10:00 AM",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "No upcoming episode is known."
+            },
+            "reminders" : [
+              {
+                "body" : "S3E4 is listed to air now. Schedule from TVmaze, data as of Sep 14; it may have changed.",
+                "fire_at" : "2026-09-21T01:00:00Z",
+                "identifier" : "episode-reminder.lwtv:show:101.900001",
+                "show_id" : "lwtv:show:101",
+                "title" : "Harbor Lights"
+              }
+            ]
+          },
+          "2026-09-21T03:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — Sep 21, 2026 at 10:00 AM",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "No upcoming episode is known."
+            },
+            "reminders" : [
+
+            ]
+          },
+          "2026-09-25T00:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — Sep 21, 2026 at 10:00 AM, which has passed. This data may be out of date.",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "No upcoming episode is known."
+            },
+            "reminders" : [
+
+            ]
+          }
+        },
+        "Pacific/Auckland" : {
+          "2026-09-14T00:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — Sep 21, 2026 at 1:00 PM",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "No upcoming episode is known."
+            },
+            "reminders" : [
+              {
+                "body" : "S3E4 is listed to air now. Schedule from TVmaze, data as of Sep 14; it may have changed.",
+                "fire_at" : "2026-09-21T01:00:00Z",
+                "identifier" : "episode-reminder.lwtv:show:101.900001",
+                "show_id" : "lwtv:show:101",
+                "title" : "Harbor Lights"
+              }
+            ]
+          },
+          "2026-09-21T03:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — Sep 21, 2026 at 1:00 PM",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "No upcoming episode is known."
+            },
+            "reminders" : [
+
+            ]
+          },
+          "2026-09-25T00:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — Sep 21, 2026 at 1:00 PM, which has passed. This data may be out of date.",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "No upcoming episode is known."
+            },
+            "reminders" : [
+
+            ]
+          }
+        },
+        "UTC" : {
+          "2026-09-14T00:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — Sep 21, 2026 at 1:00 AM",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "No upcoming episode is known."
+            },
+            "reminders" : [
+              {
+                "body" : "S3E4 is listed to air now. Schedule from TVmaze, data as of Sep 13; it may have changed.",
+                "fire_at" : "2026-09-21T01:00:00Z",
+                "identifier" : "episode-reminder.lwtv:show:101.900001",
+                "show_id" : "lwtv:show:101",
+                "title" : "Harbor Lights"
+              }
+            ]
+          },
+          "2026-09-21T03:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — Sep 21, 2026 at 1:00 AM",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "No upcoming episode is known."
+            },
+            "reminders" : [
+
+            ]
+          },
+          "2026-09-25T00:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — Sep 21, 2026 at 1:00 AM, which has passed. This data may be out of date.",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "No upcoming episode is known."
+            },
+            "reminders" : [
+
+            ]
+          }
+        }
+      },
+      "edit" : {
+        "airdate" : "2026-09-20",
+        "airstamp" : "2026-09-20T21:00:00-04:00",
+        "airtime" : "21:00"
+      },
+      "name" : "fixture",
+      "widget" : {
+        "by_clock" : {
+          "2026-09-14T00:00:00Z" : {
+            "lines" : [
+              "S3E4 · Sep 20",
+              "No upcoming episode listed",
+              "No upcoming episode listed",
+              "Schedule unknown"
+            ],
+            "ordered" : [
+              "lwtv:show:101",
+              "lwtv:show:104",
+              "lwtv:show:102",
+              "lwtv:show:103"
+            ],
+            "spoken" : [
+              "Harbor Lights. Season 3, episode 4, September 20.",
+              "Night Shift Radio. No upcoming episode listed.",
+              "The Cartographers. No upcoming episode listed.",
+              "Salt & Ember. Schedule unknown."
+            ]
+          },
+          "2026-09-21T03:00:00Z" : {
+            "lines" : [
+              "S3E4 · Sep 20",
+              "No upcoming episode listed",
+              "No upcoming episode listed",
+              "Schedule unknown"
+            ],
+            "ordered" : [
+              "lwtv:show:101",
+              "lwtv:show:104",
+              "lwtv:show:102",
+              "lwtv:show:103"
+            ],
+            "spoken" : [
+              "Harbor Lights. Season 3, episode 4, September 20.",
+              "Night Shift Radio. No upcoming episode listed.",
+              "The Cartographers. No upcoming episode listed.",
+              "Salt & Ember. Schedule unknown."
+            ]
+          },
+          "2026-09-25T00:00:00Z" : {
+            "lines" : [
+              "S3E4 · Sep 20, passed",
+              "No upcoming episode listed",
+              "No upcoming episode listed",
+              "Schedule unknown"
+            ],
+            "ordered" : [
+              "lwtv:show:101",
+              "lwtv:show:104",
+              "lwtv:show:102",
+              "lwtv:show:103"
+            ],
+            "spoken" : [
+              "Harbor Lights. Season 3, episode 4 was listed for September 20, which has passed. This data may be out of date.",
+              "Night Shift Radio. No upcoming episode listed.",
+              "The Cartographers. No upcoming episode listed.",
+              "Salt & Ember. Schedule unknown."
+            ]
+          }
+        },
+        "items" : [
+          {
+            "airdate" : "2026-09-20",
+            "number" : 4,
+            "season" : 3,
+            "show_id" : "lwtv:show:101",
+            "status" : "dated",
+            "title" : "Harbor Lights"
+          },
+          {
+            "airdate" : null,
+            "number" : null,
+            "season" : null,
+            "show_id" : "lwtv:show:104",
+            "status" : "noneListed",
+            "title" : "Night Shift Radio"
+          },
+          {
+            "airdate" : null,
+            "number" : null,
+            "season" : null,
+            "show_id" : "lwtv:show:102",
+            "status" : "noneListed",
+            "title" : "The Cartographers"
+          },
+          {
+            "airdate" : null,
+            "number" : null,
+            "season" : null,
+            "show_id" : "lwtv:show:103",
+            "status" : "unknown",
+            "title" : "Salt & Ember"
+          }
+        ],
+        "missing_show_count" : 1
+      }
+    },
+    {
+      "by_zone" : {
+        "America/Los_Angeles" : {
+          "2026-09-14T00:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — Sep 23, 2026 (date as TVmaze lists it, in the network’s time zone)",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "No upcoming episode is known."
+            },
+            "reminders" : [
+              {
+                "body" : "S3E4 is listed for Sep 23, the network's date, with no air time. Schedule from TVmaze, data as of Sep 13; it may have changed.",
+                "fire_at" : "2026-09-23T17:00:00Z",
+                "identifier" : "episode-reminder.lwtv:show:101.900001",
+                "show_id" : "lwtv:show:101",
+                "title" : "Harbor Lights"
+              }
+            ]
+          },
+          "2026-09-21T03:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — Sep 23, 2026 (date as TVmaze lists it, in the network’s time zone)",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "No upcoming episode is known."
+            },
+            "reminders" : [
+              {
+                "body" : "S3E4 is listed for Sep 23, the network's date, with no air time. Schedule from TVmaze, data as of Sep 13; it may have changed.",
+                "fire_at" : "2026-09-23T17:00:00Z",
+                "identifier" : "episode-reminder.lwtv:show:101.900001",
+                "show_id" : "lwtv:show:101",
+                "title" : "Harbor Lights"
+              }
+            ]
+          },
+          "2026-09-25T00:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — listed for Sep 23, 2026, which has passed. This data may be out of date.",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "No upcoming episode is known."
+            },
+            "reminders" : [
+
+            ]
+          }
+        },
+        "America/New_York" : {
+          "2026-09-14T00:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — Sep 23, 2026 (date as TVmaze lists it, in the network’s time zone)",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "No upcoming episode is known."
+            },
+            "reminders" : [
+              {
+                "body" : "S3E4 is listed for Sep 23, the network's date, with no air time. Schedule from TVmaze, data as of Sep 13; it may have changed.",
+                "fire_at" : "2026-09-23T14:00:00Z",
+                "identifier" : "episode-reminder.lwtv:show:101.900001",
+                "show_id" : "lwtv:show:101",
+                "title" : "Harbor Lights"
+              }
+            ]
+          },
+          "2026-09-21T03:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — Sep 23, 2026 (date as TVmaze lists it, in the network’s time zone)",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "No upcoming episode is known."
+            },
+            "reminders" : [
+              {
+                "body" : "S3E4 is listed for Sep 23, the network's date, with no air time. Schedule from TVmaze, data as of Sep 13; it may have changed.",
+                "fire_at" : "2026-09-23T14:00:00Z",
+                "identifier" : "episode-reminder.lwtv:show:101.900001",
+                "show_id" : "lwtv:show:101",
+                "title" : "Harbor Lights"
+              }
+            ]
+          },
+          "2026-09-25T00:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — listed for Sep 23, 2026, which has passed. This data may be out of date.",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "No upcoming episode is known."
+            },
+            "reminders" : [
+
+            ]
+          }
+        },
+        "Asia/Tokyo" : {
+          "2026-09-14T00:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — Sep 23, 2026 (date as TVmaze lists it, in the network’s time zone)",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "No upcoming episode is known."
+            },
+            "reminders" : [
+              {
+                "body" : "S3E4 is listed for Sep 23, the network's date, with no air time. Schedule from TVmaze, data as of Sep 14; it may have changed.",
+                "fire_at" : "2026-09-23T01:00:00Z",
+                "identifier" : "episode-reminder.lwtv:show:101.900001",
+                "show_id" : "lwtv:show:101",
+                "title" : "Harbor Lights"
+              }
+            ]
+          },
+          "2026-09-21T03:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — Sep 23, 2026 (date as TVmaze lists it, in the network’s time zone)",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "No upcoming episode is known."
+            },
+            "reminders" : [
+              {
+                "body" : "S3E4 is listed for Sep 23, the network's date, with no air time. Schedule from TVmaze, data as of Sep 14; it may have changed.",
+                "fire_at" : "2026-09-23T01:00:00Z",
+                "identifier" : "episode-reminder.lwtv:show:101.900001",
+                "show_id" : "lwtv:show:101",
+                "title" : "Harbor Lights"
+              }
+            ]
+          },
+          "2026-09-25T00:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — listed for Sep 23, 2026, which has passed. This data may be out of date.",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "No upcoming episode is known."
+            },
+            "reminders" : [
+
+            ]
+          }
+        },
+        "Pacific/Auckland" : {
+          "2026-09-14T00:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — Sep 23, 2026 (date as TVmaze lists it, in the network’s time zone)",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "No upcoming episode is known."
+            },
+            "reminders" : [
+              {
+                "body" : "S3E4 is listed for Sep 23, the network's date, with no air time. Schedule from TVmaze, data as of Sep 14; it may have changed.",
+                "fire_at" : "2026-09-22T22:00:00Z",
+                "identifier" : "episode-reminder.lwtv:show:101.900001",
+                "show_id" : "lwtv:show:101",
+                "title" : "Harbor Lights"
+              }
+            ]
+          },
+          "2026-09-21T03:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — Sep 23, 2026 (date as TVmaze lists it, in the network’s time zone)",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "No upcoming episode is known."
+            },
+            "reminders" : [
+              {
+                "body" : "S3E4 is listed for Sep 23, the network's date, with no air time. Schedule from TVmaze, data as of Sep 14; it may have changed.",
+                "fire_at" : "2026-09-22T22:00:00Z",
+                "identifier" : "episode-reminder.lwtv:show:101.900001",
+                "show_id" : "lwtv:show:101",
+                "title" : "Harbor Lights"
+              }
+            ]
+          },
+          "2026-09-25T00:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — listed for Sep 23, 2026, which has passed. This data may be out of date.",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "No upcoming episode is known."
+            },
+            "reminders" : [
+
+            ]
+          }
+        },
+        "UTC" : {
+          "2026-09-14T00:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — Sep 23, 2026 (date as TVmaze lists it, in the network’s time zone)",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "No upcoming episode is known."
+            },
+            "reminders" : [
+              {
+                "body" : "S3E4 is listed for Sep 23, the network's date, with no air time. Schedule from TVmaze, data as of Sep 13; it may have changed.",
+                "fire_at" : "2026-09-23T10:00:00Z",
+                "identifier" : "episode-reminder.lwtv:show:101.900001",
+                "show_id" : "lwtv:show:101",
+                "title" : "Harbor Lights"
+              }
+            ]
+          },
+          "2026-09-21T03:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — Sep 23, 2026 (date as TVmaze lists it, in the network’s time zone)",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "No upcoming episode is known."
+            },
+            "reminders" : [
+              {
+                "body" : "S3E4 is listed for Sep 23, the network's date, with no air time. Schedule from TVmaze, data as of Sep 13; it may have changed.",
+                "fire_at" : "2026-09-23T10:00:00Z",
+                "identifier" : "episode-reminder.lwtv:show:101.900001",
+                "show_id" : "lwtv:show:101",
+                "title" : "Harbor Lights"
+              }
+            ]
+          },
+          "2026-09-25T00:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — listed for Sep 23, 2026, which has passed. This data may be out of date.",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "No upcoming episode is known."
+            },
+            "reminders" : [
+
+            ]
+          }
+        }
+      },
+      "edit" : {
+        "airdate" : "2026-09-23",
+        "airstamp" : "2026-09-23T12:00:00+00:00",
+        "airtime" : null
+      },
+      "name" : "placeholder-stamp",
+      "widget" : {
+        "by_clock" : {
+          "2026-09-14T00:00:00Z" : {
+            "lines" : [
+              "S3E4 · Sep 23",
+              "No upcoming episode listed",
+              "No upcoming episode listed",
+              "Schedule unknown"
+            ],
+            "ordered" : [
+              "lwtv:show:101",
+              "lwtv:show:104",
+              "lwtv:show:102",
+              "lwtv:show:103"
+            ],
+            "spoken" : [
+              "Harbor Lights. Season 3, episode 4, September 23.",
+              "Night Shift Radio. No upcoming episode listed.",
+              "The Cartographers. No upcoming episode listed.",
+              "Salt & Ember. Schedule unknown."
+            ]
+          },
+          "2026-09-21T03:00:00Z" : {
+            "lines" : [
+              "S3E4 · Sep 23",
+              "No upcoming episode listed",
+              "No upcoming episode listed",
+              "Schedule unknown"
+            ],
+            "ordered" : [
+              "lwtv:show:101",
+              "lwtv:show:104",
+              "lwtv:show:102",
+              "lwtv:show:103"
+            ],
+            "spoken" : [
+              "Harbor Lights. Season 3, episode 4, September 23.",
+              "Night Shift Radio. No upcoming episode listed.",
+              "The Cartographers. No upcoming episode listed.",
+              "Salt & Ember. Schedule unknown."
+            ]
+          },
+          "2026-09-25T00:00:00Z" : {
+            "lines" : [
+              "S3E4 · Sep 23, passed",
+              "No upcoming episode listed",
+              "No upcoming episode listed",
+              "Schedule unknown"
+            ],
+            "ordered" : [
+              "lwtv:show:101",
+              "lwtv:show:104",
+              "lwtv:show:102",
+              "lwtv:show:103"
+            ],
+            "spoken" : [
+              "Harbor Lights. Season 3, episode 4 was listed for September 23, which has passed. This data may be out of date.",
+              "Night Shift Radio. No upcoming episode listed.",
+              "The Cartographers. No upcoming episode listed.",
+              "Salt & Ember. Schedule unknown."
+            ]
+          }
+        },
+        "items" : [
+          {
+            "airdate" : "2026-09-23",
+            "number" : 4,
+            "season" : 3,
+            "show_id" : "lwtv:show:101",
+            "status" : "dated",
+            "title" : "Harbor Lights"
+          },
+          {
+            "airdate" : null,
+            "number" : null,
+            "season" : null,
+            "show_id" : "lwtv:show:104",
+            "status" : "noneListed",
+            "title" : "Night Shift Radio"
+          },
+          {
+            "airdate" : null,
+            "number" : null,
+            "season" : null,
+            "show_id" : "lwtv:show:102",
+            "status" : "noneListed",
+            "title" : "The Cartographers"
+          },
+          {
+            "airdate" : null,
+            "number" : null,
+            "season" : null,
+            "show_id" : "lwtv:show:103",
+            "status" : "unknown",
+            "title" : "Salt & Ember"
+          }
+        ],
+        "missing_show_count" : 1
+      }
+    },
+    {
+      "by_zone" : {
+        "America/Los_Angeles" : {
+          "2026-09-14T00:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — Sep 23, 2026 (date as TVmaze lists it, in the network’s time zone)",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "No upcoming episode is known."
+            },
+            "reminders" : [
+              {
+                "body" : "S3E4 is listed for Sep 23, the network's date, with no air time. Schedule from TVmaze, data as of Sep 13; it may have changed.",
+                "fire_at" : "2026-09-23T17:00:00Z",
+                "identifier" : "episode-reminder.lwtv:show:101.900001",
+                "show_id" : "lwtv:show:101",
+                "title" : "Harbor Lights"
+              }
+            ]
+          },
+          "2026-09-21T03:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — Sep 23, 2026 (date as TVmaze lists it, in the network’s time zone)",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "No upcoming episode is known."
+            },
+            "reminders" : [
+              {
+                "body" : "S3E4 is listed for Sep 23, the network's date, with no air time. Schedule from TVmaze, data as of Sep 13; it may have changed.",
+                "fire_at" : "2026-09-23T17:00:00Z",
+                "identifier" : "episode-reminder.lwtv:show:101.900001",
+                "show_id" : "lwtv:show:101",
+                "title" : "Harbor Lights"
+              }
+            ]
+          },
+          "2026-09-25T00:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — listed for Sep 23, 2026, which has passed. This data may be out of date.",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "No upcoming episode is known."
+            },
+            "reminders" : [
+
+            ]
+          }
+        },
+        "America/New_York" : {
+          "2026-09-14T00:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — Sep 23, 2026 (date as TVmaze lists it, in the network’s time zone)",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "No upcoming episode is known."
+            },
+            "reminders" : [
+              {
+                "body" : "S3E4 is listed for Sep 23, the network's date, with no air time. Schedule from TVmaze, data as of Sep 13; it may have changed.",
+                "fire_at" : "2026-09-23T14:00:00Z",
+                "identifier" : "episode-reminder.lwtv:show:101.900001",
+                "show_id" : "lwtv:show:101",
+                "title" : "Harbor Lights"
+              }
+            ]
+          },
+          "2026-09-21T03:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — Sep 23, 2026 (date as TVmaze lists it, in the network’s time zone)",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "No upcoming episode is known."
+            },
+            "reminders" : [
+              {
+                "body" : "S3E4 is listed for Sep 23, the network's date, with no air time. Schedule from TVmaze, data as of Sep 13; it may have changed.",
+                "fire_at" : "2026-09-23T14:00:00Z",
+                "identifier" : "episode-reminder.lwtv:show:101.900001",
+                "show_id" : "lwtv:show:101",
+                "title" : "Harbor Lights"
+              }
+            ]
+          },
+          "2026-09-25T00:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — listed for Sep 23, 2026, which has passed. This data may be out of date.",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "No upcoming episode is known."
+            },
+            "reminders" : [
+
+            ]
+          }
+        },
+        "Asia/Tokyo" : {
+          "2026-09-14T00:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — Sep 23, 2026 (date as TVmaze lists it, in the network’s time zone)",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "No upcoming episode is known."
+            },
+            "reminders" : [
+              {
+                "body" : "S3E4 is listed for Sep 23, the network's date, with no air time. Schedule from TVmaze, data as of Sep 14; it may have changed.",
+                "fire_at" : "2026-09-23T01:00:00Z",
+                "identifier" : "episode-reminder.lwtv:show:101.900001",
+                "show_id" : "lwtv:show:101",
+                "title" : "Harbor Lights"
+              }
+            ]
+          },
+          "2026-09-21T03:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — Sep 23, 2026 (date as TVmaze lists it, in the network’s time zone)",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "No upcoming episode is known."
+            },
+            "reminders" : [
+              {
+                "body" : "S3E4 is listed for Sep 23, the network's date, with no air time. Schedule from TVmaze, data as of Sep 14; it may have changed.",
+                "fire_at" : "2026-09-23T01:00:00Z",
+                "identifier" : "episode-reminder.lwtv:show:101.900001",
+                "show_id" : "lwtv:show:101",
+                "title" : "Harbor Lights"
+              }
+            ]
+          },
+          "2026-09-25T00:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — listed for Sep 23, 2026, which has passed. This data may be out of date.",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "No upcoming episode is known."
+            },
+            "reminders" : [
+
+            ]
+          }
+        },
+        "Pacific/Auckland" : {
+          "2026-09-14T00:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — Sep 23, 2026 (date as TVmaze lists it, in the network’s time zone)",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "No upcoming episode is known."
+            },
+            "reminders" : [
+              {
+                "body" : "S3E4 is listed for Sep 23, the network's date, with no air time. Schedule from TVmaze, data as of Sep 14; it may have changed.",
+                "fire_at" : "2026-09-22T22:00:00Z",
+                "identifier" : "episode-reminder.lwtv:show:101.900001",
+                "show_id" : "lwtv:show:101",
+                "title" : "Harbor Lights"
+              }
+            ]
+          },
+          "2026-09-21T03:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — Sep 23, 2026 (date as TVmaze lists it, in the network’s time zone)",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "No upcoming episode is known."
+            },
+            "reminders" : [
+              {
+                "body" : "S3E4 is listed for Sep 23, the network's date, with no air time. Schedule from TVmaze, data as of Sep 14; it may have changed.",
+                "fire_at" : "2026-09-22T22:00:00Z",
+                "identifier" : "episode-reminder.lwtv:show:101.900001",
+                "show_id" : "lwtv:show:101",
+                "title" : "Harbor Lights"
+              }
+            ]
+          },
+          "2026-09-25T00:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — listed for Sep 23, 2026, which has passed. This data may be out of date.",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "No upcoming episode is known."
+            },
+            "reminders" : [
+
+            ]
+          }
+        },
+        "UTC" : {
+          "2026-09-14T00:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — Sep 23, 2026 (date as TVmaze lists it, in the network’s time zone)",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "No upcoming episode is known."
+            },
+            "reminders" : [
+              {
+                "body" : "S3E4 is listed for Sep 23, the network's date, with no air time. Schedule from TVmaze, data as of Sep 13; it may have changed.",
+                "fire_at" : "2026-09-23T10:00:00Z",
+                "identifier" : "episode-reminder.lwtv:show:101.900001",
+                "show_id" : "lwtv:show:101",
+                "title" : "Harbor Lights"
+              }
+            ]
+          },
+          "2026-09-21T03:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — Sep 23, 2026 (date as TVmaze lists it, in the network’s time zone)",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "No upcoming episode is known."
+            },
+            "reminders" : [
+              {
+                "body" : "S3E4 is listed for Sep 23, the network's date, with no air time. Schedule from TVmaze, data as of Sep 13; it may have changed.",
+                "fire_at" : "2026-09-23T10:00:00Z",
+                "identifier" : "episode-reminder.lwtv:show:101.900001",
+                "show_id" : "lwtv:show:101",
+                "title" : "Harbor Lights"
+              }
+            ]
+          },
+          "2026-09-25T00:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — listed for Sep 23, 2026, which has passed. This data may be out of date.",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "No upcoming episode is known."
+            },
+            "reminders" : [
+
+            ]
+          }
+        }
+      },
+      "edit" : {
+        "airdate" : "2026-09-23",
+        "airstamp" : "2026-09-23T12:00:00+00:00",
+        "airtime" : ""
+      },
+      "name" : "empty-airtime",
+      "widget" : {
+        "by_clock" : {
+          "2026-09-14T00:00:00Z" : {
+            "lines" : [
+              "S3E4 · Sep 23",
+              "No upcoming episode listed",
+              "No upcoming episode listed",
+              "Schedule unknown"
+            ],
+            "ordered" : [
+              "lwtv:show:101",
+              "lwtv:show:104",
+              "lwtv:show:102",
+              "lwtv:show:103"
+            ],
+            "spoken" : [
+              "Harbor Lights. Season 3, episode 4, September 23.",
+              "Night Shift Radio. No upcoming episode listed.",
+              "The Cartographers. No upcoming episode listed.",
+              "Salt & Ember. Schedule unknown."
+            ]
+          },
+          "2026-09-21T03:00:00Z" : {
+            "lines" : [
+              "S3E4 · Sep 23",
+              "No upcoming episode listed",
+              "No upcoming episode listed",
+              "Schedule unknown"
+            ],
+            "ordered" : [
+              "lwtv:show:101",
+              "lwtv:show:104",
+              "lwtv:show:102",
+              "lwtv:show:103"
+            ],
+            "spoken" : [
+              "Harbor Lights. Season 3, episode 4, September 23.",
+              "Night Shift Radio. No upcoming episode listed.",
+              "The Cartographers. No upcoming episode listed.",
+              "Salt & Ember. Schedule unknown."
+            ]
+          },
+          "2026-09-25T00:00:00Z" : {
+            "lines" : [
+              "S3E4 · Sep 23, passed",
+              "No upcoming episode listed",
+              "No upcoming episode listed",
+              "Schedule unknown"
+            ],
+            "ordered" : [
+              "lwtv:show:101",
+              "lwtv:show:104",
+              "lwtv:show:102",
+              "lwtv:show:103"
+            ],
+            "spoken" : [
+              "Harbor Lights. Season 3, episode 4 was listed for September 23, which has passed. This data may be out of date.",
+              "Night Shift Radio. No upcoming episode listed.",
+              "The Cartographers. No upcoming episode listed.",
+              "Salt & Ember. Schedule unknown."
+            ]
+          }
+        },
+        "items" : [
+          {
+            "airdate" : "2026-09-23",
+            "number" : 4,
+            "season" : 3,
+            "show_id" : "lwtv:show:101",
+            "status" : "dated",
+            "title" : "Harbor Lights"
+          },
+          {
+            "airdate" : null,
+            "number" : null,
+            "season" : null,
+            "show_id" : "lwtv:show:104",
+            "status" : "noneListed",
+            "title" : "Night Shift Radio"
+          },
+          {
+            "airdate" : null,
+            "number" : null,
+            "season" : null,
+            "show_id" : "lwtv:show:102",
+            "status" : "noneListed",
+            "title" : "The Cartographers"
+          },
+          {
+            "airdate" : null,
+            "number" : null,
+            "season" : null,
+            "show_id" : "lwtv:show:103",
+            "status" : "unknown",
+            "title" : "Salt & Ember"
+          }
+        ],
+        "missing_show_count" : 1
+      }
+    },
+    {
+      "by_zone" : {
+        "America/Los_Angeles" : {
+          "2026-09-14T00:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — Oct 15, 2026 at 7:00 PM",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "No upcoming episode is known."
+            },
+            "reminders" : [
+              {
+                "body" : "S3E4 is listed to air now. Schedule from TVmaze, data as of Sep 13; it may have changed.",
+                "fire_at" : "2026-10-16T02:00:00Z",
+                "identifier" : "episode-reminder.lwtv:show:101.900001",
+                "show_id" : "lwtv:show:101",
+                "title" : "Harbor Lights"
+              }
+            ]
+          },
+          "2026-09-21T03:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — Oct 15, 2026 at 7:00 PM",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "No upcoming episode is known."
+            },
+            "reminders" : [
+              {
+                "body" : "S3E4 is listed to air now. Schedule from TVmaze, data as of Sep 13; it may have changed.",
+                "fire_at" : "2026-10-16T02:00:00Z",
+                "identifier" : "episode-reminder.lwtv:show:101.900001",
+                "show_id" : "lwtv:show:101",
+                "title" : "Harbor Lights"
+              }
+            ]
+          },
+          "2026-09-25T00:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — Oct 15, 2026 at 7:00 PM",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "No upcoming episode is known."
+            },
+            "reminders" : [
+              {
+                "body" : "S3E4 is listed to air now. Schedule from TVmaze, data as of Sep 13; it may have changed.",
+                "fire_at" : "2026-10-16T02:00:00Z",
+                "identifier" : "episode-reminder.lwtv:show:101.900001",
+                "show_id" : "lwtv:show:101",
+                "title" : "Harbor Lights"
+              }
+            ]
+          }
+        },
+        "America/New_York" : {
+          "2026-09-14T00:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — Oct 15, 2026 at 10:00 PM",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "No upcoming episode is known."
+            },
+            "reminders" : [
+              {
+                "body" : "S3E4 is listed to air now. Schedule from TVmaze, data as of Sep 13; it may have changed.",
+                "fire_at" : "2026-10-16T02:00:00Z",
+                "identifier" : "episode-reminder.lwtv:show:101.900001",
+                "show_id" : "lwtv:show:101",
+                "title" : "Harbor Lights"
+              }
+            ]
+          },
+          "2026-09-21T03:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — Oct 15, 2026 at 10:00 PM",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "No upcoming episode is known."
+            },
+            "reminders" : [
+              {
+                "body" : "S3E4 is listed to air now. Schedule from TVmaze, data as of Sep 13; it may have changed.",
+                "fire_at" : "2026-10-16T02:00:00Z",
+                "identifier" : "episode-reminder.lwtv:show:101.900001",
+                "show_id" : "lwtv:show:101",
+                "title" : "Harbor Lights"
+              }
+            ]
+          },
+          "2026-09-25T00:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — Oct 15, 2026 at 10:00 PM",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "No upcoming episode is known."
+            },
+            "reminders" : [
+              {
+                "body" : "S3E4 is listed to air now. Schedule from TVmaze, data as of Sep 13; it may have changed.",
+                "fire_at" : "2026-10-16T02:00:00Z",
+                "identifier" : "episode-reminder.lwtv:show:101.900001",
+                "show_id" : "lwtv:show:101",
+                "title" : "Harbor Lights"
+              }
+            ]
+          }
+        },
+        "Asia/Tokyo" : {
+          "2026-09-14T00:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — Oct 16, 2026 at 11:00 AM",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "No upcoming episode is known."
+            },
+            "reminders" : [
+              {
+                "body" : "S3E4 is listed to air now. Schedule from TVmaze, data as of Sep 14; it may have changed.",
+                "fire_at" : "2026-10-16T02:00:00Z",
+                "identifier" : "episode-reminder.lwtv:show:101.900001",
+                "show_id" : "lwtv:show:101",
+                "title" : "Harbor Lights"
+              }
+            ]
+          },
+          "2026-09-21T03:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — Oct 16, 2026 at 11:00 AM",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "No upcoming episode is known."
+            },
+            "reminders" : [
+              {
+                "body" : "S3E4 is listed to air now. Schedule from TVmaze, data as of Sep 14; it may have changed.",
+                "fire_at" : "2026-10-16T02:00:00Z",
+                "identifier" : "episode-reminder.lwtv:show:101.900001",
+                "show_id" : "lwtv:show:101",
+                "title" : "Harbor Lights"
+              }
+            ]
+          },
+          "2026-09-25T00:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — Oct 16, 2026 at 11:00 AM",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "No upcoming episode is known."
+            },
+            "reminders" : [
+              {
+                "body" : "S3E4 is listed to air now. Schedule from TVmaze, data as of Sep 14; it may have changed.",
+                "fire_at" : "2026-10-16T02:00:00Z",
+                "identifier" : "episode-reminder.lwtv:show:101.900001",
+                "show_id" : "lwtv:show:101",
+                "title" : "Harbor Lights"
+              }
+            ]
+          }
+        },
+        "Pacific/Auckland" : {
+          "2026-09-14T00:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — Oct 16, 2026 at 3:00 PM",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "No upcoming episode is known."
+            },
+            "reminders" : [
+              {
+                "body" : "S3E4 is listed to air now. Schedule from TVmaze, data as of Sep 14; it may have changed.",
+                "fire_at" : "2026-10-16T02:00:00Z",
+                "identifier" : "episode-reminder.lwtv:show:101.900001",
+                "show_id" : "lwtv:show:101",
+                "title" : "Harbor Lights"
+              }
+            ]
+          },
+          "2026-09-21T03:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — Oct 16, 2026 at 3:00 PM",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "No upcoming episode is known."
+            },
+            "reminders" : [
+              {
+                "body" : "S3E4 is listed to air now. Schedule from TVmaze, data as of Sep 14; it may have changed.",
+                "fire_at" : "2026-10-16T02:00:00Z",
+                "identifier" : "episode-reminder.lwtv:show:101.900001",
+                "show_id" : "lwtv:show:101",
+                "title" : "Harbor Lights"
+              }
+            ]
+          },
+          "2026-09-25T00:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — Oct 16, 2026 at 3:00 PM",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "No upcoming episode is known."
+            },
+            "reminders" : [
+              {
+                "body" : "S3E4 is listed to air now. Schedule from TVmaze, data as of Sep 14; it may have changed.",
+                "fire_at" : "2026-10-16T02:00:00Z",
+                "identifier" : "episode-reminder.lwtv:show:101.900001",
+                "show_id" : "lwtv:show:101",
+                "title" : "Harbor Lights"
+              }
+            ]
+          }
+        },
+        "UTC" : {
+          "2026-09-14T00:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — Oct 16, 2026 at 2:00 AM",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "No upcoming episode is known."
+            },
+            "reminders" : [
+              {
+                "body" : "S3E4 is listed to air now. Schedule from TVmaze, data as of Sep 13; it may have changed.",
+                "fire_at" : "2026-10-16T02:00:00Z",
+                "identifier" : "episode-reminder.lwtv:show:101.900001",
+                "show_id" : "lwtv:show:101",
+                "title" : "Harbor Lights"
+              }
+            ]
+          },
+          "2026-09-21T03:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — Oct 16, 2026 at 2:00 AM",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "No upcoming episode is known."
+            },
+            "reminders" : [
+              {
+                "body" : "S3E4 is listed to air now. Schedule from TVmaze, data as of Sep 13; it may have changed.",
+                "fire_at" : "2026-10-16T02:00:00Z",
+                "identifier" : "episode-reminder.lwtv:show:101.900001",
+                "show_id" : "lwtv:show:101",
+                "title" : "Harbor Lights"
+              }
+            ]
+          },
+          "2026-09-25T00:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — Oct 16, 2026 at 2:00 AM",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "No upcoming episode is known."
+            },
+            "reminders" : [
+              {
+                "body" : "S3E4 is listed to air now. Schedule from TVmaze, data as of Sep 13; it may have changed.",
+                "fire_at" : "2026-10-16T02:00:00Z",
+                "identifier" : "episode-reminder.lwtv:show:101.900001",
+                "show_id" : "lwtv:show:101",
+                "title" : "Harbor Lights"
+              }
+            ]
+          }
+        }
+      },
+      "edit" : {
+        "airdate" : "2026-10-15",
+        "airstamp" : "2026-10-16T02:00:00+00:00",
+        "airtime" : "22:00"
+      },
+      "name" : "late-utc-broadcast",
+      "widget" : {
+        "by_clock" : {
+          "2026-09-14T00:00:00Z" : {
+            "lines" : [
+              "S3E4 · Oct 15",
+              "No upcoming episode listed",
+              "No upcoming episode listed",
+              "Schedule unknown"
+            ],
+            "ordered" : [
+              "lwtv:show:101",
+              "lwtv:show:104",
+              "lwtv:show:102",
+              "lwtv:show:103"
+            ],
+            "spoken" : [
+              "Harbor Lights. Season 3, episode 4, October 15.",
+              "Night Shift Radio. No upcoming episode listed.",
+              "The Cartographers. No upcoming episode listed.",
+              "Salt & Ember. Schedule unknown."
+            ]
+          },
+          "2026-09-21T03:00:00Z" : {
+            "lines" : [
+              "S3E4 · Oct 15",
+              "No upcoming episode listed",
+              "No upcoming episode listed",
+              "Schedule unknown"
+            ],
+            "ordered" : [
+              "lwtv:show:101",
+              "lwtv:show:104",
+              "lwtv:show:102",
+              "lwtv:show:103"
+            ],
+            "spoken" : [
+              "Harbor Lights. Season 3, episode 4, October 15.",
+              "Night Shift Radio. No upcoming episode listed.",
+              "The Cartographers. No upcoming episode listed.",
+              "Salt & Ember. Schedule unknown."
+            ]
+          },
+          "2026-09-25T00:00:00Z" : {
+            "lines" : [
+              "S3E4 · Oct 15",
+              "No upcoming episode listed",
+              "No upcoming episode listed",
+              "Schedule unknown"
+            ],
+            "ordered" : [
+              "lwtv:show:101",
+              "lwtv:show:104",
+              "lwtv:show:102",
+              "lwtv:show:103"
+            ],
+            "spoken" : [
+              "Harbor Lights. Season 3, episode 4, October 15.",
+              "Night Shift Radio. No upcoming episode listed.",
+              "The Cartographers. No upcoming episode listed.",
+              "Salt & Ember. Schedule unknown."
+            ]
+          }
+        },
+        "items" : [
+          {
+            "airdate" : "2026-10-15",
+            "number" : 4,
+            "season" : 3,
+            "show_id" : "lwtv:show:101",
+            "status" : "dated",
+            "title" : "Harbor Lights"
+          },
+          {
+            "airdate" : null,
+            "number" : null,
+            "season" : null,
+            "show_id" : "lwtv:show:104",
+            "status" : "noneListed",
+            "title" : "Night Shift Radio"
+          },
+          {
+            "airdate" : null,
+            "number" : null,
+            "season" : null,
+            "show_id" : "lwtv:show:102",
+            "status" : "noneListed",
+            "title" : "The Cartographers"
+          },
+          {
+            "airdate" : null,
+            "number" : null,
+            "season" : null,
+            "show_id" : "lwtv:show:103",
+            "status" : "unknown",
+            "title" : "Salt & Ember"
+          }
+        ],
+        "missing_show_count" : 1
+      }
+    },
+    {
+      "by_zone" : {
+        "America/Los_Angeles" : {
+          "2026-09-14T00:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — Sep 20, 2026 (date as TVmaze lists it, in the network’s time zone)",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "No upcoming episode is known."
+            },
+            "reminders" : [
+              {
+                "body" : "S3E4 is listed for Sep 20, the network's date, with no air time. Schedule from TVmaze, data as of Sep 13; it may have changed.",
+                "fire_at" : "2026-09-20T17:00:00Z",
+                "identifier" : "episode-reminder.lwtv:show:101.900001",
+                "show_id" : "lwtv:show:101",
+                "title" : "Harbor Lights"
+              }
+            ]
+          },
+          "2026-09-21T03:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — Sep 20, 2026 (date as TVmaze lists it, in the network’s time zone)",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "No upcoming episode is known."
+            },
+            "reminders" : [
+
+            ]
+          },
+          "2026-09-25T00:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — listed for Sep 20, 2026, which has passed. This data may be out of date.",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "No upcoming episode is known."
+            },
+            "reminders" : [
+
+            ]
+          }
+        },
+        "America/New_York" : {
+          "2026-09-14T00:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — Sep 20, 2026 (date as TVmaze lists it, in the network’s time zone)",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "No upcoming episode is known."
+            },
+            "reminders" : [
+              {
+                "body" : "S3E4 is listed for Sep 20, the network's date, with no air time. Schedule from TVmaze, data as of Sep 13; it may have changed.",
+                "fire_at" : "2026-09-20T14:00:00Z",
+                "identifier" : "episode-reminder.lwtv:show:101.900001",
+                "show_id" : "lwtv:show:101",
+                "title" : "Harbor Lights"
+              }
+            ]
+          },
+          "2026-09-21T03:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — Sep 20, 2026 (date as TVmaze lists it, in the network’s time zone)",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "No upcoming episode is known."
+            },
+            "reminders" : [
+
+            ]
+          },
+          "2026-09-25T00:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — listed for Sep 20, 2026, which has passed. This data may be out of date.",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "No upcoming episode is known."
+            },
+            "reminders" : [
+
+            ]
+          }
+        },
+        "Asia/Tokyo" : {
+          "2026-09-14T00:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — Sep 20, 2026 (date as TVmaze lists it, in the network’s time zone)",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "No upcoming episode is known."
+            },
+            "reminders" : [
+              {
+                "body" : "S3E4 is listed for Sep 20, the network's date, with no air time. Schedule from TVmaze, data as of Sep 14; it may have changed.",
+                "fire_at" : "2026-09-20T01:00:00Z",
+                "identifier" : "episode-reminder.lwtv:show:101.900001",
+                "show_id" : "lwtv:show:101",
+                "title" : "Harbor Lights"
+              }
+            ]
+          },
+          "2026-09-21T03:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — Sep 20, 2026 (date as TVmaze lists it, in the network’s time zone)",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "No upcoming episode is known."
+            },
+            "reminders" : [
+
+            ]
+          },
+          "2026-09-25T00:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — listed for Sep 20, 2026, which has passed. This data may be out of date.",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "No upcoming episode is known."
+            },
+            "reminders" : [
+
+            ]
+          }
+        },
+        "Pacific/Auckland" : {
+          "2026-09-14T00:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — Sep 20, 2026 (date as TVmaze lists it, in the network’s time zone)",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "No upcoming episode is known."
+            },
+            "reminders" : [
+              {
+                "body" : "S3E4 is listed for Sep 20, the network's date, with no air time. Schedule from TVmaze, data as of Sep 14; it may have changed.",
+                "fire_at" : "2026-09-19T22:00:00Z",
+                "identifier" : "episode-reminder.lwtv:show:101.900001",
+                "show_id" : "lwtv:show:101",
+                "title" : "Harbor Lights"
+              }
+            ]
+          },
+          "2026-09-21T03:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — Sep 20, 2026 (date as TVmaze lists it, in the network’s time zone)",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "No upcoming episode is known."
+            },
+            "reminders" : [
+
+            ]
+          },
+          "2026-09-25T00:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — listed for Sep 20, 2026, which has passed. This data may be out of date.",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "No upcoming episode is known."
+            },
+            "reminders" : [
+
+            ]
+          }
+        },
+        "UTC" : {
+          "2026-09-14T00:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — Sep 20, 2026 (date as TVmaze lists it, in the network’s time zone)",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "No upcoming episode is known."
+            },
+            "reminders" : [
+              {
+                "body" : "S3E4 is listed for Sep 20, the network's date, with no air time. Schedule from TVmaze, data as of Sep 13; it may have changed.",
+                "fire_at" : "2026-09-20T10:00:00Z",
+                "identifier" : "episode-reminder.lwtv:show:101.900001",
+                "show_id" : "lwtv:show:101",
+                "title" : "Harbor Lights"
+              }
+            ]
+          },
+          "2026-09-21T03:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — Sep 20, 2026 (date as TVmaze lists it, in the network’s time zone)",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "No upcoming episode is known."
+            },
+            "reminders" : [
+
+            ]
+          },
+          "2026-09-25T00:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — listed for Sep 20, 2026, which has passed. This data may be out of date.",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "No upcoming episode is known."
+            },
+            "reminders" : [
+
+            ]
+          }
+        }
+      },
+      "edit" : {
+        "airdate" : "2026-09-20",
+        "airstamp" : null,
+        "airtime" : "21:00"
+      },
+      "name" : "date-only-no-stamp",
+      "widget" : {
+        "by_clock" : {
+          "2026-09-14T00:00:00Z" : {
+            "lines" : [
+              "S3E4 · Sep 20",
+              "No upcoming episode listed",
+              "No upcoming episode listed",
+              "Schedule unknown"
+            ],
+            "ordered" : [
+              "lwtv:show:101",
+              "lwtv:show:104",
+              "lwtv:show:102",
+              "lwtv:show:103"
+            ],
+            "spoken" : [
+              "Harbor Lights. Season 3, episode 4, September 20.",
+              "Night Shift Radio. No upcoming episode listed.",
+              "The Cartographers. No upcoming episode listed.",
+              "Salt & Ember. Schedule unknown."
+            ]
+          },
+          "2026-09-21T03:00:00Z" : {
+            "lines" : [
+              "S3E4 · Sep 20",
+              "No upcoming episode listed",
+              "No upcoming episode listed",
+              "Schedule unknown"
+            ],
+            "ordered" : [
+              "lwtv:show:101",
+              "lwtv:show:104",
+              "lwtv:show:102",
+              "lwtv:show:103"
+            ],
+            "spoken" : [
+              "Harbor Lights. Season 3, episode 4, September 20.",
+              "Night Shift Radio. No upcoming episode listed.",
+              "The Cartographers. No upcoming episode listed.",
+              "Salt & Ember. Schedule unknown."
+            ]
+          },
+          "2026-09-25T00:00:00Z" : {
+            "lines" : [
+              "S3E4 · Sep 20, passed",
+              "No upcoming episode listed",
+              "No upcoming episode listed",
+              "Schedule unknown"
+            ],
+            "ordered" : [
+              "lwtv:show:101",
+              "lwtv:show:104",
+              "lwtv:show:102",
+              "lwtv:show:103"
+            ],
+            "spoken" : [
+              "Harbor Lights. Season 3, episode 4 was listed for September 20, which has passed. This data may be out of date.",
+              "Night Shift Radio. No upcoming episode listed.",
+              "The Cartographers. No upcoming episode listed.",
+              "Salt & Ember. Schedule unknown."
+            ]
+          }
+        },
+        "items" : [
+          {
+            "airdate" : "2026-09-20",
+            "number" : 4,
+            "season" : 3,
+            "show_id" : "lwtv:show:101",
+            "status" : "dated",
+            "title" : "Harbor Lights"
+          },
+          {
+            "airdate" : null,
+            "number" : null,
+            "season" : null,
+            "show_id" : "lwtv:show:104",
+            "status" : "noneListed",
+            "title" : "Night Shift Radio"
+          },
+          {
+            "airdate" : null,
+            "number" : null,
+            "season" : null,
+            "show_id" : "lwtv:show:102",
+            "status" : "noneListed",
+            "title" : "The Cartographers"
+          },
+          {
+            "airdate" : null,
+            "number" : null,
+            "season" : null,
+            "show_id" : "lwtv:show:103",
+            "status" : "unknown",
+            "title" : "Salt & Ember"
+          }
+        ],
+        "missing_show_count" : 1
+      }
+    },
+    {
+      "by_zone" : {
+        "America/Los_Angeles" : {
+          "2026-09-14T00:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — air date not recorded",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "No upcoming episode is known."
+            },
+            "reminders" : [
+
+            ]
+          },
+          "2026-09-21T03:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — air date not recorded",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "No upcoming episode is known."
+            },
+            "reminders" : [
+
+            ]
+          },
+          "2026-09-25T00:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — air date not recorded",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "No upcoming episode is known."
+            },
+            "reminders" : [
+
+            ]
+          }
+        },
+        "America/New_York" : {
+          "2026-09-14T00:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — air date not recorded",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "No upcoming episode is known."
+            },
+            "reminders" : [
+
+            ]
+          },
+          "2026-09-21T03:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — air date not recorded",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "No upcoming episode is known."
+            },
+            "reminders" : [
+
+            ]
+          },
+          "2026-09-25T00:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — air date not recorded",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "No upcoming episode is known."
+            },
+            "reminders" : [
+
+            ]
+          }
+        },
+        "Asia/Tokyo" : {
+          "2026-09-14T00:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — air date not recorded",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "No upcoming episode is known."
+            },
+            "reminders" : [
+
+            ]
+          },
+          "2026-09-21T03:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — air date not recorded",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "No upcoming episode is known."
+            },
+            "reminders" : [
+
+            ]
+          },
+          "2026-09-25T00:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — air date not recorded",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "No upcoming episode is known."
+            },
+            "reminders" : [
+
+            ]
+          }
+        },
+        "Pacific/Auckland" : {
+          "2026-09-14T00:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — air date not recorded",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "No upcoming episode is known."
+            },
+            "reminders" : [
+
+            ]
+          },
+          "2026-09-21T03:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — air date not recorded",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "No upcoming episode is known."
+            },
+            "reminders" : [
+
+            ]
+          },
+          "2026-09-25T00:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — air date not recorded",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "No upcoming episode is known."
+            },
+            "reminders" : [
+
+            ]
+          }
+        },
+        "UTC" : {
+          "2026-09-14T00:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — air date not recorded",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "No upcoming episode is known."
+            },
+            "reminders" : [
+
+            ]
+          },
+          "2026-09-21T03:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — air date not recorded",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "No upcoming episode is known."
+            },
+            "reminders" : [
+
+            ]
+          },
+          "2026-09-25T00:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — air date not recorded",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "No upcoming episode is known."
+            },
+            "reminders" : [
+
+            ]
+          }
+        }
+      },
+      "edit" : {
+        "airdate" : null,
+        "airstamp" : null,
+        "airtime" : null
+      },
+      "name" : "no-air-date",
+      "widget" : {
+        "by_clock" : {
+          "2026-09-14T00:00:00Z" : {
+            "lines" : [
+              "S3E4 · air date not recorded",
+              "No upcoming episode listed",
+              "No upcoming episode listed",
+              "Schedule unknown"
+            ],
+            "ordered" : [
+              "lwtv:show:101",
+              "lwtv:show:104",
+              "lwtv:show:102",
+              "lwtv:show:103"
+            ],
+            "spoken" : [
+              "Harbor Lights. Season 3, episode 4, air date not recorded.",
+              "Night Shift Radio. No upcoming episode listed.",
+              "The Cartographers. No upcoming episode listed.",
+              "Salt & Ember. Schedule unknown."
+            ]
+          },
+          "2026-09-21T03:00:00Z" : {
+            "lines" : [
+              "S3E4 · air date not recorded",
+              "No upcoming episode listed",
+              "No upcoming episode listed",
+              "Schedule unknown"
+            ],
+            "ordered" : [
+              "lwtv:show:101",
+              "lwtv:show:104",
+              "lwtv:show:102",
+              "lwtv:show:103"
+            ],
+            "spoken" : [
+              "Harbor Lights. Season 3, episode 4, air date not recorded.",
+              "Night Shift Radio. No upcoming episode listed.",
+              "The Cartographers. No upcoming episode listed.",
+              "Salt & Ember. Schedule unknown."
+            ]
+          },
+          "2026-09-25T00:00:00Z" : {
+            "lines" : [
+              "S3E4 · air date not recorded",
+              "No upcoming episode listed",
+              "No upcoming episode listed",
+              "Schedule unknown"
+            ],
+            "ordered" : [
+              "lwtv:show:101",
+              "lwtv:show:104",
+              "lwtv:show:102",
+              "lwtv:show:103"
+            ],
+            "spoken" : [
+              "Harbor Lights. Season 3, episode 4, air date not recorded.",
+              "Night Shift Radio. No upcoming episode listed.",
+              "The Cartographers. No upcoming episode listed.",
+              "Salt & Ember. Schedule unknown."
+            ]
+          }
+        },
+        "items" : [
+          {
+            "airdate" : null,
+            "number" : 4,
+            "season" : 3,
+            "show_id" : "lwtv:show:101",
+            "status" : "undated",
+            "title" : "Harbor Lights"
+          },
+          {
+            "airdate" : null,
+            "number" : null,
+            "season" : null,
+            "show_id" : "lwtv:show:104",
+            "status" : "noneListed",
+            "title" : "Night Shift Radio"
+          },
+          {
+            "airdate" : null,
+            "number" : null,
+            "season" : null,
+            "show_id" : "lwtv:show:102",
+            "status" : "noneListed",
+            "title" : "The Cartographers"
+          },
+          {
+            "airdate" : null,
+            "number" : null,
+            "season" : null,
+            "show_id" : "lwtv:show:103",
+            "status" : "unknown",
+            "title" : "Salt & Ember"
+          }
+        ],
+        "missing_show_count" : 1
+      }
+    },
+    {
+      "by_zone" : {
+        "America/Los_Angeles" : {
+          "2026-09-14T00:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — Sep 20, 2026 at 6:00 PM",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "S2E1 “Static” — Sep 18, 2026 (date as TVmaze lists it, in the network’s time zone)"
+            },
+            "reminders" : [
+              {
+                "body" : "S2E1 is listed for Sep 18, the network's date, with no air time. Schedule from TVmaze, data as of Sep 13; it may have changed.",
+                "fire_at" : "2026-09-18T17:00:00Z",
+                "identifier" : "episode-reminder.lwtv:show:104.900104",
+                "show_id" : "lwtv:show:104",
+                "title" : "Night Shift Radio"
+              },
+              {
+                "body" : "S3E4 is listed to air now. Schedule from TVmaze, data as of Sep 13; it may have changed.",
+                "fire_at" : "2026-09-21T01:00:00Z",
+                "identifier" : "episode-reminder.lwtv:show:101.900001",
+                "show_id" : "lwtv:show:101",
+                "title" : "Harbor Lights"
+              }
+            ]
+          },
+          "2026-09-21T03:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — Sep 20, 2026 at 6:00 PM",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "S2E1 “Static” — listed for Sep 18, 2026, which has passed. This data may be out of date."
+            },
+            "reminders" : [
+
+            ]
+          },
+          "2026-09-25T00:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — Sep 20, 2026 at 6:00 PM, which has passed. This data may be out of date.",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "S2E1 “Static” — listed for Sep 18, 2026, which has passed. This data may be out of date."
+            },
+            "reminders" : [
+
+            ]
+          }
+        },
+        "America/New_York" : {
+          "2026-09-14T00:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — Sep 20, 2026 at 9:00 PM",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "S2E1 “Static” — Sep 18, 2026 (date as TVmaze lists it, in the network’s time zone)"
+            },
+            "reminders" : [
+              {
+                "body" : "S2E1 is listed for Sep 18, the network's date, with no air time. Schedule from TVmaze, data as of Sep 13; it may have changed.",
+                "fire_at" : "2026-09-18T14:00:00Z",
+                "identifier" : "episode-reminder.lwtv:show:104.900104",
+                "show_id" : "lwtv:show:104",
+                "title" : "Night Shift Radio"
+              },
+              {
+                "body" : "S3E4 is listed to air now. Schedule from TVmaze, data as of Sep 13; it may have changed.",
+                "fire_at" : "2026-09-21T01:00:00Z",
+                "identifier" : "episode-reminder.lwtv:show:101.900001",
+                "show_id" : "lwtv:show:101",
+                "title" : "Harbor Lights"
+              }
+            ]
+          },
+          "2026-09-21T03:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — Sep 20, 2026 at 9:00 PM",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "S2E1 “Static” — listed for Sep 18, 2026, which has passed. This data may be out of date."
+            },
+            "reminders" : [
+
+            ]
+          },
+          "2026-09-25T00:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — Sep 20, 2026 at 9:00 PM, which has passed. This data may be out of date.",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "S2E1 “Static” — listed for Sep 18, 2026, which has passed. This data may be out of date."
+            },
+            "reminders" : [
+
+            ]
+          }
+        },
+        "Asia/Tokyo" : {
+          "2026-09-14T00:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — Sep 21, 2026 at 10:00 AM",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "S2E1 “Static” — Sep 18, 2026 (date as TVmaze lists it, in the network’s time zone)"
+            },
+            "reminders" : [
+              {
+                "body" : "S2E1 is listed for Sep 18, the network's date, with no air time. Schedule from TVmaze, data as of Sep 14; it may have changed.",
+                "fire_at" : "2026-09-18T01:00:00Z",
+                "identifier" : "episode-reminder.lwtv:show:104.900104",
+                "show_id" : "lwtv:show:104",
+                "title" : "Night Shift Radio"
+              },
+              {
+                "body" : "S3E4 is listed to air now. Schedule from TVmaze, data as of Sep 14; it may have changed.",
+                "fire_at" : "2026-09-21T01:00:00Z",
+                "identifier" : "episode-reminder.lwtv:show:101.900001",
+                "show_id" : "lwtv:show:101",
+                "title" : "Harbor Lights"
+              }
+            ]
+          },
+          "2026-09-21T03:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — Sep 21, 2026 at 10:00 AM",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "S2E1 “Static” — listed for Sep 18, 2026, which has passed. This data may be out of date."
+            },
+            "reminders" : [
+
+            ]
+          },
+          "2026-09-25T00:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — Sep 21, 2026 at 10:00 AM, which has passed. This data may be out of date.",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "S2E1 “Static” — listed for Sep 18, 2026, which has passed. This data may be out of date."
+            },
+            "reminders" : [
+
+            ]
+          }
+        },
+        "Pacific/Auckland" : {
+          "2026-09-14T00:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — Sep 21, 2026 at 1:00 PM",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "S2E1 “Static” — Sep 18, 2026 (date as TVmaze lists it, in the network’s time zone)"
+            },
+            "reminders" : [
+              {
+                "body" : "S2E1 is listed for Sep 18, the network's date, with no air time. Schedule from TVmaze, data as of Sep 14; it may have changed.",
+                "fire_at" : "2026-09-17T22:00:00Z",
+                "identifier" : "episode-reminder.lwtv:show:104.900104",
+                "show_id" : "lwtv:show:104",
+                "title" : "Night Shift Radio"
+              },
+              {
+                "body" : "S3E4 is listed to air now. Schedule from TVmaze, data as of Sep 14; it may have changed.",
+                "fire_at" : "2026-09-21T01:00:00Z",
+                "identifier" : "episode-reminder.lwtv:show:101.900001",
+                "show_id" : "lwtv:show:101",
+                "title" : "Harbor Lights"
+              }
+            ]
+          },
+          "2026-09-21T03:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — Sep 21, 2026 at 1:00 PM",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "S2E1 “Static” — listed for Sep 18, 2026, which has passed. This data may be out of date."
+            },
+            "reminders" : [
+
+            ]
+          },
+          "2026-09-25T00:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — Sep 21, 2026 at 1:00 PM, which has passed. This data may be out of date.",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "S2E1 “Static” — listed for Sep 18, 2026, which has passed. This data may be out of date."
+            },
+            "reminders" : [
+
+            ]
+          }
+        },
+        "UTC" : {
+          "2026-09-14T00:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — Sep 21, 2026 at 1:00 AM",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "S2E1 “Static” — Sep 18, 2026 (date as TVmaze lists it, in the network’s time zone)"
+            },
+            "reminders" : [
+              {
+                "body" : "S2E1 is listed for Sep 18, the network's date, with no air time. Schedule from TVmaze, data as of Sep 13; it may have changed.",
+                "fire_at" : "2026-09-18T10:00:00Z",
+                "identifier" : "episode-reminder.lwtv:show:104.900104",
+                "show_id" : "lwtv:show:104",
+                "title" : "Night Shift Radio"
+              },
+              {
+                "body" : "S3E4 is listed to air now. Schedule from TVmaze, data as of Sep 13; it may have changed.",
+                "fire_at" : "2026-09-21T01:00:00Z",
+                "identifier" : "episode-reminder.lwtv:show:101.900001",
+                "show_id" : "lwtv:show:101",
+                "title" : "Harbor Lights"
+              }
+            ]
+          },
+          "2026-09-21T03:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — Sep 21, 2026 at 1:00 AM",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "S2E1 “Static” — listed for Sep 18, 2026, which has passed. This data may be out of date."
+            },
+            "reminders" : [
+
+            ]
+          },
+          "2026-09-25T00:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — Sep 21, 2026 at 1:00 AM, which has passed. This data may be out of date.",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "S2E1 “Static” — listed for Sep 18, 2026, which has passed. This data may be out of date."
+            },
+            "reminders" : [
+
+            ]
+          }
+        }
+      },
+      "edit" : {
+        "airdate" : "2026-09-20",
+        "airstamp" : "2026-09-20T21:00:00-04:00",
+        "airtime" : "21:00"
+      },
+      "name" : "two-shows",
+      "night_shift_edit" : {
+        "airdate" : "2026-09-18",
+        "airstamp" : "2026-09-18T12:00:00+00:00",
+        "airtime" : null
+      },
+      "widget" : {
+        "by_clock" : {
+          "2026-09-14T00:00:00Z" : {
+            "lines" : [
+              "S2E1 · Sep 18",
+              "S3E4 · Sep 20",
+              "No upcoming episode listed",
+              "Schedule unknown"
+            ],
+            "ordered" : [
+              "lwtv:show:104",
+              "lwtv:show:101",
+              "lwtv:show:102",
+              "lwtv:show:103"
+            ],
+            "spoken" : [
+              "Night Shift Radio. Season 2, episode 1, September 18.",
+              "Harbor Lights. Season 3, episode 4, September 20.",
+              "The Cartographers. No upcoming episode listed.",
+              "Salt & Ember. Schedule unknown."
+            ]
+          },
+          "2026-09-21T03:00:00Z" : {
+            "lines" : [
+              "S3E4 · Sep 20",
+              "S2E1 · Sep 18, passed",
+              "No upcoming episode listed",
+              "Schedule unknown"
+            ],
+            "ordered" : [
+              "lwtv:show:101",
+              "lwtv:show:104",
+              "lwtv:show:102",
+              "lwtv:show:103"
+            ],
+            "spoken" : [
+              "Harbor Lights. Season 3, episode 4, September 20.",
+              "Night Shift Radio. Season 2, episode 1 was listed for September 18, which has passed. This data may be out of date.",
+              "The Cartographers. No upcoming episode listed.",
+              "Salt & Ember. Schedule unknown."
+            ]
+          },
+          "2026-09-25T00:00:00Z" : {
+            "lines" : [
+              "S2E1 · Sep 18, passed",
+              "S3E4 · Sep 20, passed",
+              "No upcoming episode listed",
+              "Schedule unknown"
+            ],
+            "ordered" : [
+              "lwtv:show:104",
+              "lwtv:show:101",
+              "lwtv:show:102",
+              "lwtv:show:103"
+            ],
+            "spoken" : [
+              "Night Shift Radio. Season 2, episode 1 was listed for September 18, which has passed. This data may be out of date.",
+              "Harbor Lights. Season 3, episode 4 was listed for September 20, which has passed. This data may be out of date.",
+              "The Cartographers. No upcoming episode listed.",
+              "Salt & Ember. Schedule unknown."
+            ]
+          }
+        },
+        "items" : [
+          {
+            "airdate" : "2026-09-20",
+            "number" : 4,
+            "season" : 3,
+            "show_id" : "lwtv:show:101",
+            "status" : "dated",
+            "title" : "Harbor Lights"
+          },
+          {
+            "airdate" : "2026-09-18",
+            "number" : 1,
+            "season" : 2,
+            "show_id" : "lwtv:show:104",
+            "status" : "dated",
+            "title" : "Night Shift Radio"
+          },
+          {
+            "airdate" : null,
+            "number" : null,
+            "season" : null,
+            "show_id" : "lwtv:show:102",
+            "status" : "noneListed",
+            "title" : "The Cartographers"
+          },
+          {
+            "airdate" : null,
+            "number" : null,
+            "season" : null,
+            "show_id" : "lwtv:show:103",
+            "status" : "unknown",
+            "title" : "Salt & Ember"
+          }
+        ],
+        "missing_show_count" : 1
+      }
+    },
+    {
+      "by_zone" : {
+        "America/Los_Angeles" : {
+          "2026-09-14T00:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — Sep 20, 2026 at 6:00 PM",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "S2E1 “Static” — air date not recorded"
+            },
+            "reminders" : [
+              {
+                "body" : "S3E4 is listed to air now. Schedule from TVmaze, data as of Sep 13; it may have changed.",
+                "fire_at" : "2026-09-21T01:00:00Z",
+                "identifier" : "episode-reminder.lwtv:show:101.900001",
+                "show_id" : "lwtv:show:101",
+                "title" : "Harbor Lights"
+              }
+            ]
+          },
+          "2026-09-21T03:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — Sep 20, 2026 at 6:00 PM",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "S2E1 “Static” — air date not recorded"
+            },
+            "reminders" : [
+
+            ]
+          },
+          "2026-09-25T00:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — Sep 20, 2026 at 6:00 PM, which has passed. This data may be out of date.",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "S2E1 “Static” — air date not recorded"
+            },
+            "reminders" : [
+
+            ]
+          }
+        },
+        "America/New_York" : {
+          "2026-09-14T00:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — Sep 20, 2026 at 9:00 PM",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "S2E1 “Static” — air date not recorded"
+            },
+            "reminders" : [
+              {
+                "body" : "S3E4 is listed to air now. Schedule from TVmaze, data as of Sep 13; it may have changed.",
+                "fire_at" : "2026-09-21T01:00:00Z",
+                "identifier" : "episode-reminder.lwtv:show:101.900001",
+                "show_id" : "lwtv:show:101",
+                "title" : "Harbor Lights"
+              }
+            ]
+          },
+          "2026-09-21T03:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — Sep 20, 2026 at 9:00 PM",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "S2E1 “Static” — air date not recorded"
+            },
+            "reminders" : [
+
+            ]
+          },
+          "2026-09-25T00:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — Sep 20, 2026 at 9:00 PM, which has passed. This data may be out of date.",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "S2E1 “Static” — air date not recorded"
+            },
+            "reminders" : [
+
+            ]
+          }
+        },
+        "Asia/Tokyo" : {
+          "2026-09-14T00:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — Sep 21, 2026 at 10:00 AM",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "S2E1 “Static” — air date not recorded"
+            },
+            "reminders" : [
+              {
+                "body" : "S3E4 is listed to air now. Schedule from TVmaze, data as of Sep 14; it may have changed.",
+                "fire_at" : "2026-09-21T01:00:00Z",
+                "identifier" : "episode-reminder.lwtv:show:101.900001",
+                "show_id" : "lwtv:show:101",
+                "title" : "Harbor Lights"
+              }
+            ]
+          },
+          "2026-09-21T03:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — Sep 21, 2026 at 10:00 AM",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "S2E1 “Static” — air date not recorded"
+            },
+            "reminders" : [
+
+            ]
+          },
+          "2026-09-25T00:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — Sep 21, 2026 at 10:00 AM, which has passed. This data may be out of date.",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "S2E1 “Static” — air date not recorded"
+            },
+            "reminders" : [
+
+            ]
+          }
+        },
+        "Pacific/Auckland" : {
+          "2026-09-14T00:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — Sep 21, 2026 at 1:00 PM",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "S2E1 “Static” — air date not recorded"
+            },
+            "reminders" : [
+              {
+                "body" : "S3E4 is listed to air now. Schedule from TVmaze, data as of Sep 14; it may have changed.",
+                "fire_at" : "2026-09-21T01:00:00Z",
+                "identifier" : "episode-reminder.lwtv:show:101.900001",
+                "show_id" : "lwtv:show:101",
+                "title" : "Harbor Lights"
+              }
+            ]
+          },
+          "2026-09-21T03:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — Sep 21, 2026 at 1:00 PM",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "S2E1 “Static” — air date not recorded"
+            },
+            "reminders" : [
+
+            ]
+          },
+          "2026-09-25T00:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — Sep 21, 2026 at 1:00 PM, which has passed. This data may be out of date.",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "S2E1 “Static” — air date not recorded"
+            },
+            "reminders" : [
+
+            ]
+          }
+        },
+        "UTC" : {
+          "2026-09-14T00:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — Sep 21, 2026 at 1:00 AM",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "S2E1 “Static” — air date not recorded"
+            },
+            "reminders" : [
+              {
+                "body" : "S3E4 is listed to air now. Schedule from TVmaze, data as of Sep 13; it may have changed.",
+                "fire_at" : "2026-09-21T01:00:00Z",
+                "identifier" : "episode-reminder.lwtv:show:101.900001",
+                "show_id" : "lwtv:show:101",
+                "title" : "Harbor Lights"
+              }
+            ]
+          },
+          "2026-09-21T03:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — Sep 21, 2026 at 1:00 AM",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "S2E1 “Static” — air date not recorded"
+            },
+            "reminders" : [
+
+            ]
+          },
+          "2026-09-25T00:00:00Z" : {
+            "next_episode" : {
+              "lwtv:show:101" : "S3E4 “Fog Signal” — Sep 21, 2026 at 1:00 AM, which has passed. This data may be out of date.",
+              "lwtv:show:102" : "No upcoming episode is known.",
+              "lwtv:show:103" : "Schedule unknown for this show.",
+              "lwtv:show:104" : "S2E1 “Static” — air date not recorded"
+            },
+            "reminders" : [
+
+            ]
+          }
+        }
+      },
+      "edit" : {
+        "airdate" : "2026-09-20",
+        "airstamp" : "2026-09-20T21:00:00-04:00",
+        "airtime" : "21:00"
+      },
+      "name" : "two-shows-undated",
+      "night_shift_edit" : {
+        "airdate" : null,
+        "airstamp" : null,
+        "airtime" : null
+      },
+      "widget" : {
+        "by_clock" : {
+          "2026-09-14T00:00:00Z" : {
+            "lines" : [
+              "S3E4 · Sep 20",
+              "S2E1 · air date not recorded",
+              "No upcoming episode listed",
+              "Schedule unknown"
+            ],
+            "ordered" : [
+              "lwtv:show:101",
+              "lwtv:show:104",
+              "lwtv:show:102",
+              "lwtv:show:103"
+            ],
+            "spoken" : [
+              "Harbor Lights. Season 3, episode 4, September 20.",
+              "Night Shift Radio. Season 2, episode 1, air date not recorded.",
+              "The Cartographers. No upcoming episode listed.",
+              "Salt & Ember. Schedule unknown."
+            ]
+          },
+          "2026-09-21T03:00:00Z" : {
+            "lines" : [
+              "S3E4 · Sep 20",
+              "S2E1 · air date not recorded",
+              "No upcoming episode listed",
+              "Schedule unknown"
+            ],
+            "ordered" : [
+              "lwtv:show:101",
+              "lwtv:show:104",
+              "lwtv:show:102",
+              "lwtv:show:103"
+            ],
+            "spoken" : [
+              "Harbor Lights. Season 3, episode 4, September 20.",
+              "Night Shift Radio. Season 2, episode 1, air date not recorded.",
+              "The Cartographers. No upcoming episode listed.",
+              "Salt & Ember. Schedule unknown."
+            ]
+          },
+          "2026-09-25T00:00:00Z" : {
+            "lines" : [
+              "S3E4 · Sep 20, passed",
+              "S2E1 · air date not recorded",
+              "No upcoming episode listed",
+              "Schedule unknown"
+            ],
+            "ordered" : [
+              "lwtv:show:101",
+              "lwtv:show:104",
+              "lwtv:show:102",
+              "lwtv:show:103"
+            ],
+            "spoken" : [
+              "Harbor Lights. Season 3, episode 4 was listed for September 20, which has passed. This data may be out of date.",
+              "Night Shift Radio. Season 2, episode 1, air date not recorded.",
+              "The Cartographers. No upcoming episode listed.",
+              "Salt & Ember. Schedule unknown."
+            ]
+          }
+        },
+        "items" : [
+          {
+            "airdate" : "2026-09-20",
+            "number" : 4,
+            "season" : 3,
+            "show_id" : "lwtv:show:101",
+            "status" : "dated",
+            "title" : "Harbor Lights"
+          },
+          {
+            "airdate" : null,
+            "number" : 1,
+            "season" : 2,
+            "show_id" : "lwtv:show:104",
+            "status" : "undated",
+            "title" : "Night Shift Radio"
+          },
+          {
+            "airdate" : null,
+            "number" : null,
+            "season" : null,
+            "show_id" : "lwtv:show:102",
+            "status" : "noneListed",
+            "title" : "The Cartographers"
+          },
+          {
+            "airdate" : null,
+            "number" : null,
+            "season" : null,
+            "show_id" : "lwtv:show:103",
+            "status" : "unknown",
+            "title" : "Salt & Ember"
+          }
+        ],
+        "missing_show_count" : 1
+      }
+    }
+  ],
+  "version" : 1,
+  "zones" : [
+    "UTC",
+    "America/Los_Angeles",
+    "America/New_York",
+    "Asia/Tokyo",
+    "Pacific/Auckland"
+  ]
+}

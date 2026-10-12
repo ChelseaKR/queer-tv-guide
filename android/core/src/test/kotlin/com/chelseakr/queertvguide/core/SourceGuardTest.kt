@@ -58,6 +58,8 @@ class SourceGuardTest {
     fun noTrackingOrPlayServicesLibraryIsLinked() {
         val build = File(android, "gradle/libs.versions.toml").readText() + File(android, "app/build.gradle.kts").readText() +
             File(android, "core/build.gradle.kts").readText() + File(android, "build.gradle.kts").readText()
+        // DECISIONS 0018: no Google Play code at all (Play services, Play Core, In-App Review, Firebase).
+        assertTrue("a Google Play library is in the build", !build.contains("com.google.android.play") && !build.contains("com.google.android.gms") && !build.contains("com.google.firebase"))
         for (banned in listOf("firebase", "crashlytics", "play-services", "gms", "analytics", "sentry", "bugsnag", "admob", "ads", "facebook", "appsflyer", "adjust", "amplitude", "mixpanel", "segment", "play:review", "play:core")) {
             assertTrue("$banned appears in the build", !Regex("""(?i)["':./-]$banned\b""").containsMatchIn(build))
         }

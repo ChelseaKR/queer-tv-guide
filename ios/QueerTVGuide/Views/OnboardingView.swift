@@ -158,8 +158,7 @@ struct OnboardingView: View {
                             .font(.headline)
                             .frame(maxWidth: .infinity)
                     }
-                    .buttonStyle(.borderedProminent)
-                    .controlSize(.large)
+                    .buttonStyle(SolidProminentButtonStyle())
                     .accessibilityIdentifier("onboarding-finish")
                 } else {
                     Button {
@@ -169,8 +168,7 @@ struct OnboardingView: View {
                             .font(.headline)
                             .frame(maxWidth: .infinity)
                     }
-                    .buttonStyle(.borderedProminent)
-                    .controlSize(.large)
+                    .buttonStyle(SolidProminentButtonStyle())
                     .accessibilityIdentifier("onboarding-next")
                 }
             }
@@ -266,3 +264,27 @@ private struct PageIndicator: View {
         .accessibilityIdentifier("onboarding-page-indicator")
     }
 }
+
+/// The pager's main button: white text on the contrast-checked accent
+/// (about 7:1 in light mode, `AccessibleStyle.swift`), drawn as a solid
+/// shape. Xcode's audit reported the system `.borderedProminent` button
+/// here as "Contrast failed", measured against its translucent glass
+/// rendering on iOS 26; a solid fill is measured as what it is.
+private struct SolidProminentButtonStyle: ButtonStyle {
+    @Environment(\.colorScheme) private var colorScheme
+
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .foregroundStyle(colorScheme == .dark ? Color.black : Color.white)
+            .padding(.vertical, 14)
+            .padding(.horizontal, 20)
+            .frame(minHeight: 50)
+            .background(
+                Capsule().fill(Color.accessibleAccent)
+            )
+            .opacity(configuration.isPressed ? 0.75 : 1)
+            .contentShape(Capsule())
+            .hoverEffect(.highlight)
+    }
+}
+

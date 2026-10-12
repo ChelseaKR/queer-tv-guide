@@ -71,6 +71,9 @@ android {
         resources.excludes += "/META-INF/{AL2.0,LGPL2.1}"
     }
 
+    // On-device tests read GuideCore's parity file and fixture in place.
+    sourceSets.getByName("androidTest").assets.directories.add(rootProject.file("../ios/GuideCore/Tests/Fixtures").path)
+
     testOptions {
         unitTests.all {
             it.systemProperty("qf.repoRoot", rootProject.projectDir.parentFile.absolutePath)
@@ -107,6 +110,7 @@ dependencies {
 
     testImplementation(libs.junit)
 
+    androidTestImplementation(libs.kotlinx.serialization.json)
     androidTestImplementation(platform(libs.compose.bom))
     androidTestImplementation(libs.compose.ui.test.junit4)
     androidTestImplementation(libs.androidx.test.ext.junit)

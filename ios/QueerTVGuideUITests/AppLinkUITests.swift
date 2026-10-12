@@ -21,7 +21,7 @@ final class AppLinkUITests: XCTestCase {
         app.open(try XCTUnwrap(URL(string: "queerframe://show/\(id)")))
         XCTAssertTrue(app.staticTexts["Do any queer characters die?"].waitForExistence(timeout: 30), "the link did not open a show")
         XCTAssertTrue(app.navigationBars[title].exists || app.staticTexts[title].exists, "the link opened another show than \(title)")
-        XCTAssertTrue(app.navigationBars["Favorites"].exists || app.tabBars.buttons["Favorites"].isSelected, "the link did not open on Favorites")
+        XCTAssertTrue(app.navigationBars["Favorites"].exists || app.tab("Favorites").isSelected, "the link did not open on Favorites")
 
         // At regular width (iPad) the show sits beside the Favorites list,
         // so there is no Back to take.

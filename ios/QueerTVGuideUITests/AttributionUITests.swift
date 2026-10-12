@@ -46,7 +46,7 @@ final class AttributionUITests: XCTestCase {
     @MainActor
     func testAboutNamesAndLinksBothSourcesTheirLicensesAndNonEndorsement() throws {
         let app = XCUIApplication.launchedGuide()
-        app.tabBars.buttons["About"].tap()
+        app.tab("About").tap()
         XCTAssertTrue(app.staticTexts["Data sources"].waitForExistence(timeout: 30))
         for id in ["source-link-lezwatch", "source-link-tvmaze", "license-link-lezwatch", "license-link-tvmaze"] {
             let link = app.buttons[id]
@@ -65,7 +65,7 @@ final class AttributionUITests: XCTestCase {
         let app = XCUIApplication.launchedGuide()
         app.openShow(titled: title)
         app.buttons["Add to favorites"].tap()
-        app.tabBars.buttons["Favorites"].tap()
+        app.tab("Favorites").tap()
         let row = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", title)).firstMatch
         XCTAssertTrue(row.waitForExistence(timeout: 30))
         let credited = app.buttons["tvmaze-credit-link"].waitForExistence(timeout: 10) && app.buttons["tvmaze-license-link"].exists

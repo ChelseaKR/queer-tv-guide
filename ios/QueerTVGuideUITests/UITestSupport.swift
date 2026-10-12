@@ -1,4 +1,5 @@
 import XCTest
+import UIKit
 
 /// Facts the UI tests read from the real bundled snapshot (through this
 /// file's path on the host, which simulator test processes can read), so
@@ -34,6 +35,18 @@ enum SnapshotFacts {
 }
 
 extension XCUIApplication {
+    /// A tab's button. On iPhone the tabs are a tab bar. On iPad (iOS 26)
+    /// they are a floating row of buttons at the top, identified by their
+    /// SF Symbol, so the tab bar query finds nothing there.
+    /// Not main-actor bound, like `guide()`, so the older smoke tests that
+    /// are not main-actor bound can call it.
+    nonisolated func tab(_ name: String) -> XCUIElement {
+        let isPad = ProcessInfo.processInfo.environment["SIMULATOR_MODEL_IDENTIFIER"]?.hasPrefix("iPad") ?? false
+        guard isPad, !tabBars.buttons[name].exists else { return tabBars.buttons[name] }
+        let symbol = ["Search": "magnifyingglass", "Favorites": "star", "About": "info.circle"][name] ?? name
+        return buttons.matching(NSPredicate(format: "identifier == %@ AND label == %@", symbol, name)).firstMatch
+    }
+
     /// Starts past the first-run screen (`OnboardingView.seenKey`, read from
     /// UserDefaults' argument domain), as every test but the onboarding
     /// ones needs.
@@ -53,7 +66,7 @@ extension XCUIApplication {
         let app = XCUIApplication.guide()
         app.launchArguments += arguments
         app.launch()
-        XCTAssertTrue(app.tabBars.buttons["Search"].waitForExistence(timeout: 30))
+        XCTAssertTrue(app.tab("Search").waitForExistence(timeout: 30))
         return app
     }
 
@@ -61,7 +74,7 @@ extension XCUIApplication {
     @MainActor
     func openShow(titled title: String) {
         let field = searchFields.firstMatch
-        XCTAssertTrue(tabBars.buttons["Search"].tap(reaching: field))
+        XCTAssertTrue(tab("Search").tap(reaching: field))
         field.tap()
         // A previous search's text survives going back; clear it so the
         // new title is not appended to the old one.

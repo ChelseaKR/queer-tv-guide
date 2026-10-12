@@ -13,13 +13,12 @@ final class ParityEvidenceScreenshotTests: XCTestCase {
 
     override func tearDown() {
         XCUIDevice.shared.orientation = .portrait
-        XCUIDevice.shared.appearance = .light
         super.tearDown()
     }
 
     @MainActor
     private func shot(_ name: String, _ appearance: String, _ orientation: String) {
-        sleep(2)
+        sleep(3)
         let device = UIDevice.current.userInterfaceIdiom == .pad ? "ipad" : "iphone"
         let attachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
         attachment.name = "evidence-\(device)-\(appearance)-\(orientation)-\(name)"
@@ -29,19 +28,33 @@ final class ParityEvidenceScreenshotTests: XCTestCase {
 
     @MainActor
     private func tab(_ app: XCUIApplication, _ name: String) {
-        let inBar = app.tabBars.buttons[name]
+        let inBar = app.tab(name)
         if inBar.exists { inBar.tap() } else { app.buttons[name].firstMatch.tap() }
     }
 
+    /// Taps until the field has the keyboard: on iPad a tap on a field
+    /// that is already in a search can land before it takes focus.
     @MainActor
-    func testLight() throws { try capture(appearance: .light, name: "light") }
+    private func focus(_ field: XCUIElement) {
+        for _ in 0..<4 {
+            if (field.value(forKey: "hasKeyboardFocus") as? Bool) == true { return }
+            field.tap()
+            sleep(1)
+        }
+    }
+
+    /// The simulator's appearance is set from outside
+    /// (`xcrun simctl ui <device> appearance dark`) and named here through
+    /// `TEST_RUNNER_QTG_EVIDENCE_APPEARANCE`: setting it from inside the test
+    /// did not reach the app on iOS 26.5 (measured: identical light and dark
+    /// images).
+    @MainActor
+    func testCapture() throws {
+        try capture(name: ProcessInfo.processInfo.environment["QTG_EVIDENCE_APPEARANCE"] ?? "light")
+    }
 
     @MainActor
-    func testDark() throws { try capture(appearance: .dark, name: "dark") }
-
-    @MainActor
-    private func capture(appearance: XCUIDevice.Appearance, name: String) throws {
-        XCUIDevice.shared.appearance = appearance
+    private func capture(name: String) throws {
         let isPad = UIDevice.current.userInterfaceIdiom == .pad
         let orientations: [(UIDeviceOrientation, String)] = isPad
             ? [(.portrait, "portrait"), (.landscapeLeft, "landscape")]
@@ -72,7 +85,7 @@ final class ParityEvidenceScreenshotTests: XCTestCase {
             shot("about", name, o)
             tab(app, "Search")
             let field = app.searchFields.firstMatch
-            field.tap()
+            focus(field)
             field.typeText(title)
             let row = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", title)).firstMatch
             if row.waitForExistence(timeout: 60) {
@@ -81,14 +94,18 @@ final class ParityEvidenceScreenshotTests: XCTestCase {
                 shot("show", name, o)
             }
             if !isPad { app.navigationBars.buttons.firstMatch.tap() }
-            field.tap()
+            focus(field)
             if field.buttons["Clear text"].exists { field.buttons["Clear text"].tap() }
+            focus(field)
             field.typeText("zzqxj")
             let tryAgain = app.buttons["Try again"]
             for _ in 0..<4 where !tryAgain.exists { app.swipeUp() }
             _ = tryAgain.waitForExistence(timeout: 10)
             shot("refresh-offline", name, o)
 
+            // `open` relaunches with the launch arguments: past the first-run
+            // pages this time.
+            app.launchArguments = ["-onboarding.v1.seen", "YES", "-UITestRefreshProblem", "offline"]
             app.open(try XCTUnwrap(URL(string: "queerframe://show/\(id)")))
             _ = app.staticTexts["Do any queer characters die?"].waitForExistence(timeout: 60)
             shot("link-opens-show-over-favorites", name, o)

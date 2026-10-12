@@ -13,9 +13,9 @@ final class QueerTVGuideUITests: XCTestCase {
         let app = XCUIApplication.guide()
         app.launch()
 
-        XCTAssertTrue(app.tabBars.buttons["Search"].waitForExistence(timeout: 30))
-        XCTAssertTrue(app.tabBars.buttons["Favorites"].exists)
-        XCTAssertTrue(app.tabBars.buttons["About"].exists)
+        XCTAssertTrue(app.tab("Search").waitForExistence(timeout: 30))
+        XCTAssertTrue(app.tab("Favorites").exists)
+        XCTAssertTrue(app.tab("About").exists)
     }
 
     func testSearchFindsABundledShow() throws {
@@ -36,7 +36,7 @@ final class QueerTVGuideUITests: XCTestCase {
         let app = XCUIApplication.guide()
         app.launch()
 
-        app.tabBars.buttons["Favorites"].tap()
+        app.tab("Favorites").tap()
         XCTAssertTrue(app.staticTexts["No favorites yet"].waitForExistence(timeout: 30))
     }
 
@@ -44,7 +44,7 @@ final class QueerTVGuideUITests: XCTestCase {
         let app = XCUIApplication.guide()
         app.launch()
 
-        app.tabBars.buttons["About"].tap()
+        app.tab("About").tap()
         XCTAssertTrue(app.staticTexts["Privacy"].waitForExistence(timeout: 30))
     }
 

@@ -291,7 +291,7 @@ final class AccessibilityAuditTests: XCTestCase {
         }
         app.launchArguments += arguments
         app.launch()
-        XCTAssertTrue(app.tabBars.buttons["Search"].waitForExistence(timeout: 30))
+        XCTAssertTrue(app.tab("Search").waitForExistence(timeout: 30))
         return app
     }
 
@@ -484,10 +484,10 @@ final class AccessibilityAuditTests: XCTestCase {
     @MainActor
     func testFavoritesAndAboutPassTheAudit() throws {
         let app = launch()
-        XCTAssertTrue(app.tabBars.buttons["Favorites"].tap(reaching: app.staticTexts["No favorites yet"]))
+        XCTAssertTrue(app.tab("Favorites").tap(reaching: app.staticTexts["No favorites yet"]))
         try audit(app)
 
-        XCTAssertTrue(app.tabBars.buttons["About"].tap(reaching: app.staticTexts["Privacy"]))
+        XCTAssertTrue(app.tab("About").tap(reaching: app.staticTexts["Privacy"]))
         // The sections below Privacy appear once the snapshot has loaded.
         XCTAssertTrue(app.staticTexts["Data sources"].waitForExistence(timeout: 30))
         try audit(app)
@@ -533,7 +533,7 @@ final class AccessibilityAuditTests: XCTestCase {
     @MainActor
     func testFavoritesBackUpMenuIsLabeledForVoiceOver() throws {
         let app = launch()
-        XCTAssertTrue(app.tabBars.buttons["Favorites"].tap(reaching: app.staticTexts["No favorites yet"]))
+        XCTAssertTrue(app.tab("Favorites").tap(reaching: app.staticTexts["No favorites yet"]))
         let menu = app.buttons["Back up or restore favorites"]
         XCTAssertTrue(menu.waitForExistence(timeout: 10), "no backup menu button")
         menu.tap()
@@ -553,7 +553,7 @@ final class AccessibilityAuditTests: XCTestCase {
         let sizes = ["UICTContentSizeCategoryL", "UICTContentSizeCategoryAccessibilityXXXL"]
         let heights = sizes.map { size -> [String: CGFloat] in
             let app = launch(textSize: size)
-            XCTAssertTrue(app.tabBars.buttons["About"].tap(reaching: app.staticTexts["Privacy"]))
+            XCTAssertTrue(app.tab("About").tap(reaching: app.staticTexts["Privacy"]))
             var found: [String: CGFloat] = [:]
             for _ in 0..<15 {
                 for row in Self.aboutRowsThatScale where found[row.label] == nil {
@@ -646,10 +646,10 @@ final class AccessibilityAuditTests: XCTestCase {
 
         // Empty or not: a simulator that ran other UI tests may already hold
         // favorites, and both states must pass.
-        XCTAssertTrue(app.tabBars.buttons["Favorites"].tap(reaching: app.navigationBars["Favorites"]))
+        XCTAssertTrue(app.tab("Favorites").tap(reaching: app.navigationBars["Favorites"]))
         try audit(app, [.dynamicType, .textClipped])
 
-        XCTAssertTrue(app.tabBars.buttons["About"].tap(reaching: app.staticTexts["Privacy"]))
+        XCTAssertTrue(app.tab("About").tap(reaching: app.staticTexts["Privacy"]))
         try audit(app, [.dynamicType, .textClipped])
     }
 

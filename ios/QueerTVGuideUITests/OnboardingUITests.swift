@@ -41,7 +41,7 @@ final class OnboardingUITests: XCTestCase {
         XCTAssertTrue(app.staticTexts["onboarding-welcome"].waitForExistence(timeout: 30), "no first-run screen")
         XCTAssertEqual(app.otherElements["onboarding-page-indicator"].label, "Page 1 of 5")
         XCTAssertFalse(app.buttons["onboarding-back"].exists, "Back on the first page")
-        XCTAssertFalse(app.tabBars.buttons["Search"].exists, "the tabs are showing under the first-run screen")
+        XCTAssertFalse(app.tab("Search").exists, "the tabs are showing under the first-run screen")
 
         // Each point is its own page, in order.
         let next = app.buttons["onboarding-next"]
@@ -62,7 +62,7 @@ final class OnboardingUITests: XCTestCase {
         }
 
         app.buttons["Skip"].tap()
-        XCTAssertTrue(app.tabBars.buttons["Search"].waitForExistence(timeout: 30), "Skip did not reach Search")
+        XCTAssertTrue(app.tab("Search").waitForExistence(timeout: 30), "Skip did not reach Search")
     }
 
     /// The "not recorded" promise is on its page, by its words.
@@ -83,20 +83,20 @@ final class OnboardingUITests: XCTestCase {
         XCTAssertTrue(app.staticTexts["onboarding-welcome"].waitForExistence(timeout: 30))
         nextToTheEnd(app)
         app.buttons["onboarding-finish"].tap()
-        XCTAssertTrue(app.tabBars.buttons["Search"].waitForExistence(timeout: 30))
+        XCTAssertTrue(app.tab("Search").waitForExistence(timeout: 30))
         app.terminate()
 
         // No argument this time: the stored value decides.
         let again = XCUIApplication()
         again.launch()
-        XCTAssertTrue(again.tabBars.buttons["Search"].waitForExistence(timeout: 30), "the first-run screen came back")
+        XCTAssertTrue(again.tab("Search").waitForExistence(timeout: 30), "the first-run screen came back")
         XCTAssertFalse(again.staticTexts["onboarding-welcome"].exists)
     }
 
     @MainActor
     func testAboutOpensItAgain() throws {
         let app = XCUIApplication.launchedGuide()
-        app.tabBars.buttons["About"].tap()
+        app.tab("About").tap()
         XCTAssertTrue(app.staticTexts["Privacy"].waitForExistence(timeout: 30))
         let open = app.buttons.matching(NSPredicate(format: "label BEGINSWITH 'How ' AND label ENDSWITH ' works'")).firstMatch
         for _ in 0..<10 where !(open.exists && open.isHittable) { app.swipeUp() }

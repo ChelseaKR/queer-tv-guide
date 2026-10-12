@@ -77,12 +77,12 @@ final class AppStoreScreenshotTests: XCTestCase {
             if add.exists { add.tap() }
             backToSearch(app)
         }
-        app.tabBars.buttons["Favorites"].tap()
+        app.tab("Favorites").tap()
         XCTAssertTrue(app.buttons["tvmaze-credit-link"].waitForExistence(timeout: 30))
         keep("04-next-episodes", app)
 
         // 5. About: the privacy posture and the sources, credited.
-        app.tabBars.buttons["About"].tap()
+        app.tab("About").tap()
         XCTAssertTrue(app.staticTexts["Privacy"].waitForExistence(timeout: 30))
         keep("05-privacy-and-sources", app)
     }

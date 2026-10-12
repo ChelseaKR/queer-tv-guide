@@ -244,8 +244,12 @@ no in-app purchase, no ads, United States only (0011, 0015).
   wait on the universal-links decision for iOS.
 - **Privacy policy.** `docs/site/privacy.html` gains an Android section
   (drafted with this record): the same one request, local reminders, no
-  cloud backup of favorites, and that Android's standard User-Agent names
-  the Android version and device model.
+  cloud backup of favorites, and the one request's User-Agent.
+- **User-Agent: the app's own** (owner, 2026-10-12). The one GET sends
+  "QueerFrame/<versionName> (Android)" in place of Android's default, which
+  names the OS build and the phone's model. `StoreAndRefresherTest` checks
+  the header on the wire; `UserAgentDeviceTest` checks on a device that it
+  holds no `Build.MODEL`, `Build.VERSION` or build id.
 
 **CI.** The `android` job runs `make android` on Linux on every run; the
 emulator tests run locally (`make -C android instrumented`).

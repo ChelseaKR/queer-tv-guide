@@ -203,7 +203,10 @@ private struct OnboardingPage: View {
         ScrollView {
             VStack(spacing: 24) {
                 Image(systemName: systemImage)
-                    .font(.system(size: 56, weight: .regular))
+                    // A text style, not a fixed point size, so the symbol
+                    // grows with Dynamic Type like everything around it.
+                    .font(.largeTitle)
+                    .imageScale(.large)
                     .foregroundStyle(.accessibleAccent)
                     .symbolEffect(.bounce, options: .nonRepeating, value: reduceMotion ? false : isCurrent)
                     .frame(width: 120, height: 120)

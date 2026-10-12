@@ -266,7 +266,9 @@ def check_targets(resolved: Mapping[tuple[str, str], Mapping[str, str]]) -> list
         return ["no target build configurations were read from project.pbxproj"]
     for (target, config), s in sorted(resolved.items()):
         if s.get("TARGETED_DEVICE_FAMILY") != "1,2":
-            problems.append(f"{target}/{config}: TARGETED_DEVICE_FAMILY must be 1,2 (iPhone and iPad)")
+            problems.append(
+                f"{target}/{config}: TARGETED_DEVICE_FAMILY must be 1,2 (iPhone and iPad)"
+            )
         if s.get("DEVELOPMENT_TEAM") != TEAM_ID:
             problems.append(f"{target}/{config}: DEVELOPMENT_TEAM must be {TEAM_ID}")
         for key, value in s.items():

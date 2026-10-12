@@ -1,6 +1,6 @@
 # Decisions
 
-Numbering: 0001–0004, 0006–0011, 0013 and 0015 live here. 0005, 0012 and
+Numbering: 0001–0004, 0006–0011, 0013, 0015 and 0018 live here. 0005, 0012 and
 0014 are ADRs in `docs/adr/`, so they are skipped here rather than
 duplicated.
 
@@ -179,3 +179,60 @@ snapshot, the attribution, and the App Review note in `docs/APP-STORE.md`.
 
 **Still open:** a trademark screen for "Queer Frame" (the owner's).
 Update 2026-10-02: done, no conflict found (0006).
+
+## 0018 — A native Android app with parity to iOS (proposed, 2026-10-12)
+
+**Status: proposed.** The owner asked on 2026-10-12 for an Android app with
+full parity with the iOS app. The code is on `feat/android-app`; the Play
+listing, signing and the Data safety form are the owner's (no Play Console
+action has been taken).
+
+**Decision.** Queer Frame for Android is native Kotlin, Jetpack Compose and
+Material 3, in `android/`, not a web shell (as 0001 for iOS). Package name
+`com.chelseakr.queertvguide`, the iOS bundle id's stem (0006). Version 1.0.0
+(code 1), as iOS. It reads the same snapshot from the same one URL (0007)
+under the same contract (`schema/`), bundles the same published file, and
+makes the same single conditional GET.
+
+**Parity is tested, not asserted.** `android/core` ports GuideCore's data
+layer (decoder rules, search and filters, every absence's wording, the
+reminder planner, the widget's lines, the favorites backup format).
+`ios/GuideCore/Tests/Fixtures/parity.golden.json` records GuideCore's output
+for the shared test fixture in five time zones and at several clocks;
+GuideCore's `ParityGoldenTests` fails if GuideCore changes it, and
+`android/core`'s `ParityGoldenTest` fails if Kotlin says anything
+different: the same reminders at the same instants with the same words, and
+the same next-episode sentence in the viewer's time zone. An on-device test
+repeats the date checks with Android's own formats. A backup file is the
+same bytes on both platforms, so favorites move between them.
+
+**Features.** Everything on main plus the `feat/ios-parity-fg` work: search
+and filters (including "No recorded deaths"), show and character pages with
+the closed "does she die" reveal, favorites with backup and restore, local
+reminders (WorkManager and local notifications; no server push), the Up
+Next home-screen widget (Glance), About with both sources' attribution and
+the "do not endorse" line, refresh states with Try again, a five-page
+first-run pager, `queerframe://show/<id>` links, a tablet list-detail
+layout, haptics, TalkBack, font scale and contrast-checked colors, and a
+"Rate Queer Frame" row that opens the Play listing.
+
+**Privacy (0002 stands).** No analytics, crash reporting, ads, accounts or
+Play services SDK; the only libraries are AndroidX and Kotlin's.
+`SourceGuardTest` holds the tree to one network call site, one host, three
+permissions (internet, network state, notifications) and no tracking
+library. Favorites, the first-run flag and the reminder switch move only in
+a device-to-device transfer, never to cloud backup. The Data safety answer
+is "No data collected" and "No data shared"; GitHub's request log (0007) is
+stated in the privacy policy as on iOS.
+
+**Distribution.** Paid on Google Play at the US price equivalent of $4.99,
+no in-app purchase, no ads, United States only (0011, 0015).
+
+**Not included.** Play's In-App Review prompt waits on 0017: if the owner
+accepts the iOS rating prompt, the same `ReviewPromptPolicy` can be ported;
+until then the About row is the only ask. Android App Links (verified
+https links) wait on the owner deciding on universal links.
+
+**CI.** The `android` job runs `make android` on Linux on every run; the
+emulator tests run locally (`make -C android instrumented`).
+

@@ -71,7 +71,10 @@ class AppModel(
     private val _state = MutableStateFlow(State(clock = now()))
     val state: StateFlow<State> = _state.asStateFlow()
 
-    private val refresher = SnapshotRefresher(store, isOnline = ::isOnline)
+    private val refresher = SnapshotRefresher(store, SnapshotRefresher.userAgent(BuildConfig.VERSION_NAME), isOnline = ::isOnline)
+
+    /** The exact request the one GET sends (no ETag), for the on-device User-Agent test. */
+    internal fun snapshotRequest(): SnapshotRefresher.Request = refresher.makeRequest(null)
     private val gate = ForegroundRefreshGate()
     private val refreshLock = Mutex()
 

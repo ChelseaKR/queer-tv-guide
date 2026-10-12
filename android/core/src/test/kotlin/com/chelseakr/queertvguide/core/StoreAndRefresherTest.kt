@@ -15,7 +15,50 @@ import java.io.IOException
 import java.nio.file.Files
 import java.time.Instant
 
+private val UA = SnapshotRefresher.userAgent("1.0.0")
+
 class StoreAndRefresherTest {
+    /** The app's name, its version and "Android": nothing about the build or the device. */
+    @Test
+    fun theUserAgentIsTheAppNameVersionAndAndroidOnly() {
+        assertEquals("QueerFrame/1.0.0 (Android)", UA)
+        assertTrue(Regex("""^QueerFrame/[0-9A-Za-z.\-]+ \(Android\)$""").matches(SnapshotRefresher.userAgent("1.2.3-rc1")))
+    }
+
+    /**
+     * On the wire: the real transport (HttpURLConnection) sends the app's
+     * User-Agent in place of the platform's default, and no other header the
+     * app did not set beyond HTTP's own (Host, Connection, Accept-Encoding,
+     * and the no-cache pair `useCaches = false` adds), none of which names
+     * the device.
+     */
+    @Test
+    fun theRealTransportSendsOnlyTheAppsUserAgent() {
+        val server = java.net.ServerSocket(0, 1, java.net.InetAddress.getLoopbackAddress())
+        val received = java.util.concurrent.CompletableFuture<List<String>>()
+        val thread = Thread {
+            server.accept().use { socket ->
+                val reader = socket.getInputStream().bufferedReader()
+                val lines = generateSequence { reader.readLine() }.takeWhile { it.isNotEmpty() }.toList()
+                received.complete(lines)
+                socket.getOutputStream().write("HTTP/1.1 304 Not Modified\r\nContent-Length: 0\r\nConnection: close\r\n\r\n".toByteArray())
+            }
+        }
+        thread.start()
+        try {
+            val refresher = SnapshotRefresher(store(), UA, endpoint = "http://127.0.0.1:${server.localPort}/snapshot.v1.json")
+            assertEquals(SnapshotRefresher.Outcome.Unchanged, refresher.refresh())
+            val headers = received.get(10, java.util.concurrent.TimeUnit.SECONDS).drop(1)
+            val agents = headers.filter { it.startsWith("User-Agent:", ignoreCase = true) }
+            assertEquals(listOf("User-Agent: QueerFrame/1.0.0 (Android)"), agents)
+            val names = headers.map { it.substringBefore(':').lowercase() }.toSet()
+            assertEquals(emptySet<String>(), names - setOf("accept", "user-agent", "host", "connection", "accept-encoding", "cache-control", "pragma"))
+        } finally {
+            server.close()
+            thread.join(5000)
+        }
+    }
+
     private val dir: File = Files.createTempDirectory("qf-store").toFile()
 
     @After
@@ -86,13 +129,13 @@ class StoreAndRefresherTest {
     fun theOneRequestCarriesNothingButAcceptAndTheEtag() {
         val s = store()
         val script = Script { SnapshotRefresher.Response(200, mapOf("ETag" to "\"v1\""), dated("2026-09-20T09:17:00Z")) }
-        val refresher = SnapshotRefresher(s, transport = script)
+        val refresher = SnapshotRefresher(s, UA, transport = script)
         assertTrue(refresher.refresh() is SnapshotRefresher.Outcome.Updated)
         script.respond = { SnapshotRefresher.Response(304, emptyMap(), ByteArray(0)) }
         assertEquals(SnapshotRefresher.Outcome.Unchanged, refresher.refresh())
         assertEquals(Endpoints.SNAPSHOT_URL, script.requests[0].url)
-        assertEquals(mapOf("Accept" to "application/json"), script.requests[0].headers)
-        assertEquals(mapOf("Accept" to "application/json", "If-None-Match" to "\"v1\""), script.requests[1].headers)
+        assertEquals(mapOf("Accept" to "application/json", "User-Agent" to UA), script.requests[0].headers)
+        assertEquals(mapOf("Accept" to "application/json", "User-Agent" to UA, "If-None-Match" to "\"v1\""), script.requests[1].headers)
         assertEquals("https://chelseakr.github.io/queer-tv-guide/snapshot.v1.json", Endpoints.SNAPSHOT_URL)
     }
 
@@ -103,7 +146,7 @@ class StoreAndRefresherTest {
         val before = s.snapshotFile.readBytes()
         fun problem(transport: SnapshotRefresher.Transport, online: Boolean = true): RefreshProblem {
             try {
-                SnapshotRefresher(s, transport = transport, isOnline = { online }).refresh()
+                SnapshotRefresher(s, UA, transport = transport, isOnline = { online }).refresh()
             } catch (e: Exception) {
                 return RefreshProblem.from(e)
             }

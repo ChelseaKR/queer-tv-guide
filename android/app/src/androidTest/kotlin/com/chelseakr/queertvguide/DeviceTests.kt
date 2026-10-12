@@ -122,3 +122,21 @@ class DeepLinkTest {
 
 private fun androidx.compose.ui.test.junit4.ComposeTestRule.onAllNodesWithTextCount(text: String): Int =
     onAllNodes(androidx.compose.ui.test.hasText(text)).fetchSemanticsNodes().size
+
+/**
+ * The one GET's User-Agent is the app's own, "QueerFrame/<version> (Android)",
+ * and carries nothing about this device: not its model, Android version or
+ * build, nor the platform's default "Dalvik/... (Linux; U; Android ...)".
+ */
+@RunWith(AndroidJUnit4::class)
+class UserAgentDeviceTest {
+    @Test
+    fun theRequestNamesNoModelVersionOrBuild() {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val agent = context.appModel.snapshotRequest().headers.getValue("User-Agent")
+        assertEquals("QueerFrame/${BuildConfig.VERSION_NAME} (Android)", agent)
+        for (leak in listOf(android.os.Build.MODEL, android.os.Build.DEVICE, android.os.Build.PRODUCT, android.os.Build.ID, android.os.Build.VERSION.RELEASE, android.os.Build.VERSION.SDK_INT.toString(), "Dalvik", "Linux")) {
+            assertTrue("User-Agent '$agent' carries '$leak'", leak.isBlank() || !agent.contains(leak))
+        }
+    }
+}

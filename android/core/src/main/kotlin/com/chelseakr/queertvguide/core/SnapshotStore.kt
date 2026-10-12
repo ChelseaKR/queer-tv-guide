@@ -91,12 +91,16 @@ class SnapshotStore(
 /**
  * The app's entire network surface: one HTTPS GET of a static file
  * ([Endpoints.SNAPSHOT_URL]), conditional on the stored ETag. No cookies, no
- * cache, no identifiers: the only headers the app adds are `Accept` and
- * `If-None-Match`. (The platform's default User-Agent names the Android
- * version, not anyone.) On any failure the store is untouched.
+ * cache, no identifiers: the headers are `Accept`, `If-None-Match` and the
+ * app's own `User-Agent`, "QueerFrame/<version> (Android)" ([userAgent]). It
+ * replaces the platform's default, which names the Android build and the
+ * phone's model; nothing about the device is sent. On any failure the store
+ * is untouched.
  */
 class SnapshotRefresher(
     private val store: SnapshotStore,
+    /** The whole User-Agent: [userAgent] of the app's version name. */
+    private val userAgent: String,
     private val endpoint: String = Endpoints.SNAPSHOT_URL,
     private val transport: Transport = HttpTransport(),
     /** Whether the device reports any network at all; decides offline versus unreachable. */
@@ -114,6 +118,11 @@ class SnapshotRefresher(
     }
 
     data class Request(val url: String, val headers: Map<String, String>)
+
+    companion object {
+        /** "QueerFrame/1.0.0 (Android)": the app's name and version, and the word Android. Nothing else. */
+        fun userAgent(versionName: String): String = "QueerFrame/$versionName (Android)"
+    }
     data class Response(val status: Int, val headers: Map<String, String>, val body: ByteArray)
 
     fun interface Transport {
@@ -122,7 +131,7 @@ class SnapshotRefresher(
 
     /** The exact request that will be sent. Pure; tests inspect it. */
     fun makeRequest(etag: String?): Request {
-        val headers = linkedMapOf("Accept" to "application/json")
+        val headers = linkedMapOf("Accept" to "application/json", "User-Agent" to userAgent)
         if (!etag.isNullOrEmpty()) headers["If-None-Match"] = etag
         return Request(endpoint, headers)
     }

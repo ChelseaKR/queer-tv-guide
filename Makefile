@@ -33,7 +33,7 @@ RUFF := uvx --python 3.12 ruff@0.16.7
 RUFF_ROOT := --isolated --target-version py312 --line-length 100
 ROOT_PY := tests scripts
 
-VERIFY_TARGETS := pipeline guidecore a11y appstore policy workflows secrets sast sca
+VERIFY_TARGETS := pipeline guidecore a11y appstore android policy workflows secrets sast sca
 
 .PHONY: verify $(VERIFY_TARGETS)
 
@@ -58,6 +58,15 @@ guidecore:
 # simulator runtime (ios/Makefile's test-a11y says why the version is pinned).
 a11y:
 	$(MAKE) -C ios test-a11y
+
+# The Android app (DECISIONS 0018): android/Makefile's verify. The JVM tests
+# (the Kotlin port of GuideCore against GuideCore's own parity file, the
+# decoder's rules, the reminder planner, the real snapshot, the source guard
+# behind the Play Data safety answer), Android lint with warnings as errors,
+# and an R8 release build. Needs a JDK 17+ and the Android SDK (platform 37);
+# runs on Linux. The on-device tests are local: `make -C android instrumented`.
+android:
+	$(MAKE) -C android verify
 
 # The iOS app's App Store readiness (scripts/check_app_store.py): one version
 # and build number across targets, iPhone only, team 6X5YH93QNM, export

@@ -32,6 +32,9 @@ final class AppModel {
     private(set) var clockReading: Date
 
     let favorites: FavoritesStore
+    /// When the app may ask for a rating (`ReviewPromptPolicy`): local
+    /// counters on this device, never sent anywhere.
+    let reviewPrompt: ReviewPromptPolicy
     private let store: SnapshotStore
     private let refresher: SnapshotRefresher
     private let now: () -> Date
@@ -39,10 +42,16 @@ final class AppModel {
     /// should (`ForegroundRefreshGate`). In memory only.
     private var refreshGate = ForegroundRefreshGate()
 
-    init(store: SnapshotStore, favorites: FavoritesStore = FavoritesStore(), now: @escaping () -> Date = Date.init) {
+    init(
+        store: SnapshotStore,
+        favorites: FavoritesStore = FavoritesStore(),
+        reviewPrompt: ReviewPromptPolicy = ReviewPromptPolicy(),
+        now: @escaping () -> Date = Date.init
+    ) {
         self.store = store
         self.refresher = SnapshotRefresher(store: store)
         self.favorites = favorites
+        self.reviewPrompt = reviewPrompt
         self.now = now
         self.clockReading = now()
     }

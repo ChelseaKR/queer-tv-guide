@@ -13,6 +13,9 @@ struct QueerTVGuideApp: App {
                 // (Views/Components/AccessibleStyle.swift).
                 .tint(.accessibleAccent)
                 .task {
+                    // Counts this launch for the rating prompt's timing
+                    // (never the first launch; ReviewPromptPolicy).
+                    model.reviewPrompt.recordLaunch(hasFavorites: !model.favorites.entries.isEmpty)
                     await model.loadInitial()
                     UpNextPublisher.publish(model)
                     await model.refresh()

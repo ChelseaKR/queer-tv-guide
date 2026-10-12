@@ -102,16 +102,47 @@ final class SourceTreeGuardTests: XCTestCase {
         XCTAssertTrue(sites.first?.hasPrefix("SnapshotRefresher.swift") ?? false, "\(sites)")
     }
 
+    /// The one file that may name StoreKit (DECISIONS 0017, proposed): it
+    /// imports it for SwiftUI's `requestReview` and nothing else.
+    static let storeKitFile = "ReviewRequest.swift"
+
+    /// StoreKit's purchase, product, receipt and store-sheet API. The app
+    /// is paid up front (DECISIONS 0003, 0011), so none of it may appear in
+    /// any file, the review-request file included.
+    static let purchaseTokens = ["SKPaymentQueue", "SKProduct", "SKReceipt", "SKStoreProductViewController", "appStoreReceiptURL", "Product.products", "Product.PurchaseResult", "Transaction.", "AppTransaction", "AppStore.sync", "StoreView", "ProductView", "SubscriptionStoreView", "SKAdNetwork", ".purchase("]
+
+    /// Banned network, web and StoreKit tokens in `text`, for a file named
+    /// `fileName`.
+    static func bannedTokens(in text: String, fileName: String) -> [String] {
+        var banned = ["NWConnection", "NWBrowser", "CFStreamCreatePair", "NSURLConnection", "WKWebView", "SFSafariViewController", "getaddrinfo", "CFSocket", "NSStream", "URLSessionWebSocketTask", "MultipeerConnectivity", "CKContainer", "NSUbiquitousKeyValueStore"] + purchaseTokens
+        if fileName != storeKitFile { banned.append("StoreKit") }
+        return banned.filter { text.contains($0) }
+    }
+
     func testNoOtherNetworkOrWebPrimitives() throws {
-        let banned = ["NWConnection", "NWBrowser", "CFStreamCreatePair", "NSURLConnection", "WKWebView", "SFSafariViewController", "getaddrinfo", "CFSocket", "NSStream", "URLSessionWebSocketTask", "MultipeerConnectivity", "CKContainer", "NSUbiquitousKeyValueStore", "SKPaymentQueue", "StoreKit"]
         var offenders: [String] = []
         for file in swiftFiles() where !file.path.contains("Tests/") {
-            let text = try read(file)
-            for token in banned where text.contains(token) {
+            for token in Self.bannedTokens(in: try read(file), fileName: file.lastPathComponent) {
                 offenders.append("\(file.lastPathComponent): \(token)")
             }
         }
         XCTAssertEqual(offenders, [])
+    }
+
+    /// Negative controls for the StoreKit allowance: StoreKit is refused in
+    /// any other file, and purchase API is refused in that file too.
+    func testStoreKitIsAllowedForTheReviewRequestOnly() throws {
+        let review = "import StoreKit\n@Environment(\\.requestReview) var requestReview\n"
+        XCTAssertEqual(Self.bannedTokens(in: review, fileName: Self.storeKitFile), [])
+        XCTAssertEqual(Self.bannedTokens(in: review, fileName: "AboutView.swift"), ["StoreKit"])
+        for purchase in ["try await Product.products(for: ids)", "for await update in Transaction.updates {}", "SKPaymentQueue.default()", "let r = Bundle.main.appStoreReceiptURL", "try await product.purchase()"] {
+            XCTAssertFalse(Self.bannedTokens(in: purchase, fileName: Self.storeKitFile).isEmpty, "not refused: \(purchase)")
+        }
+        let found = swiftFiles().filter { $0.lastPathComponent == Self.storeKitFile }
+        XCTAssertEqual(found.count, 1, "the review-request file must exist, once")
+        let text = try read(XCTUnwrap(found.first))
+        XCTAssertTrue(text.contains("import StoreKit"), "the allowance is for importing StoreKit there")
+        XCTAssertTrue(text.contains("requestReview"), "the allowance is for requestReview")
     }
 
     // MARK: 3. No third-party code
@@ -121,6 +152,7 @@ final class SourceTreeGuardTests: XCTestCase {
         // optional episode reminders. Local only: no push, no server.
         // WidgetKit: Apple's, for the home-screen widget and the app's one
         // call asking it to redraw.
+        // StoreKit: in `storeKitFile` only, for the review prompt.
         let allowed: Set<String> = ["Foundation", "SwiftUI", "XCTest", "Observation", "GuideCore", "QueerTVGuide", "PackageDescription", "UIKit", "UserNotifications", "WidgetKit"]
         let importLine = try NSRegularExpression(pattern: #"^\s*(?:@testable\s+)?import\s+([A-Za-z_][A-Za-z0-9_]*)"#, options: [.anchorsMatchLines])
         var offenders: [String] = []
@@ -128,6 +160,7 @@ final class SourceTreeGuardTests: XCTestCase {
             let text = try read(file)
             for m in importLine.matches(in: text, range: NSRange(text.startIndex..., in: text)) {
                 let module = String(text[Range(m.range(at: 1), in: text)!])
+                if module == "StoreKit", file.lastPathComponent == Self.storeKitFile { continue }
                 if !allowed.contains(module) { offenders.append("\(file.lastPathComponent): import \(module)") }
             }
         }

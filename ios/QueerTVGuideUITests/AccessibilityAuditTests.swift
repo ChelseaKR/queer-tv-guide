@@ -650,7 +650,7 @@ final class AccessibilityAuditTests: XCTestCase {
     @MainActor
     private func launchFirstRun(textSize: String? = nil) -> XCUIApplication {
         let app = XCUIApplication()
-        app.launchArguments += ["-onboarding.v1.seen", "NO"]
+        app.launchArguments += ["-onboarding.v1.seen", "NO"] + XCUIApplication.noReviewPrompt
         if let textSize {
             app.launchArguments += ["-UIPreferredContentSizeCategoryName", textSize]
         }

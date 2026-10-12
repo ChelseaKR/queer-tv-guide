@@ -1,6 +1,6 @@
 # Decisions
 
-Numbering: 0001–0004, 0006–0011, 0013, 0015 and 0018 live here. 0005, 0012 and
+Numbering: 0001–0004, 0006–0011, 0013, 0015, 0017 and 0018 live here. 0005, 0012 and
 0014 are ADRs in `docs/adr/`, so they are skipped here rather than
 duplicated.
 
@@ -180,6 +180,40 @@ snapshot, the attribution, and the App Review note in `docs/APP-STORE.md`.
 **Still open:** a trademark screen for "Queer Frame" (the owner's).
 Update 2026-10-02: done, no conflict found (0006).
 
+## 0017 — The system rating prompt may use StoreKit's review API (proposed, 2026-10-12)
+
+**Status: proposed. It needs the owner's sign-off, because it amends 0003.**
+0003 reads: "One-time purchase at the App Store, no IAP, no subscription:
+no StoreKit code, no receipt validation, nothing to phone home about." Its
+reason is the purchase: nothing to buy inside the app, nothing to verify,
+nothing to report. The rating prompt is none of those, but "no StoreKit
+code" says no to it as written.
+
+**Proposed decision.** 0003 keeps its purchase rule and loses its blanket
+"no StoreKit code": the app may import StoreKit in exactly one file,
+`ios/QueerTVGuide/App/ReviewRequest.swift`, for SwiftUI's `requestReview`
+action and nothing else. No StoreKit purchase, product, receipt or
+store-sheet API may appear anywhere, that file included, and no `.storekit`
+file ships. `SourceTreeGuardTests` and `scripts/check_app_store.py` enforce
+both halves, with negative controls.
+
+**When the app asks** (`ReviewPromptPolicy` in GuideCore, unit-tested on an
+injected clock): never during the first launch; only after a good moment
+(a show opened from Favorites in this launch, or the third launch with a
+favorite saved); at most once per app version and at least 120 days after
+the last ask. iOS decides whether the prompt appears and caps it at three
+times a year. Nothing is offered for a rating and nobody is asked how they
+feel first (App Review 5.6.1).
+
+**Privacy (0002 stands).** iOS draws the prompt and sends any rating to the
+App Store; the app learns nothing, not even whether it showed. The timing
+counters (launch counts, the last ask's date and version) stay in
+`UserDefaults` on the device under `reviewPrompt.v1`, already covered by the
+manifest's `CA92.1` reason. The privacy label stays "Data Not Collected".
+
+**If the owner declines,** revert the commit that adds the prompt. The
+About screen's "Rate" row does not use StoreKit and stays either way.
+
 ## 0018 — A native Android app with parity to iOS (2026-10-12)
 
 **Status: accepted (owner, 2026-10-12).** The owner asked on 2026-10-12 for
@@ -253,4 +287,3 @@ no in-app purchase, no ads, United States only (0011, 0015).
 
 **CI.** The `android` job runs `make android` on Linux on every run; the
 emulator tests run locally (`make -C android instrumented`).
-

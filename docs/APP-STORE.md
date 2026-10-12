@@ -276,8 +276,9 @@ https://developer.apple.com/app-store/review/guidelines/ (fetched
   above). A plain outbound link to a streaming service is not "tracking" per
   Apple's own definition (research §7).
 - **3.1.1 In-app purchase.** *"Apps may not use their own mechanisms to
-  unlock content."* This app has nothing to unlock — no StoreKit code at
-  all (DECISIONS 0003: paid up front, one non-consumable purchase at the
+  unlock content."* This app has nothing to unlock — no StoreKit purchase
+  code at all; StoreKit appears only for the system rating prompt
+  (DECISIONS 0017, proposed) (DECISIONS 0003: paid up front, one non-consumable purchase at the
   App Store level, not an in-app mechanism). Owner action: configure the
   paid-app price tier in App Store Connect; no code change is needed.
 - **5.2.3 Audio/video.** *"Never play or download from the services

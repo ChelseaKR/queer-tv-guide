@@ -33,9 +33,11 @@ measured with Python's `len()` on the JSON on 2026-10-02.
 keyword repeats a word of the name or subtitle; no field answers a "does
 she die" question or names a show or character.
 
-**Paid up front, as built.** The code has no StoreKit import, no
-`.storekit` file and no purchase screen (`make appstore` fails on any of
-them), so App Store Connect's price is the whole purchase. The description
+**Paid up front, as built.** The code has no StoreKit purchase, product
+or receipt API, no `.storekit` file and no purchase screen (`make appstore`
+fails on any of them), so App Store Connect's price is the whole purchase.
+StoreKit is imported in one file, for the system rating prompt only
+(DECISIONS 0017, proposed). The description
 already ends "One-time purchase. No subscription, no in-app purchases."
 
 **Not in the description today** (your call, optional): the Up Next home

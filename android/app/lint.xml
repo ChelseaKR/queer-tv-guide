@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Android lint runs with warnings as errors (app/build.gradle.kts). Only
+     checks that ask the network what is newest are off: a newer release
+     appearing must not turn an unchanged build red. Renovate proposes
+     upgrades instead (renovate.json). -->
+<lint>
+    <issue id="GradleDependency" severity="ignore" />
+    <issue id="NewerVersionAvailable" severity="ignore" />
+    <issue id="AndroidGradlePluginVersion" severity="ignore" />
+    <!-- The app targets API 36 and compiles against 37 only because
+         AndroidX Compose 1.12 requires it. Moving the target to 37 changes
+         runtime behavior and is a deliberate, tested step of its own (it
+         needs an API 37 test device), not a lint fix. -->
+    <issue id="OldTargetApi" severity="ignore" />
+    <!-- aapt2 resolves an adaptive icon only from -v26, even at minSdk 26. -->
+    <issue id="ObsoleteSdkInt">
+        <ignore path="src/main/res/mipmap-anydpi-v26" />
+    </issue>
+</lint>

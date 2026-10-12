@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Android 11 and earlier: the same rule as data_extraction_rules.xml.
+     Only a device-to-device transfer carries the preferences file. -->
+<full-backup-content>
+    <include domain="sharedpref" path="queer_frame.xml" requireFlags="deviceToDeviceTransfer" />
+</full-backup-content>

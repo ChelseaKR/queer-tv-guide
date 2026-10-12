@@ -3,6 +3,7 @@ import GuideCore
 
 struct SearchView: View {
     @Environment(AppModel.self) private var model
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @State private var query = ""
     @State private var filters = SearchIndex.Filters()
     @State private var showingFilters = false
@@ -24,6 +25,13 @@ struct SearchView: View {
         var totalCount: Int = 0
     }
 
+    /// In the iPad sidebar the system would tuck the field away until the
+    /// list is pulled down, which hides the app's main action; there it
+    /// always shows. On iPhone the placement is the system's, unchanged.
+    private var searchPlacement: SearchFieldPlacement {
+        horizontalSizeClass == .regular ? .navigationBarDrawer(displayMode: .always) : .automatic
+    }
+
     private var trimmedQuery: String { query.trimmingCharacters(in: .whitespacesAndNewlines) }
     private var key: Key { Key(query: trimmedQuery, filters: filters, generatedAt: model.snapshot?.generatedAt) }
 
@@ -35,7 +43,7 @@ struct SearchView: View {
         ) {
             content
                 .navigationTitle("Search")
-                .searchable(text: $query, prompt: "Shows, characters, actors")
+                .searchable(text: $query, placement: searchPlacement, prompt: "Shows, characters, actors")
                 .toolbar {
                     ToolbarItem(placement: .topBarTrailing) { filterButton }
                 }

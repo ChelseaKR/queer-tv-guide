@@ -30,7 +30,7 @@ Two modes:
   - the project has no remote Swift package and GuideCore depends on no
     package, no Swift file that ships imports a module outside Apple's SDK
     and GuideCore (StoreKit only in the review-request file, for the
-    rating prompt, DECISIONS 0017, proposed), no Swift file uses StoreKit's
+    rating prompt, DECISIONS 0017, accepted), no Swift file uses StoreKit's
     purchase, product or receipt API, and no .storekit file ships: the app
     is paid up front with no in-app purchase (DECISIONS 0003, 0011);
   - entitlements hold only the one App Group (no push, no iCloud);
@@ -108,7 +108,7 @@ ENROLLMENT_ID = "ACKGM9XK9V"
 # Anything else is third-party code and needs a decision (DECISIONS 0002).
 # StoreKit is absent here on purpose: the app is paid up front (DECISIONS
 # 0003). It is allowed in STOREKIT_FILE alone, for the rating prompt
-# (DECISIONS 0017, proposed), and PURCHASE_API is refused everywhere.
+# (DECISIONS 0017, accepted), and PURCHASE_API is refused everywhere.
 ALLOWED_IMPORTS = frozenset(
     {
         "Foundation",

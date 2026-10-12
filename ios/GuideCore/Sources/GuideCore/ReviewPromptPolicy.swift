@@ -1,7 +1,7 @@
 import Foundation
 
 /// When the app may ask iOS to show its rating prompt (DECISIONS 0017,
-/// proposed). iOS decides whether the prompt actually appears and caps it
+/// accepted). iOS decides whether the prompt actually appears and caps it
 /// at three times a year; this policy decides when the app is allowed to
 /// ask at all, and asks far less often than that:
 ///

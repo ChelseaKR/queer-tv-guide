@@ -4,7 +4,7 @@ import GuideCore
 
 /// Asks iOS for its rating prompt when `ReviewPromptPolicy` says the moment
 /// is right. The one file allowed to import StoreKit (DECISIONS 0017,
-/// proposed), and only for SwiftUI's `requestReview` action: iOS draws the
+/// accepted), and only for SwiftUI's `requestReview` action: iOS draws the
 /// prompt, decides whether it appears at all, and sends any rating to the
 /// App Store itself. The app learns nothing, not even whether the prompt
 /// showed. No purchase, product or receipt API is used anywhere

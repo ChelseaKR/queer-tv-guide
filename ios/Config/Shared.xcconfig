@@ -21,5 +21,5 @@ CODE_SIGN_STYLE = Automatic
 // Simulator builds/tests need no signing identity; a device archive needs
 // the team above and an explicit App ID (docs/APP-STORE.md has the owner
 // steps). Never a StoreKit purchase, never a third-party SDK (DECISIONS
-// 0002/0003; StoreKit's review prompt only, DECISIONS 0017, proposed).
+// 0002/0003; StoreKit's review prompt only, DECISIONS 0017, accepted).
 ENABLE_HARDENED_RUNTIME = YES

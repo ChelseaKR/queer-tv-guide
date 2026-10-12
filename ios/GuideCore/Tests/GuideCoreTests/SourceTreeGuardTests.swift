@@ -102,7 +102,7 @@ final class SourceTreeGuardTests: XCTestCase {
         XCTAssertTrue(sites.first?.hasPrefix("SnapshotRefresher.swift") ?? false, "\(sites)")
     }
 
-    /// The one file that may name StoreKit (DECISIONS 0017, proposed): it
+    /// The one file that may name StoreKit (DECISIONS 0017, accepted): it
     /// imports it for SwiftUI's `requestReview` and nothing else.
     static let storeKitFile = "ReviewRequest.swift"
 

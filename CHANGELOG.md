@@ -29,7 +29,7 @@ consumer of the published snapshot, would notice.
   show opened from Favorites, or a third launch with a favorite saved.
   Never on the first launch. iOS decides whether the prompt appears. This
   is the app's first use of StoreKit, for that prompt alone; there is
-  still no in-app purchase (DECISIONS 0017, proposed).
+  still no in-app purchase (DECISIONS 0017, accepted).
 
 ### Fixed
 

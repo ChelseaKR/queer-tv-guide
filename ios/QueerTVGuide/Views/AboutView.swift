@@ -80,6 +80,12 @@ struct AboutView: View {
 
                 Section(subdued: "Version") {
                     LabeledContent("App", value: "\(Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "—") (\(Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "—"))")
+                    // The App Store's review sheet, opened by the system.
+                    // Shown to everyone, with nothing offered for a rating
+                    // (App Review 5.6.1).
+                    Button("Rate \(AppIdentity.displayName)") { openURL(AppStoreReview.writeReviewURL) }
+                        .accessibilityHint("Opens the App Store to rate or review this app")
+                        .accessibilityIdentifier("rate-app")
                 }
 
                 // The first-run page again, last, so the sections above keep

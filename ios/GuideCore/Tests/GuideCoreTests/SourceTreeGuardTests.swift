@@ -40,19 +40,47 @@ final class SourceTreeGuardTests: XCTestCase {
 
     // MARK: 1. One host
 
+    /// The one exception to "one host": the App Store review sheet, which
+    /// the About screen's "Rate" row hands to the system `openURL`. The app
+    /// never fetches it (the URLSession test below still allows exactly one
+    /// session, the snapshot's), and it may appear in this one file only.
+    static let handOffHosts: [String: String] = ["apps.apple.com": "AppStoreReview.swift"]
+
+    /// Hosts in `text` that this guard refuses for a file named `fileName`.
+    static func disallowedHosts(in text: String, fileName: String) -> [String] {
+        let text = text.replacingOccurrences(of: dtdToken, with: "")
+        let range = NSRange(text.startIndex..., in: text)
+        var out: [String] = []
+        for m in hostPattern.matches(in: text, range: range) {
+            let host = String(text[Range(m.range(at: 1), in: text)!]).lowercased()
+            if host == SnapshotEndpoint.host.lowercased() { continue }
+            if handOffHosts[host] == fileName { continue }
+            out.append(host)
+        }
+        return out
+    }
+
     func testOnlyTheSnapshotHostAppearsInSource() throws {
         var offenders: [String] = []
         for file in codeFiles() {
-            let text = try read(file).replacingOccurrences(of: Self.dtdToken, with: "")
-            let range = NSRange(text.startIndex..., in: text)
-            for m in Self.hostPattern.matches(in: text, range: range) {
-                let host = String(text[Range(m.range(at: 1), in: text)!]).lowercased()
-                if host != SnapshotEndpoint.host.lowercased() {
-                    offenders.append("\(file.lastPathComponent): \(host)")
-                }
+            for host in Self.disallowedHosts(in: try read(file), fileName: file.lastPathComponent) {
+                offenders.append("\(file.lastPathComponent): \(host)")
             }
         }
         XCTAssertEqual(offenders, [], "hosts other than \(SnapshotEndpoint.host) found in ios/: \(offenders)")
+    }
+
+    /// Negative control for the exception above: the App Store host is
+    /// refused in any other file, and any other host is refused in that
+    /// file. Built with a split scheme so this file holds no URL itself.
+    func testTheAppStoreHostIsAllowedInOneFileOnly() {
+        let scheme = "https"
+        let appStore = "\(scheme)://apps.apple.com/app/id1?action=write-review"
+        XCTAssertEqual(Self.disallowedHosts(in: appStore, fileName: "AppStoreReview.swift"), [])
+        XCTAssertEqual(Self.disallowedHosts(in: appStore, fileName: "AboutView.swift"), ["apps.apple.com"])
+        XCTAssertEqual(Self.disallowedHosts(in: "\(scheme)://example.com/", fileName: "AppStoreReview.swift"), ["example.com"])
+        let found = Repo.sourceFiles(extensions: ["swift"]).filter { $0.lastPathComponent == "AppStoreReview.swift" }
+        XCTAssertEqual(found.count, 1, "the one file allowed the App Store host must exist, once")
     }
 
     func testSnapshotEndpointIsHTTPS() {

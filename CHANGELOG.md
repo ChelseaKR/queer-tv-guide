@@ -20,6 +20,10 @@ consumer of the published snapshot, would notice.
   Android, new-episode reminders set on the device, an Up Next home-screen
   widget, a first-run guide, links that open a show, and a two-pane layout
   on tablets. Not yet on Google Play.
+- About has a "Rate Queer Frame" row, under the version, that opens the
+  App Store's review sheet for the app. It is the same for everyone and
+  offers nothing in return. The app does not fetch the page; iOS opens the
+  App Store app.
 
 ### Fixed
 

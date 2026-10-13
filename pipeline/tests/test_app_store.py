@@ -156,11 +156,80 @@ def test_on_adds_banner_everywhere_and_badge_on_the_index(site):
     assert (site / "snapshot.v1.json").read_bytes()  # data file untouched and present
 
 
+# Pages that describe the Android app on purpose (DECISIONS 0018), and only
+# inside regions marked with these comments. Anywhere else the site, and the
+# launch copy above all, never mentions Android or Google Play.
+ANDROID_PAGES = frozenset({"privacy.html"})
+ANDROID_BEGIN = "<!-- android-app:begin -->"
+ANDROID_END = "<!-- android-app:end -->"
+_ANDROID_REGION = re.compile(re.escape(ANDROID_BEGIN) + r".*?" + re.escape(ANDROID_END), re.S)
+
+
+def _android_problems(name: str, text: str) -> list[str]:
+    """Android wording outside a marked region, or a region where none belongs."""
+    problems = []
+    if text.count(ANDROID_BEGIN) != text.count(ANDROID_END):
+        problems.append(f"{name}: unbalanced android-app markers")
+    if ANDROID_BEGIN in text and name not in ANDROID_PAGES:
+        problems.append(f"{name}: an android-app region outside {sorted(ANDROID_PAGES)}")
+    rest = _ANDROID_REGION.sub("", text).lower()
+    problems += [
+        f"{name}: {word!r} outside a marked region"
+        for word in ("android", "google play")
+        if word in rest
+    ]
+    return problems
+
+
 def test_on_copy_is_iphone_only(site):
     assert app_store.main([str(site), "true"]) == 0
     for page in site.glob("*.html"):
-        text = page.read_text(encoding="utf-8").lower()
-        assert "android" not in text and "google play" not in text, page.name
+        assert _android_problems(page.name, page.read_text(encoding="utf-8")) == [], page.name
+
+
+def test_the_privacy_page_describes_android_only_inside_its_regions():
+    text = (DOCS_SITE / "privacy.html").read_text(encoding="utf-8")
+    # Denominator: the regions exist and hold the Android wording.
+    assert text.count(ANDROID_BEGIN) >= 1
+    assert "android" in text.lower()
+    assert _android_problems("privacy.html", text) == []
+
+
+def test_android_wording_outside_a_region_is_caught(site):
+    assert app_store.main([str(site), "true"]) == 0
+    index = site / "index.html"
+    before = index.read_text(encoding="utf-8")
+    sabotaged = before + "<p>Also on Google Play for Android.</p>\n"
+    assert sabotaged != before, "the sabotage did not apply"
+    assert _android_problems("index.html", sabotaged) == [
+        "index.html: 'android' outside a marked region",
+        "index.html: 'google play' outside a marked region",
+    ]
+    privacy = (DOCS_SITE / "privacy.html").read_text(encoding="utf-8")
+    moved = privacy.replace(
+        "Queer Frame collects nothing about you.",
+        "Queer Frame for Android collects nothing about you.",
+        1,
+    )
+    assert moved != privacy, "the sabotage did not apply"
+    assert _android_problems("privacy.html", moved) == [
+        "privacy.html: 'android' outside a marked region"
+    ]
+
+
+def test_a_marked_region_on_another_page_is_caught():
+    support = (DOCS_SITE / "support.html").read_text(encoding="utf-8")
+    sabotaged = support.replace("</main>", f"{ANDROID_BEGIN}<p>Android</p>{ANDROID_END}</main>", 1)
+    assert sabotaged != support, "the sabotage did not apply"
+    assert _android_problems("support.html", sabotaged) == [
+        "support.html: an android-app region outside ['privacy.html']"
+    ]
+    unbalanced = (
+        (DOCS_SITE / "privacy.html").read_text(encoding="utf-8").replace(ANDROID_END, "", 1)
+    )
+    assert "privacy.html: unbalanced android-app markers" in _android_problems(
+        "privacy.html", unbalanced
+    )
 
 
 def test_on_adds_no_script(site):

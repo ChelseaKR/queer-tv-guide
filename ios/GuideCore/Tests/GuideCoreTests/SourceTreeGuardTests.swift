@@ -40,19 +40,47 @@ final class SourceTreeGuardTests: XCTestCase {
 
     // MARK: 1. One host
 
+    /// The one exception to "one host": the App Store review sheet, which
+    /// the About screen's "Rate" row hands to the system `openURL`. The app
+    /// never fetches it (the URLSession test below still allows exactly one
+    /// session, the snapshot's), and it may appear in this one file only.
+    static let handOffHosts: [String: String] = ["apps.apple.com": "AppStoreReview.swift"]
+
+    /// Hosts in `text` that this guard refuses for a file named `fileName`.
+    static func disallowedHosts(in text: String, fileName: String) -> [String] {
+        let text = text.replacingOccurrences(of: dtdToken, with: "")
+        let range = NSRange(text.startIndex..., in: text)
+        var out: [String] = []
+        for m in hostPattern.matches(in: text, range: range) {
+            let host = String(text[Range(m.range(at: 1), in: text)!]).lowercased()
+            if host == SnapshotEndpoint.host.lowercased() { continue }
+            if handOffHosts[host] == fileName { continue }
+            out.append(host)
+        }
+        return out
+    }
+
     func testOnlyTheSnapshotHostAppearsInSource() throws {
         var offenders: [String] = []
         for file in codeFiles() {
-            let text = try read(file).replacingOccurrences(of: Self.dtdToken, with: "")
-            let range = NSRange(text.startIndex..., in: text)
-            for m in Self.hostPattern.matches(in: text, range: range) {
-                let host = String(text[Range(m.range(at: 1), in: text)!]).lowercased()
-                if host != SnapshotEndpoint.host.lowercased() {
-                    offenders.append("\(file.lastPathComponent): \(host)")
-                }
+            for host in Self.disallowedHosts(in: try read(file), fileName: file.lastPathComponent) {
+                offenders.append("\(file.lastPathComponent): \(host)")
             }
         }
         XCTAssertEqual(offenders, [], "hosts other than \(SnapshotEndpoint.host) found in ios/: \(offenders)")
+    }
+
+    /// Negative control for the exception above: the App Store host is
+    /// refused in any other file, and any other host is refused in that
+    /// file. Built with a split scheme so this file holds no URL itself.
+    func testTheAppStoreHostIsAllowedInOneFileOnly() {
+        let scheme = "https"
+        let appStore = "\(scheme)://apps.apple.com/app/id1?action=write-review"
+        XCTAssertEqual(Self.disallowedHosts(in: appStore, fileName: "AppStoreReview.swift"), [])
+        XCTAssertEqual(Self.disallowedHosts(in: appStore, fileName: "AboutView.swift"), ["apps.apple.com"])
+        XCTAssertEqual(Self.disallowedHosts(in: "\(scheme)://example.com/", fileName: "AppStoreReview.swift"), ["example.com"])
+        let found = Repo.sourceFiles(extensions: ["swift"]).filter { $0.lastPathComponent == "AppStoreReview.swift" }
+        XCTAssertEqual(found.count, 1, "the one file allowed the App Store host must exist, once")
     }
 
     func testSnapshotEndpointIsHTTPS() {
@@ -74,16 +102,47 @@ final class SourceTreeGuardTests: XCTestCase {
         XCTAssertTrue(sites.first?.hasPrefix("SnapshotRefresher.swift") ?? false, "\(sites)")
     }
 
+    /// The one file that may name StoreKit (DECISIONS 0017, accepted): it
+    /// imports it for SwiftUI's `requestReview` and nothing else.
+    static let storeKitFile = "ReviewRequest.swift"
+
+    /// StoreKit's purchase, product, receipt and store-sheet API. The app
+    /// is paid up front (DECISIONS 0003, 0011), so none of it may appear in
+    /// any file, the review-request file included.
+    static let purchaseTokens = ["SKPaymentQueue", "SKProduct", "SKReceipt", "SKStoreProductViewController", "appStoreReceiptURL", "Product.products", "Product.PurchaseResult", "Transaction.", "AppTransaction", "AppStore.sync", "StoreView", "ProductView", "SubscriptionStoreView", "SKAdNetwork", ".purchase("]
+
+    /// Banned network, web and StoreKit tokens in `text`, for a file named
+    /// `fileName`.
+    static func bannedTokens(in text: String, fileName: String) -> [String] {
+        var banned = ["NWConnection", "NWBrowser", "CFStreamCreatePair", "NSURLConnection", "WKWebView", "SFSafariViewController", "getaddrinfo", "CFSocket", "NSStream", "URLSessionWebSocketTask", "MultipeerConnectivity", "CKContainer", "NSUbiquitousKeyValueStore"] + purchaseTokens
+        if fileName != storeKitFile { banned.append("StoreKit") }
+        return banned.filter { text.contains($0) }
+    }
+
     func testNoOtherNetworkOrWebPrimitives() throws {
-        let banned = ["NWConnection", "NWBrowser", "CFStreamCreatePair", "NSURLConnection", "WKWebView", "SFSafariViewController", "getaddrinfo", "CFSocket", "NSStream", "URLSessionWebSocketTask", "MultipeerConnectivity", "CKContainer", "NSUbiquitousKeyValueStore", "SKPaymentQueue", "StoreKit"]
         var offenders: [String] = []
         for file in swiftFiles() where !file.path.contains("Tests/") {
-            let text = try read(file)
-            for token in banned where text.contains(token) {
+            for token in Self.bannedTokens(in: try read(file), fileName: file.lastPathComponent) {
                 offenders.append("\(file.lastPathComponent): \(token)")
             }
         }
         XCTAssertEqual(offenders, [])
+    }
+
+    /// Negative controls for the StoreKit allowance: StoreKit is refused in
+    /// any other file, and purchase API is refused in that file too.
+    func testStoreKitIsAllowedForTheReviewRequestOnly() throws {
+        let review = "import StoreKit\n@Environment(\\.requestReview) var requestReview\n"
+        XCTAssertEqual(Self.bannedTokens(in: review, fileName: Self.storeKitFile), [])
+        XCTAssertEqual(Self.bannedTokens(in: review, fileName: "AboutView.swift"), ["StoreKit"])
+        for purchase in ["try await Product.products(for: ids)", "for await update in Transaction.updates {}", "SKPaymentQueue.default()", "let r = Bundle.main.appStoreReceiptURL", "try await product.purchase()"] {
+            XCTAssertFalse(Self.bannedTokens(in: purchase, fileName: Self.storeKitFile).isEmpty, "not refused: \(purchase)")
+        }
+        let found = swiftFiles().filter { $0.lastPathComponent == Self.storeKitFile }
+        XCTAssertEqual(found.count, 1, "the review-request file must exist, once")
+        let text = try read(XCTUnwrap(found.first))
+        XCTAssertTrue(text.contains("import StoreKit"), "the allowance is for importing StoreKit there")
+        XCTAssertTrue(text.contains("requestReview"), "the allowance is for requestReview")
     }
 
     // MARK: 3. No third-party code
@@ -93,6 +152,7 @@ final class SourceTreeGuardTests: XCTestCase {
         // optional episode reminders. Local only: no push, no server.
         // WidgetKit: Apple's, for the home-screen widget and the app's one
         // call asking it to redraw.
+        // StoreKit: in `storeKitFile` only, for the review prompt.
         let allowed: Set<String> = ["Foundation", "SwiftUI", "XCTest", "Observation", "GuideCore", "QueerTVGuide", "PackageDescription", "UIKit", "UserNotifications", "WidgetKit"]
         let importLine = try NSRegularExpression(pattern: #"^\s*(?:@testable\s+)?import\s+([A-Za-z_][A-Za-z0-9_]*)"#, options: [.anchorsMatchLines])
         var offenders: [String] = []
@@ -100,6 +160,7 @@ final class SourceTreeGuardTests: XCTestCase {
             let text = try read(file)
             for m in importLine.matches(in: text, range: NSRange(text.startIndex..., in: text)) {
                 let module = String(text[Range(m.range(at: 1), in: text)!])
+                if module == "StoreKit", file.lastPathComponent == Self.storeKitFile { continue }
                 if !allowed.contains(module) { offenders.append("\(file.lastPathComponent): import \(module)") }
             }
         }

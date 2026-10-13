@@ -20,6 +20,16 @@ consumer of the published snapshot, would notice.
   Android, new-episode reminders set on the device, an Up Next home-screen
   widget, a first-run guide, links that open a show, and a two-pane layout
   on tablets. Not yet on Google Play.
+- About has a "Rate Queer Frame" row, under the version, that opens the
+  App Store's review sheet for the app. It is the same for everyone and
+  offers nothing in return. The app does not fetch the page; iOS opens the
+  App Store app.
+- Queer Frame may ask iOS for its rating prompt, at most once per version
+  and 120 days apart, and only after a good moment: coming back from a
+  show opened from Favorites, or a third launch with a favorite saved.
+  Never on the first launch. iOS decides whether the prompt appears. This
+  is the app's first use of StoreKit, for that prompt alone; there is
+  still no in-app purchase (DECISIONS 0017, accepted).
 
 ### Fixed
 

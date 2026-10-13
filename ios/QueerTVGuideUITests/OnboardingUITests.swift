@@ -13,7 +13,7 @@ final class OnboardingUITests: XCTestCase {
     @MainActor
     private func launchFresh() -> XCUIApplication {
         let app = XCUIApplication()
-        app.launchArguments += ["-onboarding.v1.seen", "NO"]
+        app.launchArguments += ["-onboarding.v1.seen", "NO"] + XCUIApplication.noReviewPrompt
         app.launch()
         return app
     }
@@ -49,6 +49,7 @@ final class OnboardingUITests: XCTestCase {
 
         // No argument this time: the stored value decides.
         let again = XCUIApplication()
+        again.launchArguments += XCUIApplication.noReviewPrompt
         again.launch()
         XCTAssertTrue(again.tabBars.buttons["Search"].waitForExistence(timeout: 30), "the first-run screen came back")
         XCTAssertFalse(again.staticTexts["onboarding-point-spoilers"].exists)

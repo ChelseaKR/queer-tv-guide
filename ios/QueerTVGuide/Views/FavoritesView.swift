@@ -70,6 +70,10 @@ struct FavoritesView: View {
                 }
             }
             .onAppear(perform: reload)
+            // On the way back from a followed show, or on a later launch
+            // with favorites saved, iOS may be asked for its rating prompt
+            // (ReviewRequest.swift says when).
+            .asksForReviewWhenDue()
             // The explanation before the system's permission prompt. Only
             // "Turn on reminders" there asks iOS for permission.
             .sheet(isPresented: $showingReminderPrimer) {
@@ -152,6 +156,9 @@ struct FavoritesView: View {
             if let show = snapshot.show(id: entry.id) {
                 NavigationLink {
                     ShowDetailView(showID: show.id)
+                        // Coming back to a show you follow is the good
+                        // moment the rating prompt waits for.
+                        .onAppear { model.reviewPrompt.recordGoodMoment() }
                 } label: {
                     // "When's the next episode" for everything followed,
                     // at a glance.

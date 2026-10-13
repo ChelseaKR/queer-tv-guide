@@ -32,6 +32,21 @@ final class QueerTVGuideUITests: XCTestCase {
         XCTAssertTrue(row.waitForExistence(timeout: 30), "no row for \(show.title)")
     }
 
+    /// About's "Rate" row, under the version: a plain button that says what
+    /// it does. It is not tapped here; it leaves the app for the App Store.
+    func testAboutOffersARateRow() throws {
+        let app = XCUIApplication.guide()
+        app.launch()
+
+        XCTAssertTrue(app.tabBars.buttons["About"].waitForExistence(timeout: 30))
+        app.tabBars.buttons["About"].tap()
+        let rate = app.buttons["rate-app"]
+        for _ in 0..<10 where !(rate.exists && rate.isHittable) { app.swipeUp() }
+        XCTAssertTrue(rate.waitForExistence(timeout: 10), "About has no Rate row")
+        XCTAssertTrue(rate.label.hasPrefix("Rate "), rate.label)
+        XCTAssertTrue(rate.isEnabled)
+    }
+
     func testFavoritesTabShowsEmptyStateOnFirstLaunch() throws {
         let app = XCUIApplication.guide()
         app.launch()

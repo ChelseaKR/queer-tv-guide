@@ -291,7 +291,8 @@ re-checks the first six on every `make verify` and every pull request.
   none).
 - No third-party code: every shipped import is an Apple framework or the
   local GuideCore package, the project has no remote package, and there is
-  no StoreKit code or configuration (paid up front).
+  no StoreKit purchase code or configuration (paid up front). StoreKit is
+  imported in one file, for the rating prompt (DECISIONS 0017, accepted).
 - Entitlements: the one App Group, nothing else (no push, no iCloud).
 - App icon: every size it names plus the 1024x1024 marketing image, all
   opaque.

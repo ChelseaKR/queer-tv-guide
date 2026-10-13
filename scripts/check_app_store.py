@@ -29,7 +29,9 @@ Two modes:
     the build settings;
   - the project has no remote Swift package and GuideCore depends on no
     package, no Swift file that ships imports a module outside Apple's SDK
-    and GuideCore, and nothing ships StoreKit or a .storekit file: the app
+    and GuideCore (StoreKit only in the review-request file, for the
+    rating prompt, DECISIONS 0017, accepted), no Swift file uses StoreKit's
+    purchase, product or receipt API, and no .storekit file ships: the app
     is paid up front with no in-app purchase (DECISIONS 0003, 0011);
   - entitlements hold only the one App Group (no push, no iCloud);
   - both privacy manifests say no tracking, no tracking domains and no
@@ -104,7 +106,9 @@ TEAM_ID = "6X5YH93QNM"
 ENROLLMENT_ID = "ACKGM9XK9V"
 # Apple frameworks the shipped code may import, plus the local package.
 # Anything else is third-party code and needs a decision (DECISIONS 0002).
-# StoreKit is deliberately absent: the app is paid up front (DECISIONS 0003).
+# StoreKit is absent here on purpose: the app is paid up front (DECISIONS
+# 0003). It is allowed in STOREKIT_FILE alone, for the rating prompt
+# (DECISIONS 0017, accepted), and PURCHASE_API is refused everywhere.
 ALLOWED_IMPORTS = frozenset(
     {
         "Foundation",
@@ -116,6 +120,16 @@ ALLOWED_IMPORTS = frozenset(
         "UserNotifications",
         "WidgetKit",
     }
+)
+# The one Swift file that may import StoreKit, for SwiftUI's requestReview.
+STOREKIT_FILE = "ios/QueerTVGuide/App/ReviewRequest.swift"
+# StoreKit's purchase, product, receipt and store-sheet API, in either
+# StoreKit generation.
+PURCHASE_API = re.compile(
+    r"\b(?:SKPaymentQueue|SKProduct\w*|SKReceipt\w*|SKStoreProductViewController"
+    r"|appStoreReceiptURL|AppTransaction|SubscriptionStoreView|StoreView|ProductView)\b"
+    r"|\bProduct\.(?:products|PurchaseResult)\b|\bTransaction\.\w+|\bAppStore\.sync\b"
+    r"|\.purchase\("
 )
 ALLOWED_ENTITLEMENTS = frozenset({"com.apple.security.application-groups"})
 
@@ -369,6 +383,18 @@ def foreign_imports(sources: Mapping[str, str]) -> list[str]:
         for name, text in sources.items()
         for m in _IMPORT.finditer(text)
         if m.group("module") not in ALLOWED_IMPORTS
+        and not (m.group("module") == "StoreKit" and name == STOREKIT_FILE)
+    ]
+
+
+def purchase_api_uses(sources: Mapping[str, str]) -> list[str]:
+    """'file:line: symbol' for every StoreKit purchase, product or receipt call."""
+    return [
+        f"{name}:{number}: {m.group(0)}"
+        for name, text in sources.items()
+        for number, line in enumerate(text.splitlines(), 1)
+        if not line.lstrip().startswith("//")
+        for m in PURCHASE_API.finditer(line)
     ]
 
 
@@ -542,6 +568,7 @@ def readiness() -> list[str]:
         if not sources:
             problems.append(f"{label}: no Swift sources were read")
         problems += [f"non-Apple import: {item}" for item in foreign_imports(sources)]
+        problems += [f"in-app purchase API: {item}" for item in purchase_api_uses(sources)]
         problems += check_manifest(
             manifest.relative_to(ROOT).as_posix(), _plist(manifest), required_reason_uses(sources)
         )
@@ -765,6 +792,22 @@ def self_test() -> list[str]:
         ("ignores comment", not required_reason_uses({"a": "// no UserDefaults here"})),
         ("foreign import", bool(foreign_imports({"a": "import FirebaseAnalytics\n"}))),
         ("storekit import", bool(foreign_imports({"a": "import StoreKit\n"}))),
+        ("storekit review file", not foreign_imports({STOREKIT_FILE: "import StoreKit\n"})),
+        (
+            "review request",
+            not purchase_api_uses({STOREKIT_FILE: "@Environment(\\.requestReview) var ask\n"}),
+        ),
+        (
+            "product api",
+            bool(purchase_api_uses({STOREKIT_FILE: "try await Product.products(for: [])"})),
+        ),
+        (
+            "transaction api",
+            bool(purchase_api_uses({"a": "for await u in Transaction.updates {}"})),
+        ),
+        ("purchase call", bool(purchase_api_uses({"a": "let r = try await product.purchase()"}))),
+        ("receipt api", bool(purchase_api_uses({"a": "Bundle.main.appStoreReceiptURL"}))),
+        ("store sheet", bool(purchase_api_uses({"a": "SKStoreProductViewController()"}))),
         (
             "apple import",
             not foreign_imports(

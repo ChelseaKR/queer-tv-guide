@@ -71,8 +71,9 @@ android:
 # The iOS app's App Store readiness (scripts/check_app_store.py): one version
 # and build number across targets, iPhone only, team 6X5YH93QNM, export
 # compliance and launch screen declared, privacy manifests against the
-# required-reason APIs the shipped Swift calls, no third-party modules and no
-# StoreKit, only the App Group entitlement, and a complete opaque icon set.
+# required-reason APIs the shipped Swift calls, no third-party modules, no
+# StoreKit outside the review-request file and no StoreKit purchase API
+# anywhere, only the App Group entitlement, and a complete opaque icon set.
 # Plain file reads, so it runs on Linux CI without Xcode. The release
 # workflow (.github/workflows/ios-release.yml) runs the same script with
 # --release-tag. Self-test first, so a check that stopped matching fails.

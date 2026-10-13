@@ -12,7 +12,8 @@ import Foundation
 /// changed" property in one request instead of two.
 ///
 /// `SourceTreeGuardTests` asserts that no other host appears anywhere in
-/// `ios/`.
+/// `ios/`, except the App Store review link in `AppStoreReview.swift`,
+/// which is handed to `openURL` and never fetched.
 public enum SnapshotEndpoint {
     public static let url = URL(string: "https://chelseakr.github.io/queer-tv-guide/snapshot.v1.json")!
     public static var host: String { url.host! }

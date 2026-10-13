@@ -39,11 +39,16 @@ extension XCUIApplication {
     /// ones needs.
     static let skipOnboarding = ["-onboarding.v1.seen", "YES"]
 
+    /// Keeps the rating prompt away (`AsksForReviewWhenDue.uiTestOffKey`,
+    /// Debug builds only): a development build shows it every time it is
+    /// asked, and it would cover the screen under test.
+    static let noReviewPrompt = ["-reviewPrompt.uiTestOff", "YES"]
+
     /// The app, set to start on Search. Not launched yet. Not main-actor
     /// bound, like the `XCUIApplication()` it replaces in the smoke tests.
     static func guide() -> XCUIApplication {
         let app = XCUIApplication()
-        app.launchArguments += skipOnboarding
+        app.launchArguments += skipOnboarding + noReviewPrompt
         return app
     }
 

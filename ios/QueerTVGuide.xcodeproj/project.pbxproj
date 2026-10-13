@@ -30,6 +30,7 @@
 		884A38B08784AE25577C9DEA /* UpNextPublisherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88113C51CA0C0F6B09A5E54B /* UpNextPublisherTests.swift */; };
 		8AAB1C2FDBFAB8562373B763 /* AboutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 657AE9A3B9D336B3F6289154 /* AboutView.swift */; };
 		91648E1B5AEDA5977C20677A /* RemindersSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92255AA20E991B5EBF896664 /* RemindersSection.swift */; };
+		91A7A1AB69CB1756F3422EE2 /* ReviewRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54BADFF5353C8CE62F829F9A /* ReviewRequest.swift */; };
 		933ED8FAF5A7F5190F303040 /* GuideCore in Frameworks */ = {isa = PBXBuildFile; productRef = 16A57CD5B69D5D502A021530 /* GuideCore */; };
 		96EE0A6594196C3F464850B8 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B384108A7E71C3A6C208AE15 /* OnboardingView.swift */; };
 		A3D1463E24AE8A6F0737D48C /* AccessibilityAuditTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7D13B01EA5DD72032DF50DE /* AccessibilityAuditTests.swift */; };
@@ -105,6 +106,7 @@
 		434A3D8EBE152B96D1F24792 /* OnboardingUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingUITests.swift; sourceTree = "<group>"; };
 		45C035570157184FA03B5D6C /* AppIdentity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppIdentity.swift; sourceTree = "<group>"; };
 		49C036D407DCA333DBF2FD58 /* Widgets-Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Widgets-Release.xcconfig"; sourceTree = "<group>"; };
+		54BADFF5353C8CE62F829F9A /* ReviewRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReviewRequest.swift; sourceTree = "<group>"; };
 		6008AF0036082EA526C7D0AB /* QueerTVGuideWidgets.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = QueerTVGuideWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		61510F58E9AB9409644BFE70 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		657AE9A3B9D336B3F6289154 /* AboutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AboutView.swift; sourceTree = "<group>"; };
@@ -176,6 +178,7 @@
 				ED002440091CA64B039DD844 /* AppModel.swift */,
 				C590EBCBB2603A2A43F8B4DD /* FeatureFlags.swift */,
 				6D90E104D1F01789CA1519A7 /* QueerTVGuideApp.swift */,
+				54BADFF5353C8CE62F829F9A /* ReviewRequest.swift */,
 				8470466FB9EBD014FBF632A7 /* UpNextPublisher.swift */,
 			);
 			path = App;
@@ -529,6 +532,7 @@
 				B1D3FCC5C39C4930C7672351 /* QueerTVGuideApp.swift in Sources */,
 				E6596C1E31125E9845F42E6A /* ReminderScheduler.swift in Sources */,
 				91648E1B5AEDA5977C20677A /* RemindersSection.swift in Sources */,
+				91A7A1AB69CB1756F3422EE2 /* ReviewRequest.swift in Sources */,
 				5D3A44E157F7DC32569B93EE /* SearchFiltersView.swift in Sources */,
 				2BC163CF30C059381EF045EE /* SearchView.swift in Sources */,
 				22C9F693C4E01B49EA8A7DC0 /* ShowDetailView.swift in Sources */,

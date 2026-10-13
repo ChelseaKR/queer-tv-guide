@@ -17,6 +17,7 @@ listed parameter left in fails the build.
 
 from __future__ import annotations
 
+import re
 from typing import Any
 from urllib.parse import SplitResult, unquote_plus, urlsplit, urlunsplit
 
@@ -101,14 +102,23 @@ def _parts(url: str) -> tuple[SplitResult, list[str]] | None:
     return parts, [p for p in parts.query.split("&") if p]
 
 
-def tracking_params(url: str) -> list[str]:
-    """The listed affiliate or tracking parameter names still in `url`."""
+def tracking_params(url: str, apple_token: str = "") -> list[str]:
+    """The listed affiliate or tracking parameter names still in `url`.
+
+    With `apple_token` set, exactly one `at=<that token>` on an Apple TV or
+    iTunes link is the developer's own (DECISIONS 0019) and is not listed;
+    any other `at`, or a second one, still is.
+    """
     split = _parts(url)
     if split is None:
         return []
     parts, pieces = split
     host = parts.hostname or ""
-    return [p.split("=", 1)[0] for p in pieces if _is_tracking(p.split("=", 1)[0], host)]
+    found = [p.split("=", 1)[0] for p in pieces if _is_tracking(p.split("=", 1)[0], host)]
+    own = f"at={apple_token}"
+    if apple_token and host.lower() in APPLE_AFFILIATE_HOSTS and pieces.count(own) == 1:
+        found.remove("at")
+    return found
 
 
 def strip_tracking(url: str) -> str:
@@ -122,6 +132,33 @@ def strip_tracking(url: str) -> str:
     if len(kept) == len(pieces):
         return url
     return str(urlunsplit((parts.scheme, parts.netloc, parts.path, "&".join(kept), parts.fragment)))
+
+
+# Apple Services Performance Partners (DECISIONS 0019): the developer's own
+# affiliate token goes on Apple TV and iTunes links only, after every other
+# party's has been stripped. One fixed token, the same in every link for
+# every reader: no campaign value, nothing per person.
+APPLE_AFFILIATE_HOSTS = frozenset({"tv.apple.com", "itunes.apple.com"})
+APPLE_TOKEN_RE = re.compile(r"^[A-Za-z0-9]{4,32}$")
+
+
+def is_valid_apple_token(token: str) -> bool:
+    return bool(APPLE_TOKEN_RE.match(token))
+
+
+def add_apple_token(url: str, token: str) -> str:
+    """`url` with `at=<token>` added, if it is an https Apple TV or iTunes link.
+
+    With no token, `url` comes back unchanged: the output is byte for byte
+    what it was before this feature.
+    """
+    if not token:
+        return url
+    parts = urlsplit(url)
+    if parts.scheme != "https" or (parts.hostname or "").lower() not in APPLE_AFFILIATE_HOSTS:
+        return url
+    query = "&".join(p for p in (parts.query, f"at={token}") if p)
+    return urlunsplit((parts.scheme, parts.netloc, parts.path, query, parts.fragment))
 
 
 def strip_all(value: Any) -> int:

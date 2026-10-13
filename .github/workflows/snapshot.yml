@@ -135,6 +135,11 @@ jobs:
           echo "digest=$digest" >> "$GITHUB_OUTPUT"
         env:
           ALLOW_SHRINK: ${{ inputs.allow_shrink }}
+          # DECISIONS 0019: the owner's Apple Services Performance Partners
+          # token, a repository variable (it is public in every link, so not a
+          # secret). Unset or empty: no token is added and the output is
+          # unchanged.
+          QTV_APPLE_AFFILIATE_TOKEN: ${{ vars.APPLE_AFFILIATE_TOKEN }}
 
       - name: repack mirror cache
         working-directory: pipeline

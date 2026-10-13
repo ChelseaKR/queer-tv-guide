@@ -148,6 +148,7 @@ def run_build(
     schema_path: Path | None = None,
     previous_path: Path | None = None,
     allow_shrink: bool = False,
+    apple_affiliate_token: str = "",
     log: Callable[[str], None] = print,
 ) -> dict[str, Any]:
     """Offline phase. No network calls. Refuses to write anything if the cache
@@ -190,6 +191,21 @@ def run_build(
     stripped = links.strip_all(clean_shows) + links.strip_all(characters)
     if stripped:
         log(f"links: stripped affiliate or tracking parameters from {stripped} URL(s)")
+    # The developer's own Apple affiliate token (DECISIONS 0019), on Apple TV
+    # and iTunes where-to-watch links only, and only when one is configured.
+    # With none, nothing below changes a byte.
+    if apple_affiliate_token:
+        if not links.is_valid_apple_token(apple_affiliate_token):
+            raise BuildError(
+                "apple affiliate token: not 4 to 32 letters and digits; refusing to publish it"
+            )
+        tokened = 0
+        for show in clean_shows:
+            for link in show["watch_links"]:
+                with_token = links.add_apple_token(link["url"], apple_affiliate_token)
+                tokened += with_token != link["url"]
+                link["url"] = with_token
+        log(f"links: added the Apple affiliate token to {tokened} Apple TV or iTunes link(s)")
     field_cov = coverage_mod.field_presence(clean_shows, characters)
 
     lw_available = run_meta["lezwatch"]["available"]
@@ -252,7 +268,7 @@ def run_build(
     }
     doc["content_digest"] = digest_mod.content_digest(doc)
 
-    _validate(doc, schema_path or _find_schema_path(), show_ids)
+    _validate(doc, schema_path or _find_schema_path(), show_ids, apple_affiliate_token)
     _check_no_shrink(doc, previous_path, allow_shrink=allow_shrink, log=log)
     _write_outputs(doc, coverage, out_dir, log)
     return doc
@@ -377,7 +393,9 @@ def _count_characters_per_show(
         show["counts"]["deaths"] = sum(1 for c in here if c["death"]["death_known"])
 
 
-def _validate(doc: dict[str, Any], schema_path: Path, show_ids: set[str]) -> None:
+def _validate(
+    doc: dict[str, Any], schema_path: Path, show_ids: set[str], apple_affiliate_token: str = ""
+) -> None:
     """Refuse a document that fails the schema or references a missing show."""
     schema = json.loads(schema_path.read_text())
     validator = jsonschema.Draft202012Validator(schema)
@@ -396,15 +414,19 @@ def _validate(doc: dict[str, Any], schema_path: Path, show_ids: set[str]) -> Non
     _check_duplicate_ids(doc["shows"], "show")
     _check_duplicate_ids(doc["characters"], "character")
     _check_attribution(doc.get("attribution", []))
-    _check_outbound_links(doc)
+    _check_outbound_links(doc, apple_affiliate_token)
 
 
-def _check_outbound_links(doc: dict[str, Any]) -> None:
-    """Refuse a snapshot whose links still carry an affiliate tag or click tracker."""
+def _check_outbound_links(doc: dict[str, Any], apple_affiliate_token: str = "") -> None:
+    """Refuse a snapshot whose links still carry an affiliate tag or click tracker.
+
+    The one exception is the developer's own Apple token on Apple TV and
+    iTunes links (DECISIONS 0019), and only the configured value, once.
+    """
     tagged = [
         f"{where}: {', '.join(names)}"
         for where, url in links.outbound_urls(doc)
-        if (names := links.tracking_params(url))
+        if (names := links.tracking_params(url, apple_affiliate_token))
     ]
     if tagged:
         raise BuildError(

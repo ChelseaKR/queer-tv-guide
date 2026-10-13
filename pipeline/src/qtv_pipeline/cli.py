@@ -37,6 +37,9 @@ def _cmd_build(args: argparse.Namespace) -> int:
             workflow_run_id=args.workflow_run_id or os.environ.get("GITHUB_RUN_ID"),
             previous_path=Path(args.previous) if args.previous else None,
             allow_shrink=args.allow_shrink,
+            # DECISIONS 0019: empty unless the owner sets the repository
+            # variable APPLE_AFFILIATE_TOKEN (snapshot.yml passes it here).
+            apple_affiliate_token=os.environ.get("QTV_APPLE_AFFILIATE_TOKEN", "").strip(),
             log=print,
         )
     except build_mod.BuildError as exc:

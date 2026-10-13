@@ -15,7 +15,7 @@ from typing import Any
 
 import jsonschema
 
-from . import __version__, fields, lezwatch, normalize, terms, tvmaze
+from . import __version__, fields, lezwatch, links, normalize, terms, tvmaze
 from . import coverage as coverage_mod
 from . import digest as digest_mod
 from . import license as license_mod
@@ -185,6 +185,11 @@ def run_build(
 
     tvmaze_cov = coverage_mod.tvmaze_coverage(shows)
     clean_shows = [normalize.strip_internal(s) for s in shows]
+    # Every outbound link leaves without other parties' affiliate tags or
+    # click trackers (links.py); the publish gate in _validate re-checks.
+    stripped = links.strip_all(clean_shows) + links.strip_all(characters)
+    if stripped:
+        log(f"links: stripped affiliate or tracking parameters from {stripped} URL(s)")
     field_cov = coverage_mod.field_presence(clean_shows, characters)
 
     lw_available = run_meta["lezwatch"]["available"]
@@ -391,6 +396,21 @@ def _validate(doc: dict[str, Any], schema_path: Path, show_ids: set[str]) -> Non
     _check_duplicate_ids(doc["shows"], "show")
     _check_duplicate_ids(doc["characters"], "character")
     _check_attribution(doc.get("attribution", []))
+    _check_outbound_links(doc)
+
+
+def _check_outbound_links(doc: dict[str, Any]) -> None:
+    """Refuse a snapshot whose links still carry an affiliate tag or click tracker."""
+    tagged = [
+        f"{where}: {', '.join(names)}"
+        for where, url in links.outbound_urls(doc)
+        if (names := links.tracking_params(url))
+    ]
+    if tagged:
+        raise BuildError(
+            f"outbound links: {len(tagged)} URL(s) carry affiliate or tracking parameters; "
+            f"first: {tagged[0]}"
+        )
 
 
 def _check_attribution(attribution: list[dict[str, Any]]) -> None:

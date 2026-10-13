@@ -12,7 +12,7 @@ import html
 import re
 from typing import Any
 
-from . import fields
+from . import fields, links
 
 # A tag starts with a letter (or "/" then a letter), so prose like "I <3 it"
 # or "a < b" is never mistaken for markup and eaten.
@@ -109,6 +109,8 @@ def _watch_links(waystowatch: Any) -> list[dict[str, str]]:
             continue
         from urllib.parse import urlsplit
 
+        # Other parties' affiliate tags and click trackers out, nothing added (links.py).
+        url = links.strip_tracking(url)
         host = urlsplit(url).hostname or ""
         out.append({"url": url, "host": host})
     return out

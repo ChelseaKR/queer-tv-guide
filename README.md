@@ -77,6 +77,10 @@ records.
   versioned.
 - `ios/` — SwiftUI. Reads the bundled snapshot; refreshes it with one plain GET
   of a static file; stores favorites locally; links out to watch, never plays.
+- `android/` — Kotlin, Jetpack Compose and Material 3 (DECISIONS 0018). The
+  same snapshot, the same one GET, and a port of GuideCore held to it by a
+  shared parity file (`ios/GuideCore/Tests/Fixtures/parity.golden.json`).
+  `make -C android verify` builds and tests it.
 - `docs/` — decisions, licenses and attributions, the App Store checklist.
 
 ## Not yet cleared to ship

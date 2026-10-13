@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- The iOS icon's colors (ios/design/app-icon-source.svg). -->
+    <color name="icon_coral">#FF7A59</color>
+    <color name="icon_plum">#3D1F47</color>
+    <color name="icon_cream">#FFF6EF</color>
+    <color name="window_background">#FFFFFF</color>
+</resources>

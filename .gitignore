@@ -23,3 +23,18 @@ snapshot.v1.json.sha256
 ios/**/build/
 ios/**/DerivedData/
 ios/**/*.xcuserstate
+# android: build output and machine-local SDK paths. The bundled
+# android/app/src/main/assets/snapshot.v1.json is ignored by the
+# snapshot.v1.json rule above, as on iOS: `make -C android bundle-snapshot`
+# fetches and checksum-verifies it.
+android/.gradle/
+android/.kotlin/
+android/build/
+android/*/build/
+android/local.properties
+android/.idea/
+android/captures/
+android/release/
+*.keystore
+*.jks
+android/signing.properties

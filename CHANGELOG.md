@@ -11,6 +11,16 @@ consumer of the published snapshot, would notice.
 
 ## [Unreleased]
 
+### Added
+
+- Queer Frame for Android (DECISIONS 0018): a native app with the
+  iPhone app's features, the same data file and the same privacy posture.
+  Search and filters, show and character pages with the closed "does she
+  die" reveal, favorites with backup files that move between iPhone and
+  Android, new-episode reminders set on the device, an Up Next home-screen
+  widget, a first-run guide, links that open a show, and a two-pane layout
+  on tablets. Not yet on Google Play.
+
 ### Fixed
 
 - The release workflow's preflight no longer fails on the first release.

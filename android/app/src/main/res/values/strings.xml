@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- DECISIONS 0006: the product name. The app's other words are in
+         Kotlin beside the code that shows them, as on iOS. -->
+    <string name="app_name">Queer Frame</string>
+    <string name="widget_name">Up Next</string>
+    <string name="widget_description">The next episode of each show you starred. Spoiler-free.</string>
+    <string name="reminder_channel_name">Episode reminders</string>
+    <string name="reminder_channel_description">One reminder on the day a favorite show has a new episode listed. Set on this device; nothing is sent to a server.</string>
+</resources>

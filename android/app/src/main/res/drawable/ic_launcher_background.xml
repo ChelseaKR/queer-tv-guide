@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The iOS icon's two-tone diagonal (ios/design/app-icon-source.svg), on the
+     108 dp adaptive-icon canvas. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="1024"
+    android:viewportHeight="1024">
+    <path android:fillColor="@color/icon_coral" android:pathData="M0,0h1024v1024h-1024z" />
+    <path android:fillColor="@color/icon_plum" android:pathData="M0,0L0,1024L1024,1024Z" />
+</vector>

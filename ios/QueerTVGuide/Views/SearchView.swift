@@ -20,8 +20,8 @@ struct SearchView: View {
 
     struct Results {
         var key: Key?
-        var hits: [SearchIndex.Hit] = []
-        var totalCount: Int = 0
+        var found = SearchResults()
+        var hits: [SearchIndex.Hit] { found.hits }
     }
 
     private var trimmedQuery: String { query.trimmingCharacters(in: .whitespacesAndNewlines) }
@@ -61,20 +61,18 @@ struct SearchView: View {
 
     private func updateResults(for key: Key) async {
         guard let index = model.searchIndex else { return }
-        let searchResults = await Task.detached(priority: .userInitiated) {
-            key.query.isEmpty
-                ? SearchIndex.SearchResults(hits: index.browse(filters: key.filters).map { .show($0) }, totalCount: 0)
-                : index.search(key.query, filters: key.filters)
+        let found = await Task.detached(priority: .userInitiated) { () -> SearchResults in
+            guard key.query.isEmpty else { return index.results(for: key.query, filters: key.filters) }
+            // Browsing lists every show that passes, uncapped: nothing to truncate.
+            return SearchResults(hits: index.browse(filters: key.filters).map { SearchIndex.Hit.show($0) })
         }.value
         guard !Task.isCancelled else { return }
-        results = Results(key: key, hits: searchResults.hits, totalCount: searchResults.totalCount)
+        results = Results(key: key, found: found)
     }
 
     @ViewBuilder
     private func resultsList(snapshot: Snapshot) -> some View {
         let hits = results.hits
-        let totalCount = results.totalCount
-        let isCapped = totalCount > hits.count
         let settled = results.key == key
         List {
             // DG-04: data past its SLA, or of unknown age, says so above
@@ -89,20 +87,19 @@ struct SearchView: View {
                     activeFiltersRow(count: settled ? hits.count : nil)
                 }
             }
+            // Whenever the list is capped, with or without a filter: a list
+            // that stops short must not read as the whole answer.
+            if settled, let note = results.found.truncationNote() {
+                Section {
+                    truncationNote(note)
+                }
+            }
             if settled, hits.isEmpty {
                 Section {
                     emptyState
                 }
                 .listRowSeparator(.hidden)
             } else {
-                if settled && isCapped {
-                    Section {
-                        Text("Showing the first \(hits.count) of \(totalCount) matches. Type more to narrow them.")
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
-                            .accessibilityLabel("Showing the first \(hits.count) of \(totalCount) matches")
-                    }
-                }
                 Section {
                     ForEach(hits) { hit in
                         hitRow(hit, snapshot: snapshot)
@@ -115,6 +112,18 @@ struct SearchView: View {
         }
         .listStyle(.plain)
         .refreshable { await model.refresh() }
+    }
+
+    /// Says the list is capped and how many matched, in words. One text
+    /// element, so VoiceOver reads it as one sentence; it wraps at any
+    /// Dynamic Type size and carries no meaning in color alone.
+    private func truncationNote(_ note: String) -> some View {
+        Text(note)
+            .font(.subheadline)
+            .foregroundStyle(.subdued)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .fixedSize(horizontal: false, vertical: true)
+            .accessibilityIdentifier("search-truncation-note")
     }
 
     /// Above the results while any filter is on: how many there are, and a

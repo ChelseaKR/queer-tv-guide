@@ -361,6 +361,17 @@ public struct WatchLink: Codable, Equatable, Sendable, Identifiable {
     /// Registrable host, e.g. "netflix.com" — the label the app shows.
     /// Never a guessed service name.
     public let host: String
+
+    /// An Apple TV or iTunes link carrying the developer's Apple affiliate
+    /// token (`at=`), added by the pipeline after every other party's tag is
+    /// stripped (DECISIONS 0019). The app labels it "Paid link" wherever it
+    /// shows it. Read from the link itself, so the contract does not change;
+    /// the app never fetches it, and the system opens it.
+    public var isPaidLink: Bool {
+        guard ["tv.apple.com", "itunes.apple.com"].contains(url.host?.lowercased() ?? ""),
+              let items = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems else { return false }
+        return items.contains { $0.name == "at" && !($0.value ?? "").isEmpty }
+    }
 }
 
 public struct ShowNotes: Codable, Equatable, Sendable {

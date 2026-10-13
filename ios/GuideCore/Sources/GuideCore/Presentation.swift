@@ -176,6 +176,17 @@ public enum Presentation {
         "Watch on \(watchLinkService(link, networks: networks))"
     }
 
+    /// Shown next to a where-to-watch link that earns the developer a
+    /// commission (DECISIONS 0019), so nobody taps it unaware.
+    public static let paidLinkNote = "Paid link"
+
+    /// What VoiceOver reads for a where-to-watch link: the label, and
+    /// "paid link" when it is one.
+    public static func watchLinkSpoken(_ link: WatchLink, networks: [Term]) -> String {
+        let label = watchLinkLabel(link, networks: networks)
+        return link.isPaidLink ? "\(label), paid link" : label
+    }
+
     /// The service name from `watchLinkLabel`, without "Watch on".
     public static func watchLinkService(_ link: WatchLink, networks: [Term]) -> String {
         let host = displayHost(link.host)

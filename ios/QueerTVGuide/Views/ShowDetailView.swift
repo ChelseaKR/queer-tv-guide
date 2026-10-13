@@ -232,8 +232,17 @@ struct ShowDetailView: View {
                     } label: {
                         Label(Presentation.watchLinkLabel(link, networks: show.networks), systemImage: "arrow.up.forward.square")
                     }
+                    .accessibilityLabel(Presentation.watchLinkSpoken(link, networks: show.networks))
                     .accessibilityHint("Opens \(Presentation.displayHost(link.host)) in Safari")
                     .accessibilityAddTraits(.isLink)
+                    // DECISIONS 0019: an affiliate link says so, in words.
+                    if link.isPaidLink {
+                        Text(Presentation.paidLinkNote)
+                            .font(.caption)
+                            .foregroundStyle(.subdued)
+                            .accessibilityHidden(true)
+                            .accessibilityIdentifier("paid-link-note")
+                    }
                 }
             }
         }

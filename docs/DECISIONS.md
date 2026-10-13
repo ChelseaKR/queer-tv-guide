@@ -1,6 +1,6 @@
 # Decisions
 
-Numbering: 0001–0004, 0006–0011, 0013, 0015, 0017 and 0018 live here. 0005, 0012 and
+Numbering: 0001–0004, 0006–0011, 0013, 0015, 0017, 0018 and 0019 live here. 0005, 0012 and
 0014 are ADRs in `docs/adr/`, so they are skipped here rather than
 duplicated.
 
@@ -287,3 +287,44 @@ no in-app purchase, no ads, United States only (0011, 0015).
 
 **CI.** The `android` job runs `make android` on Linux on every run; the
 emulator tests run locally (`make -C android instrumented`).
+
+## 0019 — Apple affiliate token on Apple TV and iTunes links (2026-10-12)
+
+**Decision** (owner, 2026-10-12): Queer Frame joins Apple Services
+Performance Partners for its existing Apple TV and iTunes where-to-watch
+links. Number 0016 is held by the iPad and Mac branch (`feat/ios-parity-fg`), and
+0017 and 0018 are the rating prompt and Android, so this is 0019.
+
+**What the pipeline does.** Every outbound link is first stripped of other
+parties' affiliate tags and click trackers (`pipeline/src/qtv_pipeline/links.py`;
+the 2026-10-12 snapshot carried DuckDuckGo's, IMDb's and an unknown Amazon
+tag, and another party's iTunes `at=`). Then, only when a token is
+configured, `at=<token>` is added to `tv.apple.com` and `itunes.apple.com`
+links, nowhere else. The token comes from the repository variable
+`APPLE_AFFILIATE_TOKEN` (`snapshot.yml` passes it as
+`QTV_APPLE_AFFILIATE_TOKEN`); it is empty by default, and with no token the
+snapshot is byte for byte what it would be without this feature
+(`test_apple_affiliate.py`). A malformed token stops the build, and the
+publish gate refuses any `at=` other than the configured token, once.
+
+**Why "Data Not Collected" stays true (0002, 0007).** The token is one fixed
+value, the same in every link for every reader: no `ct=` campaign value, no
+per-person or per-device parameter, nothing the app generates. The app adds
+no host, no SDK and no request: the link is in the snapshot, and the system
+opens it in the TV or App Store app as before. Apple's partner reports give
+the developer aggregate sales and commissions, not people. The privacy
+policy says this.
+
+**Disclosure.** The app labels each such link "Paid link" (VoiceOver reads
+"…, paid link"), from the link itself (`WatchLink.isPaidLink`), so the
+snapshot contract does not change. The Pages site shows no where-to-watch
+links, so it needs no label; its privacy policy states the arrangement. The
+Android app (0018) needs the same label before it ships with a token.
+
+**Owner steps.** Apply only once the App Store listing is live; then set the
+variable (`OWNER-STEPS-apple.md` in the hand-off). To stop, delete the
+variable: the next nightly snapshot carries no token.
+
+**Risk.** App Review may ask about affiliate links in a paid app; the answer
+is the program's own terms and this disclosure.
+

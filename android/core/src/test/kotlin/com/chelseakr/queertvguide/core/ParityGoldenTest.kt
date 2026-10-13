@@ -82,7 +82,7 @@ class ParityGoldenTest {
                                 "tvmaze_id" to JsonPrimitive(900104), "season" to JsonPrimitive(2), "number" to JsonPrimitive(1),
                                 "name" to JsonPrimitive("Static"), "airdate" to night["airdate"]!!, "airtime" to night["airtime"]!!,
                                 "airstamp" to night["airstamp"]!!, "runtime" to JsonPrimitive(30),
-                                "url" to JsonPrimitive("https://www.tvmaze.com/episodes/900104/night-shift-radio-2x01-static"),
+                                "url" to JsonPrimitive("https://chelseakr.github.io/queer-tv-guide/test-only/episodes/900104"),
                             ),
                         ),
                     )

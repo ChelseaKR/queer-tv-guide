@@ -160,10 +160,13 @@ final class ParityGoldenTests: XCTestCase {
         if let night = variant.nightShift {
             data = try JSONEdit.editShow(data, index: 3) { show in
                 var schedule = show["schedule"] as! [String: Any]
+                // The episode URL is on the snapshot's own host, a placeholder:
+                // ios/ names no second host (SourceTreeGuardTests), and no
+                // case in the parity file reads it.
                 schedule["next_episode"] = [
                     "tvmaze_id": 900104, "season": 2, "number": 1, "name": "Static",
                     "airdate": json(night.airdate), "airtime": json(night.airtime), "airstamp": json(night.airstamp),
-                    "runtime": 30, "url": "https://www.tvmaze.com/episodes/900104/night-shift-radio-2x01-static",
+                    "runtime": 30, "url": "https://chelseakr.github.io/queer-tv-guide/test-only/episodes/900104",
                 ] as [String: Any]
                 show["schedule"] = schedule
             }

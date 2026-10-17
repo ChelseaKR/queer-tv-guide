@@ -144,6 +144,31 @@ object Presentation {
         return host
     }
 
+    /**
+     * An Apple TV or iTunes link carrying the developer's Apple affiliate
+     * token (`at=`), added by the pipeline after every other party's tag is
+     * stripped (DECISIONS 0019). Read from the link itself, so the snapshot
+     * contract does not change; the same rule as GuideCore's `WatchLink.isPaidLink`.
+     */
+    fun isPaidLink(link: WatchLink): Boolean {
+        val uri = try {
+            java.net.URI(link.url)
+        } catch (_: java.net.URISyntaxException) {
+            return false
+        }
+        if (uri.host?.lowercase() !in setOf("tv.apple.com", "itunes.apple.com")) return false
+        return (uri.rawQuery ?: "").split('&').any { it.startsWith("at=") && it.length > "at=".length }
+    }
+
+    /** Shown next to a where-to-watch link that earns the developer a commission, so nobody taps it unaware. */
+    const val PAID_LINK_NOTE = "Paid link"
+
+    /** What TalkBack reads for a where-to-watch link: the label, and "paid link" when it is one. */
+    fun watchLinkSpoken(link: WatchLink, networks: List<Term>): String {
+        val label = watchLinkLabel(link, networks)
+        return if (isPaidLink(link)) "$label, paid link" else label
+    }
+
     private fun comparable(text: String): String = text.lowercase().filter { it.isLetterOrDigit() }
 
     /**

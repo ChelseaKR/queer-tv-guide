@@ -220,8 +220,18 @@ fun ShowScreen(model: AppModel, state: AppModel.State, id: String, canGoBack: Bo
                     LinkButton(
                         Presentation.watchLinkLabel(link, show.networks),
                         link.url,
+                        spoken = Presentation.watchLinkSpoken(link, show.networks),
                         hint = "Opens ${Presentation.displayHost(link.host)} in your browser",
                     )
+                    // DECISIONS 0019: an affiliate link says so, in words.
+                    if (Presentation.isPaidLink(link)) {
+                        Text(
+                            Presentation.PAID_LINK_NOTE,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = subdued,
+                            modifier = Modifier.padding(start = 12.dp).clearAndSetSemantics {}.testTag("paid-link-note"),
+                        )
+                    }
                 }
             }
         }

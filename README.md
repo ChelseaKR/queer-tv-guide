@@ -85,9 +85,15 @@ records.
 
 ## Not yet cleared to ship
 
-A support contact method on the support page (`TODO(owner)`, DECISIONS
-0010). `make -C ios presubmit-check` fails until it is added, and CI warns.
-The rest of the submission checklist is `docs/APP-STORE.md` "Before
-submission". Data use is settled: the app ships on LezWatch.TV's published
-terms with full attribution (DECISIONS 0013). The name is **Queer Frame**
-(DECISIONS 0006). Never "Signal", which collides with Signal Messenger.
+- **iPhone.** `v1.0.0` is tagged, and the release workflow verified it on
+  2026-10-02 and left a draft GitHub Release, unpublished. The owner's
+  steps from there (archive, upload, TestFlight, App Review) are 11 to 13
+  of `docs/app-store/OWNER-STEPS.md`.
+- **Android.** Not on Google Play. The Play listing, app signing and the
+  Data safety form are the owner's (DECISIONS 0018).
+
+Settled: the support page lists a contact (DECISIONS 0015, which resolves
+the line 0010 left owed), and `make -C ios presubmit-check` passes. Data
+use: the app ships on LezWatch.TV's published terms with full attribution
+(DECISIONS 0013). The name is **Queer Frame** (DECISIONS 0006). Never
+"Signal", which collides with Signal Messenger.

@@ -81,7 +81,8 @@ records.
   same snapshot, the same one GET, and a port of GuideCore held to it by a
   shared parity file (`ios/GuideCore/Tests/Fixtures/parity.golden.json`).
   `make -C android verify` builds and tests it.
-- `docs/` — decisions, licenses and attributions, the App Store checklist.
+- `docs/` — decisions, licenses and attributions, the App Store kit
+  (`docs/app-store/`) and the Google Play kit (`docs/play-store/`).
 
 ## Not yet cleared to ship
 
@@ -90,7 +91,10 @@ records.
   steps from there (archive, upload, TestFlight, App Review) are 11 to 13
   of `docs/app-store/OWNER-STEPS.md`.
 - **Android.** Not on Google Play. The Play listing, app signing and the
-  Data safety form are the owner's (DECISIONS 0018).
+  Data safety form are the owner's (DECISIONS 0018): the steps, including
+  the closed test a new personal Play account must run first, are
+  `docs/play-store/OWNER-STEPS.md`, and `make playstore` checks the
+  listing against the build.
 
 Settled: the support page lists a contact (DECISIONS 0015, which resolves
 the line 0010 left owed), and `make -C ios presubmit-check` passes. Data

@@ -7,7 +7,9 @@ name: ci
 #                the fetch/build commands that talk to LezWatch/TVmaze are
 #                not run here, see snapshot.yml for the nightly mirror).
 #                Then `make appstore`, the iOS app's App Store readiness
-#                check, which reads files only and needs no Xcode.
+#                check, which reads files only and needs no Xcode, and
+#                `make playstore`, the Android app's Google Play readiness
+#                check, which reads files only and needs no Android SDK.
 #   android   -- `make android`: the Android app's gate (android/Makefile
 #                verify: JVM tests including the parity file shared with
 #                GuideCore, Android lint, an R8 release build). Linux, every
@@ -83,6 +85,12 @@ jobs:
       # reads only, so it runs here on Linux and on every pull request.
       - name: make appstore
         run: make appstore
+
+      # The Google Play readiness check (scripts/check_play_store.py): the
+      # Play listing and its Data safety answers against the Android build.
+      # File reads only, like appstore.
+      - name: make playstore
+        run: make playstore
 
       # Owner items that block App Store submission: TODO(owner) markers in
       # what gets published or submitted (docs/APP-STORE.md, "Before

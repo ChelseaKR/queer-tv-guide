@@ -33,7 +33,7 @@ RUFF := uvx --python 3.12 ruff@0.16.7
 RUFF_ROOT := --isolated --target-version py312 --line-length 100
 ROOT_PY := tests scripts
 
-VERIFY_TARGETS := pipeline guidecore a11y appstore android policy workflows secrets sast sca
+VERIFY_TARGETS := pipeline guidecore a11y appstore playstore android policy workflows secrets sast sca
 
 .PHONY: verify $(VERIFY_TARGETS)
 
@@ -80,6 +80,18 @@ android:
 appstore:
 	$(UV_RUN) scripts/check_app_store.py --self-test
 	$(UV_RUN) scripts/check_app_store.py
+
+# The Android app's Google Play readiness (scripts/check_play_store.py,
+# DECISIONS 0018): the listing in docs/play-store/play-listing.json within
+# Play's limits and the copy rules, its package, versions and price in step
+# with the build and the App Store listing, and the Data safety and content
+# rating answers against what the build does (three permissions, no Play
+# services, analytics, ads or billing library, no web view or location,
+# nothing in cloud backup). Plain file reads, so it runs on Linux CI with no
+# Android SDK. Self-test first, as for appstore.
+playstore:
+	$(UV_RUN) scripts/check_play_store.py --self-test
+	$(UV_RUN) scripts/check_play_store.py
 
 # Repository policy tests (tests/): workflow invariants, make/CI parity,
 # vendored-standards integrity, and the gitleaks allowlist negative controls,

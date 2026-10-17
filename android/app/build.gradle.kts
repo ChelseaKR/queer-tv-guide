@@ -5,9 +5,9 @@ plugins {
     alias(libs.plugins.kotlin.compose)
 }
 
-// Play upload signing, only when the owner supplies a key (OWNER-STEPS.md in
-// the hand-off; never committed). Without one, release builds are unsigned,
-// which is all CI needs.
+// Play upload signing, only when the owner supplies a key
+// (docs/play-store/OWNER-STEPS.md step 4; never committed). Without one,
+// release builds are unsigned, which is all CI needs.
 val signing = Properties().apply {
     val file = rootProject.file("signing.properties")
     if (file.exists()) file.inputStream().use { load(it) }

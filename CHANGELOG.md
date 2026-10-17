@@ -20,6 +20,11 @@ consumer of the published snapshot, would notice.
   Android, new-episode reminders set on the device, an Up Next home-screen
   widget, a first-run guide, links that open a show, and a two-pane layout
   on tablets. Not yet on Google Play.
+- The path to Google Play: `make playstore` checks the Android app's Play
+  listing, and its Data safety and content-rating answers, against the
+  build on every change, and `docs/play-store/OWNER-STEPS.md` lists the
+  steps only the owner can take, including the closed test a new personal
+  Play account must run first.
 - About has a "Rate Queer Frame" row, under the version, that opens the
   App Store's review sheet for the app. It is the same for everyone and
   offers nothing in return. The app does not fetch the page; iOS opens the

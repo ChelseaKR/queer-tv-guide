@@ -158,20 +158,22 @@ def test_on_adds_banner_everywhere_and_badge_on_the_index(site):
 
 # Pages that describe the Android app on purpose (DECISIONS 0018), and only
 # inside regions marked with these comments. Anywhere else the site, and the
-# launch copy above all, never mentions Android or Google Play.
+# launch copy above all, never mentions Android or Google Play. The index
+# gains a region only when PLAY_STORE_LIVE is on (test_play_store.py passes
+# its own page set).
 ANDROID_PAGES = frozenset({"privacy.html"})
 ANDROID_BEGIN = "<!-- android-app:begin -->"
 ANDROID_END = "<!-- android-app:end -->"
 _ANDROID_REGION = re.compile(re.escape(ANDROID_BEGIN) + r".*?" + re.escape(ANDROID_END), re.S)
 
 
-def _android_problems(name: str, text: str) -> list[str]:
+def _android_problems(name: str, text: str, pages: frozenset[str] = ANDROID_PAGES) -> list[str]:
     """Android wording outside a marked region, or a region where none belongs."""
     problems = []
     if text.count(ANDROID_BEGIN) != text.count(ANDROID_END):
         problems.append(f"{name}: unbalanced android-app markers")
-    if ANDROID_BEGIN in text and name not in ANDROID_PAGES:
-        problems.append(f"{name}: an android-app region outside {sorted(ANDROID_PAGES)}")
+    if ANDROID_BEGIN in text and name not in pages:
+        problems.append(f"{name}: an android-app region outside {sorted(pages)}")
     rest = _ANDROID_REGION.sub("", text).lower()
     problems += [
         f"{name}: {word!r} outside a marked region"

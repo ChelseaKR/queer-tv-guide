@@ -80,6 +80,16 @@ jobs:
         env:
           APP_STORE_LIVE: ${{ vars.APP_STORE_LIVE }}
 
+      - name: check the PLAY_STORE_LIVE switch before anything is published
+        # Owner-set repository variable, as APP_STORE_LIVE: unset, empty or
+        # "false" = off; "true" = on, once the Android app is published on
+        # Google Play (qtv_pipeline/play_store.py). Any other value stops the
+        # run here, before the release upload.
+        working-directory: pipeline
+        run: uv run python -m qtv_pipeline.play_store --check "$PLAY_STORE_LIVE"
+        env:
+          PLAY_STORE_LIVE: ${{ vars.PLAY_STORE_LIVE }}
+
       - name: lint + offline tests
         working-directory: pipeline
         run: |
@@ -173,8 +183,13 @@ jobs:
           # on every page and Apple's App Store badge on the index
           # (qtv_pipeline/app_store.py). Passed through env, not interpolated.
           uv run python -m qtv_pipeline.app_store site "$APP_STORE_LIVE"
+          # Off (the default): changes nothing. On: a text link to the Google
+          # Play listing on the index, below the App Store badge
+          # (qtv_pipeline/play_store.py).
+          uv run python -m qtv_pipeline.play_store site "$PLAY_STORE_LIVE"
         env:
           APP_STORE_LIVE: ${{ vars.APP_STORE_LIVE }}
+          PLAY_STORE_LIVE: ${{ vars.PLAY_STORE_LIVE }}
 
       - uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3.0.1
         with:

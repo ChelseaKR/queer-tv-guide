@@ -81,13 +81,23 @@ records.
   same snapshot, the same one GET, and a port of GuideCore held to it by a
   shared parity file (`ios/GuideCore/Tests/Fixtures/parity.golden.json`).
   `make -C android verify` builds and tests it.
-- `docs/` — decisions, licenses and attributions, the App Store checklist.
+- `docs/` — decisions, licenses and attributions, the App Store kit
+  (`docs/app-store/`) and the Google Play kit (`docs/play-store/`).
 
 ## Not yet cleared to ship
 
-A support contact method on the support page (`TODO(owner)`, DECISIONS
-0010). `make -C ios presubmit-check` fails until it is added, and CI warns.
-The rest of the submission checklist is `docs/APP-STORE.md` "Before
-submission". Data use is settled: the app ships on LezWatch.TV's published
-terms with full attribution (DECISIONS 0013). The name is **Queer Frame**
-(DECISIONS 0006). Never "Signal", which collides with Signal Messenger.
+- **iPhone.** `v1.0.0` is tagged, and the release workflow verified it on
+  2026-10-02 and left a draft GitHub Release, unpublished. The owner's
+  steps from there (archive, upload, TestFlight, App Review) are 11 to 13
+  of `docs/app-store/OWNER-STEPS.md`.
+- **Android.** Not on Google Play. The Play listing, app signing and the
+  Data safety form are the owner's (DECISIONS 0018): the steps, including
+  the closed test a new personal Play account must run first, are
+  `docs/play-store/OWNER-STEPS.md`, and `make playstore` checks the
+  listing against the build.
+
+Settled: the support page lists a contact (DECISIONS 0015, which resolves
+the line 0010 left owed), and `make -C ios presubmit-check` passes. Data
+use: the app ships on LezWatch.TV's published terms with full attribution
+(DECISIONS 0013). The name is **Queer Frame** (DECISIONS 0006). Never
+"Signal", which collides with Signal Messenger.

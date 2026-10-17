@@ -208,3 +208,16 @@ Marketing Artwork License Agreement and the App Store Marketing Guidelines
 "only in connection with Your applications that are available for download
 on the App Store". The Pages site shows it only when the `APP_STORE_LIVE`
 switch is on (`docs/app-store/OWNER-STEPS.md` step 14).
+
+## Google Play's name (website only)
+
+No Google artwork is vendored. When the `PLAY_STORE_LIVE` switch is on
+(`docs/play-store/OWNER-STEPS.md` step 11), the Pages index links to the
+Android app's Play listing in plain text, "Queer Frame on Google Play", and
+carries the line "Google Play is a trademark of Google LLC."
+(`pipeline/src/qtv_pipeline/play_store.py`, tested in
+`pipeline/tests/test_play_store.py`). Google's "Get it on Google Play"
+badge has its own usage terms, which could not be fetched and read when
+the link was added (2026-10-17). Before the badge replaces the text link,
+download it from Google's badge page, read and record its terms here, and
+pin its hash in a test, as for Apple's badge above.

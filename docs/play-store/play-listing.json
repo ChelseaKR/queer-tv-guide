@@ -1,0 +1,87 @@
+{
+  "_comment": "Google Play Console listing and App content answers for Queer Frame for Android (DECISIONS 0006, 0018). Draft: nothing here has been submitted. scripts/check_play_store.py (make playstore) holds it to Play's limits and to the build. Owner steps: docs/play-store/OWNER-STEPS.md.",
+  "package_name": "com.chelseakr.queertvguide",
+  "default_language": "en-US",
+  "title": "Queer Frame",
+  "short_description": "Does she die? Lesbian TV guide. The answer stays hidden until you tap.",
+  "full_description": "Before you start a show, find out whether it's worth it and whether any of its queer characters die. That answer stays hidden until you tap, so you find out when you choose to. Queer Frame covers more than 2,000 shows with queer women, non-binary and trans characters. No account, no tracking.\n\nLook up a show and see:\n• Is it worth watching? LezWatch.TV's worth-it verdict, plus ratings for quality, realness and screen time.\n• Do any queer characters die? Hidden until you tap to reveal.\n• Tropes and content notes.\n• Where to stream it.\n• When the next episode airs.\n\nFilter for shows with no recorded deaths, with a where-to-watch link, or by worth-it verdict. Favorite what you're following and see each show's next episode at a glance. Favorites stay on your phone.\n\nQueer Frame bundles its data, so it works offline as soon as it's installed, and it tells you how current that data is. The data is a nightly mirror of LezWatch.TV, the volunteer-run database of queer female, non-binary and transgender characters, and of TVmaze, credited on every show and character. Where the source is silent, the app says so: \"not recorded\" never becomes \"survives\".\n\nNo account. No analytics. No ads. No tracking code. The app's one network request fetches its data file.\n\nOne-time purchase. No subscription, no in-app purchases.",
+  "app_or_game": "App",
+  "category": "Entertainment",
+  "contact_email": "chelsea@chelseakr.com",
+  "website": "https://chelseakr.github.io/queer-tv-guide/support.html",
+  "privacy_policy_url": "https://chelseakr.github.io/queer-tv-guide/privacy.html",
+  "price_usd": "4.99",
+  "countries": [
+    "US"
+  ],
+  "contains_ads": false,
+  "in_app_purchases": false,
+  "app_access": "All functionality is available without special access",
+  "target_age_groups": [
+    "13-15",
+    "16-17",
+    "18 and over"
+  ],
+  "appeals_to_children": false,
+  "news_app": false,
+  "data_safety": {
+    "_note": "Policy and programs > App content > Data safety. DECISIONS 0002 (posture none), 0007 (GitHub serves the file) and 0018 (\"No data collected\" and \"No data shared\").",
+    "collects_or_shares_required_user_data": false,
+    "data_collected": [],
+    "data_shared": [],
+    "accounts": "The app does not let anyone create an account",
+    "why": [
+      "The app's one network request is an HTTPS GET of the public snapshot file from GitHub Pages, conditional on an ETag. It carries no account, cookie or identifier, and its User-Agent is the app's own (\"QueerFrame/<version> (Android)\"), not the phone's model or Android version.",
+      "GitHub, the static host, sees the request's IP address and logs it for security purposes; the developer never receives that log, and the privacy policy says so (DECISIONS 0007, 0018).",
+      "Favorites, the first-run flag and the reminder switch stay on the device. They are excluded from Google's cloud backup and move only in a device-to-device transfer. Export favorites writes a file the person sends wherever they choose (ADR 0014).",
+      "Reminders are local notifications scheduled on the phone; there is no push service and no token.",
+      "No analytics, crash reporting, advertising, Firebase or Play services library is linked (SourceGuardTest, make playstore)."
+    ]
+  },
+  "content_rating": {
+    "_note": "Policy and programs > App content > Content rating (the IARC questionnaire). Its wording and order change; answer these facts. They are the iOS answers the owner confirmed on 2026-10-02 (docs/APP-STORE-LISTING.md, DECISIONS 0015), measured on the same snapshot text.",
+    "questionnaire_category": "The reference, news or educational category: the app shows text about TV shows. It is not a game, a social or communication app, a store or a streaming service.",
+    "answers": {
+      "violence": {
+        "answer": "Text references only, infrequent",
+        "why": "Character deaths, murders and violence are named in plot notes and tropes, never shown. No images."
+      },
+      "sexuality": {
+        "answer": "Text references to themes only; no sexual content or nudity",
+        "why": "Tropes and plot notes name relationships, coming out, sex work and queerbashing. Nothing explicit."
+      },
+      "language": {
+        "answer": "Infrequent profanity in quoted text",
+        "why": "A handful of plot notes quote profanity (7 text fields of 10,341 in the snapshot of 2026-10-01)."
+      },
+      "controlled_substances": {
+        "answer": "Text references to drugs and alcohol, infrequent",
+        "why": "Plot notes mention them; nothing is shown or encouraged."
+      },
+      "gambling": {
+        "answer": "No",
+        "why": "No gambling, simulated gambling, contests or loot boxes."
+      },
+      "horror_or_fear": {
+        "answer": "No",
+        "why": "Genre labels only; nothing depicted."
+      },
+      "user_interaction": {
+        "answer": "No",
+        "why": "No accounts, chat, posts or comments; nothing passes between people inside the app. Share hands a show's LezWatch.TV address to Android's share sheet."
+      },
+      "shares_location": {
+        "answer": "No",
+        "why": "No location permission; filters are pickers over bundled data."
+      },
+      "digital_purchases": {
+        "answer": "No",
+        "why": "Paid up front on Google Play. No in-app purchase and no billing library."
+      },
+      "unrestricted_internet": {
+        "answer": "No",
+        "why": "No web view. Links open in the browser or the linked app, outside Queer Frame."
+      }
+    }
+  }
+}

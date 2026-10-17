@@ -319,7 +319,8 @@ policy says this.
 "…, paid link"), from the link itself (`WatchLink.isPaidLink`), so the
 snapshot contract does not change. The Pages site shows no where-to-watch
 links, so it needs no label; its privacy policy states the arrangement. The
-Android app (0018) needs the same label before it ships with a token.
+Android app (0018) labels them the same way (`Presentation.isPaidLink`,
+`PaidLinkTest`), since both apps read the one snapshot.
 
 **Owner steps.** Apply only once the App Store listing is live; then set the
 variable (`OWNER-STEPS-apple.md` in the hand-off). To stop, delete the

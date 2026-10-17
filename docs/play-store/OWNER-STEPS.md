@@ -57,8 +57,9 @@ Still yours, before step 2:
    buyers need Google Play's refund route there too, before launch. It is
    not added: the page's Android wording is a decision, and the site's
    tests allow Android wording only inside marked regions of
-   `privacy.html` (`pipeline/tests/test_app_store.py`), so adding it to
-   `support.html` also adds that page to the allowed list.
+   `privacy.html` and, when the Play link is on, the index
+   (`pipeline/tests/test_app_store.py`, `test_play_store.py`), so adding
+   it to `support.html` also adds that page to the allowed list.
 
 ## 2. Play Console developer account
 
@@ -241,6 +242,35 @@ Rollback: Play cannot reinstall an older build on people's phones. Halt a
 staged rollout if one is running, or release a fixed build with a higher
 `versionCode`. The data file is shared with iOS, so a bad snapshot is
 fixed by republishing the previous one.
+
+## 11. Once the app is live: turn on the website's Google Play link
+
+Do this after step 10's **Publish**, once
+https://play.google.com/store/apps/details?id=com.chelseakr.queertvguide
+opens the listing. The Pages site says nothing about Google Play until one
+switch, the `PLAY_STORE_LIVE` repository variable, is on. `snapshot.yml`
+reads it and runs `pipeline/src/qtv_pipeline/play_store.py` over the
+assembled site.
+
+1. `gh variable set PLAY_STORE_LIVE --repo ChelseaKR/queer-tv-guide --body true`
+2. `gh workflow run snapshot.yml --repo ChelseaKR/queer-tv-guide` to
+   republish now instead of at the next nightly run.
+3. Check: `curl -s https://chelseakr.github.io/queer-tv-guide/ | grep -c play.google.com`
+   prints 1, and the index shows "Queer Frame on Google Play: for
+   Android, $4.99."
+
+What it adds: on the index only, a text link to the Play listing with the
+price, and the line "Google Play is a trademark of Google LLC." No badge
+image: Google's badge artwork could not be fetched and its terms read in
+this session. To use the official "Get it on Google Play" badge instead,
+download it from Google's badge page, read its terms, and vendor it the way
+the App Store badge is (`docs/LICENSES-AND-ATTRIBUTION.md`). No script and
+no analytics either way.
+
+Off again: `gh variable delete PLAY_STORE_LIVE --repo ChelseaKR/queer-tv-guide`
+(or set it to `false`), then run snapshot.yml again. Any value other than
+`true`, `false` or empty fails the run at its check step, before anything
+is published.
 
 ## What is already done
 

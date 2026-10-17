@@ -18,7 +18,7 @@ listed parameter left in fails the build.
 from __future__ import annotations
 
 from typing import Any
-from urllib.parse import unquote_plus, urlsplit, urlunsplit
+from urllib.parse import SplitResult, unquote_plus, urlsplit, urlunsplit
 
 # Anywhere: campaign and click trackers, and referral-reward codes.
 _GLOBAL = frozenset(
@@ -94,7 +94,7 @@ def _is_tracking(key: str, host: str) -> bool:
     return k in _GLOBAL or k.startswith(_GLOBAL_PREFIXES) or k in names or k.startswith(prefixes)
 
 
-def _parts(url: str) -> tuple[Any, list[str]] | None:
+def _parts(url: str) -> tuple[SplitResult, list[str]] | None:
     parts = urlsplit(url)
     if parts.scheme not in ("http", "https") or not parts.query:
         return None
@@ -121,7 +121,7 @@ def strip_tracking(url: str) -> str:
     kept = [p for p in pieces if not _is_tracking(p.split("=", 1)[0], host)]
     if len(kept) == len(pieces):
         return url
-    return urlunsplit((parts.scheme, parts.netloc, parts.path, "&".join(kept), parts.fragment))
+    return str(urlunsplit((parts.scheme, parts.netloc, parts.path, "&".join(kept), parts.fragment)))
 
 
 def strip_all(value: Any) -> int:

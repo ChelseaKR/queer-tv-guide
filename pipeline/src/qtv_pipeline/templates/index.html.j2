@@ -1,0 +1,13 @@
+{% extends "base.html.j2" %}
+{% block content %}
+<h1>Does she die? Queer TV shows</h1>
+<p>Pick a show to see its queer characters. Each page keeps the full answer to "does she die" closed until you open it, so you decide whether to be spoiled. The answers come from the records of LezWatch.TV.</p>
+<ul>
+{%- for s in shows %}
+<li><a href="{{ s.slug }}/">{{ s.title }}</a> ({{ s.years }})</li>
+{%- endfor %}
+</ul>
+{% if app_store_url %}
+<p class="cta"><a href="{{ app_store_url }}">Get the app</a></p>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ title }}</title>
+<meta name="description" content="{{ description }}">
+<link rel="canonical" href="{{ canonical }}">
+<style>
+{% include "style.css" %}
+</style>
+<script type="application/ld+json">{{ breadcrumb|tojson }}</script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to the content</a>
+<header>
+<p class="brand"><a href="{{ base_url }}/">{{ site_name }}</a></p>
+<nav aria-label="Breadcrumb">
+<ol class="crumbs">
+{%- for name, url in crumbs %}
+{%- if loop.last %}
+<li><span aria-current="page">{{ name }}</span></li>
+{%- else %}
+<li><a href="{{ url }}">{{ name }}</a></li>
+{%- endif %}
+{%- endfor %}
+</ol>
+</nav>
+</header>
+<main id="main">
+{% block content %}{% endblock %}
+</main>
+<footer>
+{% block credits %}{% endblock %}
+<h2>The data</h2>
+<p>{{ licence.notice }}</p>
+<p>This data is published under <a href="{{ licence.snapshot.url }}">{{ licence.snapshot.name }}</a>. If you reuse it, keep these credits. It was last built from the sources on {{ generated_on }}.</p>
+<h2>Sources</h2>
+<ul>
+{%- for a in attribution %}
+<li><a href="{{ a.url }}">{{ a.name }}</a>: {{ a.text }} License: <a href="{{ a.licence_url }}">{{ a.licence_name }}</a>. <a href="{{ a.terms_url }}">Terms</a>, read {{ a.terms_read_on }}.</li>
+{%- endfor %}
+</ul>
+<p>LezWatch.TV and TVmaze do not endorse {{ site_name }}. They are not responsible for the accuracy of this page.</p>
+<p class="small">This website has no analytics and no cookies, runs no code in your browser, and loads nothing from any other site. <a href="{{ base_url }}/privacy.html">Privacy policy</a> &middot; <a href="{{ base_url }}/support.html">Support</a></p>
+</footer>
+</body>
+</html>

@@ -13,6 +13,11 @@ consumer of the published snapshot, would notice.
 
 ### Added
 
+- A web page for each of the 50 shows with the most listed characters
+  (DECISIONS 0019): "does she die in <show>", with the full answer behind a
+  closed spoiler control, "Unknown" where LezWatch.TV has recorded nothing,
+  and both sources credited. `make site` builds them; nothing publishes them
+  yet. The privacy policy has a "This website" section.
 - Queer Frame for Android (DECISIONS 0018): a native app with the
   iPhone app's features, the same data file and the same privacy posture.
   Search and filters, show and character pages with the closed "does she

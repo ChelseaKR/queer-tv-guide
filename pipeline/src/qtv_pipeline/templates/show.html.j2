@@ -1,0 +1,38 @@
+{% extends "base.html.j2" %}
+{% block content %}
+<h1>Does she die in {{ show.title }}?</h1>
+<p>{{ site_name }} answers this from the records of LezWatch.TV, a volunteer-run database of queer characters on TV. Nothing is revealed until you open the answer below.</p>
+<details class="answer">
+<summary>Show the answer (spoilers)</summary>
+<div class="answer-body">
+<p data-answer="headline"><strong>{{ answer.headline }}</strong></p>
+<ul>
+{%- for c in cast %}
+<li data-status="{{ 'dies' if c.dies else 'unknown' }}"><span class="who">{{ c.name }}</span>: <span class="status">{{ c.status }}</span></li>
+{%- endfor %}
+</ul>
+{%- for note in answer.notes %}
+<p class="small">{{ note }}</p>
+{%- endfor %}
+<p class="small">LezWatch.TV records deaths, not survival. Unknown means no death is on record, which is not the same as the character living.</p>
+</div>
+</details>
+{% if app_store_url %}
+<p class="cta"><a href="{{ app_store_url }}">Get the app</a></p>
+{% endif %}
+<h2>About {{ show.title }}</h2>
+<dl class="facts">
+{%- for label, value in facts %}
+<dt>{{ label }}</dt>
+<dd>{{ value }}</dd>
+{%- endfor %}
+</dl>
+<p class="small">Run status, and the network when LezWatch.TV lists none, come from TVmaze, licensed <a href="{{ licence.snapshot.url }}">CC BY-SA 4.0</a>: {% if tvmaze_url %}<a href="{{ tvmaze_url }}">this show on TVmaze</a>{% else %}<a href="https://www.tvmaze.com/">TVmaze</a>{% endif %}.</p>
+<h2>Queer characters LezWatch.TV lists</h2>
+<ul class="cast">
+{%- for c in cast %}
+<li><a href="{{ c.source_url }}">{{ c.name }}</a>. Role: {{ c.role }}. Gender: {{ c.gender }}. Sexuality: {{ c.sexuality }}.</li>
+{%- endfor %}
+</ul>
+<p><a href="{{ show.source_url }}">View {{ show.title }} on LezWatch.TV</a></p>
+{% endblock %}

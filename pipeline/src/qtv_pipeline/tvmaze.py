@@ -15,14 +15,43 @@ marked the match unreliable) and is counted separately from a genuine miss.
 from __future__ import annotations
 
 import json
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Literal
 
 from . import fields
-from .http import PacedClient
+from .http import FetchError, PacedClient, UpstreamUnavailable
 
 BASE = "https://api.tvmaze.com"
+
+DEGRADED_FRACTION = 0.05
+"""The share of the shows a run asked TVmaze about that may fail before the run fails.
+One bad answer must not cost the nightly snapshot (a 502 on one show did, 2026-10-21);
+a TVmaze outage must still stop the run rather than publish a mirror that stopped
+refreshing. 5% of a nightly run (about 650 shows asked about, so about 30) is far above the
+occasional 502 and far below an outage."""
+
+DEGRADED_FLOOR = 2
+"""Never fewer than this many may fail, so a small incremental run is not brittle."""
+
+
+class TvmazeDegraded(FetchError):
+    """Too many shows could not be refreshed from TVmaze to call the run healthy."""
+
+
+@dataclass
+class SyncReport:
+    """What the sync did, for the run's output. `degraded` holds LezWatch show ids whose
+    TVmaze refresh failed after retries; each keeps what the cache already had (or
+    stays unjoined, which the snapshot renders as schedule unknown)."""
+
+    attempted: int = 0
+    degraded: list[str] = field(default_factory=list)
+
+
+def degraded_limit(attempted: int) -> int:
+    return max(DEGRADED_FLOOR, int(DEGRADED_FRACTION * attempted))
+
 
 JoinMethod = Literal["lwtv_tvmaze_id_manual", "lwtv_tvmaze_id", "imdb_lookup", "none"]
 
@@ -108,19 +137,52 @@ def _lookup_by_imdb(client: PacedClient, imdb_id: str) -> dict[str, Any] | None:
     return _fetch_show(client, int(show["id"]))
 
 
+def _resolve(
+    client: PacedClient, lwtv_id: str, candidates: list[tuple[JoinMethod, str]]
+) -> tuple[dict[str, Any] | None, JoinMethod, bool]:
+    """Try each join key in order. Returns (body or None, the method that decided it,
+    whether TVmaze was unavailable). A key that is not an integer id is a miss."""
+    result: dict[str, Any] | None = None
+    method: JoinMethod = "none"
+    for method, key in candidates:
+        try:
+            if method == "imdb_lookup":
+                result = _lookup_by_imdb(client, key)
+            else:
+                result = _fetch_show(client, int(key))
+        except ValueError:
+            result = None
+        except UpstreamUnavailable as exc:
+            client.log(f"  tvmaze unavailable for lwtv show {lwtv_id}; keeping the cache: {exc}")
+            return None, method, True
+        if result is not None:
+            break
+    return result, method, False
+
+
 def sync_shows(
     client: PacedClient,
     cache_dir: Path,
     shows: list[dict[str, Any]],
     *,
     full: bool = False,
+    report: SyncReport | None = None,
 ) -> dict[str, dict[str, Any]]:
     """Fetch/refresh TVmaze data for every LezWatch show that needs it.
 
     Returns the updated joins map (lwtv show id -> join record), also
     persisted to cache/tvmaze/joins.json. TVmaze show bodies are cached at
     cache/tvmaze/shows/{tvmaze_id}.json.
+
+    When TVmaze keeps failing for one show (5xx, network error or 429 after the
+    client's retries), that show's cached join and cached body are left exactly as
+    they were, so the snapshot keeps its last known TVmaze fields; a show with
+    nothing cached gets no join record at all and the snapshot says its schedule is
+    unknown. Nothing is written that claims "not found". The show is counted in
+    `report.degraded`, and the sync raises `TvmazeDegraded` (after saving) only when
+    more than `degraded_limit` of the shows it asked about failed.
     """
+    report = report if report is not None else SyncReport()
     shows_dir = _cache_dir(cache_dir)
     joins = load_joins(cache_dir)
     recently_updated: set[int] = set() if full else _recently_updated_ids(client)
@@ -152,20 +214,16 @@ def sync_shows(
             }
             continue
 
-        result: dict[str, Any] | None = None
-        method: JoinMethod = "none"
-        reason = "not_found"
-        for method, key in candidates:
-            try:
-                if method == "imdb_lookup":
-                    result = _lookup_by_imdb(client, key)
-                else:
-                    result = _fetch_show(client, int(key))
-            except ValueError:
-                result = None
-            if result is not None:
-                reason = "ok"
-                break
+        report.attempted += 1
+        result, method, unavailable = _resolve(client, lwtv_id, candidates)
+        if unavailable:
+            # Leave joins[lwtv_id] and the cached body untouched. Never write
+            # "not_found": TVmaze did not say that.
+            report.degraded.append(lwtv_id)
+            if len(report.degraded) > degraded_limit(len(shows)):
+                break  # a ceiling no run can be under: stop hammering an outage
+            continue
+        reason = "ok" if result is not None else "not_found"
         if result is None:
             joins[lwtv_id] = {
                 "method": method,
@@ -189,6 +247,11 @@ def sync_shows(
         }
 
     _save_joins(cache_dir, joins)
+    if len(report.degraded) > degraded_limit(report.attempted):
+        raise TvmazeDegraded(
+            f"TVmaze failed for {len(report.degraded)} of {report.attempted} shows "
+            f"(limit {degraded_limit(report.attempted)}); not treating this as a healthy run"
+        )
     return joins
 
 

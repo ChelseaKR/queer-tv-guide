@@ -92,7 +92,16 @@ def run_fetch(
                 )
 
         shows_raw = lezwatch.load_shows(cache_dir)
-        joins = tvmaze.sync_shows(client, cache_dir, shows_raw, full=full)
+        tv_report = tvmaze.SyncReport()
+        try:
+            joins = tvmaze.sync_shows(client, cache_dir, shows_raw, full=full, report=tv_report)
+        finally:
+            if tv_report.degraded:
+                log(
+                    f"tvmaze: {len(tv_report.degraded)}/{tv_report.attempted} shows degraded "
+                    f"(refresh failed after retries; cached values kept, else schedule unknown): "
+                    f"{', '.join(tv_report.degraded)}"
+                )
         matched = sum(1 for j in joins.values() if j.get("matched"))
         log(f"tvmaze: {matched}/{len(joins)} shows joined this run")
 
@@ -114,7 +123,11 @@ def run_fetch(
                 "actors": None,
             },
         },
-        "tvmaze": {"requests": tv["requests"], "bytes": tv["bytes"]},
+        "tvmaze": {
+            "requests": tv["requests"],
+            "bytes": tv["bytes"],
+            "degraded_shows": len(tv_report.degraded),
+        },
     }
     (cache_dir / RUN_META_PATH).write_text(json.dumps(run_meta, indent=1, sort_keys=True))
     log(

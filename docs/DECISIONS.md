@@ -1,6 +1,6 @@
 # Decisions
 
-Numbering: 0001–0004, 0006–0011, 0013, 0015, 0017, 0018, 0019 and 0020 live here. 0005, 0012 and
+Numbering: 0001–0004, 0006–0011, 0013, 0015, 0017, 0018, 0019, 0020 and 0021 live here. 0005, 0012 and
 0014 are ADRs in `docs/adr/`, so they are skipped here rather than
 duplicated.
 
@@ -359,3 +359,49 @@ stops; the 50 pages stay.
 
 **Reversible.** Yes: remove the workflow step; the pages stop being published
 at the next run and nothing else depends on them.
+
+## 0021 — The 50 show pages are a hand-picked list (2026-10-23)
+
+**Status: accepted (owner, 2026-10-23). It supersedes the selection rule in
+0019; everything else in 0019 and 0020 stands.**
+
+**Decision.** `pipeline/data/show_pages_pinned.json` names up to 50 shows, each
+with its LezWatch id, slug, title and a one-line reason, and a `how_chosen`
+header. `qtv_pipeline.show_pages` builds those shows in the file's order (the
+order of the sitemap and of the shows index). A pin whose id is not in the
+snapshot, or whose show lists no character there, is skipped and named in the
+build log, and the slots it frees go to the 0019 rule (most listed
+characters, then lower LezWatch id). With no file, that rule is the whole
+rule. A file that exists but is wrong (more than 50 entries, a repeated id or
+slug, a missing reason, title or slug, no `how_chosen`) fails the build, which
+the workflow's `--notice-on-failure` turns into a notice and no pages. A show
+with no listed character is never built, pinned or not.
+
+**How the list was chosen.** The owner named about 50 titles. I kept each one
+the snapshot has with at least 2 listed characters, in the owner's order, and
+filled the one remaining slot with the highest TVmaze weight among shows not
+already chosen that list 8 or more characters, excluding soaps (The Simpsons).
+Every reason is taken from the snapshot only: the listed-character count,
+the TVmaze weight, that the title is a named flagship. Nothing in the file
+claims anything about search volume, because there is none to cite.
+
+**Not in the snapshot, so not pinned:** Clea (no show by that title; The
+Cleaner and The Cleaning Lady list 2 and 1), Bridgerton, House of the Dragon.
+Where a title has several entries only the one named is pinned (Shameless
+(US) not (UK); Orphan Black not Echoes; Degrassi: The Next Generation not
+Next Class; The Walking Dead not Fear the Walking Dead).
+
+**Why not a rule.** Two rules were tried on the 2026-10-23 data and rejected.
+Most listed characters (0019) fills the list with long-running soaps. TVmaze
+weight, with or without a floor of listed characters, is general-audience
+popularity: 89 shows tie at weight 100, so it picks Grey's Anatomy, NCIS and
+Friends over The L Word, Orange is the New Black and Pose, and a floor of 2, 3
+or 4 characters does not change that. A list is the one tool that says what
+the owner means.
+
+**Cost.** The list does not update itself. A show LezWatch renames or removes
+drops out with a log line and its slot goes to the 0019 rule; a new flagship
+show gets no page until someone adds it. Merging this after the pages of 0019
+are live replaces pages, and each removed URL answers 404.
+
+**Reversible.** Yes: delete the file and the 0019 rule is the whole rule.

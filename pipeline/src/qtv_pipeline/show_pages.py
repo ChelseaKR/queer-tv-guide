@@ -16,13 +16,18 @@ never block the snapshot from publishing: any problem at all prints a
 ``continue-on-error``, so the generator carries the rule.) Without the flag a
 problem exits 1, as before.
 
-Which shows (``select_shows``). The rule is "most listed characters": a show
+Which shows (``select_shows``, DECISIONS 0021). A hand-picked list, when the
+file ``data/show_pages_pinned.json`` exists (``load_pinned`` validates it):
+up to 50 entries, built in the file's order. An entry whose LezWatch id is
+not in the snapshot, or whose show lists no character there, is skipped and
+named in the build log (``plan_selection``); the slots it frees are filled by
+the earlier rule, which is also the whole rule when the file is absent: a show
 is ranked by how many characters this snapshot lists for it (the length of
 its ``characters`` entries, not LezWatch's own tally), most first, and ties
 go to the lower LezWatch id so a rebuild picks the same shows. The first 50
-are built. Shows with no listed character are never built: they have nothing
-to answer from. Episode counts are not in the snapshot, so "most episodes"
-is not a usable rule.
+are built. Shows with no listed character are never built, pinned or not:
+they have nothing to answer from. Episode counts are not in the snapshot, so
+"most episodes" is not a usable rule.
 
 What a page may say. The answer to "does she die" is the one thing a visitor
 did not ask to be told. It sits inside a native ``<details>`` element that is
@@ -63,6 +68,10 @@ from qtv_pipeline.app_store import APP_STORE_URL, SwitchError, live_or_false
 # sitemap entry names this host and no github.io address.
 DEFAULT_BASE_URL = "https://queerframe.app"
 DEFAULT_LIMIT = 50
+# The hand-picked list (DECISIONS 0021). Resolved from the source tree, so it
+# is used by `python -m qtv_pipeline.show_pages` and `make site`; deleting the
+# file restores the character-count rule.
+DEFAULT_PINNED_PATH = Path(__file__).resolve().parents[2] / "data" / "show_pages_pinned.json"
 SITE_NAME = "Queer Frame"
 TITLE_MAX = 60
 DESCRIPTION_MAX = 155
@@ -110,24 +119,127 @@ def _plural(n: int, one: str, many: str) -> str:
     return one if n == 1 else many
 
 
-def select_shows(doc: dict[str, Any], limit: int = DEFAULT_LIMIT) -> list[dict[str, Any]]:
-    """The shows to build: most listed characters first, ties by LezWatch id."""
+@dataclass(frozen=True)
+class Pin:
+    lezwatch_id: int
+    slug: str
+    title: str
+    reason: str
+
+
+def _pin_from_entry(path: Path, n: int, entry: Any) -> Pin:
+    if not isinstance(entry, dict):
+        raise ShowPagesError(f"{path}: entry {n} is not an object")
+    ident = entry.get("lezwatch_id")
+    if isinstance(ident, bool) or not isinstance(ident, int):
+        raise ShowPagesError(f"{path}: entry {n} has no integer lezwatch_id")
+    texts: dict[str, str] = {}
+    missing = []
+    for key in ("slug", "title", "reason"):
+        value = entry.get(key)
+        if isinstance(value, str) and value.strip():
+            texts[key] = value
+        else:
+            missing.append(key)
+    if missing:
+        raise ShowPagesError(f"{path}: entry {n} (id {ident}) has no {', '.join(missing)}")
+    return Pin(ident, texts["slug"], texts["title"], texts["reason"])
+
+
+def load_pinned(path: Path) -> list[Pin] | None:
+    """The pinned list in file order, or None when the file does not exist.
+
+    A file that exists but is wrong is an error, never a silent fall back to
+    the other rule: more than 50 entries (``DEFAULT_LIMIT``), a repeated id or slug, an id
+    that is not an integer, or a missing slug, title or reason."""
+    if not path.is_file():
+        return None
+    try:
+        raw = json.loads(path.read_text(encoding="utf-8"))
+        entries = raw["shows"]
+    except (ValueError, KeyError, TypeError) as exc:
+        raise ShowPagesError(f"{path}: not a pinned list: {exc!r}") from exc
+    if not isinstance(raw.get("how_chosen"), str) or not raw["how_chosen"].strip():
+        raise ShowPagesError(f"{path}: how_chosen must say how the list was chosen")
+    if not isinstance(entries, list) or len(entries) > DEFAULT_LIMIT:
+        raise ShowPagesError(f"{path}: at most {DEFAULT_LIMIT} shows may be pinned")
+    pins = [_pin_from_entry(path, n, entry) for n, entry in enumerate(entries, 1)]
+    ids = [p.lezwatch_id for p in pins]
+    slugs = [p.slug for p in pins]
+    if len(set(ids)) != len(ids):
+        raise ShowPagesError(
+            f"{path}: repeated lezwatch_id: {sorted({i for i in ids if ids.count(i) > 1})}"
+        )
+    if len(set(slugs)) != len(slugs):
+        raise ShowPagesError(
+            f"{path}: repeated slug: {sorted({x for x in slugs if slugs.count(x) > 1})}"
+        )
+    return pins
+
+
+def _listed_characters(doc: dict[str, Any]) -> dict[str, int]:
     listed: dict[str, int] = {}
     for character in doc["characters"]:
         for link in character["shows"]:
             listed[link["show_id"]] = listed.get(link["show_id"], 0) + 1
+    return listed
+
+
+def plan_selection(
+    doc: dict[str, Any], limit: int = DEFAULT_LIMIT, pinned: list[Pin] | None = None
+) -> tuple[list[dict[str, Any]], list[str]]:
+    """The shows to build, in order, and one log line per thing worth saying.
+
+    Pinned shows first, in the list's order; a pin that is not in the snapshot
+    or lists no character is skipped and named. The rest of the ``limit`` is
+    filled by most listed characters, ties by lower LezWatch id."""
+    listed = _listed_characters(doc)
     ranked = sorted(
         (s for s in doc["shows"] if listed.get(s["id"], 0) > 0),
         key=lambda s: (-listed[s["id"]], s["lwtv_id"]),
     )
-    chosen = ranked[:limit]
+    notes: list[str] = []
+    chosen: list[dict[str, Any]] = []
+    if pinned is None:
+        notes.append("show_pages: selection rule: most listed characters, then lower LezWatch id")
+    else:
+        by_id = {s["lwtv_id"]: s for s in doc["shows"]}
+        for pin in pinned[:limit]:
+            show = by_id.get(pin.lezwatch_id)
+            if show is None:
+                notes.append(
+                    f"show_pages: pinned list: skipped {pin.title} (id {pin.lezwatch_id}): "
+                    "not in the snapshot"
+                )
+            elif listed.get(show["id"], 0) == 0:
+                notes.append(
+                    f"show_pages: pinned list: skipped {pin.title} (id {pin.lezwatch_id}): "
+                    "the snapshot lists no character for it"
+                )
+            else:
+                chosen.append(show)
+        notes.insert(
+            0,
+            f"show_pages: selection rule: pinned list ({len(chosen)} of {len(pinned)} built), "
+            "then most listed characters, then lower LezWatch id",
+        )
+    taken = {s["id"] for s in chosen}
+    chosen += [s for s in ranked if s["id"] not in taken][: max(limit - len(chosen), 0)]
+    chosen = chosen[:limit]
     slugs = [s["slug"] for s in chosen]
     bad = [s for s in slugs if not SLUG.fullmatch(s)]
     if bad:
         raise ShowPagesError(f"unsafe slug(s) for a path: {bad}")
     if len(set(slugs)) != len(slugs):
         raise ShowPagesError("two chosen shows share a slug")
-    return chosen
+    return chosen, notes
+
+
+def select_shows(
+    doc: dict[str, Any], limit: int = DEFAULT_LIMIT, pinned: list[Pin] | None = None
+) -> list[dict[str, Any]]:
+    """The shows to build, in order (see the module docstring)."""
+    return plan_selection(doc, limit, pinned)[0]
 
 
 def fit(candidates: list[str], limit: int) -> str:
@@ -371,6 +483,7 @@ def render_site(
     base_url: str = DEFAULT_BASE_URL,
     app_store_live: bool = False,
     limit: int = DEFAULT_LIMIT,
+    pinned: list[Pin] | None = None,
 ) -> dict[str, str]:
     """Every file of the site, as ``{relative path: text}``; writes nothing."""
     base = _clean_base_url(base_url)
@@ -378,7 +491,7 @@ def render_site(
         raise ShowPagesError("the snapshot file is not a JSON object")
     # Fail before rendering if the file is not a snapshot this module understands.
     dt.date.fromisoformat(doc["generated_at"][:10])
-    shows = select_shows(doc, limit)
+    shows = select_shows(doc, limit, pinned)
     if not shows:
         raise ShowPagesError("no show has a listed character; nothing to build")
     files = {
@@ -400,6 +513,7 @@ def build_site(
     base_url: str = DEFAULT_BASE_URL,
     app_store_live: bool = False,
     limit: int = DEFAULT_LIMIT,
+    pinned: list[Pin] | None = None,
 ) -> list[Path]:
     """Write the pages, the sitemap and robots.txt under ``out_dir``; return the files.
 
@@ -407,7 +521,9 @@ def build_site(
     directories this call made are removed again, so a half-built site never
     reaches the Pages artifact.
     """
-    files = render_site(doc, base_url=base_url, app_store_live=app_store_live, limit=limit)
+    files = render_site(
+        doc, base_url=base_url, app_store_live=app_store_live, limit=limit, pinned=pinned
+    )
     written: list[Path] = []
     made_dirs: list[Path] = []
     try:
@@ -437,15 +553,19 @@ def main(argv: list[str]) -> int:
     parser.add_argument("--app-store-live", default="false")
     parser.add_argument("--limit", type=int, default=DEFAULT_LIMIT)
     parser.add_argument("--notice-on-failure", action="store_true")
+    parser.add_argument("--pinned", type=Path, default=DEFAULT_PINNED_PATH)
+    parser.add_argument("--no-pinned", action="store_true")
     args = parser.parse_args(argv)
     try:
         doc = json.loads(args.snapshot.read_text(encoding="utf-8"))
+        pinned = None if args.no_pinned else load_pinned(args.pinned)
         files = build_site(
             doc,
             args.out_dir,
             base_url=args.base_url,
             app_store_live=live_or_false(args.app_store_live),
             limit=args.limit,
+            pinned=pinned,
         )
     except Exception as exc:  # the soft mode must hold for any problem
         if args.notice_on_failure:
@@ -459,6 +579,8 @@ def main(argv: list[str]) -> int:
             raise
         print(f"show_pages: refused: {exc}", file=sys.stderr)
         return 1
+    for line in plan_selection(doc, args.limit, pinned)[1]:
+        print(line)
     print(f"show_pages: wrote {len(files)} files to {args.out_dir}")
     return 0
 

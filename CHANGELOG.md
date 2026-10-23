@@ -13,6 +13,11 @@ consumer of the published snapshot, would notice.
 
 ### Added
 
+- The 50 show pages are a hand-picked list (`pipeline/data/show_pages_pinned.json`,
+  DECISIONS 0021) in place of "most listed characters". An entry missing
+  from the snapshot or with no listed character is skipped and logged by
+  name, and the character-count rule fills the slot; without the file that
+  rule is the whole rule.
 - A web page for each of the 50 shows with the most listed characters
   (DECISIONS 0019): "does she die in <show>", with the full answer behind a
   closed spoiler control, "Unknown" where LezWatch.TV has recorded nothing,

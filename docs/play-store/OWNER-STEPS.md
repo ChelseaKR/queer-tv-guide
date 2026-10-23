@@ -60,6 +60,13 @@ Still yours, before step 2:
    `privacy.html` and, when the Play link is on, the index
    (`pipeline/tests/test_app_store.py`, `test_play_store.py`), so adding
    it to `support.html` also adds that page to the allowed list.
+5. **Release-day privacy wording.** While the Android app is unreleased,
+   `docs/site/privacy.html` says so in two places: "and, once it is
+   released, Android" in the date line and "is not released yet. As built,
+   it" at the start of the "On Android" section. Remove both words on the
+   day the app goes live on Google Play (the Play privacy-policy URL is this
+   page). `pipeline/tests/test_app_store.py` pins the current wording and
+   will fail until it is updated with the page.
 
 ## 2. Play Console developer account
 

@@ -164,6 +164,24 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
 
+      - name: build the per-show pages into the Pages site (never blocks the deploy)
+        # The 50 "does she die in <show>" pages, shows/index.html, sitemap.xml
+        # and robots.txt, next to the snapshot files (DECISIONS 0019, 0020;
+        # qtv_pipeline/show_pages.py). They are an extra: with
+        # --notice-on-failure the generator prints a ::notice:: line, writes
+        # nothing and exits 0 on any problem, so the snapshot still publishes
+        # (continue-on-error is not allowed here, and the generator carries
+        # the rule instead). Runs before the index is written so the index
+        # links to the shows only when they exist. Same APP_STORE_LIVE value
+        # the app-store step below reads; passed through env.
+        working-directory: pipeline
+        run: |
+          mkdir -p site
+          uv run python -m qtv_pipeline.show_pages out/snapshot.v1.json site \
+            --app-store-live "$APP_STORE_LIVE" --notice-on-failure
+        env:
+          APP_STORE_LIVE: ${{ vars.APP_STORE_LIVE }}
+
       - name: assemble the Pages site (the app's actual fetch URL)
         working-directory: pipeline
         run: |

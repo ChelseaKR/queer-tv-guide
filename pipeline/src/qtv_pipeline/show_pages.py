@@ -3,11 +3,18 @@
 Built from the same snapshot the app reads (DECISIONS 0019), on this command:
 
     python -m qtv_pipeline.show_pages SNAPSHOT_JSON OUT_DIR [--base-url URL]
-        [--app-store-live VALUE] [--limit N]
+        [--app-store-live VALUE] [--limit N] [--notice-on-failure]
 
 It writes ``shows/index.html``, ``shows/<slug>/index.html`` for each chosen
-show, and ``sitemap.xml`` into OUT_DIR. Nothing else, and no page reads
-anything but the snapshot.
+show, ``sitemap.xml`` and ``robots.txt`` into OUT_DIR. Nothing else, and no
+page reads anything but the snapshot. Every file is rendered before the
+first is written, so a build that fails leaves OUT_DIR as it was.
+
+``--notice-on-failure`` is for the nightly workflow, where these pages must
+never block the snapshot from publishing: any problem at all prints a
+``::notice::`` line, writes nothing and exits 0. (The workflow policy forbids
+``continue-on-error``, so the generator carries the rule.) Without the flag a
+problem exits 1, as before.
 
 Which shows (``select_shows``). The rule is "most listed characters": a show
 is ranked by how many characters this snapshot lists for it (the length of
@@ -51,7 +58,10 @@ import jinja2
 
 from qtv_pipeline.app_store import APP_STORE_URL, SwitchError, live_or_false
 
-DEFAULT_BASE_URL = "https://chelseakr.github.io/queer-tv-guide"
+# The site's own domain (DECISIONS 0020). Pages serves the project path with a
+# 301 to it, so every canonical URL, internal link, breadcrumb item and
+# sitemap entry names this host and no github.io address.
+DEFAULT_BASE_URL = "https://queerframe.app"
 DEFAULT_LIMIT = 50
 SITE_NAME = "Queer Frame"
 TITLE_MAX = 60
@@ -350,6 +360,39 @@ def _clean_base_url(value: str) -> str:
     return base
 
 
+def render_robots(*, base_url: str) -> str:
+    """Everything may be crawled, and the sitemap is named."""
+    return f"User-agent: *\nAllow: /\n\nSitemap: {base_url}/sitemap.xml\n"
+
+
+def render_site(
+    doc: dict[str, Any],
+    *,
+    base_url: str = DEFAULT_BASE_URL,
+    app_store_live: bool = False,
+    limit: int = DEFAULT_LIMIT,
+) -> dict[str, str]:
+    """Every file of the site, as ``{relative path: text}``; writes nothing."""
+    base = _clean_base_url(base_url)
+    if not isinstance(doc, dict):
+        raise ShowPagesError("the snapshot file is not a JSON object")
+    # Fail before rendering if the file is not a snapshot this module understands.
+    dt.date.fromisoformat(doc["generated_at"][:10])
+    shows = select_shows(doc, limit)
+    if not shows:
+        raise ShowPagesError("no show has a listed character; nothing to build")
+    files = {
+        "shows/index.html": render_index(doc, shows, base_url=base, app_store_live=app_store_live)
+    }
+    for show in shows:
+        files[f"shows/{show['slug']}/index.html"] = render_show(
+            doc, show, base_url=base, app_store_live=app_store_live
+        )
+    files["sitemap.xml"] = render_sitemap(doc, shows, base_url=base)
+    files["robots.txt"] = render_robots(base_url=base)
+    return files
+
+
 def build_site(
     doc: dict[str, Any],
     out_dir: Path,
@@ -358,26 +401,31 @@ def build_site(
     app_store_live: bool = False,
     limit: int = DEFAULT_LIMIT,
 ) -> list[Path]:
-    """Write the pages and the sitemap under ``out_dir``; return the files."""
-    base = _clean_base_url(base_url)
-    # Fail before writing if the file is not a snapshot this module understands.
-    dt.date.fromisoformat(doc["generated_at"][:10])
-    shows = select_shows(doc, limit)
-    if not shows:
-        raise ShowPagesError("no show has a listed character; nothing to build")
+    """Write the pages, the sitemap and robots.txt under ``out_dir``; return the files.
+
+    All of it is rendered first. If a write then fails, the files and
+    directories this call made are removed again, so a half-built site never
+    reaches the Pages artifact.
+    """
+    files = render_site(doc, base_url=base_url, app_store_live=app_store_live, limit=limit)
     written: list[Path] = []
-
-    def put(relative: str, text: str) -> None:
-        path = out_dir / relative
-        path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(text, encoding="utf-8")
-        written.append(path)
-
-    put("shows/index.html", render_index(doc, shows, base_url=base, app_store_live=app_store_live))
-    for show in shows:
-        page = render_show(doc, show, base_url=base, app_store_live=app_store_live)
-        put(f"shows/{show['slug']}/index.html", page)
-    put("sitemap.xml", render_sitemap(doc, shows, base_url=base))
+    made_dirs: list[Path] = []
+    try:
+        for relative, text in files.items():
+            path = out_dir / relative
+            # Ancestors under out_dir that do not exist yet, outermost first.
+            missing = [d for d in path.parents if out_dir in d.parents or d == out_dir]
+            made_dirs.extend(d for d in reversed(missing) if not d.exists())
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(text, encoding="utf-8")
+            written.append(path)
+    except OSError:
+        for path in written:
+            path.unlink(missing_ok=True)
+        for directory in reversed(made_dirs):
+            if directory.is_dir() and not any(directory.iterdir()):
+                directory.rmdir()
+        raise
     return written
 
 
@@ -388,6 +436,7 @@ def main(argv: list[str]) -> int:
     parser.add_argument("--base-url", default=DEFAULT_BASE_URL)
     parser.add_argument("--app-store-live", default="false")
     parser.add_argument("--limit", type=int, default=DEFAULT_LIMIT)
+    parser.add_argument("--notice-on-failure", action="store_true")
     args = parser.parse_args(argv)
     try:
         doc = json.loads(args.snapshot.read_text(encoding="utf-8"))
@@ -398,7 +447,16 @@ def main(argv: list[str]) -> int:
             app_store_live=live_or_false(args.app_store_live),
             limit=args.limit,
         )
-    except (ShowPagesError, SwitchError, OSError, ValueError, KeyError) as exc:
+    except Exception as exc:  # the soft mode must hold for any problem
+        if args.notice_on_failure:
+            why = " ".join(f"{type(exc).__name__}: {exc}".split())
+            print(
+                "::notice title=show pages skipped::The per-show pages were not built "
+                f"and the snapshot is published without them: {why}"
+            )
+            return 0
+        if not isinstance(exc, (ShowPagesError, SwitchError, OSError, ValueError, KeyError)):
+            raise
         print(f"show_pages: refused: {exc}", file=sys.stderr)
         return 1
     print(f"show_pages: wrote {len(files)} files to {args.out_dir}")

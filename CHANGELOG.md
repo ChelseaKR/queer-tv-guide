@@ -16,8 +16,14 @@ consumer of the published snapshot, would notice.
 - A web page for each of the 50 shows with the most listed characters
   (DECISIONS 0019): "does she die in <show>", with the full answer behind a
   closed spoiler control, "Unknown" where LezWatch.TV has recorded nothing,
-  and both sources credited. `make site` builds them; nothing publishes them
-  yet. The privacy policy has a "This website" section.
+  and both sources credited. `make site` builds them. The privacy policy has
+  a "This website" section.
+- The show pages are published on https://queerframe.app (DECISIONS 0020):
+  the nightly run builds them into the Pages site beside the snapshot, with
+  `sitemap.xml` (dated from the snapshot, not the clock) and a `robots.txt`
+  that allows everything. The data index at the site root links to them. If
+  the pages cannot be built the run prints a notice and still publishes the
+  snapshot.
 - A hand-kept store sales ledger (`docs/metrics/store-sales.csv`) and a
   check, run by `make policy`, that refuses a malformed, duplicate,
   out-of-order or premature row. The app has no telemetry, so the stores'

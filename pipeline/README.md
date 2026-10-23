@@ -142,7 +142,11 @@ mirror, fetches incrementally, builds, and then:
    `mirror-cache.tar.gz` to the rolling release **`snapshot-latest`**
    (`gh release upload --clobber`), and
 2. deploys `snapshot.v1.json`, its `.sha256`, and an `index.html` carrying the
-   attribution and license notice to **GitHub Pages**.
+   attribution and license notice to **GitHub Pages**, together with the
+   per-show web pages, `sitemap.xml` and `robots.txt` on
+   https://queerframe.app (DECISIONS 0020). That step is an extra: if the
+   pages cannot be built it prints a `::notice::` and the snapshot still
+   publishes.
 
 Why both. Pages gives the app one plain static URL with an ETag, chosen while
 the repository was private (a release asset on a private repository needs a

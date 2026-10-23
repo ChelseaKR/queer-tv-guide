@@ -9,7 +9,8 @@
 # file exposes both from the root, as CI-CD §9 asks of a nested project; each
 # project keeps its own build files.
 #
-# Needs: uv (>= 0.11), git, curl, and the Swift toolchain on macOS for
+# Needs: uv (>= 0.11), git, curl, Go (for `greenlight`, see scripts/greenlight.sh;
+# without it that one gate is reported as skipped), and the Swift toolchain on macOS for
 # `guidecore`. Scanner binaries are downloaded and SHA-256-verified by
 # scripts/fetch-tool.sh; the Python-based scanners run at pinned versions
 # through uvx.
@@ -33,12 +34,23 @@ RUFF := uvx --python 3.12 ruff@0.16.7
 RUFF_ROOT := --isolated --target-version py312 --line-length 100
 ROOT_PY := tests scripts
 
-VERIFY_TARGETS := pipeline guidecore a11y appstore playstore android policy workflows secrets sast sca
+VERIFY_TARGETS := pipeline guidecore a11y appstore playstore greenlight android policy workflows secrets sast sca
 
 .PHONY: verify sync site $(VERIFY_TARGETS)
 
+# The summary counts a skipped greenlight gate as skipped, not passed
+# (scripts/greenlight.sh writes $(GREENLIGHT_OUT)/SKIPPED when it cannot
+# install the scanner; in CI a skip fails the gate instead).
+GREENLIGHT_OUT ?= build/greenlight
+export GREENLIGHT_OUT
+
 verify: $(VERIFY_TARGETS)
-	@echo "verify: $(words $(VERIFY_TARGETS)) gates passed: $(VERIFY_TARGETS)"
+	@set -euo pipefail; \
+	if [ -e "$(GREENLIGHT_OUT)/SKIPPED" ]; then \
+		echo "verify: $$(( $(words $(VERIFY_TARGETS)) - 1 )) gates passed, 1 SKIPPED (greenlight not installed): $(filter-out greenlight,$(VERIFY_TARGETS))"; \
+	else \
+		echo "verify: $(words $(VERIFY_TARGETS)) gates passed: $(VERIFY_TARGETS)"; \
+	fi
 
 # Install the pipeline's locked dependencies (what `make verify` needs before
 # it runs). Not a gate, so it is not in VERIFY_TARGETS.
@@ -103,6 +115,17 @@ appstore:
 playstore:
 	$(UV_RUN) scripts/check_play_store.py --self-test
 	$(UV_RUN) scripts/check_play_store.py
+
+# Greenlight's static App Store preflight (scripts/greenlight.sh) over the iOS
+# app and widget targets: private APIs, undeclared Required Reason APIs,
+# privacy manifest, Info.plist completeness. Pinned v0.2.0, installed with
+# `go install` at a commit and checked against a module hash; local only, no
+# account and no upload. A CRITICAL or HIGH finding fails it. Needs Go; with
+# no Go it prints "SKIPPED: greenlight not installed" and the verify summary
+# does not count it (CI fails instead). Heuristic regexes, so it complements
+# `appstore` and cannot replace Apple's review.
+greenlight:
+	scripts/greenlight.sh
 
 # Repository policy tests (tests/): workflow invariants, make/CI parity,
 # vendored-standards integrity, and the gitleaks allowlist negative controls,

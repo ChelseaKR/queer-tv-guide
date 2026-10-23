@@ -17,6 +17,16 @@ history and tree); SAST (semgrep); and dependency CVE scans (pip-audit,
 osv-scanner). If `make verify` passes locally, CI should too; if it does not,
 that is a bug in one of them.
 
+One gate is a third-party scanner: `make greenlight` runs Greenlight's static
+App Store preflight (pinned v0.2.0, `scripts/greenlight.sh`) over the app and
+widget targets. It needs Go. Without Go it prints `SKIPPED: greenlight not
+installed` and the `verify:` summary line counts it as skipped, not passed;
+in CI a skip fails. It reads local files only (no account, no upload) and its
+checks are heuristic, so it complements `make appstore` and does not replace
+Apple's review. It scans `ios/QueerTVGuide` and `ios/QueerTVGuideWidgets`, not
+the repository root, whose test sources name the privacy-sensitive APIs on
+purpose. Waivers live in `ios/greenlight.yml`.
+
 Install the pre-commit hooks once per clone for faster feedback (gitleaks on
 the staged diff, ruff on pipeline files, mypy before a push):
 

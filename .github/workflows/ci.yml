@@ -9,7 +9,9 @@ name: ci
 #                Then `make appstore`, the iOS app's App Store readiness
 #                check, which reads files only and needs no Xcode, and
 #                `make playstore`, the Android app's Google Play readiness
-#                check, which reads files only and needs no Android SDK.
+#                check, which reads files only and needs no Android SDK, and
+#                `make greenlight`, the pinned Greenlight static preflight
+#                over the app and widget targets.
 #   android   -- `make android`: the Android app's gate (android/Makefile
 #                verify: JVM tests including the parity file shared with
 #                GuideCore, Android lint, an R8 release build). Linux, every
@@ -78,6 +80,13 @@ jobs:
         with:
           version: "0.12.12"
 
+      # Go for the pinned Greenlight install (scripts/greenlight.sh). The
+      # patch version is the one the gate was proven on.
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: "1.27.3"
+          cache: false
+
       - name: make pipeline (offline; fixtures only)
         run: make pipeline
 
@@ -85,6 +94,12 @@ jobs:
       # reads only, so it runs here on Linux and on every pull request.
       - name: make appstore
         run: make appstore
+
+      # Greenlight's static App Store preflight over the app and widget
+      # targets (scripts/greenlight.sh). No account, no upload; a skip here
+      # is a failure.
+      - name: make greenlight
+        run: make greenlight
 
       # The Google Play readiness check (scripts/check_play_store.py): the
       # Play listing and its Data safety answers against the Android build.

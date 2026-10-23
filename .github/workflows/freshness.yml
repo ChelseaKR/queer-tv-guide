@@ -95,7 +95,7 @@ jobs:
           set -euo pipefail
           # A failed fetch leaves no file, which the checker judges as an
           # unknown age: an alarm, never a pass.
-          if ! curl --proto '=https' --tlsv1.2 -fsS --compressed --retry 3 --retry-all-errors \
+          if ! curl --proto '=https' --tlsv1.2 -fsSL --max-redirs 3 --proto-redir =https --compressed --retry 3 --retry-all-errors \
               --max-time 120 -o "$RUNNER_TEMP/snapshot.v1.json" "$SNAPSHOT_URL"; then
             echo "::warning::could not fetch $SNAPSHOT_URL"
             rm -f "$RUNNER_TEMP/snapshot.v1.json"

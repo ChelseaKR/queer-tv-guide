@@ -29,7 +29,7 @@ wheel build. The root `make verify` runs it as `make pipeline`.
 | robots.txt | `Crawl-delay: 10` (`User-agent: *`) | none on `api.tvmaze.com` (404) |
 | Pace | 1 request / 10 s, one connection | 1 request / s, one connection |
 | On 429 | wait the 10-minute window, retry (max 3) | back off 5 s, doubling, retry (max 5) |
-| On 5xx / network error | retry twice with backoff, then **fail the run** | same |
+| On 5xx / network error | retry twice with backoff, then **fail the run** | retry twice, then keep that show's cached values and go on; fail the run only past 5% of the shows asked about (at least 2 allowed) |
 | User-Agent | `queer-tv-guide-pipeline/<version> (+https://github.com/ChelseaKR/queer-tv-guide)` | same |
 | Full mirror | ~120 requests, ~20 min, ~10 MB | ~2,000 requests, ~35 min, ~4 MB |
 | Nightly incremental | ~20 requests | ~670 requests (measured 2026-09-19, run 35434596786) |

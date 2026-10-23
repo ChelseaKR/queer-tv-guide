@@ -18,6 +18,11 @@ consumer of the published snapshot, would notice.
   closed spoiler control, "Unknown" where LezWatch.TV has recorded nothing,
   and both sources credited. `make site` builds them; nothing publishes them
   yet. The privacy policy has a "This website" section.
+- A hand-kept store sales ledger (`docs/metrics/store-sales.csv`) and a
+  check, run by `make policy`, that refuses a malformed, duplicate,
+  out-of-order or premature row. The app has no telemetry, so the stores'
+  own monthly reports are the only sales numbers. The ledger starts empty;
+  a month with no row is a month nobody recorded, never a zero.
 - Queer Frame for Android (DECISIONS 0018): a native app with the
   iPhone app's features, the same data file and the same privacy posture.
   Search and filters, show and character pages with the closed "does she
@@ -43,6 +48,11 @@ consumer of the published snapshot, would notice.
 
 ### Fixed
 
+- One TVmaze outage on one show no longer fails the nightly snapshot. When
+  TVmaze keeps answering 5xx for a show after the retries, that show keeps
+  the schedule fields the last good run mirrored (or, with none, shows its
+  schedule as unknown), the run reports how many shows were degraded, and
+  the run fails only if more than 5% of the shows asked about were.
 - The release workflow's preflight no longer fails on the first release.
   With no earlier `v*` tags its list of earlier builds is empty, and the
   macOS runner's bash 3.2 treated that empty list as an unbound variable

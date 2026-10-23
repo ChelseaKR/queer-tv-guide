@@ -38,6 +38,11 @@ consumer of the published snapshot, would notice.
 
 ### Fixed
 
+- One TVmaze outage on one show no longer fails the nightly snapshot. When
+  TVmaze keeps answering 5xx for a show after the retries, that show keeps
+  the schedule fields the last good run mirrored (or, with none, shows its
+  schedule as unknown), the run reports how many shows were degraded, and
+  the run fails only if more than 5% of the shows asked about were.
 - The release workflow's preflight no longer fails on the first release.
   With no earlier `v*` tags its list of earlier builds is empty, and the
   macOS runner's bash 3.2 treated that empty list as an unbound variable

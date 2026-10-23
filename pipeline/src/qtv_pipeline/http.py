@@ -24,6 +24,13 @@ class FetchError(RuntimeError):
     """An HTTP exchange that could not be completed within policy. Fatal to the run."""
 
 
+class UpstreamUnavailable(FetchError):
+    """The host kept failing in a way that says "try again later", not "this is wrong":
+    5xx, a network error, or 429, each after the policy's retries. A caller that can
+    keep what it already has for one record may catch this; anything else stays a
+    plain FetchError (a 403 or a 400 means the request or the policy is wrong)."""
+
+
 @dataclass(frozen=True)
 class HostPolicy:
     min_interval: float
@@ -173,7 +180,9 @@ class PacedClient:
                     self.log(f"  network error on {url}: {exc!r}; retry {n5xx}/{policy.max_5xx}")
                     self.sleep(policy.wait_5xx * n5xx)
                     continue
-                raise FetchError(f"network error on {url} after {n5xx} retries: {exc!r}") from exc
+                raise UpstreamUnavailable(
+                    f"network error on {url} after {n5xx} retries: {exc!r}"
+                ) from exc
             self._record(host, resp.content)
             if 200 <= resp.status_code < 300:
                 return Fetched(resp.status_code, resp.headers, resp.content, str(resp.url))
@@ -188,14 +197,14 @@ class PacedClient:
                     )
                     self.sleep(wait)
                     continue
-                raise FetchError(f"{host} kept answering 429 after {n429} retries: {url}")
+                raise UpstreamUnavailable(f"{host} kept answering 429 after {n429} retries: {url}")
             if 500 <= resp.status_code < 600:
                 if n5xx < policy.max_5xx:
                     n5xx += 1
                     self.log(f"  {resp.status_code} from {url}; retry {n5xx}/{policy.max_5xx}")
                     self.sleep(policy.wait_5xx * n5xx)
                     continue
-                raise FetchError(f"{resp.status_code} from {url} after {n5xx} retries")
+                raise UpstreamUnavailable(f"{resp.status_code} from {url} after {n5xx} retries")
             raise FetchError(f"{resp.status_code} from {url}: {resp.text[:200]!r}")
 
     def get_json(self, url: str, *, params: dict[str, Any] | None = None) -> Any:

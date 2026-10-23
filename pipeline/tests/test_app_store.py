@@ -197,6 +197,45 @@ def test_the_privacy_page_describes_android_only_inside_its_regions():
     assert _android_problems("privacy.html", text) == []
 
 
+def _android_claims(privacy: str, support: str) -> list[str]:
+    """Where the privacy page says more about Android than the support page backs."""
+    problems = []
+    if "for iPhone and Android" in privacy.replace("<!-- android-app:begin -->", "").replace(
+        "<!-- android-app:end -->", ""
+    ):
+        problems.append("privacy: names Android as a platform it covers today")
+    if "Queer Frame for Android is not released yet" not in privacy:
+        problems.append("privacy: the On Android section does not say it is unreleased")
+    if "android" in support.lower() or "google play" in support.lower():
+        problems.append("support: mentions Android, so the two pages could now disagree")
+    return problems
+
+
+def test_privacy_does_not_claim_an_android_release_the_support_page_denies():
+    privacy = (DOCS_SITE / "privacy.html").read_text(encoding="utf-8")
+    support = (DOCS_SITE / "support.html").read_text(encoding="utf-8")
+    assert "Queer Frame for iPhone." in support  # denominator: the iPhone-only line exists
+    assert _android_claims(privacy, support) == []
+    # Negative controls: each sabotage is asserted to have changed the text.
+    old_date = privacy.replace(", once it is released,", "")
+    assert old_date != privacy, "the sabotage did not apply"
+    assert _android_claims(old_date, support) == [
+        "privacy: names Android as a platform it covers today"
+    ]
+    old_section = privacy.replace("is not released yet. As built, it", "")
+    assert old_section != privacy, "the sabotage did not apply"
+    assert _android_claims(old_section, support) == [
+        "privacy: the On Android section does not say it is unreleased"
+    ]
+    claims_android = support.replace(
+        "Queer Frame for iPhone.", "Queer Frame for iPhone and Android."
+    )
+    assert claims_android != support, "the sabotage did not apply"
+    assert _android_claims(privacy, claims_android) == [
+        "support: mentions Android, so the two pages could now disagree"
+    ]
+
+
 def test_android_wording_outside_a_region_is_caught(site):
     assert app_store.main([str(site), "true"]) == 0
     index = site / "index.html"

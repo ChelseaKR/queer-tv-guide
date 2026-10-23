@@ -1,0 +1,305 @@
+{
+ "how_chosen": "Hand-picked by the owner's list of flagship titles, 2026-10-23, from the snapshot generated 2026-10-23T04:07:58Z. A flagship title is kept only if the snapshot has it with at least 2 listed characters; flagship titles not in the snapshot or below 2 are left out and recorded in DECISIONS 0021. Remaining slots go to the highest-TVmaze-weight shows that list at least 8 characters, excluding daytime and long-running soaps. Each reason is taken from the snapshot only (listed-character count, TVmaze weight, that it is a named flagship); none claims anything about search volume. Order is the order of the pages in the sitemap and on the shows index. select_shows builds these in this order, skips any entry that is missing from the snapshot or lists no character (logging it by name), and fills the freed slots with the character-count rule.",
+ "shows": [
+  {
+   "lezwatch_id": 211,
+   "slug": "the-l-word",
+   "title": "The L Word",
+   "reason": "Named flagship; the snapshot lists 61 queer characters for it; TVmaze weight 95."
+  },
+  {
+   "lezwatch_id": 51667,
+   "slug": "the-l-word-generation-q",
+   "title": "The L Word: Generation Q",
+   "reason": "Named flagship; the snapshot lists 42 queer characters for it; TVmaze weight 85."
+  },
+  {
+   "lezwatch_id": 73,
+   "slug": "orange-is-the-new-black",
+   "title": "Orange is the New Black",
+   "reason": "Named flagship; the snapshot lists 23 queer characters for it; TVmaze weight 99."
+  },
+  {
+   "lezwatch_id": 26461,
+   "slug": "pose",
+   "title": "Pose",
+   "reason": "Named flagship; the snapshot lists 16 queer characters for it; TVmaze weight 79."
+  },
+  {
+   "lezwatch_id": 777,
+   "slug": "sense8",
+   "title": "Sense8",
+   "reason": "Named flagship; the snapshot lists 18 queer characters for it; TVmaze weight 98."
+  },
+  {
+   "lezwatch_id": 48916,
+   "slug": "batwoman",
+   "title": "Batwoman",
+   "reason": "Named flagship; the snapshot lists 18 queer characters for it; TVmaze weight 97."
+  },
+  {
+   "lezwatch_id": 1839,
+   "slug": "wentworth",
+   "title": "Wentworth",
+   "reason": "Named flagship; the snapshot lists 20 queer characters for it; TVmaze weight 98."
+  },
+  {
+   "lezwatch_id": 23939,
+   "slug": "vida",
+   "title": "Vida",
+   "reason": "Named flagship; the snapshot lists 16 queer characters for it; TVmaze weight 93."
+  },
+  {
+   "lezwatch_id": 26069,
+   "slug": "good-trouble",
+   "title": "Good Trouble",
+   "reason": "Named flagship; the snapshot lists 23 queer characters for it; TVmaze weight 97."
+  },
+  {
+   "lezwatch_id": 10312,
+   "slug": "the-bold-type",
+   "title": "The Bold Type",
+   "reason": "Named flagship; the snapshot lists 19 queer characters for it; TVmaze weight 97."
+  },
+  {
+   "lezwatch_id": 23967,
+   "slug": "killing-eve",
+   "title": "Killing Eve",
+   "reason": "Named flagship; the snapshot lists 10 queer characters for it; TVmaze weight 98."
+  },
+  {
+   "lezwatch_id": 762,
+   "slug": "the-100",
+   "title": "The 100",
+   "reason": "Named flagship; the snapshot lists 3 queer characters for it; TVmaze weight 100."
+  },
+  {
+   "lezwatch_id": 71,
+   "slug": "buffy-the-vampire-slayer",
+   "title": "Buffy The Vampire Slayer",
+   "reason": "Named flagship; the snapshot lists 3 queer characters for it; TVmaze weight 98."
+  },
+  {
+   "lezwatch_id": 1732,
+   "slug": "wynonna-earp",
+   "title": "Wynonna Earp",
+   "reason": "Named flagship; the snapshot lists 4 queer characters for it; TVmaze weight 98."
+  },
+  {
+   "lezwatch_id": 4063,
+   "slug": "supergirl",
+   "title": "Supergirl",
+   "reason": "Named flagship; the snapshot lists 13 queer characters for it; TVmaze weight 99."
+  },
+  {
+   "lezwatch_id": 79685,
+   "slug": "our-flag-means-death",
+   "title": "Our Flag Means Death",
+   "reason": "Named flagship; the snapshot lists 3 queer characters for it; TVmaze weight 96."
+  },
+  {
+   "lezwatch_id": 80420,
+   "slug": "heartstopper",
+   "title": "Heartstopper",
+   "reason": "Named flagship; the snapshot lists 9 queer characters for it; TVmaze weight 98."
+  },
+  {
+   "lezwatch_id": 42121,
+   "slug": "gentleman-jack",
+   "title": "Gentleman Jack",
+   "reason": "Named flagship; the snapshot lists 5 queer characters for it; TVmaze weight 97."
+  },
+  {
+   "lezwatch_id": 81311,
+   "slug": "first-kill",
+   "title": "First Kill",
+   "reason": "Named flagship; the snapshot lists 3 queer characters for it; TVmaze weight 95."
+  },
+  {
+   "lezwatch_id": 59975,
+   "slug": "warrior-nun",
+   "title": "Warrior Nun",
+   "reason": "Named flagship; the snapshot lists 3 queer characters for it; TVmaze weight 99."
+  },
+  {
+   "lezwatch_id": 37692,
+   "slug": "sex-education",
+   "title": "Sex Education",
+   "reason": "Named flagship; the snapshot lists 16 queer characters for it; TVmaze weight 99."
+  },
+  {
+   "lezwatch_id": 76798,
+   "slug": "yellowjackets",
+   "title": "Yellowjackets",
+   "reason": "Named flagship; the snapshot lists 7 queer characters for it; TVmaze weight 100."
+  },
+  {
+   "lezwatch_id": 37526,
+   "slug": "schitts-creek",
+   "title": "Schitt’s Creek",
+   "reason": "Named flagship; the snapshot lists 2 queer characters for it; TVmaze weight 99."
+  },
+  {
+   "lezwatch_id": 43925,
+   "slug": "euphoria",
+   "title": "Euphoria",
+   "reason": "Named flagship; the snapshot lists 4 queer characters for it; TVmaze weight 100."
+  },
+  {
+   "lezwatch_id": 1607,
+   "slug": "legends-of-tomorrow",
+   "title": "Legends of Tomorrow",
+   "reason": "Named flagship; the snapshot lists 11 queer characters for it; TVmaze weight 100."
+  },
+  {
+   "lezwatch_id": 2750,
+   "slug": "shameless-us",
+   "title": "Shameless (US)",
+   "reason": "Named flagship; the snapshot lists 28 queer characters for it; TVmaze weight 100."
+  },
+  {
+   "lezwatch_id": 65,
+   "slug": "greys-anatomy",
+   "title": "Grey’s Anatomy",
+   "reason": "Named flagship; the snapshot lists 42 queer characters for it; TVmaze weight 100."
+  },
+  {
+   "lezwatch_id": 1358,
+   "slug": "law-order-special-victims-unit",
+   "title": "Law & Order: Special Victims Unit",
+   "reason": "Named flagship; the snapshot lists 38 queer characters for it; TVmaze weight 100."
+  },
+  {
+   "lezwatch_id": 642,
+   "slug": "american-horror-story",
+   "title": "American Horror Story",
+   "reason": "Named flagship; the snapshot lists 27 queer characters for it; TVmaze weight 100."
+  },
+  {
+   "lezwatch_id": 239,
+   "slug": "doctor-who",
+   "title": "Doctor Who (2005)",
+   "reason": "Named flagship; the snapshot lists 23 queer characters for it; TVmaze weight 100."
+  },
+  {
+   "lezwatch_id": 1321,
+   "slug": "supernatural",
+   "title": "Supernatural",
+   "reason": "Named flagship; the snapshot lists 13 queer characters for it; TVmaze weight 100."
+  },
+  {
+   "lezwatch_id": 975,
+   "slug": "the-walking-dead",
+   "title": "The Walking Dead",
+   "reason": "Named flagship; the snapshot lists 5 queer characters for it; TVmaze weight 100."
+  },
+  {
+   "lezwatch_id": 5732,
+   "slug": "black-mirror",
+   "title": "Black Mirror",
+   "reason": "Named flagship; the snapshot lists 5 queer characters for it; TVmaze weight 100."
+  },
+  {
+   "lezwatch_id": 85289,
+   "slug": "the-last-of-us",
+   "title": "The Last of Us",
+   "reason": "Named flagship; the snapshot lists 4 queer characters for it; TVmaze weight 100."
+  },
+  {
+   "lezwatch_id": 63,
+   "slug": "orphan-black",
+   "title": "Orphan Black",
+   "reason": "Named flagship; the snapshot lists 7 queer characters for it; TVmaze weight 99."
+  },
+  {
+   "lezwatch_id": 79,
+   "slug": "lost-girl",
+   "title": "Lost Girl",
+   "reason": "Named flagship; the snapshot lists 7 queer characters for it; TVmaze weight 99."
+  },
+  {
+   "lezwatch_id": 3053,
+   "slug": "carmilla",
+   "title": "Carmilla",
+   "reason": "Named flagship; the snapshot lists 7 queer characters for it; TVmaze weight 86."
+  },
+  {
+   "lezwatch_id": 58,
+   "slug": "faking-it",
+   "title": "Faking It",
+   "reason": "Named flagship; the snapshot lists 13 queer characters for it; TVmaze weight 94."
+  },
+  {
+   "lezwatch_id": 187,
+   "slug": "degrassi-tng",
+   "title": "Degrassi: The Next Generation",
+   "reason": "Named flagship; the snapshot lists 13 queer characters for it; TVmaze weight 89."
+  },
+  {
+   "lezwatch_id": 8755,
+   "slug": "grace-and-frankie",
+   "title": "Grace and Frankie",
+   "reason": "Named flagship; the snapshot lists 4 queer characters for it; TVmaze weight 99."
+  },
+  {
+   "lezwatch_id": 655,
+   "slug": "transparent",
+   "title": "Transparent",
+   "reason": "Named flagship; the snapshot lists 23 queer characters for it; TVmaze weight 95."
+  },
+  {
+   "lezwatch_id": 55344,
+   "slug": "feel-good",
+   "title": "Feel Good",
+   "reason": "Named flagship; the snapshot lists 3 queer characters for it; TVmaze weight 60."
+  },
+  {
+   "lezwatch_id": 87679,
+   "slug": "gen-v",
+   "title": "Gen V",
+   "reason": "Named flagship; the snapshot lists 4 queer characters for it; TVmaze weight 99."
+  },
+  {
+   "lezwatch_id": 73211,
+   "slug": "shadow-and-bone",
+   "title": "Shadow and Bone",
+   "reason": "Named flagship; the snapshot lists 3 queer characters for it; TVmaze weight 98."
+  },
+  {
+   "lezwatch_id": 6928,
+   "slug": "the-handmaids-tale",
+   "title": "The Handmaid’s Tale",
+   "reason": "Named flagship; the snapshot lists 9 queer characters for it; TVmaze weight 99."
+  },
+  {
+   "lezwatch_id": 24632,
+   "slug": "station-19",
+   "title": "Station 19",
+   "reason": "Named flagship; the snapshot lists 25 queer characters for it; TVmaze weight 98."
+  },
+  {
+   "lezwatch_id": 7025,
+   "slug": "riverdale",
+   "title": "Riverdale",
+   "reason": "Named flagship; the snapshot lists 16 queer characters for it; TVmaze weight 99."
+  },
+  {
+   "lezwatch_id": 47990,
+   "slug": "cobra-kai",
+   "title": "Cobra Kai",
+   "reason": "Named flagship; the snapshot lists 2 queer characters for it; TVmaze weight 99."
+  },
+  {
+   "lezwatch_id": 627,
+   "slug": "jane-the-virgin",
+   "title": "Jane the Virgin",
+   "reason": "Named flagship; the snapshot lists 15 queer characters for it; TVmaze weight 98."
+  },
+  {
+   "lezwatch_id": 4082,
+   "slug": "the-simpsons",
+   "title": "The Simpsons",
+   "reason": "Filled slot: the highest TVmaze weight (100) among shows not already chosen that list 8 or more queer characters, excluding soaps; the snapshot lists 25."
+  }
+ ]
+}

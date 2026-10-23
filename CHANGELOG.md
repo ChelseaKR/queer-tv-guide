@@ -13,6 +13,11 @@ consumer of the published snapshot, would notice.
 
 ### Added
 
+- A hand-kept store sales ledger (`docs/metrics/store-sales.csv`) and a
+  check, run by `make policy`, that refuses a malformed, duplicate,
+  out-of-order or premature row. The app has no telemetry, so the stores'
+  own monthly reports are the only sales numbers. The ledger starts empty;
+  a month with no row is a month nobody recorded, never a zero.
 - Queer Frame for Android (DECISIONS 0018): a native app with the
   iPhone app's features, the same data file and the same privacy posture.
   Search and filters, show and character pages with the closed "does she

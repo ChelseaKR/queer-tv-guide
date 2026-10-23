@@ -123,18 +123,37 @@ class GreenlightGateTests(unittest.TestCase):
 class GreenlightSkipTests(unittest.TestCase):
     """The not-installed path needs no scanner: an empty tool cache and no Go."""
 
+    # Everything scripts/greenlight.sh runs before it gives up, and nothing else:
+    # in particular no `go`, which a CI runner puts in /usr/bin.
+    TOOLS = ("bash", "dirname", "mkdir", "rm", "cp", "tr", "grep", "awk", "mktemp", "touch", "mv")
+
     def run_skip(self, **env: str) -> tuple[subprocess.CompletedProcess[str], Path]:
         tmp = Path(tempfile.mkdtemp())
         self.addCleanup(shutil.rmtree, tmp, True)
+        bindir = tmp / "bin"
+        bindir.mkdir()
+        for tool in self.TOOLS:
+            real = shutil.which(tool)
+            self.assertIsNotNone(real, tool)
+            (bindir / tool).symlink_to(real)
+        # CI and GITHUB_ACTIONS are scrubbed, then set only by the caller.
         full = {k: v for k, v in os.environ.items() if k not in ("CI", "GITHUB_ACTIONS", "PATH")}
         full.update(
-            PATH="/usr/bin:/bin",  # no go (checked below)
+            PATH=str(bindir),
+            HOME=str(tmp / "home"),
             QTG_TOOLS_DIR=str(tmp / "empty-tools"),
             GREENLIGHT_OUT=str(tmp / "out"),
             **env,
         )
-        self.assertIsNone(shutil.which("go", path=full["PATH"]), "go is on the stripped PATH")
-        proc = subprocess.run([str(SCRIPT)], capture_output=True, text=True, env=full, check=False)
+        full.pop("XDG_CACHE_HOME", None)
+        self.assertIsNone(shutil.which("go", path=full["PATH"]), "go is on the test PATH")
+        proc = subprocess.run(
+            [str(bindir / "bash"), str(SCRIPT)],
+            capture_output=True,
+            text=True,
+            env=full,
+            check=False,
+        )
         return proc, tmp / "out"
 
     def test_local_skip_is_loud_and_marked(self) -> None:

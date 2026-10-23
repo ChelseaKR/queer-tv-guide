@@ -35,10 +35,21 @@ ROOT_PY := tests scripts
 
 VERIFY_TARGETS := pipeline guidecore a11y appstore playstore android policy workflows secrets sast sca
 
-.PHONY: verify $(VERIFY_TARGETS)
+.PHONY: verify sync site $(VERIFY_TARGETS)
 
 verify: $(VERIFY_TARGETS)
 	@echo "verify: $(words $(VERIFY_TARGETS)) gates passed: $(VERIFY_TARGETS)"
+
+# Install the pipeline's locked dependencies (what `make verify` needs before
+# it runs). Not a gate, so it is not in VERIFY_TARGETS.
+sync:
+	$(MAKE) -C pipeline install
+
+# Build the per-show web pages from a snapshot into pipeline/site-preview/
+# (DECISIONS 0019). Not a gate and not published by any workflow:
+#   make site SNAPSHOT=/path/to/snapshot.v1.json
+site:
+	$(MAKE) -C pipeline site $(if $(SNAPSHOT),SNAPSHOT="$(abspath $(SNAPSHOT))")
 
 # The Python pipeline's own gate. The lockfile check comes first because a
 # bare `uv run` or `uv sync` silently rewrites a stale uv.lock (CQ-09).

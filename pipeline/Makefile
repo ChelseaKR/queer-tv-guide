@@ -8,7 +8,7 @@
 
 SHELL := bash
 
-.PHONY: lock-check install lint format-check type test wheel verify fetch fetch-full build validate
+.PHONY: lock-check install lint format-check type test wheel verify fetch fetch-full build validate site
 
 lock-check:
 	uv lock --check
@@ -51,3 +51,13 @@ build:
 
 validate:
 	uv run --frozen qtv validate out/snapshot.v1.json
+
+# The per-show web pages (DECISIONS 0019), built from a snapshot into a
+# directory that .gitignore covers. It contacts nothing and publishes nothing:
+# the Pages workflow does not run it. SNAPSHOT is `make build`'s output by
+# default; to preview the published file, curl it first and pass its path.
+SNAPSHOT ?= out/snapshot.v1.json
+SITE_OUT ?= site-preview
+
+site:
+	uv run --frozen python -m qtv_pipeline.show_pages $(SNAPSHOT) $(SITE_OUT)

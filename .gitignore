@@ -3,6 +3,7 @@ pipeline/.venv/
 pipeline/.cache/
 pipeline/out/
 pipeline/site/
+pipeline/site-preview/
 __pycache__/
 *.pyc
 .pytest_cache/

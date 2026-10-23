@@ -194,6 +194,23 @@ The last column names what fails if the credit is removed. CI runs the
 | The credits travel with the data | The app reads every credit from the snapshot itself, so a file that lacked one would show TVmaze's dates uncredited. The decoder refuses a snapshot, bundled or downloaded, that does not hold exactly one LezWatch.TV entry and one TVmaze entry (the schema cannot require that: two `lezwatch` items validate). A refused download leaves the last good file in place. | `SnapshotAttributionGateTests`, `AttributionTests.testASnapshotWithoutTVmazesEntryIsRefused…` |
 | robots.txt: `Crawl-delay: 10`; `/wp-json/` not disallowed | Crawl conduct, not attribution: the pipeline paces LezWatch.TV at one request per 10 s (see "Crawl budget" above). | `pipeline/tests/test_http.py` |
 
+## The per-show web pages (DECISIONS 0019)
+
+`qtv_pipeline.show_pages` reads the published snapshot and takes nothing
+else: no image, no new field, no new request to either source. So the
+sources, licenses and the "Not taken" lists above are unchanged. What a page
+shows from each source:
+
+| Source | On a show page | Credit on the same page |
+|---|---|---|
+| LezWatch.TV | title, years, seasons, format, countries, genres, worth-it verdict, each listed character's name, role, gender and sexuality, and the death answer | "View <show> on LezWatch.TV" and a link on each character to that record's own page; the snapshot's credit text for LezWatch.TV verbatim, with its terms link; "LezWatch.TV and TVmaze do not endorse Queer Frame" |
+| TVmaze | run status, and the network when LezWatch lists none | a link to the show's TVmaze page (TVmaze's home page when the show is not matched), the CC BY-SA 4.0 link, and the snapshot's credit text for TVmaze verbatim |
+
+Each page also repeats the snapshot's `licence.notice` and links its CC BY-SA
+4.0 license, so the share-alike notice travels with the data wherever a
+visitor copies it. The tests check each of these on every page
+(`pipeline/tests/test_show_pages.py`).
+
 ## Apple's App Store badge (website only)
 
 `pipeline/src/qtv_pipeline/assets/app-store-badge.svg` is Apple's "Download

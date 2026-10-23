@@ -1,6 +1,6 @@
 # Decisions
 
-Numbering: 0001–0004, 0006–0011, 0013, 0015, 0017 and 0018 live here. 0005, 0012 and
+Numbering: 0001–0004, 0006–0011, 0013, 0015, 0017, 0018 and 0019 live here. 0005, 0012 and
 0014 are ADRs in `docs/adr/`, so they are skipped here rather than
 duplicated.
 
@@ -287,3 +287,41 @@ no in-app purchase, no ads, United States only (0011, 0015).
 
 **CI.** The `android` job runs `make android` on Linux on every run; the
 emulator tests run locally (`make -C android instrumented`).
+
+## 0019 — A static web page for each of 50 shows, with the answer closed (2026-10-22)
+
+**Status: accepted (owner, 2026-10-22, decision A of the roadmap: the full
+answer on the web). It amends 0001 and 0007.**
+
+**Decision.** `qtv_pipeline.show_pages` builds a static page per show from the
+same snapshot the app reads: `shows/<slug>/index.html`, a `shows/` index and
+a `sitemap.xml`. The first 50 shows are those with the most characters
+listed in the snapshot (ties to the lower LezWatch id; shows with no listed
+character are never built). The page answers "does she die in <show>" in full,
+inside a native `<details>` element that is closed on load, and nowhere else:
+not in the title, description, structured data, headings, facts or character
+list. A character with no recorded death is "Unknown", never "No" (LezWatch
+records deaths, not survival). Every page credits LezWatch.TV and TVmaze with
+their license text and links, as the app does (0013), and carries the
+snapshot's CC BY-SA 4.0 notice because TVmaze's run status is on it.
+
+**Amends 0001.** 0001 said there is no website to repackage. The site is
+not the app and the app is still native; the pages are a free front door to
+the same data, and App Review's "repackaged website" worry is about the
+app. The app's own claims do not change.
+
+**Amends 0007.** The privacy policy gains a "This website" section: the pages
+set no cookies, run no analytics, load nothing from another host and run no
+code. GitHub Pages still logs request IPs, as for the data file.
+
+**Not decided here.** Deployment. `snapshot.yml` does not run the generator
+and Pages publishes nothing new until the owner wires it in. A custom domain
+is the owner's call (the canonical URLs, the sitemap and the privacy page
+name the github.io host until then).
+
+**Evidence rule (roadmap, Stage 1).** Eight weeks after the pages are
+indexed: any page under position 30 in Search Console and the expansion
+stops; the 50 pages stay.
+
+**Reversible.** Yes: delete `show_pages.py`, its templates and tests, and the
+privacy paragraph; nothing else depends on them.

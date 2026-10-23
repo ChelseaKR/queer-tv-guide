@@ -48,8 +48,8 @@ $(BUNDLED_SNAPSHOT):
 # .sha256 and refuses a fixture or a locally built file.
 bundle-snapshot:
 	@tmp=$$(mktemp -d) && trap 'rm -rf "$$tmp"' EXIT && \
-	curl -fsS --compressed -o "$$tmp/snapshot.v1.json" "$(SNAPSHOT_URL)" && \
-	curl -fsS -o "$$tmp/snapshot.v1.json.sha256" "$(SNAPSHOT_URL).sha256" && \
+	curl -fsSL --max-redirs 3 --proto-redir =https --compressed -o "$$tmp/snapshot.v1.json" "$(SNAPSHOT_URL)" && \
+	curl -fsSL --max-redirs 3 --proto-redir =https -o "$$tmp/snapshot.v1.json.sha256" "$(SNAPSHOT_URL).sha256" && \
 	want=$$(awk '{print $$1}' "$$tmp/snapshot.v1.json.sha256") && \
 	got=$$( (sha256sum "$$tmp/snapshot.v1.json" 2>/dev/null || shasum -a 256 "$$tmp/snapshot.v1.json") | awk '{print $$1}') && \
 	if [ -z "$$want" ] || [ "$$want" != "$$got" ]; then echo "bundle-snapshot: sha256 mismatch (published '$$want', downloaded '$$got')" >&2; exit 1; fi && \

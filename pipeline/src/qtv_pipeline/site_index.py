@@ -14,12 +14,15 @@ import sys
 from pathlib import Path
 from typing import Any
 
+SHOWS_LINK_TEXT = "Does she die? Queer TV shows"
+SHOWS_LINK_NOTE = "pages that keep the answer closed until you open it."
+
 
 def _a(url: str, text: str) -> str:
     return f'<a href="{html.escape(url, quote=True)}">{html.escape(text)}</a>'
 
 
-def render_index(doc: dict[str, Any]) -> str:
+def render_index(doc: dict[str, Any], *, shows_link: bool = False) -> str:
     lic = doc["licence"]
     cov = doc["coverage"]
     lw = cov["lezwatch"]
@@ -32,6 +35,14 @@ def render_index(doc: dict[str, Any]) -> str:
         "</li>"
         for a in doc["attribution"]
     )
+    # Only when the shows index is being published beside this page, so the
+    # link is never dead (the per-show pages are built by a step that may be
+    # skipped: qtv_pipeline/show_pages.py, --notice-on-failure).
+    shows = (
+        f"<p>{_a('shows/', SHOWS_LINK_TEXT)}: {html.escape(SHOWS_LINK_NOTE)}</p>\n"
+        if shows_link
+        else ""
+    )
     return f"""<!doctype html>
 <html lang="en">
 <meta charset="utf-8">
@@ -40,7 +51,7 @@ def render_index(doc: dict[str, Any]) -> str:
 <h1>Queer Frame snapshot</h1>
 <p>{html.escape(lic["notice"])}</p>
 <p>License: {_a(lic["snapshot"]["url"], lic["snapshot"]["name"])}.</p>
-<h2>Sources</h2>
+{shows}<h2>Sources</h2>
 <ul>
 {credits}
 </ul>
@@ -68,7 +79,9 @@ def main(argv: list[str]) -> int:
         print("usage: python -m qtv_pipeline.site_index SNAPSHOT_JSON OUT_HTML", file=sys.stderr)
         return 2
     doc = json.loads(Path(argv[0]).read_text())
-    Path(argv[1]).write_text(render_index(doc))
+    target = Path(argv[1])
+    shows_link = (target.parent / "shows" / "index.html").is_file()
+    target.write_text(render_index(doc, shows_link=shows_link))
     return 0
 
 

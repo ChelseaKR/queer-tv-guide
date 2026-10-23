@@ -465,7 +465,7 @@ def test_cli_builds_and_refuses(doc, tmp_path, capsys):
     snap.write_text(json.dumps(doc), encoding="utf-8")
     out = tmp_path / "out"
     assert show_pages.main([str(snap), str(out), "--base-url", BASE + "/", "--limit", "2"]) == 0
-    assert "wrote 4 files" in capsys.readouterr().out
+    assert "wrote 5 files" in capsys.readouterr().out
     assert (out / "shows" / "harbor-lights" / "index.html").is_file()
     assert not (out / "shows" / "salt-and-ember").exists()
 

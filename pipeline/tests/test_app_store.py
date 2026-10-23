@@ -275,7 +275,13 @@ def test_index_has_the_anchors_the_switch_needs(site):
 
 def test_workflow_passes_the_variable_and_checks_it_before_publishing():
     wf = SNAPSHOT_WORKFLOW.read_text(encoding="utf-8")
-    assert wf.count("APP_STORE_LIVE: ${{ vars.APP_STORE_LIVE }}") == 2
+    # The app-store step, the check, and the show-pages step all read the one variable.
+    assert wf.count("APP_STORE_LIVE: ${{ vars.APP_STORE_LIVE }}") == 3
+    show_pages_step = wf.index("qtv_pipeline.show_pages")
+    assert (
+        wf.index("gh release upload") < show_pages_step < wf.index("actions/upload-pages-artifact")
+    )
+    assert '--app-store-live "$APP_STORE_LIVE"' in wf[show_pages_step:]
     check = wf.index('qtv_pipeline.app_store --check "$APP_STORE_LIVE"')
     apply_step = wf.index('qtv_pipeline.app_store site "$APP_STORE_LIVE"')
     upload = wf.index("gh release upload")

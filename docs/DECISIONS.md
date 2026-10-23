@@ -1,6 +1,6 @@
 # Decisions
 
-Numbering: 0001–0004, 0006–0011, 0013, 0015, 0017, 0018 and 0019 live here. 0005, 0012 and
+Numbering: 0001–0004, 0006–0011, 0013, 0015, 0017, 0018, 0019 and 0020 live here. 0005, 0012 and
 0014 are ADRs in `docs/adr/`, so they are skipped here rather than
 duplicated.
 
@@ -325,3 +325,37 @@ stops; the 50 pages stay.
 
 **Reversible.** Yes: delete `show_pages.py`, its templates and tests, and the
 privacy paragraph; nothing else depends on them.
+
+## 0020 — The show pages publish on queerframe.app (2026-10-23)
+
+**Status: accepted (owner, 2026-10-23). It settles what 0019 left open.**
+
+**Decision.** The site's address is `https://queerframe.app`. The custom
+domain is attached to the Pages site, so Pages answers the old
+`chelseakr.github.io/queer-tv-guide` address with a 301. `snapshot.yml` now
+builds the 50 show pages, `shows/index.html`, `sitemap.xml` and `robots.txt`
+into the Pages artifact beside the snapshot files, and the generator's default
+base URL is the domain, so every canonical URL, internal link, breadcrumb item
+and sitemap entry names it. The home page (the data index) stays; it gains one
+plain link to `shows/` when the show pages were built beside it.
+
+**The pages never block the snapshot.** They are an extra. The workflow policy
+forbids `continue-on-error` and `|| true`, so the generator carries the rule:
+run with `--notice-on-failure` (as `snapshot.yml` does), any problem prints a
+`::notice::` line, writes nothing and exits 0. All files are rendered before
+the first is written, and a failed write removes what it wrote. The snapshot
+publishing, its freshness alarm and its alerts are unchanged.
+
+**Dates.** A sitemap entry's `lastmod` is the date in the snapshot's own
+`generated_at`, never the clock of the machine that builds the pages.
+
+**Not decided here.** The apps' fetch URL, privacy and support constants stay
+on the github.io address until a separate change moves them with the next app
+release (the 301 serves the shipped apps). The privacy policy is unchanged.
+
+**Evidence rule.** Unchanged from 0019: eight weeks after the pages are
+indexed, read Search Console; any page under position 30 and the expansion
+stops; the 50 pages stay.
+
+**Reversible.** Yes: remove the workflow step; the pages stop being published
+at the next run and nothing else depends on them.

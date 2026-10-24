@@ -13,6 +13,11 @@ consumer of the published snapshot, would notice.
 
 ### Added
 
+- A `greenlight` gate in `make verify` and the pipeline CI job: Greenlight
+  v0.2.0's static App Store preflight over the app and widget targets,
+  installed at a pinned commit with a module-hash check. A CRITICAL or HIGH
+  finding fails it; with no Go it is reported as skipped locally and fails
+  in CI. Nothing about the app changes.
 - The 50 show pages are a hand-picked list (`pipeline/data/show_pages_pinned.json`,
   DECISIONS 0021) in place of "most listed characters". An entry missing
   from the snapshot or with no listed character is skipped and logged by

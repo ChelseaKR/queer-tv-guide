@@ -1,0 +1,7 @@
+# Greenlight code-scan waivers for `make greenlight` (scripts/greenlight.sh,
+# which copies this file to each scanned target as .greenlight.yml).
+# App/ReviewRequest.swift imports StoreKit only for SwiftUI's requestReview
+# (DECISIONS 0017); the iap-no-restore rule matches the word "StoreKit". Waived
+# by path, so the rule still fires anywhere else.
+ignore:
+  - App/ReviewRequest.swift

@@ -1,6 +1,6 @@
 # Decisions
 
-Numbering: 0001–0004, 0006–0011, 0013, 0015, 0017, 0018, 0019, 0020 and 0021 live here. 0005, 0012 and
+Numbering: 0001–0004, 0006–0011, 0013, 0015, 0017, 0018, 0019, 0020, 0021 and 0023 live here. 0005, 0012 and
 0014 are ADRs in `docs/adr/`, so they are skipped here rather than
 duplicated.
 
@@ -405,3 +405,39 @@ show gets no page until someone adds it. Merging this after the pages of 0019
 are live replaces pages, and each removed URL answers 404.
 
 **Reversible.** Yes: delete the file and the 0019 rule is the whole rule.
+
+## 0023 — Show pages link to each other, warn before the answer, and carry the App Store switch (2026-10-23)
+
+**Status: accepted under decision A of the roadmap (owner, 2026-10-22). It
+extends 0019 and 0020 and changes nothing they decided.** Numbered 0023
+because 0022 is taken by the snippet change on its own branch.
+
+**Decision.** Each show page gains three things. (1) A "More shows" list:
+the shows before and after it in the published order (the order of the shows
+index and the sitemap, wrapping at the ends) and the shows index, so every
+page is linked from two others as well as from the index. The link text is
+the show's title only. (2) A line before the closed answer, outside it:
+"Spoiler warning: the answer below says which listed characters LezWatch.TV
+records as dying, if any." It names no character and no outcome. (3) When
+`APP_STORE_LIVE` is on, Safari's Smart App Banner tag and a link whose text is
+`app_store.PRICE_COPY` ("Queer Frame for iPhone. $4.99 on the App Store."),
+on the show pages and the shows index, with the same URL and tag as
+`app_store.py`. Off, as it stays until Apple approves the app, no page
+changes. `app_store.apply` still reads only the top-level pages, so no page
+gets the tag twice. The tag is a `<meta>` and the page fetches nothing for it;
+Safari itself may look the app up at Apple to draw the banner, as it already
+does on the site's top-level pages when the switch is on. The privacy page's
+"This website" section does not mention that yet, so it should be updated
+before the switch is turned on.
+
+**Why.** The pages had no links between shows, so a visitor or a crawler
+reached a show only from the index. The spoiler control was the summary
+label alone. The site's top-level pages got the banner when the switch is
+on, but the show pages, which are the pages search sends people to, did not.
+
+**Not done.** No badge image on the show pages: they load nothing, and
+Apple's artwork license needs the app on sale. No new facts: every word on a
+page still comes from the snapshot or is fixed copy.
+
+**Reversible.** Yes: remove the template blocks and `neighbors`.
+

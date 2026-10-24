@@ -45,7 +45,15 @@ Privacy. A page has no script (its one ``<script>`` is schema.org
 ``application/ld+json`` data, which a browser never runs), no cookie, no
 form, no image, no font, no stylesheet link and no request to any host. Every
 link to another host is an anchor the visitor chooses to follow. The App
-Store link appears only when the launch switch is on, as in ``app_store.py``.
+Store link, and Safari's Smart App Banner tag (a ``<meta>``, which fetches
+nothing), appear only when the launch switch is on, with the same URL, tag
+and price copy as ``app_store.py`` (DECISIONS 0023).
+
+Links between pages. Each show page links to the shows before and after it
+in the published order (the order of the shows index and the sitemap,
+wrapping at the ends) and to the shows index, so every page is reachable
+from two others as well as from the index. The link text is the show's
+title and nothing else.
 """
 
 from __future__ import annotations
@@ -61,7 +69,13 @@ from typing import Any
 
 import jinja2
 
-from qtv_pipeline.app_store import APP_STORE_URL, SwitchError, live_or_false
+from qtv_pipeline.app_store import (
+    APP_STORE_URL,
+    BANNER,
+    PRICE_COPY,
+    SwitchError,
+    live_or_false,
+)
 
 # The site's own domain (DECISIONS 0020). Pages serves the project path with a
 # 301 to it, so every canonical URL, internal link, breadcrumb item and
@@ -401,11 +415,29 @@ def _common(doc: dict[str, Any], base_url: str, app_store_live: bool) -> dict[st
         "attribution": doc["attribution"],
         "generated_on": doc["generated_at"][:10],
         "app_store_url": APP_STORE_URL if app_store_live else None,
+        "app_store_banner": BANNER if app_store_live else None,
+        "app_store_copy": PRICE_COPY,
     }
 
 
+def neighbors(shows: list[dict[str, Any]], index: int) -> list[dict[str, Any]]:
+    """The shows before and after ``shows[index]`` in the published order,
+    wrapping at the ends; never the show itself and never one twice."""
+    n = len(shows)
+    if n < 2:
+        return []
+    before, after = shows[(index - 1) % n], shows[(index + 1) % n]
+    return [before] if before is after else [before, after]
+
+
 def render_show(
-    doc: dict[str, Any], show: dict[str, Any], *, base_url: str, app_store_live: bool = False
+    doc: dict[str, Any],
+    show: dict[str, Any],
+    *,
+    base_url: str,
+    app_store_live: bool = False,
+    others: list[dict[str, Any]] | None = None,
+    total: int = 1,
 ) -> str:
     cast = _characters(doc, show)
     canonical = f"{base_url}/shows/{show['slug']}/"
@@ -426,6 +458,10 @@ def render_show(
         cast=cast,
         answer=_answer(show, cast),
         tvmaze_url=show["schedule"]["tvmaze_url"],
+        others=[
+            {"title": s["title"], "url": f"{base_url}/shows/{s['slug']}/"} for s in others or []
+        ],
+        total=total,
     )
 
 
@@ -497,9 +533,14 @@ def render_site(
     files = {
         "shows/index.html": render_index(doc, shows, base_url=base, app_store_live=app_store_live)
     }
-    for show in shows:
+    for i, show in enumerate(shows):
         files[f"shows/{show['slug']}/index.html"] = render_show(
-            doc, show, base_url=base, app_store_live=app_store_live
+            doc,
+            show,
+            base_url=base,
+            app_store_live=app_store_live,
+            others=neighbors(shows, i),
+            total=len(shows),
         )
     files["sitemap.xml"] = render_sitemap(doc, shows, base_url=base)
     files["robots.txt"] = render_robots(base_url=base)

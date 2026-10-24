@@ -2,6 +2,7 @@
 {% block content %}
 <h1>Does she die in {{ show.title }}?</h1>
 <p>{{ site_name }} answers this from the records of LezWatch.TV, a volunteer-run database of queer characters on TV. Nothing is revealed until you open the answer below.</p>
+<p class="spoiler-warning"><strong>Spoiler warning:</strong> the answer below says which listed characters LezWatch.TV records as dying, if any.</p>
 <details class="answer">
 <summary>Show the answer (spoilers)</summary>
 <div class="answer-body">
@@ -18,7 +19,7 @@
 </div>
 </details>
 {% if app_store_url %}
-<p class="cta"><a href="{{ app_store_url }}">Get the app</a></p>
+<p class="cta">Get the app: <a href="{{ app_store_url }}">{{ app_store_copy }}</a></p>
 {% endif %}
 <h2>About {{ show.title }}</h2>
 <dl class="facts">
@@ -35,4 +36,11 @@
 {%- endfor %}
 </ul>
 <p><a href="{{ show.source_url }}">View {{ show.title }} on LezWatch.TV</a></p>
+<h2>More shows</h2>
+<ul class="more">
+{%- for o in others %}
+<li><a href="{{ o.url }}">{{ o.title }}</a></li>
+{%- endfor %}
+<li><a href="{{ base_url }}/shows/">All {{ total }} {{ 'show' if total == 1 else 'shows' }}</a></li>
+</ul>
 {% endblock %}

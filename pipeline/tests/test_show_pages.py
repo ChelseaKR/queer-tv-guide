@@ -9,6 +9,7 @@ would otherwise read as a pass.
 from __future__ import annotations
 
 import copy
+import html
 import json
 from pathlib import Path
 from urllib.parse import urlsplit
@@ -442,19 +443,120 @@ def test_landmarks_headings_and_skip_link(doc, tmp_path):
 # --- the App Store link --------------------------------------------------
 
 
+def _banners(page: htmlprobe.Page) -> list[dict]:
+    return [a for a in page.named("meta") if a.get("name") == "apple-itunes-app"]
+
+
 def test_no_app_link_while_the_switch_is_off(doc, tmp_path):
-    for page in _build(doc, tmp_path).values():
-        assert "Get the app" not in page.outside
+    for rel, page in _build(doc, tmp_path).items():
+        assert not any("Get the app" in t for t in page.outside), rel
         assert not any("apple.com" in h for h in page.hrefs())
+        assert _banners(page) == [], rel
+        assert "apple-itunes-app" not in _raw(tmp_path, rel)
 
 
 def test_app_link_uses_the_existing_constant_when_on(doc, tmp_path):
     pages = _build(doc, tmp_path, app_store_live=True)
     for rel, page in pages.items():
         assert page.hrefs().count(app_store.APP_STORE_URL) == 1, rel
-        assert page.outside.count("Get the app") == 1
+        assert sum("Get the app" in t for t in page.outside) == 1, rel
+        # The link says where it goes and what it costs, from app_store.py.
+        assert app_store.PRICE_COPY in page.outside, rel
     # Not inside the spoiler: opening the answer is not a sales pitch.
-    assert "Get the app" not in pages["shows/the-cartographers/index.html"].inside
+    inside = pages["shows/the-cartographers/index.html"].inside
+    assert not any("Get the app" in t or app_store.PRICE_COPY in t for t in inside)
+
+
+def test_smart_app_banner_on_every_built_page_when_on(doc, tmp_path):
+    pages = _build(doc, tmp_path, app_store_live=True)
+    for rel, page in pages.items():
+        banners = _banners(page)
+        assert banners == [
+            {"name": "apple-itunes-app", "content": f"app-id={app_store.APP_STORE_ID}"}
+        ]
+        assert _raw(tmp_path, rel).count(app_store.BANNER) == 1, rel
+
+
+def test_app_store_step_does_not_add_a_second_banner_to_show_pages(doc, tmp_path):
+    # snapshot.yml runs app_store.apply over the site after the show pages are
+    # built; it reads only the top-level pages, so the show pages keep one tag.
+    _build(doc, tmp_path, app_store_live=True)
+    (tmp_path / "index.html").write_text(
+        f"<html><head>{app_store.VIEWPORT}</head><body>{app_store.INDEX_HEADING}</body></html>",
+        encoding="utf-8",
+    )
+    app_store.apply(tmp_path)
+    for rel in ("shows/index.html", "shows/harbor-lights/index.html"):
+        assert _raw(tmp_path, rel).count("apple-itunes-app") == 1, rel
+
+
+# --- spoiler warning -----------------------------------------------------
+
+
+def test_a_spoiler_warning_comes_before_the_answer(doc, tmp_path):
+    pages = _build(doc, tmp_path)
+    for rel, page in pages.items():
+        if rel == "shows/index.html":
+            continue
+        raw = _raw(tmp_path, rel)
+        warning = raw.find('<p class="spoiler-warning">')
+        assert warning != -1, rel
+        assert raw.count('<p class="spoiler-warning">') == 1, rel
+        assert warning < raw.find("<details"), rel
+        assert "Spoiler warning:" in page.outside and "Spoiler warning:" not in page.inside
+
+
+def test_the_spoiler_warning_reveals_nothing(doc, tmp_path):
+    pages = _build(doc, tmp_path)
+    for slug in ("harbor-lights", "the-cartographers", "salt-and-ember"):
+        raw = _raw(tmp_path, f"shows/{slug}/index.html")
+        start = raw.find('<p class="spoiler-warning">')
+        warning = raw[start : raw.find("</p>", start)]
+        for sentence in _answers(doc, slug):
+            assert sentence not in warning
+        for name in (c.name for c in show_pages._characters(doc, _show(doc, slug))):
+            assert name not in warning
+    assert pages
+
+
+# --- links between show pages ---------------------------------------------
+
+
+def test_neighbors_wrap_and_never_repeat():
+    shows = [{"slug": x, "title": x.upper()} for x in "abc"]
+    assert show_pages.neighbors(shows, 0) == [shows[2], shows[1]]
+    assert show_pages.neighbors(shows, 2) == [shows[1], shows[0]]
+    assert show_pages.neighbors(shows[:2], 0) == [shows[1]]
+    assert show_pages.neighbors(shows[:1], 0) == []
+
+
+def test_each_show_page_links_to_its_neighbors_and_the_index(doc, tmp_path):
+    pages = _build(doc, tmp_path)
+    order = [s["slug"] for s in show_pages.select_shows(doc)]
+    inbound: dict[str, int] = dict.fromkeys(order, 0)
+    for i, slug in enumerate(order):
+        page = pages[f"shows/{slug}/index.html"]
+        hrefs = page.hrefs()
+        for other in (order[i - 1], order[(i + 1) % len(order)]):
+            assert f"{BASE}/shows/{other}/" in hrefs, (slug, other)
+        assert f"All {len(order)} shows" in page.outside
+        for other in order:
+            if other != slug and f"{BASE}/shows/{other}/" in hrefs:
+                inbound[other] += 1
+        # A page never links to itself (its breadcrumb item is plain text).
+        assert f"{BASE}/shows/{slug}/" not in hrefs, slug
+    assert all(n >= 2 for n in inbound.values()), inbound
+
+
+def test_more_shows_links_are_titles_only(doc, tmp_path):
+    pages = _build(doc, tmp_path)
+    titles = {s["title"] for s in show_pages.select_shows(doc)}
+    raw = _raw(tmp_path, "shows/harbor-lights/index.html")
+    block = raw[raw.find('<ul class="more">') : raw.find("</ul>", raw.find('<ul class="more">'))]
+    for line in block.splitlines()[1:-1]:
+        text = html.unescape(line.split(">", 2)[2].rsplit("</a>", 1)[0])
+        assert text in titles, text
+    assert pages
 
 
 # --- command line --------------------------------------------------------

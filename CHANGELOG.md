@@ -13,6 +13,11 @@ consumer of the published snapshot, would notice.
 
 ### Added
 
+- Show pages link to the shows before and after them and to the shows
+  index, and say "Spoiler warning" before the closed answer (DECISIONS 0023).
+  With `APP_STORE_LIVE` on, the show pages and the shows index also carry
+  Safari's Smart App Banner and an App Store link with the price; off,
+  nothing changes.
 - A `greenlight` gate in `make verify` and the pipeline CI job: Greenlight
   v0.2.0's static App Store preflight over the app and widget targets,
   installed at a pinned commit with a module-hash check. A CRITICAL or HIGH

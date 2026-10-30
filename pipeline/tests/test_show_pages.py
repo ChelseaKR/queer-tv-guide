@@ -722,9 +722,13 @@ def test_title_counts_listed_characters_and_falls_back():
 @pytest.mark.parametrize(
     ("gender", "sexuality", "label"),
     [
-        ("Cisgender", "Homosexual", "lesbian"),
+        # A bare "Cisgender" does not say woman, so it is never read as one.
+        ("Cisgender", "Homosexual", None),
+        ("Cisgender (Intersex)", "Homosexual", None),
+        ("Cisgender Woman", "Homosexual", "lesbian"),
         ("Trans Woman", "Homosexual", "lesbian"),
-        ("Non-Binary", "Homosexual", None),
+        ("Non-Binary", "Homosexual", "non-binary"),
+        ("Trans Man", "Homosexual", "trans man"),
         ("Cisgender", "Bisexual", "bisexual"),
         ("Cisgender Woman", "Lesbian", "lesbian"),
         ("Trans Woman", "Heterosexual", "trans woman"),

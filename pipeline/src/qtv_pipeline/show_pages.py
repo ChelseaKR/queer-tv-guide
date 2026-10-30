@@ -454,15 +454,17 @@ def _and_list(names: list[str]) -> str:
 def identity(gender: str, sexuality: str) -> str | None:
     """A short label for a character in the description, from the two terms
     the page already shows, so a search like "is <character> a lesbian" is
-    answered in the snippet (DECISIONS 0027). LezWatch.TV lists queer women,
-    non-binary and trans characters, so its "Homosexual" on a cisgender
-    character or a woman is "lesbian"; its other sexualities are used as
-    they are, lowercased. "Heterosexual", "Undefined" and "Not Straight" say
-    nothing a searcher asks, so the gender is used instead when it is not
-    cisgender. None when neither term gives a label. Nothing about deaths."""
-    if sexuality == "Homosexual":
-        woman = gender == "Cisgender" or gender.endswith("Woman")
-        return "lesbian" if woman else None
+    answered in the snippet (DECISIONS 0027). "Lesbian" only when the
+    sexuality term is "Homosexual" (or "Lesbian") and the gender term itself
+    says woman ("Trans Woman", "Cisgender Woman"); a bare "Cisgender" says
+    nothing about gender, so it is never read as woman. Other named
+    sexualities ("Bisexual", "Queer", ...) are used as they are, lowercased.
+    Otherwise ("Homosexual" without a woman's gender term, "Heterosexual",
+    "Undefined", "Not Straight") the gender term is used when it is not
+    cisgender or unknown ("trans woman", "non-binary"). Never "gay", and
+    None when neither term gives a label. Nothing about deaths."""
+    if sexuality == "Homosexual" and gender.endswith("Woman"):
+        return "lesbian"
     if sexuality in SEXUALITY_LABELS:
         return sexuality.lower()
     if not gender.startswith("Cisgender") and gender not in NO_GENDER_LABEL:

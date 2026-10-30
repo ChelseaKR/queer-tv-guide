@@ -29,6 +29,17 @@ are built. Shows with no listed character are never built, pinned or not:
 they have nothing to answer from. Episode counts are not in the snapshot, so
 "most episodes" is not a usable rule.
 
+Words for search (DECISIONS 0024). The title asks the question people type
+("Do any queer characters die in <show>?", then shorter forms, plus
+"Spoiler-free"); the description names the listed characters, regulars
+first, because people search "does <character> die in <show>"; the
+characters heading says "LGBTQ characters in <show>"; and one fixed sentence
+on every page names the bury-your-gays trope. None of these depends on any
+death record, so none of them can answer the question. The one structured
+data block holds a BreadcrumbList and a schema.org TVSeries (name, page,
+LezWatch.TV and TVmaze pages, years, seasons, genres, countries and the
+characters' names). There is no FAQPage: its answer would be the spoiler.
+
 What a page may say. The answer to "does she die" is the one thing a visitor
 did not ask to be told. It sits inside a native ``<details>`` element that is
 closed when the page loads, and nowhere else: not in the title, the
@@ -49,11 +60,18 @@ Store link, and Safari's Smart App Banner tag (a ``<meta>``, which fetches
 nothing), appear only when the launch switch is on, with the same URL, tag
 and price copy as ``app_store.py`` (DECISIONS 0023).
 
+While the switch is off, a show page says in one fixed sentence that
+Queer Frame is also an iPhone app that is not on the App Store yet, with no
+link (there is no listing to link to).
+
 Links between pages. Each show page links to the shows before and after it
 in the published order (the order of the shows index and the sitemap,
 wrapping at the ends) and to the shows index, so every page is reachable
-from two others as well as from the index. The link text is the show's
-title and nothing else.
+from two others as well as from the index. It also links to up to four
+similar shows (``related``): LezWatch.TV's own similar shows that have a
+page, then the pages sharing the most genres. Tropes are never used, since
+LezWatch's death trope would make "similar" a hint. The link text is the
+show's title and nothing else.
 """
 
 from __future__ import annotations
@@ -82,6 +100,10 @@ from qtv_pipeline.app_store import (
 # sitemap entry names this host and no github.io address.
 DEFAULT_BASE_URL = "https://queerframe.app"
 DEFAULT_LIMIT = 50
+RELATED_LIMIT = 4
+# Character names in a description, at most; regulars first (``_roles_first``).
+DESCRIPTION_NAMES = 3
+ROLE_ORDER = {"regular": 0, "recurring": 1, "guest": 2}
 # The hand-picked list (DECISIONS 0021). Resolved from the source tree, so it
 # is used by `python -m qtv_pipeline.show_pages` and `make site`; deleting the
 # file restores the character-count rule.
@@ -265,27 +287,43 @@ def fit(candidates: list[str], limit: int) -> str:
 
 
 def show_title(name: str) -> str:
+    """The question people search, longest form that fits. No answer in it."""
     return fit(
         [
-            f"Does she die in {name}? Spoiler-safe answer | {SITE_NAME}",
-            f"Does she die in {name}? Spoiler-safe answer",
-            f"Does she die in {name}?",
+            f"Do any queer characters die in {name}? Spoiler-free",
+            f"Do queer characters die in {name}? Spoiler-free",
+            f"Does she die in {name}? Spoiler-free",
             f"Does she die in {name}?",
         ],
         TITLE_MAX,
     )
 
 
-def show_description(name: str) -> str:
-    return fit(
-        [
-            f"Does she die in {name}? The queer characters LezWatch.TV lists, "
-            "with the full answer hidden until you open it.",
-            f"Does she die in {name}? The full answer is hidden until you open it.",
-            f"Does she die in {name}? The full answer is hidden until you open it.",
-        ],
-        DESCRIPTION_MAX,
-    )
+def _and_list(names: list[str]) -> str:
+    if len(names) <= 2:
+        return " and ".join(names)
+    return ", ".join(names[:-1]) + f", and {names[-1]}"
+
+
+def show_description(name: str, names: list[str] | None = None, count: int = 0) -> str:
+    """Names the listed characters (the ones a visitor may search for) and
+    says the answer is hidden. ``names`` is in page order, never by death."""
+    names = names or []
+    who = "one LGBTQ character" if count == 1 else f"{count} LGBTQ characters"
+    tail = "The answer stays hidden until you open it."
+    candidates = []
+    for k in range(min(DESCRIPTION_NAMES, len(names)), 0, -1):
+        listed = _and_list(names[:k])
+        if count > k:
+            candidates.append(
+                f"Does she die in {name}? The {who} LezWatch.TV lists include {listed}. {tail}"
+            )
+        else:
+            candidates.append(f"Does she die in {name}? LezWatch.TV lists {who}: {listed}. {tail}")
+    if count:
+        candidates.append(f"Does she die in {name}? The {who} LezWatch.TV lists. {tail}")
+    candidates += [f"Does she die in {name}? {tail}"] * 2
+    return fit(candidates, DESCRIPTION_MAX)
 
 
 def _term_name(term: dict[str, Any] | None) -> str:
@@ -407,6 +445,45 @@ def _breadcrumb(items: list[tuple[str, str]]) -> dict[str, Any]:
     }
 
 
+def _roles_first(cast: list[CharacterView]) -> list[str]:
+    """Names with regulars first, then recurring, then guests; the page's own
+    order within each. Nothing about deaths goes into the order."""
+    ranked = sorted(enumerate(cast), key=lambda ic: (ROLE_ORDER.get(ic[1].role.lower(), 3), ic[0]))
+    return [c.name for _, c in ranked]
+
+
+def _series(show: dict[str, Any], canonical: str, cast: list[CharacterView]) -> dict[str, Any]:
+    """schema.org TVSeries from snapshot facts only; nothing about deaths."""
+    series: dict[str, Any] = {
+        "@type": "TVSeries",
+        "name": show["title"],
+        "url": canonical,
+        "sameAs": [u for u in (show["source_url"], show["schedule"]["tvmaze_url"]) if u],
+    }
+    years = show["years"]
+    if years["start"] is not None:
+        series["startDate"] = str(years["start"])
+    if years["end"] is not None:
+        series["endDate"] = str(years["end"])
+    if show["seasons"] is not None:
+        series["numberOfSeasons"] = show["seasons"]
+    if show["genres"]:
+        series["genre"] = [g["name"] for g in show["genres"]]
+    if show["countries"]:
+        series["countryOfOrigin"] = [
+            {"@type": "Country", "name": c["name"]} for c in show["countries"]
+        ]
+    if cast:
+        series["character"] = [{"@type": "Person", "name": c.name} for c in cast]
+    return series
+
+
+def _structured(crumbs: dict[str, Any], *more: dict[str, Any]) -> dict[str, Any]:
+    """One JSON-LD block: the breadcrumb, then anything else, as a @graph."""
+    graph = [{k: v for k, v in crumbs.items() if k != "@context"}, *more]
+    return {"@context": "https://schema.org", "@graph": graph}
+
+
 def _common(doc: dict[str, Any], base_url: str, app_store_live: bool) -> dict[str, Any]:
     return {
         "site_name": SITE_NAME,
@@ -430,6 +507,28 @@ def neighbors(shows: list[dict[str, Any]], index: int) -> list[dict[str, Any]]:
     return [before] if before is after else [before, after]
 
 
+def related(shows: list[dict[str, Any]], index: int) -> list[dict[str, Any]]:
+    """Up to RELATED_LIMIT other built shows like ``shows[index]``: LezWatch.TV's
+    own similar shows first (its order), then those sharing the most genres
+    (ties in published order). Never the show itself, its two neighbors (they
+    are linked already) or a show sharing nothing. Tropes are not used: the
+    death trope would turn "similar" into a hint."""
+    me = shows[index]
+    skip = {me["id"], *(s["id"] for s in neighbors(shows, index))}
+    position = {s["id"]: i for i, s in enumerate(shows)}
+    picked: list[dict[str, Any]] = []
+    for sid in me["similar_show_ids"]:
+        if sid in position and sid not in skip and shows[position[sid]] not in picked:
+            picked.append(shows[position[sid]])
+    mine = {g["slug"] for g in me["genres"]}
+    shared = {s["id"]: len(mine & {g["slug"] for g in s["genres"]}) for s in shows}
+    by_genre = sorted(
+        (s for s in shows if s["id"] not in skip and s not in picked and shared[s["id"]]),
+        key=lambda s: (-shared[s["id"]], position[s["id"]]),
+    )
+    return (picked + by_genre)[:RELATED_LIMIT]
+
+
 def render_show(
     doc: dict[str, Any],
     show: dict[str, Any],
@@ -437,6 +536,7 @@ def render_show(
     base_url: str,
     app_store_live: bool = False,
     others: list[dict[str, Any]] | None = None,
+    similar: list[dict[str, Any]] | None = None,
     total: int = 1,
 ) -> str:
     cast = _characters(doc, show)
@@ -449,17 +549,20 @@ def render_show(
     return _ENV.get_template("show.html.j2").render(
         **_common(doc, base_url, app_store_live),
         title=show_title(show["title"]),
-        description=show_description(show["title"]),
+        description=show_description(show["title"], _roles_first(cast), len(cast)),
         canonical=canonical,
         show=show,
         crumbs=crumbs,
-        breadcrumb=_breadcrumb(crumbs),
+        breadcrumb=_structured(_breadcrumb(crumbs), _series(show, canonical, cast)),
         facts=_facts(show),
         cast=cast,
         answer=_answer(show, cast),
         tvmaze_url=show["schedule"]["tvmaze_url"],
         others=[
             {"title": s["title"], "url": f"{base_url}/shows/{s['slug']}/"} for s in others or []
+        ],
+        similar=[
+            {"title": s["title"], "url": f"{base_url}/shows/{s['slug']}/"} for s in similar or []
         ],
         total=total,
     )
@@ -477,19 +580,37 @@ def render_index(
     return _ENV.get_template("index.html.j2").render(
         **_common(doc, base_url, app_store_live),
         title=fit(
-            [f"Does she die? Queer TV shows, spoiler-safe | {SITE_NAME}", "Does she die?"], 60
+            [
+                f"Do queer characters die? {len(shows)} TV shows, spoiler-free",
+                "Does she die? Queer TV shows, spoiler-free",
+            ],
+            TITLE_MAX,
         ),
         description=fit(
             [
-                "Does she die in your show? Pick a show with queer characters; the full "
-                "answer stays hidden until you open it.",
+                "Does she die in your show? Check for the bury-your-gays trope before you "
+                "watch: LGBTQ characters in each show, with the answer hidden until you open it.",
                 "Does she die in your show? The full answer stays hidden until you open it.",
             ],
             DESCRIPTION_MAX,
         ),
         canonical=canonical,
         crumbs=crumbs,
-        breadcrumb=_breadcrumb(crumbs),
+        breadcrumb=_structured(
+            _breadcrumb(crumbs),
+            {
+                "@type": "ItemList",
+                "itemListElement": [
+                    {
+                        "@type": "ListItem",
+                        "position": i,
+                        "name": s["title"],
+                        "url": f"{base_url}/shows/{s['slug']}/",
+                    }
+                    for i, s in enumerate(shows, start=1)
+                ],
+            },
+        ),
         shows=[
             {"slug": s["slug"], "title": s["title"], "years": _years(s["years"])} for s in shows
         ],
@@ -540,6 +661,7 @@ def render_site(
             base_url=base,
             app_store_live=app_store_live,
             others=neighbors(shows, i),
+            similar=related(shows, i),
             total=len(shows),
         )
     files["sitemap.xml"] = render_sitemap(doc, shows, base_url=base)

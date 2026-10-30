@@ -1,7 +1,7 @@
 {% extends "base.html.j2" %}
 {% block content %}
-<h1>Does she die? Queer TV shows</h1>
-<p>Pick a show to see its queer characters. Each page keeps the full answer to "does she die" closed until you open it, so you decide whether to be spoiled. The answers come from the records of LezWatch.TV.</p>
+<h1>Do queer characters die? Queer TV shows, spoiler-free</h1>
+<p>Before you start a show, check whether it falls into the bury-your-gays trope. Pick a show to see its LGBTQ characters. Each page keeps the full answer to "does she die" closed until you open it, so you decide whether to be spoiled. The answers come from the records of LezWatch.TV.</p>
 <ul>
 {%- for s in shows %}
 <li><a href="{{ s.slug }}/">{{ s.title }}</a> ({{ s.years }})</li>

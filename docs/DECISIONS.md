@@ -441,3 +441,39 @@ page still comes from the snapshot or is fixed copy.
 
 **Reversible.** Yes: remove the template blocks and `neighbors`.
 
+## 0024 — Show pages use the words people search with (2026-10-29)
+
+**Status: proposed (agent, 2026-10-29), under decision A of the roadmap.
+It extends 0019 and 0023 and keeps their spoiler rule.**
+
+**Evidence.** Search Console for `sc-domain:queerframe.app`, 2026-10-22 to
+2026-10-27: 23 impressions, 0 clicks, 11 show pages with at least one
+impression (average position 6 to 19), and the only queries Google showed
+were "lezwatch", "lezwatch.tv" and a misspelling; the rest were withheld as
+too rare. That is too little to rank queries, so the wording below follows
+the shapes people use for this question ("does <character> die in <show>",
+"<show> lgbt characters", "<show> bury your gays"), not measured volume.
+
+**Decision.** (1) Title: "Do any queer characters die in <show>?
+Spoiler-free", falling back to shorter forms within 60 characters; the site
+name is dropped from show titles. (2) Description: "Does she die in
+<show>?", the listed-character count and up to three names, regulars first
+and then in page order, never in an order a death could affect. (3) The
+heading over the character list is "LGBTQ characters in <show>", and one
+fixed sentence on every page names the bury-your-gays trope. LezWatch's own
+trope name stays inside the answer, as before. (4) The one JSON-LD block is
+an `@graph`: the BreadcrumbList, plus a schema.org TVSeries on show pages
+(name, page, LezWatch.TV and TVmaze pages, years, seasons, genres,
+countries, character names) and an ItemList on the shows index. No
+FAQPage: its answer would put the spoiler in the structured data. (5) Up to
+four "Shows like <show>" links: LezWatch.TV's similar shows that have a
+page, then the most shared genres. Tropes are never used for similarity.
+(6) With `APP_STORE_LIVE` off, one fixed sentence says the app is not on
+the App Store yet, with no link; on, the 0023 link replaces it.
+
+**Not done.** No pages beyond the 50 of 0021: the 0019 evidence rule
+(eight weeks after indexing) still decides any expansion.
+
+**Reversible.** Yes: restore the old title and description functions,
+template lines and `related`.
+

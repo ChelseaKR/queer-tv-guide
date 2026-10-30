@@ -13,6 +13,16 @@ consumer of the published snapshot, would notice.
 
 ### Added
 
+- Show pages use the words people search with (DECISIONS 0024): the title
+  asks "Do any queer characters die in <show>? Spoiler-free", the
+  description names the listed characters (regulars first), the characters
+  heading reads "LGBTQ characters in <show>", and one fixed sentence names
+  the bury-your-gays trope. The structured data adds a schema.org TVSeries
+  (facts and character names only) and the shows index an ItemList. Each
+  page links to up to four similar shows (LezWatch.TV's similar shows, then
+  shared genres), and, while the App Store switch is off, says without a
+  link that the iPhone app is not on the App Store yet. No death answer
+  moves out of the closed element.
 - Show pages link to the shows before and after them and to the shows
   index, and say "Spoiler warning" before the closed answer (DECISIONS 0023).
   With `APP_STORE_LIVE` on, the show pages and the shows index also carry

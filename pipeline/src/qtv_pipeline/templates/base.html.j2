@@ -9,15 +9,19 @@
 <title>{{ title }}</title>
 <meta name="description" content="{{ description }}">
 <link rel="canonical" href="{{ canonical }}">
+{%- block head_extra %}{% endblock %}
 <style>
 {% include "style.css" %}
 </style>
+{%- if breadcrumb %}
 <script type="application/ld+json">{{ breadcrumb|tojson }}</script>
+{%- endif %}
 </head>
 <body>
 <a class="skip" href="#main">Skip to the content</a>
 <header>
 <p class="brand"><a href="{{ base_url }}/">{{ site_name }}</a></p>
+{%- if crumbs %}
 <nav aria-label="Breadcrumb">
 <ol class="crumbs">
 {%- for name, url in crumbs %}
@@ -29,6 +33,7 @@
 {%- endfor %}
 </ol>
 </nav>
+{%- endif %}
 </header>
 <main id="main">
 {% block content %}{% endblock %}
@@ -45,7 +50,7 @@
 {%- endfor %}
 </ul>
 <p>LezWatch.TV and TVmaze do not endorse {{ site_name }}. They are not responsible for the accuracy of this page.</p>
-<p class="small">This website has no analytics and no cookies, runs no code in your browser, and loads nothing from any other site. <a href="{{ base_url }}/privacy.html">Privacy policy</a> &middot; <a href="{{ base_url }}/support.html">Support</a></p>
+<p class="small">This website has no analytics and no cookies, runs no code in your browser, and loads nothing from any other site. <a href="{{ base_url }}/privacy.html">Privacy policy</a> &middot; <a href="{{ base_url }}/support.html">Support</a> &middot; <a href="{{ base_url }}/data/">Data files</a></p>
 </footer>
 </body>
 </html>

@@ -309,7 +309,33 @@ def test_published_pages_have_the_anchors_the_switch_needs():
 def test_index_has_the_anchors_the_switch_needs(site):
     index = (site / "index.html").read_text(encoding="utf-8")
     assert index.count(app_store.VIEWPORT) == 1
-    assert index.count(app_store.INDEX_HEADING) == 1
+    assert index.count(app_store.INDEX_SLOT) == 1
+
+
+def test_off_the_home_page_says_coming_soon_with_no_app_store_link(site):
+    assert app_store.main([str(site), "false"]) == 0
+    index = (site / "index.html").read_text(encoding="utf-8")
+    assert "The Queer Frame iPhone app is coming soon." in index
+    assert not any(marker in index for marker in LIVE_MARKERS)
+
+
+def test_on_the_badge_replaces_the_coming_soon_line(site):
+    index = site / "index.html"
+    assert app_store.INDEX_SLOT in index.read_text(encoding="utf-8")  # denominator
+    assert app_store.main([str(site), "true"]) == 0
+    text = index.read_text(encoding="utf-8")
+    assert app_store.INDEX_SLOT not in text and "coming soon" not in text
+    assert text.count(app_store.BADGE_BLOCK) == 1
+
+
+def test_an_index_without_the_coming_soon_line_is_refused(site):
+    index = site / "index.html"
+    before_text = index.read_text(encoding="utf-8")
+    index.write_text(before_text.replace(app_store.INDEX_SLOT, ""), encoding="utf-8")
+    assert index.read_text(encoding="utf-8") != before_text  # the sabotage landed
+    before = _files(site)
+    assert app_store.main([str(site), "true"]) == 1
+    assert _files(site) == before
 
 
 def test_workflow_passes_the_variable_and_checks_it_before_publishing():

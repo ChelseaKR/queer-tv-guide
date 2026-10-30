@@ -141,8 +141,10 @@ mirror, fetches incrementally, builds, and then:
 1. uploads `snapshot.v1.json`, `snapshot.v1.json.sha256`, `coverage.json` and
    `mirror-cache.tar.gz` to the rolling release **`snapshot-latest`**
    (`gh release upload --clobber`), and
-2. deploys `snapshot.v1.json`, its `.sha256`, and an `index.html` carrying the
-   attribution and license notice to **GitHub Pages**, together with the
+2. deploys `snapshot.v1.json`, its `.sha256`, the home page `index.html`
+   (what Queer Frame is, with links into the show pages) and `data/index.html`
+   (the file's license, credits and build counts; DECISIONS 0026) to
+   **GitHub Pages**, together with the
    per-show web pages, `sitemap.xml` and `robots.txt` on
    https://queerframe.app (DECISIONS 0020). That step is an extra: if the
    pages cannot be built it prints a `::notice::` and the snapshot still

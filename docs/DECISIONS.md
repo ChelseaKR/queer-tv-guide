@@ -521,3 +521,42 @@ the site is about 4.8 MB.
 
 **Reversible.** Yes: set `MIN_LISTED` high enough that no show meets it, and
 the site returns to the 50 pins; the removed URLs answer 404.
+
+## 0026 — The site's root is a home page; the data description moves to /data/ (2026-10-29)
+
+**Status: accepted (owner, 2026-10-29: replace the "Queer Frame snapshot"
+page at queerframe.app with a real landing page).**
+
+**Decision.** `qtv_pipeline.site_index` writes two pages. `index.html`, at
+https://queerframe.app/, is a home page: what Queer Frame is (a guide to TV
+shows with queer women, non-binary and trans characters, with a spoiler-free,
+tap-to-reveal answer to "Do any queer characters die?"), how it works (the
+closed answer, Unknown is not "lives", no account and no tracking, the two
+sources credited with "LezWatch.TV and TVmaze do not endorse this app"), links
+into the show pages (the hand-picked list first, then A to Z, and the first
+12 hand-picked titles), and one line saying the iPhone app is coming soon,
+with no link. The old page's content (license notice, files, this build's
+counts) moves to `data/index.html`, at https://queerframe.app/data/, linked
+from the footer of every page. The data files keep their URLs at the root:
+`snapshot.v1.json` and `snapshot.v1.json.sha256` are unchanged, and the app
+fetches the first one there.
+
+**The App Store switch.** The "coming soon" line is `app_store.INDEX_SLOT`.
+With `APP_STORE_LIVE` on, `app_store.apply` replaces it with the badge and the
+price, so the page never says "coming soon" beside the badge; off, no byte of
+the site changes. `play_store.apply` places its link after the badge, or
+after the slot while the App Store switch is off.
+
+**Spoiler rule.** The home page names show titles and nothing about any
+character: no answer, no character name, no `<details>`, in the body, the
+title, the description or the Open Graph tags (tested, with a negative
+control). It has no script at all, not even structured data, and no image:
+Open Graph carries no `og:image`.
+
+**Links that resolve.** The home page links into `/shows/` only when the
+shows index was published beside it, and names only hand-picked shows whose
+page exists, since the show-pages step may be skipped. The sitemap lists the
+home page first.
+
+**Reversible.** Yes: restore the old `render_index` and the anchor after the
+heading; `/data/` would then answer 404.

@@ -83,7 +83,8 @@ def test_pages_sitemap_and_index_follow_the_list(doc, tmp_path):
     pins = show_pages.load_pinned(_pins([1044, 1007], tmp_path))
     show_pages.build_site(big, tmp_path / "out", pinned=pins)
     sitemap = htmlprobe.sitemap((tmp_path / "out" / "sitemap.xml").read_text())["loc"]
-    assert sitemap[:3] == [
+    assert sitemap[:4] == [
+        "https://queerframe.app/",
         "https://queerframe.app/shows/",
         "https://queerframe.app/shows/show-044/",
         "https://queerframe.app/shows/show-007/",

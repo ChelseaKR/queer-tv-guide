@@ -89,14 +89,16 @@ def test_limit_and_the_rule_constants(doc):
     assert show_pages.DEFAULT_LIMIT < show_pages.SITEMAP_MAX_URLS
 
 
-def test_an_unsafe_or_repeated_slug_refuses_the_build(doc):
+def test_an_unsafe_or_repeated_slug_refuses_a_small_build(doc):
+    # One bad show of three is far over the 5% a build may leave out
+    # (test_show_pages_rule.py has the skip itself, on a larger snapshot).
     bad = copy.deepcopy(doc)
     _show(bad, "harbor-lights")["slug"] = "../escape"
-    with pytest.raises(show_pages.ShowPagesError, match="unsafe slug"):
+    with pytest.raises(show_pages.ShowPagesError, match="unsafe slug for a path"):
         show_pages.select_shows(bad)
     same = copy.deepcopy(doc)
     _show(same, "harbor-lights")["slug"] = "the-cartographers"
-    with pytest.raises(show_pages.ShowPagesError, match="share a slug"):
+    with pytest.raises(show_pages.ShowPagesError, match="has the same slug"):
         show_pages.select_shows(same)
 
 

@@ -85,6 +85,12 @@ consumer of the published snapshot, would notice.
 
 ### Fixed
 
+- One show with an unsafe or repeated slug no longer stops every show page
+  from being built (the nightly snapshot then published with none).
+  That show gets no page and no link, the build log names it and says why,
+  and the rest are built; of two shows with one slug, the first in order
+  (hand-picked first) keeps it. A hand-picked show that cannot be built, or
+  more than 5% of the chosen shows left out, still refuses the build.
 - One TVmaze outage on one show no longer fails the nightly snapshot. When
   TVmaze keeps answering 5xx for a show after the retries, that show keeps
   the schedule fields the last good run mirrored (or, with none, shows its

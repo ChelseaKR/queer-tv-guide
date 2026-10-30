@@ -583,12 +583,15 @@ is. (2) Description: "LezWatch.TV lists <n> LGBTQ characters in <show>,
 including <name> (<identity>) ...", then "Who dies, if anyone, is behind a
 spoiler warning." Names are still regulars first and never in an order a
 death could affect. The identity comes from the gender and sexuality terms
-the page's character list already shows (`show_pages.identity`): "lesbian"
-only when the sexuality is "Homosexual" and the gender term itself says
-woman ("Trans Woman", "Cisgender Woman"), never inferred from a bare
-"Cisgender"; other named sexualities ("Bisexual", "Queer") as they are;
-otherwise a gender term that is not cisgender or unknown ("trans woman",
-"non-binary"), or no label. Never "gay". Labelled names come
+the page's character list already shows (`show_pages.identity`), trusting
+LezWatch.TV's scope (queer women and non-binary characters; owner,
+2026-10-30): "Homosexual" or "Lesbian" with a gender term of "Cisgender" or
+one ending in "Woman" is "lesbian"; with a non-binary, genderqueer, agender
+or other gender term it is never "lesbian" and the gender term is used
+("non-binary"); other named sexualities as given ("bisexual", "queer",
+"pansexual"); otherwise a gender term that is not cisgender or unknown
+("trans woman", "non-binary", "trans man"); anything else, no label. Never
+"gay". Labelled names come
 before more names, then bare names if a long title leaves no room. (3) The
 home page description names LezWatch.TV as the source, since the searches
 that reached it were for LezWatch.TV; the footer still says LezWatch.TV

@@ -137,9 +137,10 @@ SKIP_MAX_SHARE = 0.05
 DESCRIPTION_NAMES = 3
 ROLE_ORDER = {"regular": 0, "recurring": 1, "guest": 2}
 # The description's identity labels (``identity``, DECISIONS 0027).
+LESBIAN_SEXUALITIES = frozenset({"Homosexual", "Lesbian"})
+LESBIAN_GENDERS = frozenset({"Cisgender", "Cisgender Woman", "Trans Woman"})
 SEXUALITY_LABELS = frozenset(
     {
-        "Lesbian",
         "Bisexual",
         "Pansexual",
         "Queer",
@@ -454,16 +455,17 @@ def _and_list(names: list[str]) -> str:
 def identity(gender: str, sexuality: str) -> str | None:
     """A short label for a character in the description, from the two terms
     the page already shows, so a search like "is <character> a lesbian" is
-    answered in the snippet (DECISIONS 0027). "Lesbian" only when the
-    sexuality term is "Homosexual" (or "Lesbian") and the gender term itself
-    says woman ("Trans Woman", "Cisgender Woman"); a bare "Cisgender" says
-    nothing about gender, so it is never read as woman. Other named
-    sexualities ("Bisexual", "Queer", ...) are used as they are, lowercased.
-    Otherwise ("Homosexual" without a woman's gender term, "Heterosexual",
-    "Undefined", "Not Straight") the gender term is used when it is not
-    cisgender or unknown ("trans woman", "non-binary"). Never "gay", and
-    None when neither term gives a label. Nothing about deaths."""
-    if sexuality == "Homosexual" and gender.endswith("Woman"):
+    answered in the snippet (DECISIONS 0027). LezWatch.TV catalogs queer
+    women and non-binary characters, and its scope is trusted: "Homosexual"
+    or "Lesbian" with a gender term of "Cisgender", or one ending in "Woman"
+    ("Cisgender Woman", "Trans Woman"), is "lesbian". With any other gender
+    term ("Non-Binary", "Genderqueer", "Agender", "Trans Man") it is never
+    "lesbian"; the gender term is the label instead. Other named
+    sexualities ("Bisexual", "Queer", "Pansexual") are used as given,
+    lowercased. Otherwise the gender term is the label when it is not
+    cisgender or unknown ("trans woman", "non-binary", "trans man"). Never
+    "gay", and None when neither term gives a label. Nothing about deaths."""
+    if sexuality in LESBIAN_SEXUALITIES and (gender in LESBIAN_GENDERS or gender.endswith("Woman")):
         return "lesbian"
     if sexuality in SEXUALITY_LABELS:
         return sexuality.lower()

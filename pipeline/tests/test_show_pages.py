@@ -722,15 +722,20 @@ def test_title_counts_listed_characters_and_falls_back():
 @pytest.mark.parametrize(
     ("gender", "sexuality", "label"),
     [
-        # A bare "Cisgender" does not say woman, so it is never read as one.
-        ("Cisgender", "Homosexual", None),
-        ("Cisgender (Intersex)", "Homosexual", None),
+        # LezWatch.TV catalogs queer women and non-binary characters, so a
+        # cisgender character there is a woman (DECISIONS 0027).
+        ("Cisgender", "Homosexual", "lesbian"),
         ("Cisgender Woman", "Homosexual", "lesbian"),
         ("Trans Woman", "Homosexual", "lesbian"),
+        ("Trans Woman", "Lesbian", "lesbian"),
+        # Never "lesbian" for a non-binary, genderqueer or agender character.
         ("Non-Binary", "Homosexual", "non-binary"),
+        ("Genderqueer", "Homosexual", "genderqueer"),
+        ("Agender", "Lesbian", "agender"),
         ("Trans Man", "Homosexual", "trans man"),
+        ("Trans Man", "Undefined", "trans man"),
+        ("Cisgender (Intersex)", "Homosexual", None),
         ("Cisgender", "Bisexual", "bisexual"),
-        ("Cisgender Woman", "Lesbian", "lesbian"),
         ("Trans Woman", "Heterosexual", "trans woman"),
         ("Non-Binary", "Undefined", "non-binary"),
         ("Cisgender", "Undefined", None),
@@ -838,3 +843,10 @@ def test_app_note_without_a_link_while_the_switch_is_off(doc, tmp_path):
     assert note in off.outside
     on = _build(doc, tmp_path / "on", app_store_live=True)["shows/harbor-lights/index.html"]
     assert note not in on.outside
+
+
+def test_identity_never_says_gay():
+    genders = ["Cisgender", "Trans Woman", "Trans Man", "Non-Binary", "Agender", "Unknown"]
+    sexualities = ["Homosexual", "Lesbian", "Bisexual", "Heterosexual", "Undefined", "Queer"]
+    labels = {show_pages.identity(g, s) for g in genders for s in sexualities}
+    assert not any(label and "gay" in label for label in labels)

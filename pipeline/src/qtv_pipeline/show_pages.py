@@ -34,6 +34,10 @@ Which shows (``select_shows``, DECISIONS 0021 and 0025), in this order:
    were first published.
 
 At most ``DEFAULT_LIMIT`` pages are built (``--limit``); a cut is logged.
+A chosen show whose slug is not a safe path segment, or repeats the slug of
+a show earlier in that order, gets no page and no link, and is named in the
+build log; the rest are built. A pinned show left out this way, or more than
+``SKIP_MAX_SHARE`` (5%) of the chosen shows left out, refuses the build.
 Shows with no listed character are never built, pinned or not: they have
 nothing to answer from. Episode counts are not in the snapshot, so "most
 episodes" is not a usable rule.
@@ -122,6 +126,9 @@ MIN_LISTED = 5
 # Fewer pages than this and the most-listed shows fill the gap (see above).
 PAGE_FLOOR = 50
 RELATED_LIMIT = 4
+# A chosen show whose slug is unsafe or repeated is left out and logged; more
+# than this share of them left out refuses the build (``_drop_bad_slugs``).
+SKIP_MAX_SHARE = 0.05
 # Character names in a description, at most; regulars first (``_roles_first``).
 DESCRIPTION_NAMES = 3
 ROLE_ORDER = {"regular": 0, "recurring": 1, "guest": 2}
@@ -315,19 +322,74 @@ def plan_selection(
             "shows with the fewest listed characters"
         )
         chosen = chosen[:limit]
+    pinned_ids = {s["id"] for s in chosen[:pinned_count]}
+    chosen, skipped = _drop_bad_slugs(chosen, pinned_ids)
+    notes += skipped
     built = {s["id"] for s in chosen}
     notes.append(
         f"show_pages: {len(chosen)} pages: {min(pinned_count, len(chosen))} pinned, "
         f"{sum(s['id'] in built for s in by_rule)} by the rule, "
         f"{sum(s['id'] in built for s in filled)} to reach the floor"
+        + (f", {len(skipped)} skipped" if skipped else "")
     )
-    slugs = [s["slug"] for s in chosen]
-    bad = [s for s in slugs if not SLUG.fullmatch(s)]
-    if bad:
-        raise ShowPagesError(f"unsafe slug(s) for a path: {bad}")
-    if len(set(slugs)) != len(slugs):
-        raise ShowPagesError("two chosen shows share a slug")
     return chosen, notes
+
+
+def _log_text(value: Any) -> str:
+    """``value`` on one line for the build log: snapshot text is untrusted, and
+    a line break in it could start a workflow command."""
+    return " ".join(str(value).split())
+
+
+def _drop_bad_slugs(
+    chosen: list[dict[str, Any]], pinned_ids: set[str]
+) -> tuple[list[dict[str, Any]], list[str]]:
+    """The chosen shows without any whose slug cannot be a page, and one log
+    line per show left out.
+
+    A slug that is not a safe path segment (``SLUG``) is never built. Of two
+    shows with the same slug the first in the published order (pins first)
+    is kept and the later one left out. A left-out show is also absent from
+    the index, the sitemap and every link, since all of them are made from
+    the list returned here.
+
+    Two cases still refuse the whole build: a pinned show left out (the
+    hand-picked pages must never quietly disappear), and more than
+    ``SKIP_MAX_SHARE`` of the chosen shows left out (a change in the data's
+    shape, not one bad record)."""
+    kept: list[dict[str, Any]] = []
+    notes: list[str] = []
+    lost_pins: list[str] = []
+    seen: set[str] = set()
+    for show in chosen:
+        slug = show["slug"]
+        if not isinstance(slug, str) or not SLUG.fullmatch(slug):
+            why = "unsafe slug for a path"
+        elif slug in seen:
+            why = "another show earlier in the order has the same slug"
+        else:
+            seen.add(slug)
+            kept.append(show)
+            continue
+        label = (
+            f"{_log_text(show['title'])} (id {_log_text(show['lwtv_id'])}, "
+            f"slug {_log_text(repr(slug))})"
+        )
+        notes.append(f"show_pages: skipped {label}: {why}")
+        if show["id"] in pinned_ids:
+            lost_pins.append(f"{label}: {why}")
+    if lost_pins:
+        raise ShowPagesError(
+            f"a pinned show cannot be built, refusing the build: {'; '.join(lost_pins)}"
+        )
+    dropped = len(chosen) - len(kept)
+    if dropped > len(chosen) * SKIP_MAX_SHARE:
+        raise ShowPagesError(
+            f"{dropped} of {len(chosen)} chosen shows have an unsafe or repeated slug, "
+            f"more than {SKIP_MAX_SHARE:.0%}; refusing the build: "
+            + "; ".join(n.removeprefix("show_pages: skipped ") for n in notes)
+        )
+    return kept, notes
 
 
 def select_shows(

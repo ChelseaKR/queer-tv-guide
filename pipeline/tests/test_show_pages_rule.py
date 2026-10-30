@@ -235,3 +235,129 @@ def test_cast_index_matches_a_scan_of_every_character(doc):
             if any(x["show_id"] == show["id"] for x in c["shows"])
         ]
         assert [c.name for c in show_pages._characters(doc, show, index)] == scanned
+
+
+# ---- a show whose slug cannot be a page --------------------------------------
+
+
+def _sixty() -> dict:
+    """80 shows, of which the 60 with ids 1000 to 1059 qualify, all with six
+    listed characters, so the published order is plain LezWatch id order."""
+    return _qualified(80, {1000 + i: 6 for i in range(60)})
+
+
+def _by_id(big: dict, lwtv_id: int) -> dict:
+    return next(s for s in big["shows"] if s["lwtv_id"] == lwtv_id)
+
+
+def _pin_file(tmp_path: Path, ids: list[int]) -> list[show_pages.Pin]:
+    path = tmp_path / "pinned.json"
+    path.write_text(
+        json.dumps(
+            {
+                "how_chosen": "test",
+                "shows": [
+                    {"lezwatch_id": i, "slug": f"pin-{i}", "title": f"Pin {i}", "reason": "r"}
+                    for i in ids
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+    pins = show_pages.load_pinned(path)
+    assert pins is not None
+    return pins
+
+
+def test_one_unsafe_slug_is_skipped_and_the_rest_are_built(tmp_path, capsys):
+    big = _sixty()
+    _by_id(big, 1010)["slug"] = "../escape"
+    assert _by_id(big, 1010)["slug"] == "../escape"  # the sabotage landed
+    chosen, notes = show_pages.plan_selection(big)
+    assert len(chosen) == 59 and 1010 not in {s["lwtv_id"] for s in chosen}
+    assert (
+        "show_pages: skipped Show 010 (id 1010, slug '../escape'): unsafe slug for a path" in notes
+    )
+    assert notes[-1].endswith(", 1 skipped")
+
+    files = show_pages.render_site(big, base_url="https://example.test")
+    pages = [p for p in files if p.startswith("shows/") and p != "shows/index.html"]
+    assert len(pages) == 59
+    for path, text in files.items():
+        assert "escape" not in path, path
+        assert "../escape" not in text, path  # not in the sitemap, index or any link
+        assert "Show 010" not in text, path
+
+    snapshot = tmp_path / "snapshot.json"
+    snapshot.write_text(json.dumps(big), encoding="utf-8")
+    code = show_pages.main([str(snapshot), str(tmp_path / "site"), "--no-pinned"])
+    out = capsys.readouterr().out
+    assert code == 0
+    assert "show_pages: skipped Show 010 (id 1010, slug '../escape'): unsafe slug for a path" in out
+    assert (tmp_path / "site" / "shows" / "show-011" / "index.html").is_file()
+
+
+def test_a_slug_in_the_log_stays_on_one_line():
+    big = _sixty()
+    _by_id(big, 1010)["slug"] = "x\n::error::injected"
+    _by_id(big, 1010)["title"] = "Two\nlines"
+    _, notes = show_pages.plan_selection(big)
+    skipped = [n for n in notes if n.startswith("show_pages: skipped")]
+    assert len(skipped) == 1 and "\n" not in skipped[0]
+    assert "Two lines" in skipped[0]
+
+
+def test_a_repeated_slug_keeps_the_first_in_order_and_skips_the_later(tmp_path):
+    big = _sixty()
+    _by_id(big, 1020)["slug"] = "show-005"  # 1005 comes first in the order
+    chosen, notes = show_pages.plan_selection(big)
+    assert [s["lwtv_id"] for s in chosen if s["slug"] == "show-005"] == [1005]
+    assert 1020 not in {s["lwtv_id"] for s in chosen} and len(chosen) == 59
+    assert any(
+        n.startswith("show_pages: skipped Show 020 (id 1020, slug 'show-005')") and "same slug" in n
+        for n in notes
+    )
+    page = show_pages.render_site(big, base_url="https://example.test")["shows/show-005/index.html"]
+    assert "Show 005" in page and "Show 020" not in page
+
+    # A pin comes first in the order, so it keeps a slug a later show repeats.
+    pinned = copy.deepcopy(big)
+    _by_id(pinned, 1020)["slug"] = "show-020"
+    _by_id(pinned, 1030)["slug"] = "show-002"
+    chosen, _ = show_pages.plan_selection(pinned, pinned=_pin_file(tmp_path, [1030]))
+    assert chosen[0]["lwtv_id"] == 1030
+    assert [s["lwtv_id"] for s in chosen if s["slug"] == "show-002"] == [1030]
+    assert 1002 not in {s["lwtv_id"] for s in chosen}
+
+
+def test_more_than_five_percent_skipped_refuses_the_build():
+    at_limit = _sixty()
+    for i in (1010, 1011, 1012):  # 3 of 60 is exactly 5%: still built
+        _by_id(at_limit, i)["slug"] = f"bad slug {i}"
+    chosen, notes = show_pages.plan_selection(at_limit)
+    assert len(chosen) == 57 and sum(n.startswith("show_pages: skipped") for n in notes) == 3
+
+    over = copy.deepcopy(at_limit)
+    _by_id(over, 1013)["slug"] = "bad slug 1013"
+    assert _by_id(over, 1013)["slug"] == "bad slug 1013"  # the sabotage landed
+    with pytest.raises(show_pages.ShowPagesError, match=r"4 of 60 chosen shows .* more than 5%"):
+        show_pages.plan_selection(over)
+    with pytest.raises(show_pages.ShowPagesError):
+        show_pages.render_site(over, base_url="https://example.test")
+
+
+def test_a_pinned_show_that_cannot_be_built_refuses_the_build(tmp_path):
+    big = _sixty()
+    pins = _pin_file(tmp_path, [1070, 1040])
+    assert len(show_pages.plan_selection(big, pinned=pins)[0]) == 61  # builds when clean
+
+    unsafe = copy.deepcopy(big)
+    _by_id(unsafe, 1040)["slug"] = "../escape"
+    with pytest.raises(show_pages.ShowPagesError, match=r"pinned show .*id 1040.*unsafe slug"):
+        show_pages.plan_selection(unsafe, pinned=pins)
+
+    # The later of two pins with the same slug would be skipped: refused too.
+    repeated = copy.deepcopy(big)
+    _by_id(repeated, 1040)["slug"] = "show-070"
+    with pytest.raises(show_pages.ShowPagesError, match=r"pinned show .*id 1040.*same slug"):
+        show_pages.plan_selection(repeated, pinned=pins)

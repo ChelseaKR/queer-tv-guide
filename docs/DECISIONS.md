@@ -477,3 +477,47 @@ the App Store yet, with no link; on, the 0023 link replaces it.
 **Reversible.** Yes: restore the old title and description functions,
 template lines and `related`.
 
+## 0025 — Show pages for every show with enough to answer (2026-10-29)
+
+**Status: accepted (owner, 2026-10-29: "Expand now"). It supersedes the
+evidence rule in 0019 and 0020 (wait eight weeks after indexing before any
+expansion) and the "Not done" line of 0024. The hand-picked list of 0021,
+and everything 0019 to 0024 decided about what a page says, stand.**
+
+**Decision.** After the pinned list, `qtv_pipeline.show_pages` builds every
+show with at least 5 characters listed in the snapshot and a TVmaze match (a
+TVmaze page URL), most listed first, ties to the lower LezWatch id. On the
+2026-10-29 snapshot that is 363 pages: the 50 pins plus 313 others (349
+shows meet the rule; 36 of them are pinned). Of 2,287 shows, 2,280 list a
+character; most list one or two.
+
+**Why 5 and a TVmaze match.** The point is pages with substance, not one per
+show. At 5 or more listed characters the closed answer covers several
+characters, the description names three and says there are more, and the
+character list is worth reading; the TVmaze match makes the run status,
+network and TVmaze credit real rather than "Unknown". The counts on that
+snapshot, with a TVmaze match: 3 or more characters, 736 shows; 4, 492; 5,
+349; 6, 249; 8, 139. Five gives a few hundred pages; 3 or 4 would add
+hundreds of thin pages, and 6 or more would leave out shows with real
+casts. No part of the rule looks at deaths.
+
+**Pins stay.** The 50 hand-picked pages keep their URLs, first in the
+published order and in their own section of the shows index, even where a
+pin lists fewer than 5 characters (14 of them do), so no published page
+answers 404.
+
+**Floor and cap.** If the pins and the rule make fewer than 50 pages, the
+most-listed other shows fill up to 50 (the 0019 rule); on real data this
+does not happen. At most 600 pages are built (`DEFAULT_LIMIT`); a cut drops
+the fewest-listed and is logged. The sitemap refuses more than 50,000 URLs.
+
+**Scale.** The shows index lists the hand-picked shows, then every show A to
+Z under a letter heading (a leading "The", "A" or "An" is ignored; titles
+that start with a digit, a symbol or a non-Latin script go under "#"), with
+a list of letters to jump to; the ItemList keeps the published order. The
+characters are indexed once per build, so the whole site builds in under a
+second locally. The largest page is about 29 KB and the index about 83 KB;
+the site is about 4.8 MB.
+
+**Reversible.** Yes: set `MIN_LISTED` high enough that no show meets it, and
+the site returns to the 50 pins; the removed URLs answer 404.

@@ -13,6 +13,12 @@ consumer of the published snapshot, would notice.
 
 ### Added
 
+- Show pages for about 360 shows, up from 50 (DECISIONS 0025): the
+  hand-picked 50, then every show with at least 5 listed characters and a
+  TVmaze match, most listed first. The shows index lists the hand-picked
+  shows first and then every show A to Z by letter, with a list of letters
+  to jump to. The spoiler rule, the credits and the App Store switch are
+  unchanged.
 - Show pages use the words people search with (DECISIONS 0024): the title
   asks "Do any queer characters die in <show>? Spoiler-free", the
   description names the listed characters (regulars first), the characters

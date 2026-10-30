@@ -165,8 +165,10 @@ jobs:
           GH_TOKEN: ${{ github.token }}
 
       - name: build the per-show pages into the Pages site (never blocks the deploy)
-        # The 50 "does she die in <show>" pages, shows/index.html, sitemap.xml
-        # and robots.txt, next to the snapshot files (DECISIONS 0019, 0020;
+        # The "does she die in <show>" pages (the hand-picked 50 plus every
+        # show with 5+ listed characters and a TVmaze match, about 360),
+        # shows/index.html, sitemap.xml and robots.txt, next to the snapshot
+        # files (DECISIONS 0019, 0020, 0025;
         # qtv_pipeline/show_pages.py). They are an extra: with
         # --notice-on-failure the generator prints a ::notice:: line, writes
         # nothing and exits 0 on any problem, so the snapshot still publishes

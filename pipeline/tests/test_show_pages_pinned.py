@@ -2,8 +2,10 @@
 
 `data/show_pages_pinned.json` names up to 50 shows in the order they are
 built. A pin missing from the snapshot, or listing no character, is skipped
-and named in the log, and the freed slots go to the character-count rule.
-Without the file the character-count rule is the whole rule. Every negative
+and named in the log. After the pins come the shows the inclusion rule picks
+(DECISIONS 0025, tests/test_show_pages_rule.py); in these 60-show documents
+no show meets it, so the 50-page floor fills the rest by listed characters,
+as the 0019 rule did. Without the file the rule is the whole rule. Every negative
 control asserts its sabotage changed the data, and the result, before it
 concludes anything.
 """
@@ -103,8 +105,8 @@ def test_a_pin_missing_from_the_snapshot_is_skipped_logged_and_replaced(doc, tmp
     assert len(chosen) == 50  # the freed slot is filled, deterministically
     assert "show_pages: pinned list: skipped Show 3242 (id 4242): not in the snapshot" in notes
     assert notes[0] == (
-        "show_pages: selection rule: pinned list (2 of 3 built), "
-        "then most listed characters, then lower LezWatch id"
+        "show_pages: selection rule: pinned list (2 of 3 built), then every show with at "
+        "least 5 listed characters and a TVmaze match, most listed first, then lower LezWatch id"
     )
     again = show_pages.plan_selection(big, 50, pins)
     assert [s["slug"] for s in again[0]] == [s["slug"] for s in chosen]
@@ -133,7 +135,7 @@ def test_the_limit_applies_to_the_pinned_list(doc, tmp_path):
 # ---- without the file --------------------------------------------------------------
 
 
-def test_without_the_file_the_old_rule_is_the_whole_rule(doc, tmp_path, monkeypatch, capsys):
+def test_without_the_file_the_rule_is_the_whole_rule(doc, tmp_path, monkeypatch, capsys):
     big = _big_doc(doc)
     snap = tmp_path / "snap.json"
     snap.write_text(json.dumps(big), encoding="utf-8")
@@ -148,7 +150,7 @@ def test_without_the_file_the_old_rule_is_the_whole_rule(doc, tmp_path, monkeypa
     assert not pinned_file.exists()  # the sabotage landed
     assert show_pages.main([str(snap), str(tmp_path / "b"), "--pinned", str(pinned_file)]) == 0
     second = capsys.readouterr().out
-    assert "selection rule: most listed characters, then lower LezWatch id" in second
+    assert "selection rule: every show with at least 5 listed characters" in second
     assert "pinned list" not in second
     expected = [s["slug"] for s in show_pages.select_shows(big)]
     built = sorted(p.parent.name for p in (tmp_path / "b" / "shows").glob("*/index.html"))

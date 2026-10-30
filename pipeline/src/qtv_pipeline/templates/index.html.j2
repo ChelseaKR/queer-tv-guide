@@ -2,11 +2,31 @@
 {% block content %}
 <h1>Do queer characters die? Queer TV shows, spoiler-free</h1>
 <p>Before you start a show, check whether it falls into the bury-your-gays trope. Pick a show to see its LGBTQ characters. Each page keeps the full answer to "does she die" closed until you open it, so you decide whether to be spoiled. The answers come from the records of LezWatch.TV.</p>
-<ul>
-{%- for s in shows %}
+<p>{{ total }} {{ 'show has' if total == 1 else 'shows have' }} a page.</p>
+{%- if featured %}
+<h2 id="hand-picked">Hand-picked shows</h2>
+<ul class="shows">
+{%- for s in featured %}
 <li><a href="{{ s.slug }}/">{{ s.title }}</a> ({{ s.years }})</li>
 {%- endfor %}
 </ul>
+{%- endif %}
+<h2 id="a-to-z">All shows, A to Z</h2>
+<nav aria-label="Jump to a letter">
+<ul class="letters">
+{%- for g in groups %}
+<li><a href="#{{ g.anchor }}">{{ g.label }}</a></li>
+{%- endfor %}
+</ul>
+</nav>
+{%- for g in groups %}
+<h3 id="{{ g.anchor }}">{{ g.heading }}</h3>
+<ul class="shows">
+{%- for s in g.shows %}
+<li><a href="{{ s.slug }}/">{{ s.title }}</a> ({{ s.years }})</li>
+{%- endfor %}
+</ul>
+{%- endfor %}
 {% if app_store_url %}
 <p class="cta">Get the app: <a href="{{ app_store_url }}">{{ app_store_copy }}</a></p>
 {% endif %}

@@ -1,0 +1,44 @@
+{% extends "base.html.j2" %}
+{% block head_extra %}
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="{{ site_name }}">
+<meta property="og:title" content="{{ og_title }}">
+<meta property="og:description" content="{{ description }}">
+<meta property="og:url" content="{{ canonical }}">
+<meta property="og:locale" content="en_US">
+<meta name="twitter:card" content="summary">
+{%- endblock %}
+{% block content %}
+<h1>{{ site_name }}: queer TV, spoiler-free</h1>
+<p class="lede">{{ site_name }} is a guide to TV shows with queer women, non-binary and trans characters. For each show it answers the question many of us ask before we start watching: do any queer characters die? The answer stays hidden until you tap to reveal it.</p>
+{%- if shows_total %}
+<h2 id="find-a-show">Find a show</h2>
+<ul class="go">
+{%- if featured_total %}
+<li><a href="{{ base_url }}/shows/#hand-picked">Start with the {{ featured_total }} hand-picked {{ 'show' if featured_total == 1 else 'shows' }}</a></li>
+{%- endif %}
+<li><a href="{{ base_url }}/shows/#a-to-z">Browse all {{ shows_total }} {{ 'show' if shows_total == 1 else 'shows' }}, A to Z</a></li>
+</ul>
+{%- if featured %}
+<h3>Some of the hand-picked shows</h3>
+<ul class="shows">
+{%- for s in featured %}
+<li><a href="{{ s.url }}">{{ s.title }}</a></li>
+{%- endfor %}
+</ul>
+{%- endif %}
+{%- endif %}
+<h2 id="how-it-works">How it works</h2>
+<dl class="how">
+<dt>The answer waits for you</dt>
+<dd>Each show page lists the show's LGBTQ characters. The answer to "Do any queer characters die?" sits in a closed box below a spoiler warning, and nothing in the page's title, description or character list gives it away. Open it only if you want to know.</dd>
+<dt>Unknown is not the same as lives</dt>
+<dd>LezWatch.TV records deaths, not survival. A character with no recorded death is shown as Unknown, never as alive.</dd>
+<dt>No account, no tracking</dt>
+<dd>The app has no account, no analytics, no ads and no tracking. It downloads one public data file and keeps your favorites and reminders on your phone. This website sets no cookies, runs no analytics and loads nothing from any other site. Read the <a href="{{ base_url }}/privacy.html">privacy policy</a>.</dd>
+<dt>Where the data comes from</dt>
+<dd>Shows, characters and the answers come from <a href="{{ lezwatch_url }}">LezWatch.TV</a>, a volunteer-run database of queer women, non-binary and trans characters on TV. Episode schedules, run status and networks come from <a href="{{ tvmaze_url }}">TVmaze</a>. Both are credited below with their licenses. LezWatch.TV and TVmaze do not endorse this app.</dd>
+</dl>
+<h2 id="iphone-app">The iPhone app</h2>
+{{ app_slot|safe }}
+{% endblock %}

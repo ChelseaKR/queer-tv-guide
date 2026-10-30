@@ -145,7 +145,7 @@ def test_on_adds_the_link_to_the_index_only(site):
     assert changed == ["index.html"]
     index = (site / "index.html").read_text(encoding="utf-8")
     assert _index_problems(index) == []
-    assert index.index(app_store.INDEX_HEADING) < index.index(PLAY_URL)
+    assert index.index(app_store.INDEX_SLOT) < index.index(PLAY_URL)
 
 
 def test_on_keeps_android_wording_inside_its_region(site):
@@ -183,10 +183,10 @@ def test_a_second_run_is_refused_rather_than_doubling_the_link(site):
     assert _files(site) == after_first
 
 
-def test_an_index_without_the_heading_is_refused_and_left_alone(site):
+def test_an_index_without_the_coming_soon_line_is_refused_and_left_alone(site):
     index = site / "index.html"
     original = index.read_text(encoding="utf-8")
-    index.write_text(original.replace(app_store.INDEX_HEADING, "<h1>Other</h1>"), encoding="utf-8")
+    index.write_text(original.replace(app_store.INDEX_SLOT, "<h1>Other</h1>"), encoding="utf-8")
     assert index.read_text(encoding="utf-8") != original  # the sabotage landed
     before = _files(site)
     assert play_store.main([str(site), "true"]) == 1

@@ -126,7 +126,9 @@ def test_files_and_sitemap(doc, tmp_path):
         "shows/the-cartographers/index.html",
     ]
     entries = htmlprobe.sitemap(_raw(tmp_path, "sitemap.xml"))
-    assert sorted(entries["loc"]) == sorted(p.canonical for p in pages.values())
+    # The home page (site_index.py) first, then every page built here.
+    assert entries["loc"][0] == f"{BASE}/"
+    assert sorted(entries["loc"][1:]) == sorted(p.canonical for p in pages.values())
     assert set(entries["lastmod"]) == {doc["generated_at"][:10]}
     assert _raw(tmp_path, "sitemap.xml").startswith('<?xml version="1.0" encoding="UTF-8"?>')
 
@@ -495,7 +497,7 @@ def test_app_store_step_does_not_add_a_second_banner_to_show_pages(doc, tmp_path
     # built; it reads only the top-level pages, so the show pages keep one tag.
     _build(doc, tmp_path, app_store_live=True)
     (tmp_path / "index.html").write_text(
-        f"<html><head>{app_store.VIEWPORT}</head><body>{app_store.INDEX_HEADING}</body></html>",
+        f"<html><head>{app_store.VIEWPORT}</head><body>{app_store.INDEX_SLOT}</body></html>",
         encoding="utf-8",
     )
     app_store.apply(tmp_path)
@@ -629,7 +631,7 @@ def test_a_few_hundred_pages_from_the_real_snapshot(tmp_path):
     assert 300 <= len(want) <= show_pages.DEFAULT_LIMIT  # a few hundred, not all 2,287
     assert len(pages) == len(want) + 1
     assert len({p.title for p in pages.values()}) == len(pages)
-    assert len(htmlprobe.sitemap(_raw(tmp_path, "sitemap.xml"))["loc"]) == len(pages)
+    assert len(htmlprobe.sitemap(_raw(tmp_path, "sitemap.xml"))["loc"]) == len(pages) + 1
     items = htmlprobe.ld_node(pages["shows/index.html"], "ItemList")["itemListElement"]
     assert len(items) == len(want)
     index_links = [h for h in pages["shows/index.html"].hrefs() if h.endswith("/")]

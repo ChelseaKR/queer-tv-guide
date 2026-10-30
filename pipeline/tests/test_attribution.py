@@ -63,17 +63,35 @@ def test_a_joined_schedule_without_a_tvmaze_url_is_caught(built_doc):
     )
 
 
-def test_pages_index_shows_license_and_linked_credits(built_doc):
+@pytest.mark.parametrize("render", [site_index.render_index, site_index.render_data_page])
+def test_home_and_data_pages_show_license_and_linked_credits(built_doc, render):
     doc, _cache, _out = built_doc
-    page = site_index.render_index(doc)
+    page = render(doc)
     assert license.LICENSE_NOTICE in page
     assert f'href="{license.SNAPSHOT_LICENSE["url"]}"' in page
     for source in license.ATTRIBUTION:
         assert f'href="{source["url"]}"' in page, source["name"]
         assert f'href="{source["licence_url"]}"' in page, source["name"]
+        assert source["text"] in page, source["name"]
     assert "does not endorse this app" in page
-    assert 'href="privacy.html"' in page and 'href="support.html"' in page
+    for path in ("privacy.html", "support.html", "data/"):
+        assert f'href="https://queerframe.app/{path}"' in page, path
+
+
+def test_the_home_page_says_the_sources_do_not_endorse_the_app(built_doc):
+    doc, _cache, _out = built_doc
+    page = site_index.render_index(doc)
+    assert "LezWatch.TV and TVmaze do not endorse this app." in page
     assert "<script" not in page.lower()
+
+
+def test_the_data_page_links_the_files_at_their_unchanged_urls(built_doc):
+    doc, _cache, _out = built_doc
+    page = site_index.render_data_page(doc)
+    for name in ("snapshot.v1.json", "snapshot.v1.json.sha256"):
+        assert f'href="https://queerframe.app/{name}"' in page, name
+    assert doc["content_digest"] in page and doc["generated_at"] in page
+    assert '<link rel="canonical" href="https://queerframe.app/data/">' in page
 
 
 def test_pages_index_escapes_source_text(built_doc):
@@ -88,3 +106,4 @@ def test_site_index_cli_writes_the_page(built_doc, tmp_path):
     target = tmp_path / "index.html"
     assert site_index.main([str(out_dir / "snapshot.v1.json"), str(target)]) == 0
     assert license.LICENSE_NOTICE in target.read_text()
+    assert license.LICENSE_NOTICE in (tmp_path / "data" / "index.html").read_text()

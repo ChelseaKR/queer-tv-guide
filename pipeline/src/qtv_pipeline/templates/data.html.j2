@@ -1,0 +1,20 @@
+{% extends "base.html.j2" %}
+{% block content %}
+<h1>{{ site_name }} data</h1>
+<p>{{ site_name }} is built from one combined data file, published here for anyone to reuse under its license. The app downloads the same file.</p>
+<p>{{ licence.notice }}</p>
+<p>License: <a href="{{ licence.snapshot.url }}">{{ licence.snapshot.name }}</a>.</p>
+<h2>Files</h2>
+<ul>
+<li><a href="{{ base_url }}/snapshot.v1.json">snapshot.v1.json</a>: the data, as JSON.</li>
+<li><a href="{{ base_url }}/snapshot.v1.json.sha256">snapshot.v1.json.sha256</a>: its SHA-256 checksum.</li>
+</ul>
+<h2>This build</h2>
+<ul>
+<li>generated_at: {{ build.generated_at }}</li>
+<li>content_digest: {{ build.content_digest }}</li>
+<li>shows: {{ build.shows }}</li>
+<li>characters: {{ build.characters }}</li>
+<li>TVmaze joined: {{ build.tvmaze }}</li>
+</ul>
+{% endblock %}

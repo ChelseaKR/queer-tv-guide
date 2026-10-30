@@ -801,7 +801,12 @@ def render_index(
 
 
 def render_sitemap(doc: dict[str, Any], shows: list[dict[str, Any]], *, base_url: str) -> str:
-    urls = [f"{base_url}/shows/", *(f"{base_url}/shows/{s['slug']}/" for s in shows)]
+    # The home page (site_index.py, always published) first, then the shows.
+    urls = [
+        f"{base_url}/",
+        f"{base_url}/shows/",
+        *(f"{base_url}/shows/{s['slug']}/" for s in shows),
+    ]
     if len(urls) > SITEMAP_MAX_URLS:
         raise ShowPagesError(
             f"{len(urls)} URLs is more than one sitemap file may list ({SITEMAP_MAX_URLS})"

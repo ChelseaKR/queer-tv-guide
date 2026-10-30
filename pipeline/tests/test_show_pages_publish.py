@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import copy
 import datetime as dt
+import html
 import json
 from pathlib import Path
 from urllib.parse import urlsplit
@@ -102,10 +103,11 @@ def host_problems(files: dict[str, str]) -> list[str]:
 
 
 def sitemap_problems(files: dict[str, str], doc: dict, limit: int = 50) -> list[str]:
-    """The shows index and every built page are listed, with the data date."""
+    """The home page, the shows index and every built page are listed, with
+    the data date."""
     entries = htmlprobe.sitemap(files["sitemap.xml"])
     pages = [n for n in files if n.endswith("index.html") and n.startswith("shows/")]
-    want = {f"{DOMAIN}/{n.removesuffix('index.html')}" for n in pages}
+    want = {f"{DOMAIN}/", *(f"{DOMAIN}/{n.removesuffix('index.html')}" for n in pages)}
     found = [f"missing from the sitemap: {u}" for u in sorted(want - set(entries["loc"]))]
     found += [f"not a built page: {u}" for u in sorted(set(entries["loc"]) - want)]
     if len(pages) != min(limit, len(doc["shows"])) + 1:
@@ -175,7 +177,8 @@ def test_the_sitemap_lists_the_index_and_the_fifty_pages_with_the_data_date(doc,
     files = _site(big, tmp_path)
     assert sitemap_problems(files, big) == []
     entries = htmlprobe.sitemap(files["sitemap.xml"])
-    assert len(entries["loc"]) == 51
+    assert len(entries["loc"]) == 52
+    assert entries["loc"][0] == f"{DOMAIN}/"
     assert set(entries["lastmod"]) == {DATA_DATE}
     assert f"{DOMAIN}/shows/" in entries["loc"]
     assert f"{DOMAIN}/shows/show-000/" in entries["loc"]
@@ -240,50 +243,174 @@ def test_robots_txt_allows_all_and_names_the_sitemap(doc, tmp_path):
     )
 
 
-# ---- the home page ----------------------------------------------------------
+# ---- the home page (site_index.py, DECISIONS 0026) ----------------------------
 
 
-def test_the_home_page_links_to_the_shows_index_only_when_it_is_published(doc, tmp_path):
+def _pinned_file(tmp_path: Path, ids: list[int]) -> Path:
+    body = {
+        "how_chosen": "test list",
+        "shows": [
+            {"lezwatch_id": i, "slug": f"show-{i - 1000:03d}", "title": "t", "reason": "test"}
+            for i in ids
+        ],
+    }
+    path = tmp_path / "pinned.json"
+    path.write_text(json.dumps(body), encoding="utf-8")
+    return path
+
+
+def _home_hrefs_into_shows(text: str) -> list[str]:
+    return [h for h in htmlprobe.parse(text).hrefs() if "/shows/" in h]
+
+
+def test_the_home_page_links_to_the_shows_only_when_they_are_published(doc, tmp_path):
     big = _big_doc(doc)
     site = tmp_path / "site"
     site.mkdir()
     snapshot = tmp_path / "snapshot.json"
-    snapshot.write_text(json.dumps(doc), encoding="utf-8")
+    snapshot.write_text(json.dumps(big), encoding="utf-8")
+    pinned = _pinned_file(tmp_path, [1007, 1003, 1999])  # 1999 is not in the snapshot
 
-    # Shows not published: no link, and the page is what it was before.
-    assert site_index.main([str(snapshot), str(site / "index.html")]) == 0
-    bare = htmlprobe.parse((site / "index.html").read_text(encoding="utf-8"))
-    assert "shows/" not in bare.hrefs()
-    assert (site / "index.html").read_text(encoding="utf-8") == site_index.render_index(doc)
+    # Shows not published: no link into them, and the page is still whole.
+    site_index.write_site(big, site / "index.html", pinned_path=pinned)
+    bare = (site / "index.html").read_text(encoding="utf-8")
+    assert _home_hrefs_into_shows(bare) == []
+    assert bare == site_index.render_index(big)
+    assert "Queer Frame is a guide to TV shows" in bare
 
-    # Shows published beside it: a plain relative link that resolves.
-    show_pages.build_site(big, site)
+    # Shows published beside it: the hand-picked list first, then A to Z,
+    # and each hand-picked show that has a page, in the list's order.
+    show_pages.build_site(big, site, pinned=show_pages.load_pinned(pinned))
     assert (site / "shows" / "index.html").is_file()
-    assert site_index.main([str(snapshot), str(site / "index.html")]) == 0
+    assert site_index.main([str(snapshot), str(site / "index.html")]) == 0  # default list
+    site_index.write_site(big, site / "index.html", pinned_path=pinned)
     text = (site / "index.html").read_text(encoding="utf-8")
-    page = htmlprobe.parse(text)
-    assert page.hrefs().count("shows/") == 1
-    assert (
-        '<p><a href="shows/">Does she die? Queer TV shows</a>: '
-        "pages that keep the answer closed until you open it.</p>" in text
-    )
+    assert _home_hrefs_into_shows(text) == [
+        f"{DOMAIN}/shows/#hand-picked",
+        f"{DOMAIN}/shows/#a-to-z",
+        f"{DOMAIN}/shows/show-007/",
+        f"{DOMAIN}/shows/show-003/",
+    ]
+    assert "Start with the 2 hand-picked shows" in text
+    assert "Browse all 50 shows, A to Z" in text
+    for href in _home_hrefs_into_shows(text):
+        path = href.removeprefix(f"{DOMAIN}/").split("#")[0]
+        assert (site / path / "index.html").is_file(), href
     assert "<script" not in text
 
 
-def test_negative_control_a_dead_link_would_be_written_without_the_check(doc, tmp_path):
-    # With the shows directory gone (the show-pages step skipped), the same
-    # command must not write the link. If it did, the home page would point at 404.
-    snapshot = tmp_path / "snapshot.json"
-    snapshot.write_text(json.dumps(doc), encoding="utf-8")
+def test_the_home_page_head_is_complete_and_within_limits(doc):
+    page = htmlprobe.parse(site_index.render_index(doc))
+    assert page.lang == "en"
+    assert page.canonical == f"{DOMAIN}/"
+    assert 0 < len(page.title) <= show_pages.TITLE_MAX
+    assert 0 < len(page.description) <= show_pages.DESCRIPTION_MAX
+    og = {a.get("property"): a.get("content") for a in page.named("meta") if a.get("property")}
+    assert og["og:type"] == "website" and og["og:url"] == f"{DOMAIN}/"
+    assert og["og:site_name"] == "Queer Frame"
+    assert og["og:title"] and og["og:description"] == page.description
+    assert not any(k in og for k in ("og:image", "og:video", "og:audio"))
+    assert page.headings.count(1) == 1 and page.headings[0] == 1
+    assert all(b - a <= 1 for a, b in zip(page.headings, page.headings[1:], strict=False))
+    names = [t for t, _ in page.tags]
+    for landmark in ("header", "main", "footer"):
+        assert names.count(landmark) == 1, landmark
+    skip = next(a for a in page.named("a") if a.get("class") == "skip")
+    assert skip["href"] == "#main" and "main" in page.ids
+
+
+def test_the_home_page_loads_nothing_from_anywhere(doc):
+    page = htmlprobe.parse(site_index.render_index(doc))
+    assert page.named("script") == []
+    for forbidden in ("img", "iframe", "form", "input", "video", "audio", "object", "embed"):
+        assert page.named(forbidden) == [], forbidden
+    assert [a for a in page.named("link") if a.get("rel") != "canonical"] == []
+    assert [a for t, a in page.tags if "src" in a or "srcset" in a] == []
+    assert "url(" not in page.css and "@import" not in page.css
+    hosts = {urlsplit(h).hostname for h in page.hrefs() if h.startswith("http")}
+    assert hosts <= {"queerframe.app", "lezwatchtv.com", "www.tvmaze.com", "creativecommons.org"}
+
+
+def _answers_for(doc: dict, shows: list[dict]) -> list[str]:
+    found = []
+    for show in shows:
+        cast = show_pages._characters(doc, show)
+        found.append(show_pages._answer(show, cast).headline)
+        found += [c.status for c in cast if c.dies]
+        found += [c.name for c in cast]
+    return found
+
+
+def home_spoilers(text: str, doc: dict) -> list[str]:
+    """Anything on the home page, its title, description or Open Graph tags
+    that answers "does she die" for any show, or a closed answer element."""
+    page = htmlprobe.parse(text)
+    meta = [a.get("content") or "" for a in page.named("meta")]
+    visible = [*page.outside, *page.inside, page.title, page.description, *meta]
+    found = [
+        f"answer: {a}" for a in _answers_for(doc, doc["shows"]) if any(a in v for v in visible)
+    ]
+    found += [f"<details> x{len(page.named('details'))}"] if page.named("details") else []
+    found += [
+        f"word: {w}" for w in ("Dies", "died", "killed", "dead") if any(w in v for v in visible)
+    ]
+    return found
+
+
+def test_the_home_page_answers_nothing(doc, tmp_path):
     site = tmp_path / "site"
-    show_pages.build_site(_big_doc(doc), site)
-    for p in sorted((site / "shows").rglob("*"), reverse=True):
-        p.unlink() if p.is_file() else p.rmdir()
-    (site / "shows").rmdir()
-    assert not (site / "shows").exists()  # the sabotage landed
-    assert "shows/" in htmlprobe.parse(site_index.render_index(doc, shows_link=True)).hrefs()
-    site_index.main([str(snapshot), str(site / "index.html")])
-    assert "shows/" not in htmlprobe.parse((site / "index.html").read_text()).hrefs()
+    show_pages.build_site(doc, site)
+    pinned = tmp_path / "pinned.json"
+    pinned.write_text(
+        json.dumps(
+            {
+                "how_chosen": "test",
+                "shows": [
+                    {"lezwatch_id": s["lwtv_id"], "slug": s["slug"], "title": "t", "reason": "r"}
+                    for s in doc["shows"]
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+    site_index.write_site(doc, site / "index.html", pinned_path=pinned)
+    text = (site / "index.html").read_text(encoding="utf-8")
+    # Denominator: the fixture has a recorded death and the home page names its show.
+    assert any(c["death"]["died"] is True for c in doc["characters"])
+    assert all(f"{DOMAIN}/shows/{s}/" in text for s in ("harbor-lights", "salt-and-ember"))
+    assert home_spoilers(text, doc) == []
+
+
+def test_negative_control_a_leaked_answer_on_the_home_page_is_caught(doc):
+    text = site_index.render_index(doc)
+    show = next(s for s in doc["shows"] if any(c.dies for c in show_pages._characters(doc, s)))
+    headline = show_pages._answer(show, show_pages._characters(doc, show)).headline
+    for where in ("</main>", "</title>"):
+        leaked = text.replace(where, f"<p>{html.escape(headline)}</p>{where}", 1)
+        assert leaked != text, "the sabotage did not apply"
+        assert home_spoilers(leaked, doc), where
+    in_meta = text.replace(
+        'property="og:description" content="',
+        f'property="og:description" content="{html.escape(headline)} ',
+        1,
+    )
+    assert in_meta != text, "the sabotage did not apply"
+    assert home_spoilers(in_meta, doc)
+
+
+def test_the_data_page_keeps_the_old_index_content(doc, tmp_path):
+    site = tmp_path / "site"
+    site.mkdir()
+    site_index.write_site(doc, site / "index.html")
+    data = htmlprobe.parse((site / "data" / "index.html").read_text(encoding="utf-8"))
+    hrefs = data.hrefs()
+    for name in ("snapshot.v1.json", "snapshot.v1.json.sha256"):
+        assert f"{DOMAIN}/{name}" in hrefs, name
+    assert data.canonical == f"{DOMAIN}/data/"
+    text = " ".join(data.outside)
+    for fact in ("generated_at", "content_digest", "TVmaze joined", doc["content_digest"]):
+        assert fact in text, fact
+    assert [a.get("type") for a in data.named("script")] == ["application/ld+json"]
 
 
 # ---- the step cannot block the deploy -------------------------------------------

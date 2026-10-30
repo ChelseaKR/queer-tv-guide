@@ -31,7 +31,7 @@ import sys
 from pathlib import Path
 
 from qtv_pipeline.app_store import BADGE_BLOCK as APP_STORE_BLOCK
-from qtv_pipeline.app_store import INDEX_HEADING, PageShapeError
+from qtv_pipeline.app_store import INDEX_SLOT, PageShapeError
 
 PACKAGE = "com.chelseakr.queertvguide"
 PLAY_URL = f"https://play.google.com/store/apps/details?id={PACKAGE}"
@@ -69,7 +69,7 @@ def live_or_false(value: str | None) -> bool:
 
 def apply(site_dir: Path) -> Path:
     """Add the Play link to the index, after the App Store badge when there
-    is one and after the heading otherwise. The page is checked before it is
+    is one and after the iPhone app's "coming soon" line otherwise. The page is checked before it is
     written, so an index of the wrong shape is left as it was. Returns the
     file written."""
     index = site_dir / "index.html"
@@ -78,7 +78,7 @@ def apply(site_dir: Path) -> Path:
     text = index.read_text(encoding="utf-8")
     if PLAY_URL in text:
         raise PageShapeError("index.html: already carries the Google Play link")
-    anchor = APP_STORE_BLOCK if APP_STORE_BLOCK in text else INDEX_HEADING
+    anchor = APP_STORE_BLOCK if APP_STORE_BLOCK in text else INDEX_SLOT
     if text.count(anchor) != 1:
         raise PageShapeError(f"index.html: expected exactly one {anchor!r}")
     index.write_text(text.replace(anchor, f"{anchor}\n{PLAY_BLOCK}", 1), encoding="utf-8")

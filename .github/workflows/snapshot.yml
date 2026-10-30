@@ -196,11 +196,14 @@ jobs:
           # third-party requests.
           cp ../docs/site/privacy.html site/privacy.html
           cp ../docs/site/support.html site/support.html
-          # The index carries the file's CC BY-SA 4.0 license and every
-          # source credit with links (qtv_pipeline/site_index.py, tested).
+          # The home page (index.html) says what Queer Frame is and links
+          # into the show pages; data/index.html describes the file. Both
+          # carry its CC BY-SA 4.0 license and every source credit with
+          # links (qtv_pipeline/site_index.py, DECISIONS 0026, tested).
           uv run python -m qtv_pipeline.site_index out/snapshot.v1.json site/index.html
           # Off (the default): changes nothing. On: Safari's Smart App Banner
-          # on every page and Apple's App Store badge on the index
+          # on every page and Apple's App Store badge in place of the home
+          # page's "coming soon" line
           # (qtv_pipeline/app_store.py). Passed through env, not interpolated.
           uv run python -m qtv_pipeline.app_store site "$APP_STORE_LIVE"
           # Off (the default): changes nothing. On: a text link to the Google

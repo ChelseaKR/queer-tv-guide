@@ -1,7 +1,7 @@
 """The App Store launch switch for the Pages site (APP_STORE_LIVE).
 
-snapshot.yml assembles the site (index.html from site_index, privacy.html and
-support.html copied from docs/site/) and then runs this module over it:
+snapshot.yml assembles the site (the home page index.html and data/index.html
+from site_index, privacy.html and support.html copied from docs/site/) and then runs this module over it:
 
     python -m qtv_pipeline.app_store SITE_DIR "$APP_STORE_LIVE"
     python -m qtv_pipeline.app_store --check "$APP_STORE_LIVE"
@@ -9,8 +9,9 @@ support.html copied from docs/site/) and then runs this module over it:
 Off (APP_STORE_LIVE unset, empty or "false", which is how it stays until
 Apple approves the app) it changes nothing: not a byte of any page, and no
 file is added. On ("true") every page gets Safari's Smart App Banner tag,
-and the index gets Apple's "Download on the App Store" badge linking to the
-app's US listing, with its price. Any other value is refused (exit 1), so a
+and the home page's "coming soon" line (INDEX_SLOT) is replaced by Apple's
+"Download on the App Store" badge linking to the app's US listing, with its
+price. Any other value is refused (exit 1), so a
 typo can neither hide the badge after the owner believes it is on nor show
 it by accident. ``--check`` runs that refusal early in the workflow, before
 anything is published.
@@ -39,11 +40,16 @@ BADGE_SHA256 = "a26fc5b38380272c92e9019a2eb8b45542a66814b3e2b203772db8904b9fb99f
 BANNER = f'<meta name="apple-itunes-app" content="app-id={APP_STORE_ID}">'
 # Every page the site publishes has exactly this line; the banner goes after it.
 VIEWPORT = '<meta name="viewport" content="width=device-width, initial-scale=1">'
-# The index's heading (site_index.render_index); the badge goes after it.
-INDEX_HEADING = "<h1>Queer Frame snapshot</h1>"
+# The home page's one line about the app while the switch is off
+# (site_index.render_index puts it there, with no link). On, the badge takes
+# its place, so the page never says "coming soon" beside the badge.
+INDEX_SLOT = (
+    '<p class="app-soon">The Queer Frame iPhone app is coming soon. '
+    "It is not on the App Store yet.</p>"
+)
 PRICE_COPY = "Queer Frame for iPhone. $4.99 on the App Store."
 
-# The index has no stylesheet of its own, so the badge brings its rules. The
+# The badge brings its own rules rather than relying on the page's stylesheet. The
 # img's width and height attributes reserve its box before the SVG loads, so
 # nothing shifts. The link's padding is the badge's clear space, so the
 # focus outline and the text sit outside it.
@@ -103,7 +109,9 @@ def apply(site_dir: Path) -> list[Path]:
         head_addition = BANNER + ("\n" + BADGE_STYLE if page.name == "index.html" else "")
         text = _insert_after(text, VIEWPORT, head_addition, page.name)
         if page.name == "index.html":
-            text = _insert_after(text, INDEX_HEADING, BADGE_BLOCK, page.name)
+            if text.count(INDEX_SLOT) != 1:
+                raise PageShapeError(f"{page.name}: expected exactly one {INDEX_SLOT!r}")
+            text = text.replace(INDEX_SLOT, BADGE_BLOCK, 1)
         rendered[page] = text
     for page, text in rendered.items():
         page.write_text(text, encoding="utf-8")

@@ -13,6 +13,14 @@ consumer of the published snapshot, would notice.
 
 ### Added
 
+- A home page at https://queerframe.app/ (DECISIONS 0026), in place of the
+  "Queer Frame snapshot" page: what Queer Frame is, how the closed answer
+  works, the privacy and source lines, links to the hand-picked shows and
+  to every show A to Z, and a line saying the iPhone app is coming soon,
+  with no link until the App Store switch is on. It names no answer. The
+  data description moves to https://queerframe.app/data/, linked from every
+  page's footer; `snapshot.v1.json` and its `.sha256` keep their URLs. The
+  sitemap lists the home page.
 - Show pages for about 360 shows, up from 50 (DECISIONS 0025): the
   hand-picked 50, then every show with at least 5 listed characters and a
   TVmaze match, most listed first. The shows index lists the hand-picked

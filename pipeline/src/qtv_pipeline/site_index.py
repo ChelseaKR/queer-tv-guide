@@ -52,9 +52,12 @@ from qtv_pipeline.show_pages import (
 FEATURED_ON_HOME = 12
 HOME_TITLE = "Queer Frame: Do queer characters die? Spoiler-free TV guide"
 HOME_OG_TITLE = "Queer Frame: queer TV, spoiler-free"
+# Names the source, since the searches that find the home page so far are for
+# LezWatch.TV itself (DECISIONS 0027). Built from it, not endorsed by it: the
+# footer of every page says so.
 HOME_DESCRIPTION = (
-    "TV shows with queer women, non-binary and trans characters, and a spoiler-free "
-    'answer to "Do any queer characters die?" that stays hidden until you tap.'
+    "A spoiler-free guide to TV shows with queer women, non-binary and trans characters, "
+    "built from LezWatch.TV records. Does she die? Tap to see the answer."
 )
 DATA_TITLE = "Queer Frame data: the snapshot file and its license"
 DATA_DESCRIPTION = (

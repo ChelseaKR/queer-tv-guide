@@ -42,10 +42,14 @@ Shows with no listed character are never built, pinned or not: they have
 nothing to answer from. Episode counts are not in the snapshot, so "most
 episodes" is not a usable rule.
 
-Words for search (DECISIONS 0024). The title asks the question people type
-("Do any queer characters die in <show>?", then shorter forms, plus
-"Spoiler-free"); the description names the listed characters, regulars
-first, because people search "does <character> die in <show>"; the
+Words for search (DECISIONS 0024 and 0027). The title asks the question
+people type, with the count of listed characters when it fits ("Do any of
+the <n> queer characters in <show> die?", then the 0024 forms with
+"Spoiler-free"); the description gives that count and names up to three
+listed characters, regulars first, each with the identity the page shows
+("Lisa Simpson (bisexual)"), because people search "does <character> die
+in <show>" and "is <character> a lesbian", and says who dies is behind the
+spoiler warning; the
 characters heading says "LGBTQ characters in <show>"; and one fixed sentence
 on every page names the bury-your-gays trope. None of these depends on any
 death record, so none of them can answer the question. The one structured
@@ -132,6 +136,22 @@ SKIP_MAX_SHARE = 0.05
 # Character names in a description, at most; regulars first (``_roles_first``).
 DESCRIPTION_NAMES = 3
 ROLE_ORDER = {"regular": 0, "recurring": 1, "guest": 2}
+# The description's identity labels (``identity``, DECISIONS 0027).
+LESBIAN_SEXUALITIES = frozenset({"Homosexual", "Lesbian"})
+LESBIAN_GENDERS = frozenset({"Cisgender", "Cisgender Woman", "Trans Woman"})
+SEXUALITY_LABELS = frozenset(
+    {
+        "Bisexual",
+        "Pansexual",
+        "Queer",
+        "Asexual",
+        "Demisexual",
+        "Fluid",
+        "Questioning",
+        "Non-Monosexual",
+    }
+)
+NO_GENDER_LABEL = frozenset({"Unknown", "Not recorded"})
 # The hand-picked list (DECISIONS 0021). Resolved from the source tree, so it
 # is used by `python -m qtv_pipeline.show_pages` and `make site`; deleting the
 # file restores the character-count rule.
@@ -407,10 +427,16 @@ def fit(candidates: list[str], limit: int) -> str:
     return candidates[-1][: limit - 1].rstrip() + "…"
 
 
-def show_title(name: str) -> str:
-    """The question people search, longest form that fits. No answer in it."""
+def show_title(name: str, count: int = 0) -> str:
+    """The question people search, longest form that fits, with the number of
+    listed characters when there are several (DECISIONS 0027). No answer in
+    it: the count is of listed characters, never of deaths."""
+    candidates = []
+    if count >= 2:
+        candidates.append(f"Do any of the {count} queer characters in {name} die?")
     return fit(
         [
+            *candidates,
             f"Do any queer characters die in {name}? Spoiler-free",
             f"Do queer characters die in {name}? Spoiler-free",
             f"Does she die in {name}? Spoiler-free",
@@ -426,24 +452,65 @@ def _and_list(names: list[str]) -> str:
     return ", ".join(names[:-1]) + f", and {names[-1]}"
 
 
-def show_description(name: str, names: list[str] | None = None, count: int = 0) -> str:
-    """Names the listed characters (the ones a visitor may search for) and
-    says the answer is hidden. ``names`` is in page order, never by death."""
+def identity(gender: str, sexuality: str) -> str | None:
+    """A short label for a character in the description, from the two terms
+    the page already shows, so a search like "is <character> a lesbian" is
+    answered in the snippet (DECISIONS 0027). LezWatch.TV catalogs queer
+    women and non-binary characters, and its scope is trusted: "Homosexual"
+    or "Lesbian" with a gender term of "Cisgender", or one ending in "Woman"
+    ("Cisgender Woman", "Trans Woman"), is "lesbian". With any other gender
+    term ("Non-Binary", "Genderqueer", "Agender", "Trans Man") it is never
+    "lesbian"; the gender term is the label instead. Other named
+    sexualities ("Bisexual", "Queer", "Pansexual") are used as given,
+    lowercased. Otherwise the gender term is the label when it is not
+    cisgender or unknown ("trans woman", "non-binary", "trans man"). Never
+    "gay", and None when neither term gives a label. Nothing about deaths."""
+    if sexuality in LESBIAN_SEXUALITIES and (gender in LESBIAN_GENDERS or gender.endswith("Woman")):
+        return "lesbian"
+    if sexuality in SEXUALITY_LABELS:
+        return sexuality.lower()
+    if not gender.startswith("Cisgender") and gender not in NO_GENDER_LABEL:
+        return gender.lower()
+    return None
+
+
+def _labelled(name: str, label: str | None) -> str:
+    return f"{name} ({label})" if label else name
+
+
+def show_description(
+    name: str,
+    names: list[str] | None = None,
+    count: int = 0,
+    labels: list[str | None] | None = None,
+) -> str:
+    """Says how many characters LezWatch.TV lists, names up to three of them
+    (with ``labels``, each one's identity) and says who dies is behind the
+    spoiler warning. ``names`` is in page order, never by death, and
+    ``labels`` is parallel to it (DECISIONS 0024 and 0027)."""
     names = names or []
+    labels = labels if labels is not None else [None] * len(names)
+    tail = "Who dies, if anyone, is behind a spoiler warning."
     who = "one LGBTQ character" if count == 1 else f"{count} LGBTQ characters"
-    tail = "The answer stays hidden until you open it."
+    who_first = who[0].upper() + who[1:]
+    # Labelled names first (they answer "is <character> a lesbian"), then
+    # bare names, so a long show title still gets some names in.
+    shortlists = [
+        [_labelled(n, lab) for n, lab in zip(names[:k], labels[:k], strict=True)]
+        for k in range(min(DESCRIPTION_NAMES, len(names)), 0, -1)
+    ] + [names[:k] for k in range(min(DESCRIPTION_NAMES, len(names)), 0, -1)]
     candidates = []
-    for k in range(min(DESCRIPTION_NAMES, len(names)), 0, -1):
-        listed = _and_list(names[:k])
-        if count > k:
-            candidates.append(
-                f"Does she die in {name}? The {who} LezWatch.TV lists include {listed}. {tail}"
-            )
+    for named in shortlists:
+        listed = _and_list(named)
+        if count > len(named):
+            candidates.append(f"LezWatch.TV lists {who} in {name}, including {listed}. {tail}")
+            candidates.append(f"{who_first} in {name}, including {listed}. {tail}")
         else:
-            candidates.append(f"Does she die in {name}? LezWatch.TV lists {who}: {listed}. {tail}")
+            candidates.append(f"LezWatch.TV lists {who} in {name}: {listed}. {tail}")
+            candidates.append(f"{who_first} in {name}: {listed}. {tail}")
     if count:
-        candidates.append(f"Does she die in {name}? The {who} LezWatch.TV lists. {tail}")
-    candidates += [f"Does she die in {name}? {tail}"] * 2
+        candidates.append(f"LezWatch.TV lists {who} in {name}. {tail}")
+    candidates += [f"Do any queer characters die in {name}? {tail}"] * 2
     return fit(candidates, DESCRIPTION_MAX)
 
 
@@ -582,11 +649,25 @@ def _breadcrumb(items: list[tuple[str, str]]) -> dict[str, Any]:
     }
 
 
-def _roles_first(cast: list[CharacterView]) -> list[str]:
-    """Names with regulars first, then recurring, then guests; the page's own
-    order within each. Nothing about deaths goes into the order."""
+def _ranked(cast: list[CharacterView]) -> list[CharacterView]:
+    """Regulars first, then recurring, then guests; the page's own order
+    within each. Nothing about deaths goes into the order."""
     ranked = sorted(enumerate(cast), key=lambda ic: (ROLE_ORDER.get(ic[1].role.lower(), 3), ic[0]))
-    return [c.name for _, c in ranked]
+    return [c for _, c in ranked]
+
+
+def _roles_first(cast: list[CharacterView]) -> list[str]:
+    return [c.name for c in _ranked(cast)]
+
+
+def _description(name: str, cast: list[CharacterView]) -> str:
+    ranked = _ranked(cast)
+    return show_description(
+        name,
+        [c.name for c in ranked],
+        len(cast),
+        [identity(c.gender, c.sexuality) for c in ranked],
+    )
 
 
 def _series(show: dict[str, Any], canonical: str, cast: list[CharacterView]) -> dict[str, Any]:
@@ -686,8 +767,8 @@ def render_show(
     ]
     return _ENV.get_template("show.html.j2").render(
         **_common(doc, base_url, app_store_live),
-        title=show_title(show["title"]),
-        description=show_description(show["title"], _roles_first(cast), len(cast)),
+        title=show_title(show["title"], len(cast)),
+        description=_description(show["title"], cast),
         canonical=canonical,
         show=show,
         crumbs=crumbs,

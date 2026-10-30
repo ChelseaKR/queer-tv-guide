@@ -560,3 +560,48 @@ home page first.
 
 **Reversible.** Yes: restore the old `render_index` and the anchor after the
 heading; `/data/` would then answer 404.
+
+## 0027 — Show page titles and descriptions answer the searched question (2026-10-30)
+
+**Status: proposed (agent, 2026-10-30). It amends the title and description
+parts of 0024 and keeps the spoiler rule of 0019 to 0026.**
+
+**Evidence.** Search Console for `sc-domain:queerframe.app`, all days to
+2026-10-30: 46 impressions in a week, average position about 9, 0 clicks,
+20 pages with an impression. The queries Google showed: "who dies in the l
+word" (2), "is lisa simpson a lesbian", "the 100 lesbian", "adriana
+delgadillo grey's anatomy", and "lezwatch", "lezwatch.tv" and a misspelling
+on the home page. That is too few to measure a click rate, so this is a
+wording change toward the questions people asked, not a tested result.
+
+**Decision.** (1) Show title: "Do any of the <n> queer characters in <show>
+die?" when there are at least two listed characters and it fits in 60
+characters; otherwise the 0024 forms. The count is of listed characters,
+never of deaths. "Spoiler-free" leaves this form, since someone searching
+"who dies in <show>" wants the answer, and the description says where it
+is. (2) Description: "LezWatch.TV lists <n> LGBTQ characters in <show>,
+including <name> (<identity>) ...", then "Who dies, if anyone, is behind a
+spoiler warning." Names are still regulars first and never in an order a
+death could affect. The identity comes from the gender and sexuality terms
+the page's character list already shows (`show_pages.identity`), trusting
+LezWatch.TV's scope (queer women and non-binary characters; owner,
+2026-10-30): "Homosexual" or "Lesbian" with a gender term of "Cisgender" or
+one ending in "Woman" is "lesbian"; with a non-binary, genderqueer, agender
+or other gender term it is never "lesbian" and the gender term is used
+("non-binary"); other named sexualities as given ("bisexual", "queer",
+"pansexual"); otherwise a gender term that is not cisgender or unknown
+("trans woman", "non-binary", "trans man"); anything else, no label. Never
+"gay". Labelled names come
+before more names, then bare names if a long title leaves no room. (3) The
+home page description names LezWatch.TV as the source, since the searches
+that reached it were for LezWatch.TV; the footer still says LezWatch.TV
+does not endorse the site.
+
+**Not changed.** No answer, death count, death year or death trope in a
+title, description, heading or structured data; no FAQPage; the App Store
+switch is off and the pages keep saying, with no link, that the app is not
+on the App Store yet.
+
+**Reversible.** Yes: restore the 0024 `show_title` and `show_description`
+and the old home description.
+

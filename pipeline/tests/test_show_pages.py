@@ -663,11 +663,13 @@ def test_a_few_hundred_pages_from_the_real_snapshot(tmp_path):
 
 def test_title_and_description_ask_the_question_and_name_the_characters(doc, tmp_path):
     page = _build(doc, tmp_path)["shows/the-cartographers/index.html"]
-    assert page.title == "Do queer characters die in The Cartographers? Spoiler-free"
+    # The count is of listed characters, never of deaths (DECISIONS 0027).
+    assert page.title == "Do any of the 2 queer characters in The Cartographers die?"
     # Regulars first, then recurring: the order never depends on a death.
+    # Each name carries the identity the page's character list shows.
     assert page.description == (
-        "Does she die in The Cartographers? LezWatch.TV lists 2 LGBTQ characters: "
-        "Odile Brandt and Thea Marsh. The answer stays hidden until you open it."
+        "LezWatch.TV lists 2 LGBTQ characters in The Cartographers: Odile Brandt "
+        "(lesbian) and Thea Marsh (queer). Who dies, if anyone, is behind a spoiler warning."
     )
     assert "Do any queer characters die in The Cartographers?" in page.outside
     assert "LGBTQ characters in The Cartographers" in page.outside
@@ -692,16 +694,48 @@ def test_description_lists_regulars_first_whatever_the_deaths(doc, tmp_path):
 
 def test_description_falls_back_to_fewer_names():
     names = ["Alexandra Longname", "Bernadette Longname", "Cordelia Long"]
-    text = show_pages.show_description("A Fairly Long Show Title", names, 12)
+    labels = ["lesbian", "bisexual", None]
+    text = show_pages.show_description("A Fairly Long Show Title", names, 12, labels)
     assert len(text) <= 155
-    assert "lists include Alexandra Longname. The answer" in text
+    # A labelled name is kept before more bare names are added.
+    assert text == (
+        "12 LGBTQ characters in A Fairly Long Show Title, including Alexandra Longname "
+        "(lesbian). Who dies, if anyone, is behind a spoiler warning."
+    )
     assert show_pages.show_description("Solo", ["Ana"], 1) == (
-        "Does she die in Solo? LezWatch.TV lists one LGBTQ character: Ana. "
-        "The answer stays hidden until you open it."
+        "LezWatch.TV lists one LGBTQ character in Solo: Ana. "
+        "Who dies, if anyone, is behind a spoiler warning."
     )
     assert show_pages.show_description("Bare") == (
-        "Does she die in Bare? The answer stays hidden until you open it."
+        "Do any queer characters die in Bare? Who dies, if anyone, is behind a spoiler warning."
     )
+
+
+def test_title_counts_listed_characters_and_falls_back():
+    assert show_pages.show_title("Short", 12) == "Do any of the 12 queer characters in Short die?"
+    # One character, or a title too long for the count, keeps the 0024 forms.
+    assert show_pages.show_title("Short", 1) == show_pages.show_title("Short")
+    long_name = "Orange is the New Black"
+    assert show_pages.show_title(long_name, 23) == show_pages.show_title(long_name)
+
+
+@pytest.mark.parametrize(
+    ("gender", "sexuality", "label"),
+    [
+        ("Cisgender", "Homosexual", "lesbian"),
+        ("Trans Woman", "Homosexual", "lesbian"),
+        ("Non-Binary", "Homosexual", None),
+        ("Cisgender", "Bisexual", "bisexual"),
+        ("Cisgender Woman", "Lesbian", "lesbian"),
+        ("Trans Woman", "Heterosexual", "trans woman"),
+        ("Non-Binary", "Undefined", "non-binary"),
+        ("Cisgender", "Undefined", None),
+        ("Cisgender (Intersex)", "Not Straight", None),
+        ("Not recorded", "Not recorded", None),
+    ],
+)
+def test_identity_labels_come_only_from_the_shown_terms(gender, sexuality, label):
+    assert show_pages.identity(gender, sexuality) == label
 
 
 def test_tvseries_structured_data_has_facts_and_no_answer(doc, tmp_path):

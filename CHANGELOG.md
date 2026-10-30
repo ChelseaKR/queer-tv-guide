@@ -13,6 +13,14 @@ consumer of the published snapshot, would notice.
 
 ### Added
 
+- Show page titles and descriptions answer more of what people searched
+  (DECISIONS 0027). The title counts the listed characters ("Do any of the
+  61 queer characters in The L Word die?") when it fits in 60 characters;
+  the description gives the count, names up to three characters with the
+  identity the page already shows ("Lisa Simpson (bisexual)") and says who
+  dies, if anyone, is behind a spoiler warning. The home page description
+  names LezWatch.TV as the source. No death answer moves out of the closed
+  element, and nothing about the App Store switch changes.
 - A home page at https://queerframe.app/ (DECISIONS 0026), in place of the
   "Queer Frame snapshot" page: what Queer Frame is, how the closed answer
   works, the privacy and source lines, links to the hand-picked shows and

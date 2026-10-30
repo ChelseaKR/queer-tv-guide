@@ -75,12 +75,18 @@ def test_the_rule_counts_listed_characters_not_lezwatchs_tally(doc):
     assert show_pages.select_shows(doc)[0]["slug"] == "harbor-lights"
 
 
-def test_limit_and_default_fifty(doc):
+def test_limit_and_the_rule_constants(doc):
     assert [s["slug"] for s in show_pages.select_shows(doc, 2)] == [
         "harbor-lights",
         "the-cartographers",
     ]
-    assert show_pages.DEFAULT_LIMIT == 50
+    # DECISIONS 0025: at least 5 listed characters and a TVmaze match, at
+    # most 600 pages, never fewer than 50 while 50 shows list a character.
+    assert show_pages.MIN_LISTED == 5
+    assert show_pages.DEFAULT_LIMIT == 600
+    assert show_pages.PAGE_FLOOR == 50
+    assert show_pages.PINNED_MAX == 50
+    assert show_pages.DEFAULT_LIMIT < show_pages.SITEMAP_MAX_URLS
 
 
 def test_an_unsafe_or_repeated_slug_refuses_the_build(doc):
@@ -428,8 +434,12 @@ def test_colors_are_the_browsers_own_system_colors(doc, tmp_path):
 def test_landmarks_headings_and_skip_link(doc, tmp_path):
     for rel, page in _build(doc, tmp_path).items():
         names = [t for t, _ in page.tags]
-        for landmark in ("header", "nav", "main", "footer"):
+        for landmark in ("header", "main", "footer"):
             assert names.count(landmark) == 1, (rel, landmark)
+        # The breadcrumb everywhere; the shows index adds its letter list.
+        labels = [n.get("aria-label") for n in page.named("nav")]
+        want = ["Breadcrumb", "Jump to a letter"] if rel == "shows/index.html" else ["Breadcrumb"]
+        assert labels == want, rel
         assert page.headings.count(1) == 1 and page.headings[0] == 1
         # No skipped level: each heading is at most one deeper than the last.
         assert all(b - a <= 1 for a, b in zip(page.headings, page.headings[1:], strict=False))
@@ -598,14 +608,50 @@ def test_privacy_page_describes_the_website(tmp_path):
 
 
 @pytest.mark.skipif(not BUNDLED.is_file(), reason="needs `make -C ios bundle-snapshot`")
-def test_fifty_pages_from_the_real_snapshot(tmp_path):
+def test_a_few_hundred_pages_from_the_real_snapshot(tmp_path):
+    """DECISIONS 0025 on a published snapshot: the pinned list plus every
+    show with 5 or more listed characters and a TVmaze match. That was 361
+    pages on the 2026-09-18 file and 363 on 2026-10-29; the bundled file is
+    refreshed on demand, so the count is derived and held to a range."""
     real = json.loads(BUNDLED.read_text(encoding="utf-8"))
-    pages = _build(real, tmp_path)
-    assert len(pages) == 51
-    assert len({p.title for p in pages.values()}) == 51
-    assert all(len(p.title) <= 60 and len(p.description) <= 155 for p in pages.values())
-    for page in pages.values():
-        assert htmlprobe.no_for_unknown(page) == []
+    pins = show_pages.load_pinned(show_pages.DEFAULT_PINNED_PATH)
+    pages = _build(real, tmp_path, pinned=pins)
+    listed = show_pages._listed_characters(real)
+    by_id = {s["lwtv_id"]: s for s in real["shows"]}
+    want = {s["id"] for s in real["shows"] if show_pages.qualifies(s, listed)}
+    want |= {
+        by_id[p.lezwatch_id]["id"]
+        for p in pins or []
+        if p.lezwatch_id in by_id and listed.get(by_id[p.lezwatch_id]["id"])
+    }
+    assert 300 <= len(want) <= show_pages.DEFAULT_LIMIT  # a few hundred, not all 2,287
+    assert len(pages) == len(want) + 1
+    assert len({p.title for p in pages.values()}) == len(pages)
+    assert len(htmlprobe.sitemap(_raw(tmp_path, "sitemap.xml"))["loc"]) == len(pages)
+    items = htmlprobe.ld_node(pages["shows/index.html"], "ItemList")["itemListElement"]
+    assert len(items) == len(want)
+    index_links = [h for h in pages["shows/index.html"].hrefs() if h.endswith("/")]
+    for rel in pages:
+        if rel != "shows/index.html":
+            assert rel.removeprefix("shows/").removesuffix("index.html") in index_links, rel
+    by_slug = {s["slug"]: s for s in real["shows"]}
+    for rel, page in pages.items():
+        assert len(page.title) <= 60 and len(page.description) <= 155, rel
+        assert htmlprobe.no_for_unknown(page) == [], rel
+        assert "FAQPage" not in "".join(page.ld_json), rel
+        assert [s.get("type") for s in page.named("script")] == ["application/ld+json"], rel
+        assert page.named("img") == [] and not _banners(page), rel
+        text = " ".join(page.outside)
+        for a in real["attribution"]:
+            assert a["licence_url"] in page.hrefs() and a["url"] in page.hrefs(), rel
+            assert a["text"] in text, rel
+        if rel == "shows/index.html":
+            continue
+        assert htmlprobe.details_problems(page) == [], rel
+        show = by_slug[rel.split("/")[1]]
+        cast = show_pages._characters(real, show)
+        answers = [show_pages._answer(show, cast).headline, *[c.status for c in cast]]
+        assert htmlprobe.answer_leaks(page, answers) == [], rel
 
 
 # --- words for search (DECISIONS 0024) -----------------------------------

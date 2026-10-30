@@ -1,4 +1,4 @@
-"""A static web page for each of the most-listed shows: "does she die in <show>".
+"""A static web page per show with enough data to answer "does she die in <show>".
 
 Built from the same snapshot the app reads (DECISIONS 0019), on this command:
 
@@ -16,18 +16,27 @@ never block the snapshot from publishing: any problem at all prints a
 ``continue-on-error``, so the generator carries the rule.) Without the flag a
 problem exits 1, as before.
 
-Which shows (``select_shows``, DECISIONS 0021). A hand-picked list, when the
-file ``data/show_pages_pinned.json`` exists (``load_pinned`` validates it):
-up to 50 entries, built in the file's order. An entry whose LezWatch id is
-not in the snapshot, or whose show lists no character there, is skipped and
-named in the build log (``plan_selection``); the slots it frees are filled by
-the earlier rule, which is also the whole rule when the file is absent: a show
-is ranked by how many characters this snapshot lists for it (the length of
-its ``characters`` entries, not LezWatch's own tally), most first, and ties
-go to the lower LezWatch id so a rebuild picks the same shows. The first 50
-are built. Shows with no listed character are never built, pinned or not:
-they have nothing to answer from. Episode counts are not in the snapshot, so
-"most episodes" is not a usable rule.
+Which shows (``select_shows``, DECISIONS 0021 and 0025), in this order:
+
+1. The hand-picked list, when the file ``data/show_pages_pinned.json`` exists
+   (``load_pinned`` validates it): up to 50 entries, in the file's order. An
+   entry whose LezWatch id is not in the snapshot, or whose show lists no
+   character there, is skipped and named in the build log
+   (``plan_selection``).
+2. Every other show that meets the inclusion rule (``qualifies``): at least
+   ``MIN_LISTED`` (5) characters listed in this snapshot (the length of its
+   ``characters`` entries, not LezWatch's own tally) and a TVmaze match (a
+   TVmaze page URL). Most listed characters first; ties go to the lower
+   LezWatch id so a rebuild picks the same shows.
+3. Only if that makes fewer than ``PAGE_FLOOR`` (50) pages: the most-listed
+   remaining shows, same order, up to 50. On the real data this never runs;
+   it keeps a thin snapshot from shrinking the site below the 50 pages that
+   were first published.
+
+At most ``DEFAULT_LIMIT`` pages are built (``--limit``); a cut is logged.
+Shows with no listed character are never built, pinned or not: they have
+nothing to answer from. Episode counts are not in the snapshot, so "most
+episodes" is not a usable rule.
 
 Words for search (DECISIONS 0024). The title asks the question people type
 ("Do any queer characters die in <show>?", then shorter forms, plus
@@ -81,6 +90,7 @@ import datetime as dt
 import json
 import re
 import sys
+import unicodedata
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -99,7 +109,18 @@ from qtv_pipeline.app_store import (
 # 301 to it, so every canonical URL, internal link, breadcrumb item and
 # sitemap entry names this host and no github.io address.
 DEFAULT_BASE_URL = "https://queerframe.app"
-DEFAULT_LIMIT = 50
+# The most pages one build writes (DECISIONS 0025). The rule picks about 350
+# today; the cap keeps a surprise in LezWatch's data from multiplying the
+# site, and stays far below a sitemap file's 50,000-URL limit.
+DEFAULT_LIMIT = 600
+SITEMAP_MAX_URLS = 50_000
+# The hand-picked list's size (DECISIONS 0021).
+PINNED_MAX = 50
+# The inclusion rule (DECISIONS 0025): this many listed characters, and a
+# TVmaze match.
+MIN_LISTED = 5
+# Fewer pages than this and the most-listed shows fill the gap (see above).
+PAGE_FLOOR = 50
 RELATED_LIMIT = 4
 # Character names in a description, at most; regulars first (``_roles_first``).
 DESCRIPTION_NAMES = 3
@@ -186,7 +207,7 @@ def load_pinned(path: Path) -> list[Pin] | None:
     """The pinned list in file order, or None when the file does not exist.
 
     A file that exists but is wrong is an error, never a silent fall back to
-    the other rule: more than 50 entries (``DEFAULT_LIMIT``), a repeated id or slug, an id
+    the other rule: more than 50 entries (``PINNED_MAX``), a repeated id or slug, an id
     that is not an integer, or a missing slug, title or reason."""
     if not path.is_file():
         return None
@@ -197,8 +218,8 @@ def load_pinned(path: Path) -> list[Pin] | None:
         raise ShowPagesError(f"{path}: not a pinned list: {exc!r}") from exc
     if not isinstance(raw.get("how_chosen"), str) or not raw["how_chosen"].strip():
         raise ShowPagesError(f"{path}: how_chosen must say how the list was chosen")
-    if not isinstance(entries, list) or len(entries) > DEFAULT_LIMIT:
-        raise ShowPagesError(f"{path}: at most {DEFAULT_LIMIT} shows may be pinned")
+    if not isinstance(entries, list) or len(entries) > PINNED_MAX:
+        raise ShowPagesError(f"{path}: at most {PINNED_MAX} shows may be pinned")
     pins = [_pin_from_entry(path, n, entry) for n, entry in enumerate(entries, 1)]
     ids = [p.lezwatch_id for p in pins]
     slugs = [p.slug for p in pins]
@@ -221,14 +242,30 @@ def _listed_characters(doc: dict[str, Any]) -> dict[str, int]:
     return listed
 
 
+def qualifies(show: dict[str, Any], listed: dict[str, int]) -> bool:
+    """The inclusion rule (DECISIONS 0025): at least ``MIN_LISTED`` listed
+    characters, so the answer, the character list and the description have
+    substance, and a TVmaze match, so the run status, network and TVmaze
+    credit are real. Nothing about deaths goes into it."""
+    return listed.get(show["id"], 0) >= MIN_LISTED and bool(show["schedule"]["tvmaze_url"])
+
+
+RULE = (
+    f"every show with at least {MIN_LISTED} listed characters and a TVmaze match, "
+    "most listed first, then lower LezWatch id"
+)
+
+
 def plan_selection(
     doc: dict[str, Any], limit: int = DEFAULT_LIMIT, pinned: list[Pin] | None = None
 ) -> tuple[list[dict[str, Any]], list[str]]:
     """The shows to build, in order, and one log line per thing worth saying.
 
     Pinned shows first, in the list's order; a pin that is not in the snapshot
-    or lists no character is skipped and named. The rest of the ``limit`` is
-    filled by most listed characters, ties by lower LezWatch id."""
+    or lists no character is skipped and named. Then every show that
+    ``qualifies``; then, below ``PAGE_FLOOR`` pages, the most-listed others.
+    Most listed characters first in both, ties by lower LezWatch id. At most
+    ``limit`` in all."""
     listed = _listed_characters(doc)
     ranked = sorted(
         (s for s in doc["shows"] if listed.get(s["id"], 0) > 0),
@@ -237,7 +274,7 @@ def plan_selection(
     notes: list[str] = []
     chosen: list[dict[str, Any]] = []
     if pinned is None:
-        notes.append("show_pages: selection rule: most listed characters, then lower LezWatch id")
+        notes.append(f"show_pages: selection rule: {RULE}")
     else:
         by_id = {s["lwtv_id"]: s for s in doc["shows"]}
         for pin in pinned[:limit]:
@@ -257,11 +294,33 @@ def plan_selection(
         notes.insert(
             0,
             f"show_pages: selection rule: pinned list ({len(chosen)} of {len(pinned)} built), "
-            "then most listed characters, then lower LezWatch id",
+            f"then {RULE}",
         )
+    pinned_count = len(chosen)
     taken = {s["id"] for s in chosen}
-    chosen += [s for s in ranked if s["id"] not in taken][: max(limit - len(chosen), 0)]
-    chosen = chosen[:limit]
+    by_rule = [s for s in ranked if s["id"] not in taken and qualifies(s, listed)]
+    chosen += by_rule
+    taken.update(s["id"] for s in by_rule)
+    floor = min(PAGE_FLOOR, limit)
+    filled = [s for s in ranked if s["id"] not in taken][: max(floor - len(chosen), 0)]
+    if filled:
+        notes.append(
+            f"show_pages: only {len(chosen)} shows are pinned or meet the rule; "
+            f"{len(filled)} more with the most listed characters make up {floor} pages"
+        )
+    chosen += filled
+    if len(chosen) > limit:
+        notes.append(
+            f"show_pages: the limit of {limit} pages cut {len(chosen) - limit} "
+            "shows with the fewest listed characters"
+        )
+        chosen = chosen[:limit]
+    built = {s["id"] for s in chosen}
+    notes.append(
+        f"show_pages: {len(chosen)} pages: {min(pinned_count, len(chosen))} pinned, "
+        f"{sum(s['id'] in built for s in by_rule)} by the rule, "
+        f"{sum(s['id'] in built for s in filled)} to reach the floor"
+    )
     slugs = [s["slug"] for s in chosen]
     bad = [s for s in slugs if not SLUG.fullmatch(s)]
     if bad:
@@ -347,12 +406,28 @@ def _death_status(death: dict[str, Any], other_shows: int) -> tuple[bool, str]:
     return True, text
 
 
-def _characters(doc: dict[str, Any], show: dict[str, Any]) -> list[CharacterView]:
-    views = []
+def cast_index(doc: dict[str, Any]) -> dict[str, list[tuple[dict[str, Any], dict[str, Any]]]]:
+    """(character, its link to the show) per show id, characters in LezWatch
+    id order. Built once per site so hundreds of pages do not each re-sort
+    every character."""
+    index: dict[str, list[tuple[dict[str, Any], dict[str, Any]]]] = {}
     for c in sorted(doc["characters"], key=lambda c: c["lwtv_id"]):
-        link = next((x for x in c["shows"] if x["show_id"] == show["id"]), None)
-        if link is None:
-            continue
+        seen: set[str] = set()
+        for link in c["shows"]:
+            if link["show_id"] not in seen:  # the first link to a show, as before
+                seen.add(link["show_id"])
+                index.setdefault(link["show_id"], []).append((c, link))
+    return index
+
+
+def _characters(
+    doc: dict[str, Any],
+    show: dict[str, Any],
+    index: dict[str, list[tuple[dict[str, Any], dict[str, Any]]]] | None = None,
+) -> list[CharacterView]:
+    views = []
+    pairs = (index if index is not None else cast_index(doc)).get(show["id"], [])
+    for c, link in pairs:
         dies, status = _death_status(c["death"], len(c["shows"]) - 1)
         views.append(
             CharacterView(
@@ -538,8 +613,9 @@ def render_show(
     others: list[dict[str, Any]] | None = None,
     similar: list[dict[str, Any]] | None = None,
     total: int = 1,
+    index: dict[str, list[tuple[dict[str, Any], dict[str, Any]]]] | None = None,
 ) -> str:
-    cast = _characters(doc, show)
+    cast = _characters(doc, show, index)
     canonical = f"{base_url}/shows/{show['slug']}/"
     crumbs = [
         (SITE_NAME, f"{base_url}/"),
@@ -568,13 +644,56 @@ def render_show(
     )
 
 
+_ARTICLES = ("the ", "a ", "an ")
+
+
+def sort_title(title: str) -> str:
+    """The title as the A to Z index files it: case and accents folded, and
+    a leading English article dropped ("The L Word" files under L)."""
+    folded = "".join(
+        ch for ch in unicodedata.normalize("NFKD", title) if not unicodedata.combining(ch)
+    ).casefold()
+    for article in _ARTICLES:
+        if folded.startswith(article) and len(folded) > len(article):
+            return folded[len(article) :]
+    return folded
+
+
+def letter_groups(shows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """The shows in A to Z order, one group per first letter. A title that
+    starts with anything but A to Z (a digit, a symbol, a non-Latin script)
+    goes under "#", first."""
+    groups: dict[str, list[dict[str, Any]]] = {}
+    for s in sorted(shows, key=lambda s: (sort_title(s["title"]), s["lwtv_id"])):
+        first = sort_title(s["title"])[:1]
+        letter = first.upper() if "a" <= first <= "z" else "#"
+        groups.setdefault(letter, []).append(s)
+    return [
+        {
+            "label": letter,
+            "heading": "# (numbers, symbols and other scripts)" if letter == "#" else letter,
+            "anchor": "letter-" + ("other" if letter == "#" else letter.lower()),
+            "shows": groups[letter],
+        }
+        for letter in sorted(groups, key=lambda x: (x != "#", x))
+    ]
+
+
+def _index_entry(s: dict[str, Any]) -> dict[str, str]:
+    return {"slug": s["slug"], "title": s["title"], "years": _years(s["years"])}
+
+
 def render_index(
     doc: dict[str, Any],
     shows: list[dict[str, Any]],
     *,
     base_url: str,
     app_store_live: bool = False,
+    featured: list[dict[str, Any]] | None = None,
 ) -> str:
+    """The shows index: the hand-picked shows first (``featured``), then every
+    show A to Z under a letter heading, with a list of letters to jump to.
+    The structured data lists every show in the published order."""
     canonical = f"{base_url}/shows/"
     crumbs = [(SITE_NAME, f"{base_url}/"), ("Shows", canonical)]
     return _ENV.get_template("index.html.j2").render(
@@ -611,14 +730,20 @@ def render_index(
                 ],
             },
         ),
-        shows=[
-            {"slug": s["slug"], "title": s["title"], "years": _years(s["years"])} for s in shows
+        total=len(shows),
+        featured=[_index_entry(s) for s in featured or []],
+        groups=[
+            {**g, "shows": [_index_entry(s) for s in g["shows"]]} for g in letter_groups(shows)
         ],
     )
 
 
 def render_sitemap(doc: dict[str, Any], shows: list[dict[str, Any]], *, base_url: str) -> str:
     urls = [f"{base_url}/shows/", *(f"{base_url}/shows/{s['slug']}/" for s in shows)]
+    if len(urls) > SITEMAP_MAX_URLS:
+        raise ShowPagesError(
+            f"{len(urls)} URLs is more than one sitemap file may list ({SITEMAP_MAX_URLS})"
+        )
     return _ENV.get_template("sitemap.xml.j2").render(urls=urls, lastmod=doc["generated_at"][:10])
 
 
@@ -651,9 +776,17 @@ def render_site(
     shows = select_shows(doc, limit, pinned)
     if not shows:
         raise ShowPagesError("no show has a listed character; nothing to build")
+    pinned_ids = {p.lezwatch_id for p in pinned or []}
     files = {
-        "shows/index.html": render_index(doc, shows, base_url=base, app_store_live=app_store_live)
+        "shows/index.html": render_index(
+            doc,
+            shows,
+            base_url=base,
+            app_store_live=app_store_live,
+            featured=[s for s in shows if s["lwtv_id"] in pinned_ids],
+        )
     }
+    index = cast_index(doc)
     for i, show in enumerate(shows):
         files[f"shows/{show['slug']}/index.html"] = render_show(
             doc,
@@ -663,6 +796,7 @@ def render_site(
             others=neighbors(shows, i),
             similar=related(shows, i),
             total=len(shows),
+            index=index,
         )
     files["sitemap.xml"] = render_sitemap(doc, shows, base_url=base)
     files["robots.txt"] = render_robots(base_url=base)

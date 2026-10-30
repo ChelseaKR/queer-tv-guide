@@ -140,8 +140,9 @@ def test_long_titles_are_fitted_not_overrun():
     assert len(show_pages.show_title(name)) <= 60
     assert len(show_pages.show_description(name)) <= 155
     assert show_pages.show_title(name).endswith("…")
-    assert (
-        show_pages.show_title("Short") == "Does she die in Short? Spoiler-safe answer | Queer Frame"
+    assert show_pages.show_title("Short") == "Do any queer characters die in Short? Spoiler-free"
+    assert show_pages.show_title("Twenty Character Name") == (
+        "Does she die in Twenty Character Name? Spoiler-free"
     )
 
 
@@ -149,9 +150,8 @@ def test_breadcrumb_json_ld_matches_the_visible_trail(doc, tmp_path):
     pages = _build(doc, tmp_path)
     page = pages["shows/the-cartographers/index.html"]
     assert len(page.ld_json) == 1
-    ld = json.loads(page.ld_json[0])
-    assert ld["@type"] == "BreadcrumbList"
-    items = ld["itemListElement"]
+    assert json.loads(page.ld_json[0])["@context"] == "https://schema.org"
+    items = htmlprobe.ld_node(page, "BreadcrumbList")["itemListElement"]
     assert [i["position"] for i in items] == [1, 2, 3]
     assert [i["name"] for i in items] == ["Queer Frame", "Shows", "The Cartographers"]
     assert items[-1]["item"] == page.canonical
@@ -164,8 +164,9 @@ def test_a_title_cannot_break_out_of_the_page_or_the_json_ld(doc, tmp_path):
     pages = _build(doc, tmp_path)
     page = pages["shows/harbor-lights/index.html"]
     assert [a.get("type") for a in page.named("script")] == ["application/ld+json"]
-    ld = json.loads(page.ld_json[0])
-    assert ld["itemListElement"][-1]["name"] == _show(doc, "harbor-lights")["title"]
+    crumbs = htmlprobe.ld_node(page, "BreadcrumbList")["itemListElement"]
+    assert crumbs[-1]["name"] == _show(doc, "harbor-lights")["title"]
+    assert htmlprobe.ld_node(page, "TVSeries")["name"] == _show(doc, "harbor-lights")["title"]
 
 
 # --- the answer ----------------------------------------------------------
@@ -305,7 +306,7 @@ def test_negative_control_a_leaking_title_is_caught(doc, tmp_path):
     page = pages["shows/the-cartographers/index.html"]
     answers = _answers(doc, "the-cartographers")
     raw = _raw(tmp_path, "shows/the-cartographers/index.html")
-    bad_raw = raw.replace("<title>Does she die in", "<title>" + answers[0] + " Does she die in")
+    bad_raw = raw.replace("<title>Do ", "<title>" + answers[0] + " Do ")
     assert bad_raw != raw
     assert htmlprobe.answer_leaks(page, answers) == []
     assert htmlprobe.answer_leaks(htmlprobe.parse(bad_raw), answers) == [answers[0]]
@@ -354,7 +355,7 @@ def test_network_falls_back_to_tvmaze(doc, tmp_path):
 
 def test_characters_list_outside_the_answer_has_no_status(doc, tmp_path):
     page = _build(doc, tmp_path)["shows/the-cartographers/index.html"]
-    assert "Queer characters LezWatch.TV lists" in page.outside
+    assert "LGBTQ characters in The Cartographers" in page.outside
     assert any(t.startswith("Role: Regular. Gender:") or "Role: " in t for t in page.outside)
     assert not any("Unknown." in t or "Dies" in t for t in page.outside)
 
@@ -605,3 +606,147 @@ def test_fifty_pages_from_the_real_snapshot(tmp_path):
     assert all(len(p.title) <= 60 and len(p.description) <= 155 for p in pages.values())
     for page in pages.values():
         assert htmlprobe.no_for_unknown(page) == []
+
+
+# --- words for search (DECISIONS 0024) -----------------------------------
+
+
+def test_title_and_description_ask_the_question_and_name_the_characters(doc, tmp_path):
+    page = _build(doc, tmp_path)["shows/the-cartographers/index.html"]
+    assert page.title == "Do queer characters die in The Cartographers? Spoiler-free"
+    # Regulars first, then recurring: the order never depends on a death.
+    assert page.description == (
+        "Does she die in The Cartographers? LezWatch.TV lists 2 LGBTQ characters: "
+        "Odile Brandt and Thea Marsh. The answer stays hidden until you open it."
+    )
+    assert "Do any queer characters die in The Cartographers?" in page.outside
+    assert "LGBTQ characters in The Cartographers" in page.outside
+    assert any("bury-your-gays trope" in t for t in page.outside)
+
+
+def test_description_lists_regulars_first_whatever_the_deaths(doc, tmp_path):
+    # Swap who died: the description must not change, or it would be a hint.
+    first = _build(doc, tmp_path / "a")["shows/the-cartographers/index.html"].description
+    for c in doc["characters"]:
+        if c["name"] in ("Odile Brandt", "Thea Marsh"):
+            died = c["name"] == "Thea Marsh"
+            c["death"] = {
+                "death_known": died,
+                "died": died if died else None,
+                "years": [2017] if died else [],
+                "dates": [],
+            }
+    second = _build(doc, tmp_path / "b")["shows/the-cartographers/index.html"].description
+    assert first == second
+
+
+def test_description_falls_back_to_fewer_names():
+    names = ["Alexandra Longname", "Bernadette Longname", "Cordelia Long"]
+    text = show_pages.show_description("A Fairly Long Show Title", names, 12)
+    assert len(text) <= 155
+    assert "lists include Alexandra Longname. The answer" in text
+    assert show_pages.show_description("Solo", ["Ana"], 1) == (
+        "Does she die in Solo? LezWatch.TV lists one LGBTQ character: Ana. "
+        "The answer stays hidden until you open it."
+    )
+    assert show_pages.show_description("Bare") == (
+        "Does she die in Bare? The answer stays hidden until you open it."
+    )
+
+
+def test_tvseries_structured_data_has_facts_and_no_answer(doc, tmp_path):
+    pages = _build(doc, tmp_path)
+    page = pages["shows/the-cartographers/index.html"]
+    show = _show(doc, "the-cartographers")
+    series = htmlprobe.ld_node(page, "TVSeries")
+    assert series["url"] == page.canonical
+    assert series["sameAs"] == [show["source_url"], show["schedule"]["tvmaze_url"]]
+    assert series["startDate"] == "2016" and series["endDate"] == "2018"
+    assert series["numberOfSeasons"] == 2
+    assert [c["name"] for c in series["character"]] == ["Odile Brandt", "Thea Marsh"]
+    assert set(series["character"][0]) == {"@type", "name"}
+    ld = "".join(page.ld_json)
+    for word in ("Dies", "dies", "dead", "Dead", "death", "Death", "Unknown"):
+        assert word not in ld, word
+    # No FAQPage: its answer would be the spoiler.
+    for p in pages.values():
+        assert "FAQPage" not in "".join(p.ld_json)
+    # A show with nothing recorded gets no invented facts.
+    bare = htmlprobe.ld_node(pages["shows/salt-and-ember/index.html"], "TVSeries")
+    for key in ("startDate", "endDate", "numberOfSeasons", "countryOfOrigin"):
+        assert key not in bare, key
+
+
+def test_index_lists_every_show_in_structured_data(doc, tmp_path):
+    pages = _build(doc, tmp_path)
+    items = htmlprobe.ld_node(pages["shows/index.html"], "ItemList")["itemListElement"]
+    built = [s["slug"] for s in show_pages.select_shows(doc)]
+    assert [i["url"] for i in items] == [f"{BASE}/shows/{s}/" for s in built]
+    assert [i["position"] for i in items] == list(range(1, len(built) + 1))
+
+
+def _mini(slug: str, genres: list[str], similar: list[str] | None = None) -> dict:
+    return {
+        "id": slug,
+        "slug": slug,
+        "title": slug.upper(),
+        "genres": [{"slug": g, "name": g} for g in genres],
+        "similar_show_ids": similar or [],
+    }
+
+
+def test_related_prefers_lezwatch_similar_then_shared_genres():
+    shows = [
+        _mini("a", ["drama", "teen"], similar=["f", "b", "zz"]),
+        _mini("b", ["drama"]),
+        _mini("c", ["comedy"]),
+        _mini("d", ["drama", "teen"]),
+        _mini("e", ["drama"]),
+        _mini("f", ["western"]),
+        _mini("g", ["drama", "teen", "school"]),
+        _mini("h", ["drama"]),
+    ]
+    got = [s["slug"] for s in show_pages.related(shows, 0)]
+    # f is LezWatch-similar; b is similar but already a neighbor (as is h);
+    # zz has no page; then the most shared genres, ties in published order;
+    # c shares nothing and is never picked.
+    assert got == ["f", "d", "g", "e"]
+    assert len(show_pages.related(shows, 2)) == 0  # comedy shares with nobody
+
+
+def test_similar_links_render_as_titles_only(doc, tmp_path):
+    pages = _build(doc, tmp_path)
+    # Three built shows: both others are neighbors, so no similar block.
+    assert "Shows like Harbor Lights" not in pages["shows/harbor-lights/index.html"].outside
+    big = copy.deepcopy(doc)
+    for n in range(4):
+        extra = copy.deepcopy(_show(big, "harbor-lights"))
+        extra.update(id=f"lwtv:show:9{n}", lwtv_id=900 + n, slug=f"extra-{n}", title=f"Extra {n}")
+        big["shows"].append(extra)
+        for c in list(big["characters"]):
+            if c["shows"][0]["show_id"] == "lwtv:show:101":
+                twin = copy.deepcopy(c)
+                twin["shows"][0]["show_id"] = extra["id"]
+                twin["lwtv_id"] += 1000 * (n + 1)
+                big["characters"].append(twin)
+    page = _build(big, tmp_path / "big")["shows/the-cartographers/index.html"]
+    assert "Shows like The Cartographers" not in page.outside  # shares no genre
+    page = _build(big, tmp_path / "big2")["shows/extra-1/index.html"]
+    assert "Shows like Extra 1" in page.outside
+    raw = _raw(tmp_path / "big2", "shows/extra-1/index.html")
+    block = raw[
+        raw.find('<ul class="similar">') : raw.find("</ul>", raw.find('<ul class="similar">'))
+    ]
+    titles = {s["title"] for s in big["shows"]}
+    lines = block.splitlines()[1:]
+    assert lines
+    for line in lines:
+        assert html.unescape(line.split(">", 2)[2].rsplit("</a>", 1)[0]) in titles
+
+
+def test_app_note_without_a_link_while_the_switch_is_off(doc, tmp_path):
+    off = _build(doc, tmp_path / "off")["shows/harbor-lights/index.html"]
+    note = "Queer Frame is also an iPhone app built from the same records. It is not on the App Store yet."
+    assert note in off.outside
+    on = _build(doc, tmp_path / "on", app_store_live=True)["shows/harbor-lights/index.html"]
+    assert note not in on.outside

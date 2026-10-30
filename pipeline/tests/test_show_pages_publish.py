@@ -80,8 +80,13 @@ def host_problems(files: dict[str, str]) -> list[str]:
             page = htmlprobe.parse(text)
             urls = [page.canonical]
             urls += [h for h in page.hrefs() if urlsplit(h).hostname in (None, "queerframe.app")]
-            for ld in page.ld_json:
-                urls += [i["item"] for i in json.loads(ld)["itemListElement"]]
+            for node in htmlprobe.ld_nodes(page):
+                if node["@type"] == "BreadcrumbList":
+                    urls += [i["item"] for i in node["itemListElement"]]
+                elif node["@type"] == "ItemList":
+                    urls += [i["url"] for i in node["itemListElement"]]
+                else:
+                    urls.append(node["url"])
             found += [
                 f"{name}: {u}"
                 for u in urls
@@ -123,7 +128,7 @@ def test_every_url_defaults_to_the_domain(doc, tmp_path):
     assert host_problems(files) == []
     page = htmlprobe.parse(files["shows/show-007/index.html"])
     assert page.canonical == f"{DOMAIN}/shows/show-007/"
-    crumbs = json.loads(page.ld_json[0])["itemListElement"]
+    crumbs = htmlprobe.ld_node(page, "BreadcrumbList")["itemListElement"]
     assert [c["item"] for c in crumbs] == [f"{DOMAIN}/", f"{DOMAIN}/shows/", page.canonical]
     assert f"{DOMAIN}/" in page.hrefs()
     assert f"{DOMAIN}/privacy.html" in page.hrefs()

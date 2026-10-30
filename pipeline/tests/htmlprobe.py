@@ -121,6 +121,24 @@ def parse(html: str) -> Page:
     return probe.page
 
 
+def ld_nodes(page: Page) -> list[dict]:
+    """Every schema.org node in the page's JSON-LD, flattening an @graph."""
+    import json
+
+    nodes: list[dict] = []
+    for block in page.ld_json:
+        data = json.loads(block)
+        nodes += data.get("@graph", [data])
+    return nodes
+
+
+def ld_node(page: Page, kind: str) -> dict:
+    """The one JSON-LD node of a type; fails if there is not exactly one."""
+    found = [n for n in ld_nodes(page) if n.get("@type") == kind]
+    assert len(found) == 1, (kind, [n.get("@type") for n in ld_nodes(page)])
+    return found[0]
+
+
 # --- checkers -------------------------------------------------------------
 
 

@@ -1,7 +1,7 @@
 {% extends "base.html.j2" %}
 {% block content %}
-<h1>Does she die in {{ show.title }}?</h1>
-<p>{{ site_name }} answers this from the records of LezWatch.TV, a volunteer-run database of queer characters on TV. Nothing is revealed until you open the answer below.</p>
+<h1>Do any queer characters die in {{ show.title }}?</h1>
+<p>Does she die in {{ show.title }}? If you want to know whether a show falls into the bury-your-gays trope before you start it, {{ site_name }} answers from the records of LezWatch.TV, a volunteer-run database of queer women, non-binary and trans characters on TV. Nothing is revealed until you open the answer below.</p>
 <p class="spoiler-warning"><strong>Spoiler warning:</strong> the answer below says which listed characters LezWatch.TV records as dying, if any.</p>
 <details class="answer">
 <summary>Show the answer (spoilers)</summary>
@@ -20,6 +20,8 @@
 </details>
 {% if app_store_url %}
 <p class="cta">Get the app: <a href="{{ app_store_url }}">{{ app_store_copy }}</a></p>
+{% else %}
+<p class="small">{{ site_name }} is also an iPhone app built from the same records. It is not on the App Store yet.</p>
 {% endif %}
 <h2>About {{ show.title }}</h2>
 <dl class="facts">
@@ -29,13 +31,23 @@
 {%- endfor %}
 </dl>
 <p class="small">Run status, and the network when LezWatch.TV lists none, come from TVmaze, licensed <a href="{{ licence.snapshot.url }}">CC BY-SA 4.0</a>: {% if tvmaze_url %}<a href="{{ tvmaze_url }}">this show on TVmaze</a>{% else %}<a href="https://www.tvmaze.com/">TVmaze</a>{% endif %}.</p>
-<h2>Queer characters LezWatch.TV lists</h2>
+<h2>LGBTQ characters in {{ show.title }}</h2>
+<p>LezWatch.TV lists {{ cast|length }} queer {{ 'character' if cast|length == 1 else 'characters' }} in {{ show.title }}. Each name links to the character's LezWatch.TV page.</p>
 <ul class="cast">
 {%- for c in cast %}
 <li><a href="{{ c.source_url }}">{{ c.name }}</a>. Role: {{ c.role }}. Gender: {{ c.gender }}. Sexuality: {{ c.sexuality }}.</li>
 {%- endfor %}
 </ul>
 <p><a href="{{ show.source_url }}">View {{ show.title }} on LezWatch.TV</a></p>
+{%- if similar %}
+<h2>Shows like {{ show.title }}</h2>
+<ul class="similar">
+{%- for o in similar %}
+<li><a href="{{ o.url }}">{{ o.title }}</a></li>
+{%- endfor %}
+</ul>
+<p class="small">Picked from LezWatch.TV's similar shows, then the shows here that share the most genres.</p>
+{%- endif %}
 <h2>More shows</h2>
 <ul class="more">
 {%- for o in others %}

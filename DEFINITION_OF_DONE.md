@@ -38,3 +38,27 @@ owner). Source: QUALITY-AND-METRICS-STANDARD, "Definition of Done".
 - The CHANGELOG section for the version is written and dated.
 - Rollback is known: the previous build stays available in App Store Connect,
   and the previous snapshot can be republished.
+- The significant-change check below is done.
+
+### Significant change (app-store age-assurance laws)
+
+Texas SB 2420, Utah 13-76, Louisiana R.S. 51:1771 and Alabama HB 161
+require the developer to notify the app stores, and let parents of minors
+approve, before a "significant change". A release is a significant change
+if its Terms or privacy policy change does any of: adds a category of
+personal data collected, stored or shared; adds in-app purchases or ads
+(Utah and Alabama: where none existed); changes the age rating or the
+content descriptors behind it. In Texas and Louisiana a material change to
+functionality or user experience also counts.
+`SignificantChange.states(for:)` in `ios/AgeAssurance` encodes this. When a
+release is one:
+
+- notify the stores before release: App Store Connect (age rating and
+  release notes) and, once the Android app is on Google Play, the Play
+  Console Age Signals page;
+- present the platform flow on the release's first launch with
+  `SignificantUpdatePresenter.present(updateDescription:requirements:from:)`
+  (PermissionKit's parent request, or Apple's adult acknowledgment, as
+  `requiredRegulatoryFeatures` says);
+- keep the age rating honest and stable: the rating is set once in App Store
+  Connect, and a later change is itself a significant change.

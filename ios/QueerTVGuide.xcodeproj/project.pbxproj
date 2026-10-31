@@ -26,6 +26,7 @@
 		68425D95518F53E70F4F5419 /* GuideCore in Frameworks */ = {isa = PBXBuildFile; productRef = 13543BD064FB8FE28EAA03E0 /* GuideCore */; };
 		690BC4BE40AD7CA55FD6E50B /* FavoriteButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 123F3186D6AD1A3A91F25A89 /* FavoriteButton.swift */; };
 		69503986E8D186306BA9FEC4 /* UpNextPublisher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8470466FB9EBD014FBF632A7 /* UpNextPublisher.swift */; };
+		7AF4A4F79BA9A91959BADAF0 /* AgeAssurance in Frameworks */ = {isa = PBXBuildFile; productRef = B6FAE0D352DC394E4BAA660E /* AgeAssurance */; };
 		7DFA6218C2D7D56694BCB630 /* UITestSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = C18432D587CE03BBE8A49E63 /* UITestSupport.swift */; };
 		884A38B08784AE25577C9DEA /* UpNextPublisherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88113C51CA0C0F6B09A5E54B /* UpNextPublisherTests.swift */; };
 		8AAB1C2FDBFAB8562373B763 /* AboutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 657AE9A3B9D336B3F6289154 /* AboutView.swift */; };
@@ -35,6 +36,7 @@
 		96EE0A6594196C3F464850B8 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B384108A7E71C3A6C208AE15 /* OnboardingView.swift */; };
 		A3D1463E24AE8A6F0737D48C /* AccessibilityAuditTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7D13B01EA5DD72032DF50DE /* AccessibilityAuditTests.swift */; };
 		A8E093E39E4BB59B74F7D3E1 /* AppStoreScreenshotTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE5E38E6D1C9D03CA948241D /* AppStoreScreenshotTests.swift */; };
+		A9B43D56D62D1B3F43E4CF35 /* AgeAssuranceSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7531680C8782D039A57F93A5 /* AgeAssuranceSettings.swift */; };
 		AAD2204F4BD58CC5046A2883 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = D6D678C521FBF48D7FBB5670 /* PrivacyInfo.xcprivacy */; };
 		AF59AC735F59A437AC3220C9 /* UpNextWidgetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E835F42B98A96001D0E7850 /* UpNextWidgetView.swift */; };
 		AF8F6EC792B3F9C2ECA31E2C /* ShareUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0DBCB15CAC6245B11B821882 /* ShareUITests.swift */; };
@@ -114,12 +116,14 @@
 		6CDD86F9E0EDF0464F4B6A5C /* SourceCredits.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SourceCredits.swift; sourceTree = "<group>"; };
 		6D90E104D1F01789CA1519A7 /* QueerTVGuideApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QueerTVGuideApp.swift; sourceTree = "<group>"; };
 		750D33208053211A76D4C98D /* DataStatusFooter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataStatusFooter.swift; sourceTree = "<group>"; };
+		7531680C8782D039A57F93A5 /* AgeAssuranceSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgeAssuranceSettings.swift; sourceTree = "<group>"; };
 		7C7F3D8E238A2C369F0CC6B2 /* QueerTVGuideUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = QueerTVGuideUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		7E22869739CB3B5101511B36 /* SearchFiltersView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchFiltersView.swift; sourceTree = "<group>"; };
 		7E835F42B98A96001D0E7850 /* UpNextWidgetView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpNextWidgetView.swift; sourceTree = "<group>"; };
 		8470466FB9EBD014FBF632A7 /* UpNextPublisher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpNextPublisher.swift; sourceTree = "<group>"; };
 		85195CB20EE3BB6D75837574 /* UpNextWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpNextWidget.swift; sourceTree = "<group>"; };
 		88113C51CA0C0F6B09A5E54B /* UpNextPublisherTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpNextPublisherTests.swift; sourceTree = "<group>"; };
+		8AFAAD3E6220C5AC90F2D766 /* AgeAssurance */ = {isa = PBXFileReference; lastKnownFileType = folder; name = AgeAssurance; path = AgeAssurance; sourceTree = SOURCE_ROOT; };
 		8DC448BA66E038712B00882B /* GuideCore */ = {isa = PBXFileReference; lastKnownFileType = folder; name = GuideCore; path = GuideCore; sourceTree = SOURCE_ROOT; };
 		92255AA20E991B5EBF896664 /* RemindersSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemindersSection.swift; sourceTree = "<group>"; };
 		95D825B045FC7516E54DAF0C /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -165,6 +169,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				68425D95518F53E70F4F5419 /* GuideCore in Frameworks */,
+				7AF4A4F79BA9A91959BADAF0 /* AgeAssurance in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -174,6 +179,7 @@
 		205FB0D5A4434F7DC4A3A1B5 /* App */ = {
 			isa = PBXGroup;
 			children = (
+				7531680C8782D039A57F93A5 /* AgeAssuranceSettings.swift */,
 				45C035570157184FA03B5D6C /* AppIdentity.swift */,
 				ED002440091CA64B039DD844 /* AppModel.swift */,
 				C590EBCBB2603A2A43F8B4DD /* FeatureFlags.swift */,
@@ -323,6 +329,7 @@
 		F613D402A763BEB8A54BD19F /* Packages */ = {
 			isa = PBXGroup;
 			children = (
+				8AFAAD3E6220C5AC90F2D766 /* AgeAssurance */,
 				8DC448BA66E038712B00882B /* GuideCore */,
 			);
 			name = Packages;
@@ -387,6 +394,7 @@
 			name = QueerTVGuide;
 			packageProductDependencies = (
 				13543BD064FB8FE28EAA03E0 /* GuideCore */,
+				B6FAE0D352DC394E4BAA660E /* AgeAssurance */,
 			);
 			productName = QueerTVGuide;
 			productReference = F7A17255CA033EE31D78CE19 /* QueerTVGuide.app */;
@@ -448,6 +456,7 @@
 			mainGroup = 62516259B362229DA78C48CC;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
+				EF96EAB71D1EB676D4236751 /* XCLocalSwiftPackageReference "AgeAssurance" */,
 				9B39E51415183023C901554B /* XCLocalSwiftPackageReference "GuideCore" */,
 			);
 			preferredProjectObjectVersion = 77;
@@ -519,6 +528,7 @@
 			files = (
 				8AAB1C2FDBFAB8562373B763 /* AboutView.swift in Sources */,
 				35299370D6D51D2B89FE3532 /* AccessibleStyle.swift in Sources */,
+				A9B43D56D62D1B3F43E4CF35 /* AgeAssuranceSettings.swift in Sources */,
 				30C7D17533AA5FC8407B1F24 /* AppIdentity.swift in Sources */,
 				CF25EB2A090C6F989F6152F5 /* AppModel.swift in Sources */,
 				2913F2CF2572B412572BC0A0 /* CharacterDetailView.swift in Sources */,
@@ -567,7 +577,7 @@
 		};
 		787377F4AD314594AA4627E9 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			productRef = "TEMP_77AD2F42-D961-4E5D-AF47-8EF9741ED698" /* GuideCore */;
+			productRef = "TEMP_BAF1C63D-8790-4EE3-AA98-F73130D93DB5" /* GuideCore */;
 		};
 		FDEF029D89D55214348A5D55 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -877,6 +887,10 @@
 			isa = XCLocalSwiftPackageReference;
 			relativePath = GuideCore;
 		};
+		EF96EAB71D1EB676D4236751 /* XCLocalSwiftPackageReference "AgeAssurance" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = AgeAssurance;
+		};
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -888,7 +902,11 @@
 			isa = XCSwiftPackageProductDependency;
 			productName = GuideCore;
 		};
-		"TEMP_77AD2F42-D961-4E5D-AF47-8EF9741ED698" /* GuideCore */ = {
+		B6FAE0D352DC394E4BAA660E /* AgeAssurance */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = AgeAssurance;
+		};
+		"TEMP_BAF1C63D-8790-4EE3-AA98-F73130D93DB5" /* GuideCore */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = GuideCore;
 		};

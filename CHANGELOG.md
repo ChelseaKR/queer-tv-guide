@@ -13,6 +13,16 @@ consumer of the published snapshot, would notice.
 
 ### Added
 
+- **App-store age assurance (iPhone).** On iOS 26.2 and later the app asks
+  Apple's Declared Age Range for the person's age range when it opens, only
+  where Apple says a state law requires it (Texas now; California, Alabama,
+  Utah and Louisiana in 2027). The answer stays in memory, is never stored or
+  sent, and changes nothing in the app; a missing or declined answer is
+  never treated as an adult. The vendored `ios/AgeAssurance` package carries
+  the logic, its tests and a negative control; the privacy policy and the
+  About screen say so, and the Definition of Done gains the
+  significant-change rule.
+
 - Show page titles and descriptions answer more of what people searched
   (DECISIONS 0027). The title counts the listed characters ("Do any of the
   61 queer characters in The L Word die?") when it fits in 60 characters;

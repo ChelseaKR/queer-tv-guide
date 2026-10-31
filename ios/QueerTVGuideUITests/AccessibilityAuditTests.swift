@@ -236,6 +236,7 @@ final class AccessibilityAuditTests: XCTestCase {
     static let aboutRowsThatScale: [(type: XCUIElement.ElementType, label: String)] = [
         (.staticText, "That file is served by GitHub Pages, which, like any web server, sees your IP address and logs it for security. The developer never sees that log."),
         (.staticText, "Favorites are stored only on this device and are never sent anywhere."),
+        (.staticText, "Where a state law requires it, the app asks Apple for your age range when it opens. The answer stays in memory on this device, is never saved or sent anywhere, and changes nothing in the app."),
         (.button, "Privacy policy"),
         (.button, "Support"),
     ]
@@ -568,7 +569,7 @@ final class AccessibilityAuditTests: XCTestCase {
             app.terminate()
             return found
         }
-        XCTAssertEqual(Self.aboutRowsThatScale.count, 4, "the denominator")
+        XCTAssertEqual(Self.aboutRowsThatScale.count, 5, "the denominator")
         for row in Self.aboutRowsThatScale {
             guard let small = heights[0][row.label], let large = heights[1][row.label] else {
                 XCTFail("\"\(row.label)\" not found at both text sizes: \(heights)")

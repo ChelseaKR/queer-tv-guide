@@ -9,6 +9,10 @@ options:
 packages:
   GuideCore:
     path: GuideCore
+  # App-store age assurance, vendored from ca-fish-planting-alerts
+  # (AgeAssurance/Package.swift says how it is kept in step).
+  AgeAssurance:
+    path: AgeAssurance
 
 targets:
   QueerTVGuide:
@@ -32,9 +36,14 @@ targets:
       properties:
         com.apple.security.application-groups:
           - group.com.chelseakr.queertvguide
+        # Declared Age Range: ask Apple for the age range where a state
+        # law requires it (App/AgeAssuranceSettings.swift).
+        com.apple.developer.declared-age-range: true
     dependencies:
       - package: GuideCore
         product: GuideCore
+      - package: AgeAssurance
+        product: AgeAssurance
       - target: QueerTVGuideWidgets
     settings:
       base:

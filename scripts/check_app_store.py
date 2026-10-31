@@ -93,7 +93,7 @@ APP_GROUP = "group.com.chelseakr.queertvguide"
 BUNDLES: Mapping[str, tuple[Path, tuple[Path, ...]]] = {
     "app": (
         IOS / "QueerTVGuide" / "PrivacyInfo.xcprivacy",
-        (IOS / "QueerTVGuide", IOS / "GuideCore" / "Sources"),
+        (IOS / "QueerTVGuide", IOS / "GuideCore" / "Sources", IOS / "AgeAssurance" / "Sources"),
     ),
     "widget": (
         IOS / "QueerTVGuideWidgets" / "PrivacyInfo.xcprivacy",
@@ -109,10 +109,18 @@ ENROLLMENT_ID = "ACKGM9XK9V"
 # StoreKit is absent here on purpose: the app is paid up front (DECISIONS
 # 0003). It is allowed in STOREKIT_FILE alone, for the rating prompt
 # (DECISIONS 0017, accepted), and PURCHASE_API is refused everywhere.
+# AgeAssurance is the vendored local package for the app-store age signal
+# (ios/AgeAssurance); DeclaredAgeRange, PermissionKit and Combine are the
+# Apple frameworks it uses to ask Apple for the age range a state law
+# requires. The answer stays in memory and nothing is collected.
 ALLOWED_IMPORTS = frozenset(
     {
+        "AgeAssurance",
+        "Combine",
+        "DeclaredAgeRange",
         "Foundation",
         "GuideCore",
+        "PermissionKit",
         "Observation",
         "OSLog",
         "SwiftUI",
@@ -131,7 +139,10 @@ PURCHASE_API = re.compile(
     r"|\bProduct\.(?:products|PurchaseResult)\b|\bTransaction\.\w+|\bAppStore\.sync\b"
     r"|\.purchase\("
 )
-ALLOWED_ENTITLEMENTS = frozenset({"com.apple.security.application-groups"})
+# Declared Age Range: the app-store age-assurance laws (ios/AgeAssurance).
+ALLOWED_ENTITLEMENTS = frozenset(
+    {"com.apple.security.application-groups", "com.apple.developer.declared-age-range"}
+)
 
 # Apple's required-reason API categories and the Swift spellings that reach
 # them (developer.apple.com, "Describing use of required reason API").

@@ -107,6 +107,15 @@ consumer of the published snapshot, would notice.
   is the app's first use of StoreKit, for that prompt alone; there is
   still no in-app purchase (DECISIONS 0017, accepted).
 
+### Changed
+
+- Only the 50 hand-picked show pages are open to search for now
+  (DECISIONS 0028). The other show pages are still built and linked from
+  the shows index, but carry `noindex,follow` and are left out of the
+  sitemap, which goes from 365 URLs to 52 on the 2026-11-03 snapshot. A
+  build is refused if the sitemap and the robots tags disagree. One list or
+  rule in `show_pages.py` widens the set, and the decision says when.
+
 ### Fixed
 
 - Show pages for titles with a non-Latin slug answer at their published URL

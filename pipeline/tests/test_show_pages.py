@@ -11,6 +11,7 @@ from __future__ import annotations
 import copy
 import html
 import json
+import urllib.parse
 from pathlib import Path
 from urllib.parse import urlsplit
 
@@ -623,22 +624,34 @@ def test_a_few_hundred_pages_from_the_real_snapshot(tmp_path):
     listed = show_pages._listed_characters(real)
     by_id = {s["lwtv_id"]: s for s in real["shows"]}
     want = {s["id"] for s in real["shows"] if show_pages.qualifies(s, listed)}
-    want |= {
+    pinned_built = {
         by_id[p.lezwatch_id]["id"]
         for p in pins or []
         if p.lezwatch_id in by_id and listed.get(by_id[p.lezwatch_id]["id"])
     }
+    want |= pinned_built
     assert 300 <= len(want) <= show_pages.DEFAULT_LIMIT  # a few hundred, not all 2,287
     assert len(pages) == len(want) + 1
     assert len({p.title for p in pages.values()}) == len(pages)
-    assert len(htmlprobe.sitemap(_raw(tmp_path, "sitemap.xml"))["loc"]) == len(pages) + 1
+    # The home page, the index and the hand-picked pages only (DECISIONS 0028).
+    locs = htmlprobe.sitemap(_raw(tmp_path, "sitemap.xml"))["loc"]
+    assert len(locs) == len(pinned_built) + 2 < len(pages)
+    held = [p for rel, p in pages.items() if rel != "shows/index.html" and p.canonical not in locs]
+    assert len(held) == len(pages) - 1 - len(pinned_built)
+    for page in held:
+        assert [m.get("content") for m in page.named("meta") if m.get("name") == "robots"] == [
+            "noindex,follow"
+        ], page.canonical
     items = htmlprobe.ld_node(pages["shows/index.html"], "ItemList")["itemListElement"]
     assert len(items) == len(want)
-    index_links = [h for h in pages["shows/index.html"].hrefs() if h.endswith("/")]
+    # The index links the encoded slug; the page is written decoded (slug_dir).
+    index_links = [
+        urllib.parse.unquote(h) for h in pages["shows/index.html"].hrefs() if h.endswith("/")
+    ]
     for rel in pages:
         if rel != "shows/index.html":
             assert rel.removeprefix("shows/").removesuffix("index.html") in index_links, rel
-    by_slug = {s["slug"]: s for s in real["shows"]}
+    by_slug = {show_pages.slug_dir(s["slug"]): s for s in real["shows"]}
     for rel, page in pages.items():
         assert len(page.title) <= 60 and len(page.description) <= 155, rel
         assert htmlprobe.no_for_unknown(page) == [], rel

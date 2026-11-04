@@ -74,7 +74,7 @@ def test_home_and_data_pages_show_license_and_linked_credits(built_doc, render):
         assert f'href="{source["licence_url"]}"' in page, source["name"]
         assert source["text"] in page, source["name"]
     assert "does not endorse this app" in page
-    for path in ("privacy.html", "support.html", "data/"):
+    for path in ("privacy.html", "terms.html", "support.html", "data/"):
         assert f'href="https://queerframe.app/{path}"' in page, path
 
 

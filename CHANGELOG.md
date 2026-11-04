@@ -109,6 +109,16 @@ consumer of the published snapshot, would notice.
 
 ### Fixed
 
+- Show pages for titles with a non-Latin slug answer at their published URL
+  instead of a 404. LezWatch.TV percent-encodes such a slug
+  ("the-air-%e0%b9%80..."), and the page was written to a folder named
+  with the encoded text, while the host decodes the URL before looking for
+  the file. On the 2026-11-03 live site that was 10 of the 365 sitemap
+  URLs, all of them linked from the shows index. The page is now written
+  under the decoded name and every URL keeps the encoded form. A slug that
+  decodes to a separator, a second level of encoding, a dot segment, white
+  space, a control character or invalid UTF-8 gets no page, like any other
+  unsafe slug.
 - One show with an unsafe or repeated slug no longer stops every show page
   from being built (the nightly snapshot then published with none).
   That show gets no page and no link, the build log names it and says why,

@@ -49,6 +49,7 @@ def site(tmp_path, mock_transport, no_sleep) -> Path:
     shutil.copy(out / "snapshot.v1.json", site_dir / "snapshot.v1.json")
     shutil.copy(DOCS_SITE / "privacy.html", site_dir / "privacy.html")
     shutil.copy(DOCS_SITE / "support.html", site_dir / "support.html")
+    shutil.copy(DOCS_SITE / "terms.html", site_dir / "terms.html")
     (site_dir / "index.html").write_text(site_index.render_index(doc), encoding="utf-8")
     return site_dir
 

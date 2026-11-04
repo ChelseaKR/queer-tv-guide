@@ -52,6 +52,7 @@ def site(tmp_path, mock_transport, no_sleep) -> Path:
     shutil.copy(out / "snapshot.v1.json", site_dir / "snapshot.v1.json")
     shutil.copy(DOCS_SITE / "privacy.html", site_dir / "privacy.html")
     shutil.copy(DOCS_SITE / "support.html", site_dir / "support.html")
+    shutil.copy(DOCS_SITE / "terms.html", site_dir / "terms.html")
     (site_dir / "index.html").write_text(site_index.render_index(doc), encoding="utf-8")
     return site_dir
 
@@ -81,7 +82,7 @@ def _page_problems(page: Path) -> list[str]:
 
 def _on_problems(site_dir: Path) -> list[str]:
     pages = sorted(site_dir.glob("*.html"))
-    problems = [] if len(pages) == 3 else [f"expected 3 pages, found {[p.name for p in pages]}"]
+    problems = [] if len(pages) == 4 else [f"expected 4 pages, found {[p.name for p in pages]}"]
     for page in pages:
         problems += _page_problems(page)
     badge = site_dir / app_store.BADGE_FILE
@@ -302,7 +303,7 @@ def test_a_site_without_an_index_is_refused(tmp_path):
 
 
 def test_published_pages_have_the_anchors_the_switch_needs():
-    for page in ("privacy.html", "support.html"):
+    for page in ("privacy.html", "support.html", "terms.html"):
         assert (DOCS_SITE / page).read_text(encoding="utf-8").count(app_store.VIEWPORT) == 1, page
 
 

@@ -196,6 +196,8 @@ jobs:
           # third-party requests.
           cp ../docs/site/privacy.html site/privacy.html
           cp ../docs/site/support.html site/support.html
+          # Plain-language terms of use, static like the two above.
+          cp ../docs/site/terms.html site/terms.html
           # The home page (index.html) says what Queer Frame is and links
           # into the show pages; data/index.html describes the file. Both
           # carry its CC BY-SA 4.0 license and every source credit with

@@ -13,6 +13,14 @@ consumer of the published snapshot, would notice.
 
 ### Added
 
+- A plain-language terms of use page for the website, `terms.html`, static
+  like the privacy and support pages and copied into the site by the same
+  publish step. Every generated page's footer links it next to the privacy
+  policy. It names who runs the site, says it is not affiliated with
+  LezWatch.TV or TVmaze, warns about spoilers, says the data can be wrong or
+  late and that "unknown" does not mean a character lives, restates the
+  CC BY-SA 4.0 terms for reuse, and sets California law. Not reviewed by an
+  attorney.
 - Show page titles and descriptions answer more of what people searched
   (DECISIONS 0027). The title counts the listed characters ("Do any of the
   61 queer characters in The L Word die?") when it fits in 60 characters;

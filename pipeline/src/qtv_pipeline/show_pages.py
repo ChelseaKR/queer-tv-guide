@@ -36,7 +36,10 @@ Which shows (``select_shows``, DECISIONS 0021 and 0025), in this order:
 At most ``DEFAULT_LIMIT`` pages are built (``--limit``); a cut is logged.
 A chosen show whose slug is not a safe path segment, or repeats the slug of
 a show earlier in that order, gets no page and no link, and is named in the
-build log; the rest are built. A pinned show left out this way, or more than
+build log; the rest are built. A slug that carries percent-encoding (a
+non-Latin title) is written to disk decoded (``slug_dir``), because the
+static host decodes the URL before it looks for the file; its URLs keep the
+encoded form. A pinned show left out this way, or more than
 ``SKIP_MAX_SHARE`` (5%) of the chosen shows left out, refuses the build.
 Shows with no listed character are never built, pinned or not: they have
 nothing to answer from. Episode counts are not in the snapshot, so "most
@@ -99,6 +102,7 @@ import json
 import re
 import sys
 import unicodedata
+import urllib.parse
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -361,6 +365,31 @@ def _log_text(value: Any) -> str:
     return " ".join(str(value).split())
 
 
+def slug_dir(slug: str) -> str | None:
+    """The directory name a show's page is written under, or None when the
+    slug cannot be one.
+
+    The URL keeps the slug as LezWatch publishes it, percent-encoding and
+    all (``/shows/the-air-%e0%b9%80.../``). The static host decodes a
+    request's path before it looks for the file, so the page must live under
+    the decoded name; a directory named with a literal ``%e0`` answers only
+    a double-encoded URL, and the published one gets a 404. A slug whose
+    decoded form is not valid UTF-8, or holds a separator, a second level of
+    encoding, a dot segment, white space or a control character, gets no
+    page."""
+    if not SLUG.fullmatch(slug):
+        return None
+    try:
+        decoded = urllib.parse.unquote(slug, errors="strict")
+    except UnicodeDecodeError:
+        return None
+    if decoded in {".", ".."} or any(
+        ch in "/\\%?#" or ch.isspace() or not ch.isprintable() for ch in decoded
+    ):
+        return None
+    return decoded
+
+
 def _drop_bad_slugs(
     chosen: list[dict[str, Any]], pinned_ids: set[str]
 ) -> tuple[list[dict[str, Any]], list[str]]:
@@ -383,7 +412,7 @@ def _drop_bad_slugs(
     seen: set[str] = set()
     for show in chosen:
         slug = show["slug"]
-        if not isinstance(slug, str) or not SLUG.fullmatch(slug):
+        if not isinstance(slug, str) or slug_dir(slug) is None:
             why = "unsafe slug for a path"
         elif slug in seen:
             why = "another show earlier in the order has the same slug"
@@ -936,7 +965,9 @@ def render_site(
     }
     index = cast_index(doc)
     for i, show in enumerate(shows):
-        files[f"shows/{show['slug']}/index.html"] = render_show(
+        # Decoded on disk, encoded in every URL (``slug_dir``). _drop_bad_slugs
+        # has already left out any show whose slug has no directory name.
+        files[f"shows/{slug_dir(show['slug'])}/index.html"] = render_show(
             doc,
             show,
             base_url=base,

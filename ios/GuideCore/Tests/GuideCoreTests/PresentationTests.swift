@@ -240,4 +240,48 @@ final class PresentationTests: XCTestCase {
         XCTAssertEqual(deaths.notes, ["LezWatch.TV tags this show “Bury Your Queers”."])
         XCTAssertFalse(Presentation.withoutSpoilers(show.tropes, Presentation.deathSpoilerTropeSlugs).contains { $0.slug == "dead-queers" })
     }
+    func testEveryFateTropeIsASpoilerAndOrdinaryTropesStayVisible() {
+        XCTAssertEqual(Presentation.deathSpoilerTropeSlugs, ["dead-queers", "happy-then-not", "none"])
+        let tropes = [
+            Term(slug: "coming-out", name: "Coming Out"),
+            Term(slug: "happy-then-not", name: "Happiness then Tragedy"),
+            Term(slug: "dead-queers", name: "Bury Your Queers"),
+            Term(slug: "happy-ending", name: "Happy Ending"),
+            Term(slug: "none", name: "None!"),
+            Term(slug: "slow-burn", name: "Slow Burn"),
+        ]
+        XCTAssertEqual(Presentation.withoutSpoilers(tropes, Presentation.deathSpoilerTropeSlugs).map(\.slug), ["coming-out", "happy-ending", "slow-burn"])
+    }
+
+    func testHappinessThenTragedyMovesInsideTheShowReveal() throws {
+        let data = try JSONEdit.editShow(try Repo.fixtureData(), index: 0) { show in
+            show["tropes"] = (show["tropes"] as! [[String: Any]]) + [
+                ["slug": "happy-then-not", "name": "Happiness then Tragedy"],
+                ["slug": "dead-queers", "name": "Bury Your Queers"],
+            ]
+        }
+        let s = try SnapshotDecoder().decode(data)
+        let show = try XCTUnwrap(s.show(id: "lwtv:show:101"))
+        XCTAssertTrue(show.tropes.contains { $0.slug == "happy-then-not" }, "the edit landed")
+        let visible = Presentation.withoutSpoilers(show.tropes, Presentation.deathSpoilerTropeSlugs)
+        XCTAssertFalse(visible.contains { $0.slug == "happy-then-not" || $0.slug == "dead-queers" })
+        XCTAssertFalse(visible.isEmpty, "the fixture's ordinary tropes stay visible")
+        let deaths = Presentation.showDeaths(cast: s.characters(inShow: show.id), show: show)
+        XCTAssertEqual(deaths.notes, [
+            "LezWatch.TV tags this show “Happiness then Tragedy”.",
+            "LezWatch.TV tags this show “Bury Your Queers”.",
+        ])
+        XCTAssertTrue(deaths.spoken.contains("Happiness then Tragedy"), "VoiceOver hears it only inside the reveal")
+    }
+
+    func testNoneTropeMovesInsideTheShowRevealEvenWithNoCast() throws {
+        let data = try JSONEdit.editShow(try Repo.fixtureData(), index: 0) { show in
+            show["tropes"] = [["slug": "none", "name": "None!"]]
+        }
+        let s = try SnapshotDecoder().decode(data)
+        let show = try XCTUnwrap(s.show(id: "lwtv:show:101"))
+        XCTAssertEqual(Presentation.withoutSpoilers(show.tropes, Presentation.deathSpoilerTropeSlugs), [])
+        XCTAssertEqual(Presentation.showDeaths(cast: [], show: show).notes, ["LezWatch.TV lists no tropes for this show (“None!”)."])
+        XCTAssertEqual(Presentation.showDeaths(cast: s.characters(inShow: show.id), show: show).notes.last, "LezWatch.TV lists no tropes for this show (“None!”).")
+    }
 }

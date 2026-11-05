@@ -79,7 +79,7 @@ class BundledSnapshotTest {
         for (show in kept) {
             val cast = snapshot.charactersInShow(show.id)
             assertTrue(show.id, cast.isNotEmpty())
-            // DECISIONS 0030/0031: no death that could be in this show. A death the
+            // DECISIONS 0030/0032: no death that could be in this show. A death the
             // snapshot places in another show does not keep a show out.
             assertTrue(show.id, cast.none { Presentation.deathPlacement(it, show.id).mayBeHere })
         }

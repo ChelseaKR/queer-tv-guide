@@ -130,7 +130,7 @@ consumer of the published snapshot, would notice.
 ### Fixed
 
 - The apps count a death on a show only when it falls in that show
-  (DECISIONS 0030 and 0031), as the show pages do. The L Word: Generation
+  (DECISIONS 0030 and 0032), as the show pages do. The L Word: Generation
   Q's reveal no longer counts Dana Fairbanks, whose recorded death is in
   The L Word; it says the death is not recorded in this show and that one
   death is not counted. The show summary and the "no recorded deaths"

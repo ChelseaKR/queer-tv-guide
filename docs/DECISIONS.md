@@ -748,7 +748,7 @@ in a later build), the title, description, opening and selection.
 
 **Reversible.** Yes: drop the `show_years` check in `_death_status`.
 
-## 0031 — The apps follow 0030, and say what a trigger-warning level means (2026-11-05)
+## 0032 — The apps follow 0030, and say what a trigger-warning level means (2026-11-05)
 
 **Evidence.** 0030 changed the show pages only. The iOS and Android apps
 still counted a death from another show: The L Word: Generation Q's reveal

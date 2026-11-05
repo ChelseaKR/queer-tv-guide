@@ -747,3 +747,41 @@ so a search engine does not quote it.
 in a later build), the title, description, opening and selection.
 
 **Reversible.** Yes: drop the `show_years` check in `_death_status`.
+
+## 0034 — Announce new and changed pages to IndexNow after each deploy (2026-11-05)
+
+**Evidence.** IndexNow is how a site tells Bing (which ChatGPT search leans
+on) and the other participating engines that a page is new or changed,
+instead of waiting for the next crawl. Trout Truck, Next Home Game, Lake
+Notice and Tide Hours run the same `indexnow.py`; their runs on 2026-11-04
+and 2026-11-05 got HTTP 200 or 202. 0028 said this site has no IndexNow key
+and pings nothing; this entry changes that, and nothing else in 0028.
+
+**Decision.** Every page's footer carries the build date and the sitemap's
+`lastmod` is that same date, so neither says whether a page changed. A new
+step in `snapshot.yml`, after the site is assembled and before the Pages
+upload, copies the key file to the site root and writes `lastmod.json`: a
+SHA-256 of each sitemap page with the one footer sentence "It was last
+built from the sources on <date>." taken out. Any other date on a page
+still counts as content. It then compares that with the live
+`lastmod.json` and keeps the sitemap pages that are new or whose
+fingerprint changed. A separate `indexnow` job, which needs `deploy` and
+has read-only permissions and no secret, submits the list. A rebuild of
+unchanged data announces nothing and sends no request. Only https URLs on
+queerframe.app, only built pages without a robots noindex (so the held-back
+show pages are never sent), at most 10,000 a request. If the live
+`lastmod.json` cannot be read, nothing is sent. The first deploy finds no
+live copy (404) and announces every sitemap page once. The script exits 0
+on any problem and prints a notice, so the snapshot always publishes.
+
+**The check.** `tests/test_indexnow.py` builds the fixture site twice with
+only the build date changed and requires identical fingerprints and an
+empty submission, so a reworded footer fails CI instead of announcing
+every page every night. A changed show title in the same test does select
+pages.
+
+**Not changed.** No analytics, no third-party request from any page, no
+page text. The key file is public by design.
+
+**Reversible.** Yes: delete the two build steps, the `indexnow` job and the
+key file.

@@ -216,6 +216,36 @@ jobs:
           APP_STORE_LIVE: ${{ vars.APP_STORE_LIVE }}
           PLAY_STORE_LIVE: ${{ vars.PLAY_STORE_LIVE }}
 
+      - name: pick the pages to announce to IndexNow
+        # Runs after the site is assembled and BEFORE the deploy replaces the
+        # live site (DECISIONS 0034). The key file goes to the site root (public
+        # by design: IndexNow fetches it to check this site owns the host).
+        # lastmod.json is a SHA-256 of each sitemap page with the build date
+        # taken out, so a rebuild of unchanged data matches the live copy and
+        # announces nothing; a page is announced only when it is new or its
+        # content changed. Selection only: nothing is sent here. indexnow.py
+        # exits 0 on any problem (a notice, never a failed run), so the deploy
+        # is never blocked by it. No secret.
+        working-directory: pipeline
+        run: |
+          set -euo pipefail
+          cp src/qtv_pipeline/assets/9d1bc6716ef0607544eec3bcc2d46956.txt site/
+          uv run python -m qtv_pipeline.indexnow manifest \
+            --site-dir site --base-url https://queerframe.app \
+            --snapshot out/snapshot.v1.json
+          uv run python -m qtv_pipeline.indexnow select \
+            --site-dir site --base-url https://queerframe.app \
+            --kind manifest --file lastmod.json --missing-is-empty \
+            --out "$RUNNER_TEMP/indexnow-urls.json"
+
+      - name: keep the IndexNow list for the job after the deploy
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: indexnow-urls
+          path: ${{ runner.temp }}/indexnow-urls.json
+          retention-days: 1
+          if-no-files-found: warn
+
       - uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3.0.1
         with:
           path: pipeline/site
@@ -233,3 +263,33 @@ jobs:
     steps:
       - id: deployment
         uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4.0.5
+
+  # Tell IndexNow which pages are new or changed, only after the deploy
+  # succeeded (a skipped or failed deploy skips this job). Never fails the
+  # run: indexnow.py exits 0 on any problem and prints a notice, and the
+  # sitemap still gets the pages crawled. No write permission, no secret.
+  # https://www.indexnow.org/documentation
+  indexnow:
+    needs: deploy
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          sparse-checkout: pipeline/src/qtv_pipeline/indexnow.py
+          sparse-checkout-cone-mode: false
+
+      - name: fetch the list the build selected
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: indexnow-urls
+          path: ${{ runner.temp }}/indexnow
+
+      - name: announce the new and changed pages to IndexNow
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 pipeline/src/qtv_pipeline/indexnow.py submit --list "$RUNNER_TEMP/indexnow/indexnow-urls.json"

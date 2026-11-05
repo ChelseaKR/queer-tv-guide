@@ -842,3 +842,40 @@ page text. The key file is public by design.
 
 **Reversible.** Yes: delete the two build steps, the `indexnow` job and the
 key file.
+
+## 0035 — Show pages list each character with an anchor and "played by" (2026-11-05)
+
+**Status: accepted (Chelsea approved the Stage 2 plan's character-list change, 2026-11-05).**
+
+**Evidence.** Of the 17 Search Console impressions from 2026-10-20 to
+2026-11-05 that came with a named query, 8 were for a character ("candy
+ferocity", "sense8 lila", "molly milkovich gender", "adriana delgadillo
+grey's anatomy", "faking it lauren", "is lisa simpson a lesbian"), at
+positions 8 to 50. Every one of those characters is already on a hand-picked
+show page, as a bare line with no actor.
+
+**Decision.** On existing show pages only (no new URL), the character list
+outside the answer gives each character, regulars first:
+
+- a link anchor from the character's LezWatch slug (`#candy-ferocity`). It
+  is the same from build to build and unique on the page: a slug that is not
+  a plain slug, is reserved (`main`) or repeats one earlier on the page
+  falls back to `character-<LezWatch id>`, then a `-2` suffix;
+- "played by <actor>", with the actor names exactly as LezWatch.TV gives
+  them. An actor id that did not resolve to a name is left out, and a
+  character with no named actor gets no clause, never a placeholder. Actor
+  names are plain text; there are no actor pages.
+
+The list never shows a character's years in the show (of the 711
+dead-character links that have years, 63% end before the show does, so
+years give a death away), a death date or year, or any cliche or trope. The
+answer stays in the closed `<details>`. LezWatch.TV attribution and the
+no-analytics rule are unchanged.
+
+**Tests.** `test_show_pages_characters.py`: a planted character year, a
+death date and a death-revealing cliche must each be caught by the leak
+checker when sabotaged into the list; swapping every death record leaves the
+list byte for byte the same; anchors are unique per page, and a repeated
+anchor is caught.
+
+**Reversible.** Yes: the template's list goes back to the plain line.

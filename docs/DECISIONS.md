@@ -839,6 +839,72 @@ one host (SourceTreeGuardTests), so adding one is a separate decision.
 **Reversible.** Yes: `deathPlacement` returning "only show" for every
 recorded death restores the old count.
 
+## 0033 — One airing-now page, /airing/, open to search (2026-11-05)
+
+**Status: proposed (agent, 2026-11-05), from the Stage 2 web plan
+(`qf-stage2-plan-2026-11-05.md`, section 4.2) with the owner's choice of
+"indexable, soaps under their own heading". It adds one URL and keeps the
+spoiler rule of 0019 to 0030. 0028's hold on the show pages does not change.**
+
+**Evidence.** On the 2026-11-05 snapshot, 43 shows have a TVmaze next
+episode between November 5, 2026 and March 31, 2027. 42 of them are marked
+on air by LezWatch.TV. The odd one is Law & Order: LezWatch.TV ends it in
+2010 and TVmaze lists the revival (the issue #52 pattern). 9 of the 42 are
+season premieres (Shetland, Yellowjackets, P-Valley, Only Murders in the
+Building, Emily in Paris, The Rookie, Your Friendly Neighborhood
+Spider-Man, Common Side Effects, High Potential) and 11 are soaps or
+telenovelas. 22 of the 42 have a show page. New-episode reminders and the Up
+Next widget are the app's features this page leads to.
+
+**Decision.** `airing_page.py` builds `airing/index.html` inside
+`show_pages.render_site`, from the snapshot and nothing else (no request).
+A show is listed when LezWatch.TV marks it on air, its LezWatch end year
+(if any) is not before the episode's year, TVmaze has a schedule for it,
+and its next episode falls between the snapshot's date and the last day of
+the month four months later. The window rolls with each nightly build. The
+page groups season premieres (episode 1 of a numbered season), then other
+new episodes, then soaps and telenovelas (LezWatch.TV genres `soap-opera`
+and `telenovela`), each by date and then A to Z. A line gives the title
+(linked to its show page when one is built, otherwise to LezWatch.TV), the
+network, the date as "Friday, November 20, 2026" in a `<time>` element, the
+season and episode when TVmaze gives both (never for a soap), and how many
+queer characters LezWatch.TV lists. Shows left out by the on-air rule are
+named in the build log.
+
+**What it never says.** No episode name ("Dead Air"). No character at all,
+so no character's years, which would say who is still there in the new
+season. No trope, death record, death count or answer element, and no
+order a death could change. A test swaps every death record and asserts not
+a byte of the page changes; negative controls plant an episode name, a
+character, her years and a trope and assert the check catches each.
+
+**Absence.** A show with no TVmaze date is not listed, and one sentence says
+that does not mean it is not coming back. A missing network, season or
+episode number, or character count shortens the line. A build with no
+TVmaze schedule at all says so, never "nothing airs".
+
+**Indexing and links.** `/airing/` is in the sitemap after `/shows/` and
+carries no robots tag. `index_problems` now also refuses a build where the
+page is built but not listed, listed but not built, or tagged. The home
+page's "Find a show" list and the shows index link to it. It is one page, not
+a family of templates, so 0028's reason for holding pages back does not
+apply.
+
+**The app and privacy.** Switch off: one sentence says the iPhone app does
+new-episode reminders and the Up Next widget and is not on the App Store
+yet, with no link. Switch on: the plain App Store URL from `app_store.py`,
+with no campaign or tracking parameter, and the Smart App Banner tag, as on
+the show pages. No script, image, analytics or request to another host. The
+page credits TVmaze under CC BY-SA 4.0 for the dates, and the footer carries
+every source credit.
+
+**Not changed.** The show pages, their selection and indexing, the app,
+the workflow (the page is built by the existing show-pages step) and the
+privacy page.
+
+**Reversible.** Yes: `render_site(..., airing=False)` drops the page, its
+sitemap entry and both links.
+
 ## 0034 — Announce new and changed pages to IndexNow after each deploy (2026-11-05)
 
 **Evidence.** IndexNow is how a site tells Bing (which ChatGPT search leans

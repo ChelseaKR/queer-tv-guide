@@ -24,6 +24,14 @@ consumer of the published snapshot, would notice.
   0034). A night with no real change announces nothing. The site root
   serves the IndexNow key file and `lastmod.json`, one fingerprint per
   sitemap page. No page text changes.
+- One airing-now page on the website, `/airing/` (DECISIONS 0033): the
+  queer shows LezWatch.TV marks on air that TVmaze lists a new episode for
+  through the end of the fourth month ahead, with season premieres first and
+  soaps and telenovelas under their own heading. Each line gives the
+  network, the date ("Friday, November 20, 2026"), the season and episode
+  when known, and how many queer characters LezWatch.TV lists, and links to
+  the show page. It names no episode and no character. It is in the sitemap,
+  and the home page and the shows index link to it.
 - Each show page opens with a sentence only that show can have (DECISIONS
   0029), built from the snapshot: the number of listed characters, the
   network and years, two character names (regulars first) and, from

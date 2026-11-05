@@ -61,7 +61,12 @@ def test_only_the_pinned_pages_are_in_the_sitemap(tmp_path):
     files, shows = _site(tmp_path)
     pinned_slugs = [f"show-{i - 1000:03d}" for i in PINNED]
     assert len(shows) > len(PINNED)  # the rule built more pages than the pins
-    assert _locs(files) == [f"{BASE}/", f"{BASE}/shows/", *map(_url, pinned_slugs)]
+    assert _locs(files) == [
+        f"{BASE}/",
+        f"{BASE}/shows/",
+        f"{BASE}/airing/",
+        *map(_url, pinned_slugs),
+    ]
     assert show_pages.index_problems(files, base_url=BASE) == []
 
 
@@ -145,8 +150,8 @@ def test_widen_by_rule(tmp_path, monkeypatch):
 def test_negative_control_a_held_back_page_in_the_sitemap_refuses_the_build(tmp_path, monkeypatch):
     real = show_pages.render_sitemap
 
-    def every_show(doc, shows, *, base_url, indexed=None):
-        return real(doc, shows, base_url=base_url, indexed=None)
+    def every_show(doc, shows, *, base_url, indexed=None, airing=False):
+        return real(doc, shows, base_url=base_url, indexed=None, airing=airing)
 
     # The sabotage changes the sitemap: it lists every show, not only the pins.
     files, shows = _site(tmp_path)

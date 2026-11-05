@@ -90,7 +90,10 @@ level (``low``, ``medium`` or ``high``, which says how intense a show is and
 nothing about who dies) is a facts row; any other trigger term is never
 printed (DECISIONS 0031).
 
-Seasons (``seasons_fact``, DECISIONS 0031). For a show TVmaze lists as Ended, when TVmaze's last season number differs from
+Seasons and network (``seasons_fact``, ``network_fact``, DECISIONS 0031).
+The network is TVmaze's when the TVmaze schedule is known, and LezWatch's
+stations only when it is not; the row's label names the source. For a show
+TVmaze lists as Ended, when TVmaze's last season number differs from
 LezWatch's season count, the page shows TVmaze's, labeled "per TVmaze".
 When LezWatch has no count, TVmaze's latest season fills it ("3 so far" for
 a show still running). A TVmaze season number of 1900 or more is a year (a
@@ -804,15 +807,15 @@ def _tvmaze_channel(show: dict[str, Any]) -> str | None:
 
 
 def network_fact(show: dict[str, Any]) -> tuple[str, str]:
-    """(label, value) for the Network row: LezWatch's stations, then
-    TVmaze's network or web channel."""
-    sched = show["schedule"]
-    channel = (
-        ", ".join(n["name"] for n in show["networks"])
-        or (sched["network"] or sched["web_channel"] or {}).get("name")
-        or NOT_RECORDED
-    )
-    return "Network", channel
+    """(label, value) for the Network row (DECISIONS 0031): TVmaze's network
+    or web channel when the schedule is known, else LezWatch's stations."""
+    channel = _tvmaze_channel(show)
+    if channel:
+        return "Network, per TVmaze", channel
+    names = [n["name"] for n in show["networks"] if n.get("name")]
+    if names:
+        return "Network, per LezWatch.TV", ", ".join(names)
+    return "Network", NOT_RECORDED
 
 
 def trigger_level(show: dict[str, Any]) -> str:
@@ -916,10 +919,13 @@ def _opening_years(years: dict[str, Any]) -> str | None:
 
 
 def _opening_network(show: dict[str, Any]) -> str | None:
+    """The same source as the Network row (``network_fact``): TVmaze's when
+    the schedule is known, else LezWatch's stations."""
+    channel = _tvmaze_channel(show)
+    if channel:
+        return channel
     names = [n["name"] for n in show["networks"] if n.get("name")]
-    if names:
-        return _and_list(names)
-    return _tvmaze_channel(show)
+    return _and_list(names) if names else None
 
 
 def _opening_episodes(show: dict[str, Any]) -> str | None:

@@ -33,7 +33,7 @@
 <dd>{{ value }}</dd>
 {%- endfor %}
 </dl>
-<p class="small">Facts marked “per TVmaze”, and the network when LezWatch.TV lists none, come from TVmaze, licensed <a href="{{ licence.snapshot.url }}">CC BY-SA 4.0</a>: {% if tvmaze_url %}<a href="{{ tvmaze_url }}">this show on TVmaze</a>{% else %}<a href="https://www.tvmaze.com/">TVmaze</a>{% endif %}.</p>
+<p class="small">Facts marked “per TVmaze” come from TVmaze, licensed <a href="{{ licence.snapshot.url }}">CC BY-SA 4.0</a>: {% if tvmaze_url %}<a href="{{ tvmaze_url }}">this show on TVmaze</a>{% else %}<a href="https://www.tvmaze.com/">TVmaze</a>{% endif %}.</p>
 <h2>Queer women, non-binary and trans characters in {{ show.title }}</h2>
 <p>LezWatch.TV lists {{ cast|length }} queer {{ 'character' if cast|length == 1 else 'characters' }} in {{ show.title }}. Each name links to the character's LezWatch.TV page.</p>
 <ul class="cast">

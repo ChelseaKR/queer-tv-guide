@@ -341,7 +341,8 @@ def test_facts_from_the_snapshot(doc, tmp_path):
     facts = _facts(_build(doc, tmp_path)["shows/the-cartographers/index.html"])
     assert facts["Years"] == "2016 to 2018"
     assert facts["Seasons"] == "2"  # LezWatch and TVmaze agree
-    assert facts["Network"] == "Example Network, Another Example"
+    # TVmaze's network when the schedule is known (DECISIONS 0031).
+    assert facts["Network, per TVmaze"] == "Example Network"
     assert facts["Worth it, per LezWatch.TV"] == "Meh"
     # "violence" is not one of the three levels, so it is not printed.
     assert facts["Trigger warning, per LezWatch.TV"] == "See LezWatch.TV"
@@ -365,12 +366,17 @@ def test_years_wording():
     assert y({"start": 2021, "end": 2021, "on_air": "no"}) == "2021"
 
 
-def test_network_falls_back_to_tvmaze(doc, tmp_path):
+def test_network_is_tvmazes_then_lezwatchs(doc):
     show = _show(doc, "harbor-lights")
-    show["networks"] = []
+    show["networks"] = [{"slug": "the-cw", "name": "The CW"}]
     show["schedule"]["network"] = None
     show["schedule"]["web_channel"] = {"name": "Streamer", "country_code": None}
-    assert dict(show_pages._facts(show))["Network"] == "Streamer"
+    assert show_pages.network_fact(show) == ("Network, per TVmaze", "Streamer")
+    # No TVmaze schedule: LezWatch's stations, labeled as LezWatch's.
+    show["schedule"]["schedule_known"] = False
+    assert show_pages.network_fact(show) == ("Network, per LezWatch.TV", "The CW")
+    show["networks"] = []
+    assert show_pages.network_fact(show) == ("Network", "Not recorded")
 
 
 def _seasons(show: dict, recorded, status, last) -> tuple[str, str, int | None]:
@@ -413,7 +419,7 @@ def test_the_page_and_its_structured_data_show_tvmazes_season_count(doc, tmp_pat
     facts = _facts(page)
     assert facts["Seasons, per TVmaze"] == "2" and "Seasons" not in facts
     assert htmlprobe.ld_node(page, "TVSeries")["numberOfSeasons"] == 2
-    assert any("Facts marked “per TVmaze”" in t for t in page.outside)
+    assert any("Facts marked “per TVmaze” come from TVmaze" in t for t in page.outside)
 
 
 @pytest.mark.parametrize(

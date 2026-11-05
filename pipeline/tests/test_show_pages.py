@@ -252,7 +252,13 @@ def test_headline_wording(doc):
     cast = show_pages._characters(doc, carto)
     answer = show_pages._answer(carto, cast)
     assert answer.headline == "Yes. 1 of 2 listed characters dies: Odile Brandt."
-    assert any("For the other 1, the answer is unknown" in n for n in answer.notes)
+    assert "For the other 1, the answer is unknown." in answer.notes
+
+
+def test_the_survival_sentence_appears_once(doc, tmp_path):
+    page = _build(doc, tmp_path)["shows/the-cartographers/index.html"]
+    said = " ".join(page.inside).count("LezWatch.TV records deaths, not survival.")
+    assert said == 1, said
 
 
 # --- unknown is never "no" ----------------------------------------------
@@ -327,16 +333,18 @@ def test_negative_control_a_leaking_title_is_caught(doc, tmp_path):
 
 
 def _facts(page: htmlprobe.Page) -> dict[str, str]:
-    assert len(page.facts) == 8  # the denominator: every fact row was read
+    assert len(page.facts) == 9  # the denominator: every fact row was read
     return page.facts
 
 
 def test_facts_from_the_snapshot(doc, tmp_path):
     facts = _facts(_build(doc, tmp_path)["shows/the-cartographers/index.html"])
     assert facts["Years"] == "2016 to 2018"
-    assert facts["Seasons"] == "2"
+    assert facts["Seasons"] == "2"  # LezWatch and TVmaze agree
     assert facts["Network"] == "Example Network, Another Example"
     assert facts["Worth it, per LezWatch.TV"] == "Meh"
+    # "violence" is not one of the three levels, so it is not printed.
+    assert facts["Trigger warning, per LezWatch.TV"] == "See LezWatch.TV"
 
 
 def test_missing_values_say_not_recorded_or_unknown(doc, tmp_path):
@@ -345,6 +353,7 @@ def test_missing_values_say_not_recorded_or_unknown(doc, tmp_path):
     assert facts["Seasons"] == "Not recorded"
     assert facts["Network"] == "Not recorded"
     assert facts["Worth it, per LezWatch.TV"] == "Not rated"
+    assert facts["Trigger warning, per LezWatch.TV"] == "Not rated"
     assert facts["Run status, per TVmaze"] == "Unknown"
     assert "0" not in facts["Seasons"]
 
@@ -362,6 +371,71 @@ def test_network_falls_back_to_tvmaze(doc, tmp_path):
     show["schedule"]["network"] = None
     show["schedule"]["web_channel"] = {"name": "Streamer", "country_code": None}
     assert dict(show_pages._facts(show))["Network"] == "Streamer"
+
+
+def _seasons(show: dict, recorded, status, last) -> tuple[str, str, int | None]:
+    show["seasons"] = recorded
+    show["schedule"]["status"] = status
+    show["schedule"]["previous_episode"]["season"] = last
+    return show_pages.seasons_fact(show)
+
+
+def test_an_ended_show_takes_tvmazes_season_count_when_they_disagree(doc):
+    show = _show(doc, "the-cartographers")
+    # Wentworth on the 2026-11-05 snapshot: LezWatch 11, TVmaze's last season 9.
+    assert _seasons(show, 11, "Ended", 9) == ("Seasons, per TVmaze", "9", 9)
+    # They agree: LezWatch's count, unlabeled, as before.
+    assert _seasons(show, 9, "Ended", 9) == ("Seasons", "9", 9)
+    # A running show keeps LezWatch's count; the next season may be announced.
+    assert _seasons(show, 4, "Running", 3) == ("Seasons", "4", 4)
+    # LezWatch has no count: TVmaze's latest season fills it.
+    assert _seasons(show, None, "Ended", 3) == ("Seasons, per TVmaze", "3", 3)
+    assert _seasons(show, None, "Running", 3) == ("Seasons, per TVmaze", "3 so far", 3)
+
+
+@pytest.mark.parametrize("last", [2011, 0, None, True, "3"])
+def test_a_tvmaze_season_that_is_a_year_or_not_a_number_is_never_used(doc, last):
+    show = _show(doc, "the-cartographers")
+    assert _seasons(show, 41, "Ended", last) == ("Seasons", "41", 41)
+    assert _seasons(show, None, "Ended", last) == ("Seasons", "Not recorded", None)
+
+
+def test_no_tvmaze_schedule_means_no_tvmaze_season(doc):
+    show = _show(doc, "the-cartographers")
+    show["schedule"]["schedule_known"] = False
+    assert _seasons(show, 11, "Ended", 9) == ("Seasons", "11", 11)
+
+
+def test_the_page_and_its_structured_data_show_tvmazes_season_count(doc, tmp_path):
+    show = _show(doc, "the-cartographers")
+    show["seasons"] = 11
+    page = _build(doc, tmp_path)["shows/the-cartographers/index.html"]
+    facts = _facts(page)
+    assert facts["Seasons, per TVmaze"] == "2" and "Seasons" not in facts
+    assert htmlprobe.ld_node(page, "TVSeries")["numberOfSeasons"] == 2
+    assert any("Facts marked “per TVmaze”" in t for t in page.outside)
+
+
+@pytest.mark.parametrize(
+    ("slug", "level"), [("low", "Low"), ("medium", "Medium"), ("high", "High")]
+)
+def test_the_trigger_warning_level_is_a_facts_row(doc, tmp_path, slug, level):
+    show = _show(doc, "the-cartographers")
+    show["triggers"] = [{"slug": slug, "name": level}]
+    facts = _facts(_build(doc, tmp_path)["shows/the-cartographers/index.html"])
+    assert facts["Trigger warning, per LezWatch.TV"] == level
+
+
+def test_negative_control_a_trigger_term_that_is_not_a_level_is_not_printed(doc, tmp_path):
+    show = _show(doc, "the-cartographers")
+    show["triggers"] = [{"slug": "high", "name": "High"}]
+    assert show_pages.trigger_level(show) == "High"
+    # Sabotage: an unvetted term in place of a level. It must not reach the page.
+    show["triggers"] = [{"slug": "character-death", "name": "Character Death"}]
+    assert show_pages.trigger_level(show) != "High"
+    page = _build(doc, tmp_path)["shows/the-cartographers/index.html"]
+    assert _facts(page)["Trigger warning, per LezWatch.TV"] == "See LezWatch.TV"
+    assert not any("Character Death" in t for t in page.outside + page.inside)
 
 
 def test_characters_list_outside_the_answer_has_no_status(doc, tmp_path):
@@ -431,6 +505,38 @@ def test_colors_are_the_browsers_own_system_colors(doc, tmp_path):
     for token in ("Canvas", "CanvasText", "LinkText", "VisitedText", "color-scheme: light dark"):
         assert token in css
     assert "opacity" not in css
+
+
+def _reflow_problems(css: str) -> list[str]:
+    """What would make the facts list wider than a 320 px screen (WCAG
+    1.4.10): a column sized to its longest label or value, or a value that
+    cannot wrap. The measured check (Chromium at 320 px, 100% to 200% text)
+    is in the PR; this keeps the rules that made it pass."""
+    flat = " ".join(css.split())
+    problems = []
+    if (
+        "dl.facts { display: grid; grid-template-columns: minmax(0, auto) minmax(0, 1fr);"
+        not in flat
+    ):
+        problems.append("dl.facts columns can grow past the screen")
+    if "max-content" in flat:
+        problems.append("a max-content size")
+    if "dl.facts dd { margin: 0; overflow-wrap: anywhere; }" not in flat:
+        problems.append("a facts value cannot wrap")
+    if "@media (max-width: 30rem) { dl.facts { grid-template-columns: minmax(0, 1fr);" not in flat:
+        problems.append("the facts list does not stack on a narrow screen")
+    return problems
+
+
+def test_the_facts_list_fits_a_320px_screen(doc, tmp_path):
+    css = _build(doc, tmp_path)["shows/harbor-lights/index.html"].css
+    assert _reflow_problems(css) == []
+    # Negative control: the old rule, a label column sized to its longest label.
+    old = css.replace("minmax(0, auto) minmax(0, 1fr)", "max-content 1fr", 1)
+    assert old != css
+    assert "dl.facts columns can grow past the screen" in _reflow_problems(old)
+    stuck = css.replace("overflow-wrap: anywhere;", "", 1)
+    assert stuck != css and "a facts value cannot wrap" in _reflow_problems(stuck)
 
 
 # --- accessibility basics ------------------------------------------------

@@ -18,6 +18,9 @@
 <li><a href="{{ base_url }}/shows/#hand-picked">Start with the {{ featured_total }} hand-picked {{ 'show' if featured_total == 1 else 'shows' }}</a></li>
 {%- endif %}
 <li><a href="{{ base_url }}/shows/#a-to-z">Browse all {{ shows_total }} {{ 'show' if shows_total == 1 else 'shows' }}, A to Z</a></li>
+{%- if airing_link %}
+<li><a href="{{ base_url }}/airing/">Queer TV airing now: new episodes coming up</a></li>
+{%- endif %}
 </ul>
 {%- if featured %}
 <h3>Some of the hand-picked shows</h3>

@@ -107,7 +107,11 @@ def sitemap_problems(files: dict[str, str], doc: dict, limit: int = 50) -> list[
     the data date."""
     entries = htmlprobe.sitemap(files["sitemap.xml"])
     pages = [n for n in files if n.endswith("index.html") and n.startswith("shows/")]
-    want = {f"{DOMAIN}/", *(f"{DOMAIN}/{n.removesuffix('index.html')}" for n in pages)}
+    want = {
+        f"{DOMAIN}/",
+        *(f"{DOMAIN}/{n.removesuffix('index.html')}" for n in pages),
+        *([f"{DOMAIN}/airing/"] if "airing/index.html" in files else []),
+    }
     found = [f"missing from the sitemap: {u}" for u in sorted(want - set(entries["loc"]))]
     found += [f"not a built page: {u}" for u in sorted(set(entries["loc"]) - want)]
     if len(pages) != min(limit, len(doc["shows"])) + 1:
@@ -126,7 +130,7 @@ def test_the_default_base_url_is_the_domain():
 
 def test_every_url_defaults_to_the_domain(doc, tmp_path):
     files = _site(_big_doc(doc), tmp_path)  # no base_url passed
-    assert sum(n.endswith("index.html") for n in files) == 51
+    assert sum(n.endswith("index.html") for n in files) == 52  # with airing/
     assert host_problems(files) == []
     page = htmlprobe.parse(files["shows/show-007/index.html"])
     assert page.canonical == f"{DOMAIN}/shows/show-007/"
@@ -177,7 +181,7 @@ def test_the_sitemap_lists_the_index_and_the_fifty_pages_with_the_data_date(doc,
     files = _site(big, tmp_path)
     assert sitemap_problems(files, big) == []
     entries = htmlprobe.sitemap(files["sitemap.xml"])
-    assert len(entries["loc"]) == 52
+    assert len(entries["loc"]) == 53  # with airing/ (DECISIONS 0033)
     assert entries["loc"][0] == f"{DOMAIN}/"
     assert set(entries["lastmod"]) == {DATA_DATE}
     assert f"{DOMAIN}/shows/" in entries["loc"]

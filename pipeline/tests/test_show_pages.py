@@ -41,7 +41,8 @@ def _build(doc: dict, tmp_path: Path, **kw) -> dict[str, htmlprobe.Page]:
     show_pages.build_site(doc, tmp_path, base_url=BASE, **kw)
     return {
         str(p.relative_to(tmp_path)): htmlprobe.parse(p.read_text(encoding="utf-8"))
-        for p in sorted(tmp_path.rglob("index.html"))
+        # The show pages and the shows index; airing/ has its own tests.
+        for p in sorted((tmp_path / "shows").rglob("index.html"))
     }
 
 
@@ -127,9 +128,13 @@ def test_files_and_sitemap(doc, tmp_path):
         "shows/the-cartographers/index.html",
     ]
     entries = htmlprobe.sitemap(_raw(tmp_path, "sitemap.xml"))
-    # The home page (site_index.py) first, then every page built here.
+    # The home page (site_index.py) first, then every page built here,
+    # the airing-now page among them (DECISIONS 0033).
     assert entries["loc"][0] == f"{BASE}/"
-    assert sorted(entries["loc"][1:]) == sorted(p.canonical for p in pages.values())
+    assert sorted(entries["loc"][1:]) == sorted(
+        [f"{BASE}/airing/", *(p.canonical for p in pages.values())]
+    )
+    assert (tmp_path / "airing" / "index.html").is_file()
     assert set(entries["lastmod"]) == {doc["generated_at"][:10]}
     assert _raw(tmp_path, "sitemap.xml").startswith('<?xml version="1.0" encoding="UTF-8"?>')
 
@@ -583,7 +588,7 @@ def test_cli_builds_and_refuses(doc, tmp_path, capsys):
     snap.write_text(json.dumps(doc), encoding="utf-8")
     out = tmp_path / "out"
     assert show_pages.main([str(snap), str(out), "--base-url", BASE + "/", "--limit", "2"]) == 0
-    assert "wrote 5 files" in capsys.readouterr().out
+    assert "wrote 6 files" in capsys.readouterr().out
     assert (out / "shows" / "harbor-lights" / "index.html").is_file()
     assert not (out / "shows" / "salt-and-ember").exists()
 

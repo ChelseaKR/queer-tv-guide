@@ -3,6 +3,9 @@
 <h1>Do queer characters die? Queer TV shows, spoiler-free</h1>
 <p>Before you start a show, check whether it falls into the bury-your-gays trope. Pick a show to see its LGBTQ characters. Each page keeps the full answer to "does she die" closed until you open it, so you decide whether to be spoiled. The answers come from the records of LezWatch.TV.</p>
 <p>{{ total }} {{ 'show has' if total == 1 else 'shows have' }} a page.</p>
+{%- if airing_url %}
+<p><a href="{{ airing_url }}">Queer TV airing now: shows with a new episode coming up</a></p>
+{%- endif %}
 {%- if featured %}
 <h2 id="hand-picked">Hand-picked shows</h2>
 <ul class="shows">

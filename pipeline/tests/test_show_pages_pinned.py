@@ -83,9 +83,10 @@ def test_pages_sitemap_and_index_follow_the_list(doc, tmp_path):
     pins = show_pages.load_pinned(_pins([1044, 1007], tmp_path))
     show_pages.build_site(big, tmp_path / "out", pinned=pins)
     sitemap = htmlprobe.sitemap((tmp_path / "out" / "sitemap.xml").read_text())["loc"]
-    assert sitemap[:4] == [
+    assert sitemap[:5] == [
         "https://queerframe.app/",
         "https://queerframe.app/shows/",
+        "https://queerframe.app/airing/",
         "https://queerframe.app/shows/show-044/",
         "https://queerframe.app/shows/show-007/",
     ]
@@ -184,7 +185,7 @@ def test_two_builds_are_byte_identical(doc, tmp_path):
     assert names == sorted(
         p.relative_to(tmp_path / "b") for p in (tmp_path / "b").rglob("*") if p.is_file()
     )
-    assert len(names) == 53
+    assert len(names) == 54  # 50 shows, the index, airing/, sitemap, robots
     for name in names:
         assert (tmp_path / "a" / name).read_bytes() == (tmp_path / "b" / name).read_bytes()
     # Control: a different list gives a different sitemap, so identity is not vacuous.

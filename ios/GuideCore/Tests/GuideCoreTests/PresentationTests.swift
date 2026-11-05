@@ -167,22 +167,113 @@ final class PresentationTests: XCTestCase {
         XCTAssertEqual(deaths.headline, "Not recorded. This snapshot does not list any queer characters for this show.")
     }
 
-    /// LezWatch records a death on the character. When the character is in
-    /// more than one show, the record cannot say this show is where it
-    /// happens, so the line says exactly that instead of "dies".
-    func testADeadCharacterInSeveralShowsIsNotPinnedOnThisShow() throws {
+    /// Odile Brandt (dies 2017, a regular on show 102 in 2016-2018) also
+    /// linked to show 101 with `years`, so the death-placement rule
+    /// (DECISIONS 0030) can be read on both shows.
+    private func odileAlsoIn101(years: [String], deathYears: [Int]? = nil) throws -> Snapshot {
         let data = try JSONEdit.editCharacter(try Repo.fixtureData(), index: 2) { odile in
             var shows = odile["shows"] as! [[String: Any]]
-            shows.append(["show_id": "lwtv:show:101", "role": "guest", "years": []])
+            shows.append(["show_id": "lwtv:show:101", "role": "guest", "years": years])
             odile["shows"] = shows
+            if let deathYears {
+                var death = odile["death"] as! [String: Any]
+                death["years"] = deathYears
+                death["dates"] = deathYears.map { ["date": NSNull(), "year": $0, "raw": "\($0)"] as [String: Any] }
+                odile["death"] = death
+            }
         }
         let s = try SnapshotDecoder().decode(data)
-        let odile = try XCTUnwrap(s.character(id: "lwtv:character:203"))
-        XCTAssertEqual(odile.shows.count, 2, "the edit landed")
+        XCTAssertEqual(try XCTUnwrap(s.character(id: "lwtv:character:203")).shows.count, 2, "the edit landed")
+        return s
+    }
+
+    /// The L Word: Generation Q case. LezWatch records a death on the
+    /// character; Dana Fairbanks dies in 2007 in The L Word and is a 2022
+    /// guest in Generation Q. A death outside the character's years in this
+    /// show is not counted here, and is not called "dies" here.
+    func testADeathOutsideTheCharactersYearsInThisShowIsNotCountedHere() throws {
+        let s = try odileAlsoIn101(years: ["2022"])
         let show = try XCTUnwrap(s.show(id: "lwtv:show:101"))
         let deaths = Presentation.showDeaths(cast: s.characters(inShow: show.id), show: show)
-        XCTAssertEqual(deaths.lines, ["Odile Brandt: a death is recorded (2017). Odile Brandt appears in 2 shows, and the record does not say which one."])
+        XCTAssertEqual(deaths.headline, "Not recorded. This snapshot does not record a death in this show for any of the 3 listed characters.")
+        XCTAssertEqual(deaths.lines, ["Odile Brandt: not recorded in this show. LezWatch.TV records a death for Odile Brandt (2017), but not in a year Odile Brandt appears in this show. It may happen in another show."])
+        XCTAssertEqual(deaths.notes, ["One listed character has a recorded death that LezWatch.TV does not place in this show, so it is not counted here."])
         XCTAssertFalse(deaths.lines[0].contains(" dies"), deaths.lines[0])
+        XCTAssertTrue(deaths.headline.hasPrefix("Not recorded."), "an unknown answer opens with Not recorded")
+        // The show the death falls in still counts it, and says why.
+        let home = try XCTUnwrap(s.show(id: "lwtv:show:102"))
+        let there = Presentation.showDeaths(cast: s.characters(inShow: home.id), show: home)
+        XCTAssertEqual(there.headline, "1 of 2 listed characters has a recorded death.")
+        XCTAssertEqual(there.lines, ["Odile Brandt dies (2017). The record belongs to the character, not to one show; it is counted here because 2017 is among Odile Brandt\u{2019}s years in this show."])
+        XCTAssertEqual(there.notes, [])
+    }
+
+    func testADeathInTheCharactersYearsInThisShowIsCountedHere() throws {
+        let s = try odileAlsoIn101(years: ["2017", "2018"])
+        let show = try XCTUnwrap(s.show(id: "lwtv:show:101"))
+        let deaths = Presentation.showDeaths(cast: s.characters(inShow: show.id), show: show)
+        XCTAssertEqual(deaths.headline, "1 of 3 listed characters has a recorded death.")
+        XCTAssertEqual(deaths.lines, ["Odile Brandt dies (2017). The record belongs to the character, not to one show; it is counted here because 2017 is among Odile Brandt\u{2019}s years in this show."])
+        XCTAssertEqual(deaths.notes, ["LezWatch.TV's own tally for this show is 0 deaths; its character records list 1."])
+    }
+
+    /// A link with no years, or a death with no year, cannot be placed, so
+    /// for a multi-show character it is unknown here, not a guess.
+    func testADeathThatCannotBePlacedIsUnknownHere() throws {
+        let noLinkYears = try odileAlsoIn101(years: [])
+        let show = try XCTUnwrap(noLinkYears.show(id: "lwtv:show:101"))
+        let a = Presentation.showDeaths(cast: noLinkYears.characters(inShow: show.id), show: show)
+        XCTAssertEqual(a.headline, "Not recorded. This snapshot does not record a death in this show for any of the 3 listed characters.")
+        XCTAssertEqual(a.lines, ["Odile Brandt: not recorded in this show. LezWatch.TV records a death for Odile Brandt (2017) but not Odile Brandt\u{2019}s years in this show, so it cannot say whether it happens here."])
+
+        let noDeathYear = try odileAlsoIn101(years: ["2021"], deathYears: [])
+        let home = try XCTUnwrap(noDeathYear.show(id: "lwtv:show:102"))
+        let b = Presentation.showDeaths(cast: noDeathYear.characters(inShow: home.id), show: home)
+        XCTAssertEqual(b.headline, "Not recorded. This snapshot does not record a death in this show for any of the 2 listed characters.")
+        XCTAssertEqual(b.lines, ["Odile Brandt: not recorded in this show. LezWatch.TV records a death for Odile Brandt but no year, so it cannot say whether it happens in this show."])
+        XCTAssertEqual(b.notes, [
+            "One listed character has a recorded death that LezWatch.TV does not place in this show, so it is not counted here.",
+            "LezWatch.TV's own tally for this show is 1 death; its character records place 0 in this show.",
+        ])
+        let odile = try XCTUnwrap(noDeathYear.character(id: "lwtv:character:203"))
+        XCTAssertEqual(Presentation.deathPlacement(odile, inShow: home.id), .noDeathYear)
+        XCTAssertFalse(Presentation.deathPlacement(odile, inShow: home.id).counts)
+    }
+
+    /// A character in one show keeps its death there, with or without years.
+    func testAOneShowCharacterKeepsItsDeath() throws {
+        let s = try Repo.fixture()
+        let odile = try XCTUnwrap(s.character(id: "lwtv:character:203"))
+        XCTAssertEqual(Presentation.deathPlacement(odile, inShow: "lwtv:show:102"), .onlyShow)
+        let alive = try XCTUnwrap(s.character(id: "lwtv:character:204"))
+        XCTAssertEqual(Presentation.deathPlacement(alive, inShow: "lwtv:show:102"), .notRecorded)
+    }
+
+    // MARK: Trigger-warning level, labeled and explained
+
+    func testTriggerLevelIsLabeledAndSaysWhatItMeasures() {
+        let high = Presentation.triggerWarning([Term(slug: "high", name: "High")])
+        XCTAssertEqual(high.heading, "LezWatch.TV trigger-warning level")
+        XCTAssertEqual(high.level, "High")
+        XCTAssertEqual(high.meaning, "LezWatch.TV: \u{201c}Scenes of explicit violence, drug use, suicide, sex, and/or abuse occur regularly. Not intended for children or sensitive viewers.\u{201d}")
+        XCTAssertTrue(high.spoken.hasPrefix("LezWatch.TV trigger-warning level: High."), high.spoken)
+        for slug in ["low", "medium"] {
+            let w = Presentation.triggerWarning([Term(slug: slug, name: slug.capitalized)])
+            XCTAssertTrue(w.meaning.hasPrefix("LezWatch.TV: \u{201c}"), w.meaning)
+        }
+    }
+
+    func testAnUnratedShowSaysUnratedNeverNone() {
+        let w = Presentation.triggerWarning([])
+        XCTAssertEqual(w.level, "Not rated")
+        XCTAssertEqual(w.meaning, "LezWatch.TV has not given this show a level. That does not mean it has no difficult content.")
+        XCTAssertFalse(w.level.lowercased().contains("none"))
+    }
+
+    func testAnUnknownLevelIsShownAsItselfWithoutAMadeUpMeaning() {
+        let w = Presentation.triggerWarning([Term(slug: "violence", name: "Violence")])
+        XCTAssertEqual(w.level, "Violence")
+        XCTAssertEqual(w.meaning, "LezWatch.TV gives this level without a description in this snapshot.")
     }
 
     func testShowDeathsStatesADisagreeingSourceTally() throws {

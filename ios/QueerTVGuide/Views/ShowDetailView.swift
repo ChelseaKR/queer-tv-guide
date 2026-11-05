@@ -159,20 +159,27 @@ struct ShowDetailView: View {
     /// Tragedy", "None!"; `Presentation.deathSpoilerTropeSlugs`) are left
     /// out here and stated inside the reveal above instead. They are not
     /// rendered at all, so VoiceOver cannot read them before Reveal.
-    @ViewBuilder
+    ///
+    /// The trigger-warning level is always shown, labeled as LezWatch.TV's
+    /// and with what the level means in LezWatch.TV's words, so "High" is
+    /// never a bare word. An unrated show says it is unrated.
     private func tropesAndTriggers(_ show: Show) -> some View {
         let tropes = Presentation.withoutSpoilers(show.tropes, Presentation.deathSpoilerTropeSlugs)
-        if !tropes.isEmpty || !show.triggers.isEmpty {
-            VStack(alignment: .leading, spacing: 8) {
-                if !tropes.isEmpty {
-                    Text("Tropes").font(.headline).accessibilityAddTraits(.isHeader)
-                    Text(Presentation.terms(tropes, empty: Presentation.noTropes))
-                }
-                if !show.triggers.isEmpty {
-                    Text("Trigger warnings").font(.headline).accessibilityAddTraits(.isHeader)
-                    Text(Presentation.terms(show.triggers, empty: Presentation.noTriggers))
-                }
+        let trigger = Presentation.triggerWarning(show.triggers)
+        return VStack(alignment: .leading, spacing: 8) {
+            if !tropes.isEmpty {
+                Text("Tropes").font(.headline).accessibilityAddTraits(.isHeader)
+                Text(Presentation.terms(tropes, empty: Presentation.noTropes))
             }
+            Text(trigger.heading).font(.headline).accessibilityAddTraits(.isHeader)
+            VStack(alignment: .leading, spacing: 4) {
+                Text(trigger.level)
+                Text(trigger.meaning)
+                    .font(.callout)
+                    .foregroundStyle(.subdued)
+            }
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel("\(trigger.level). \(trigger.meaning)")
         }
     }
 

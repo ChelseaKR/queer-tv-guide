@@ -79,8 +79,11 @@ public enum Presentation {
     /// Two limits of the source are stated rather than papered over
     /// (measured on the 2026-09-17 snapshot):
     /// - LezWatch records a death on the *character*, not on a show. 21 dead
-    ///   characters appear in more than one show (e.g. across a franchise),
-    ///   so for them the record cannot say this show is where it happens.
+    ///   characters appear in more than one show (e.g. across a franchise).
+    ///   For them a death counts in this show only when its year is one of
+    ///   the character's years in this show (DECISIONS 0030, the site's
+    ///   rule); otherwise the line says it is not recorded in this show and
+    ///   a note says how many are not counted (`deathPlacement`).
     /// - LezWatch's own per-show death tally disagrees with its character
     ///   records for 31 shows. When it does, both numbers are shown.
     /// - The show's own death-revealing trope ("Bury Your Queers") is kept
@@ -136,6 +139,87 @@ public enum Presentation {
     /// The show-level answer when the snapshot lists nobody to answer about.
     static let noListedCast = "Not recorded. This snapshot does not list any queer characters for this show."
 
+    /// Where a character's recorded death falls for one show (DECISIONS
+    /// 0030, the site's rule in `show_pages._death_status`). LezWatch
+    /// records a death on the character, not on a show. For a character
+    /// linked to more than one show, the death counts for this show only
+    /// when a death year is one of the character's years in this show (the
+    /// link's `years`). Otherwise the snapshot cannot place it here, so the
+    /// answer for this show is unknown, never a guess either way.
+    public enum DeathPlacement: Equatable, Sendable {
+        /// No death is recorded for the character.
+        case notRecorded
+        /// A death is recorded and the character is linked to this show only.
+        case onlyShow
+        /// A multi-show character whose death year(s) fall in this show's
+        /// years for them: counted here.
+        case inShowYears([Int])
+        /// Multi-show, and the death has no recorded year: not counted.
+        case noDeathYear
+        /// Multi-show, and the link to this show has no years: not counted.
+        case noShowYears
+        /// Multi-show, and no death year is a year the character appears in
+        /// this show: not counted.
+        case outsideShowYears
+
+        /// True when the death counts as happening in this show.
+        public var counts: Bool {
+            switch self {
+            case .onlyShow, .inShowYears: return true
+            case .notRecorded, .noDeathYear, .noShowYears, .outsideShowYears: return false
+            }
+        }
+
+        /// A recorded death that this show's years do not place here.
+        public var elsewhere: Bool {
+            switch self {
+            case .noDeathYear, .noShowYears, .outsideShowYears: return true
+            case .notRecorded, .onlyShow, .inShowYears: return false
+            }
+        }
+    }
+
+    public static func deathPlacement(_ character: Character, inShow showID: Show.ID) -> DeathPlacement {
+        let death = character.death
+        guard death.deathKnown, death.died == true else { return .notRecorded }
+        let otherShows = Set(character.shows.map(\.showID)).subtracting([showID])
+        if otherShows.isEmpty { return .onlyShow }
+        let here = Set(character.shows.filter { $0.showID == showID }.flatMap(\.years))
+        let matched = death.years.sorted().filter { here.contains(String($0)) }
+        if !matched.isEmpty { return .inShowYears(matched) }
+        if death.years.isEmpty { return .noDeathYear }
+        if here.isEmpty { return .noShowYears }
+        return .outsideShowYears
+    }
+
+    /// "2017", "2017 and 2019", "2015, 2017 and 2019".
+    static func andList(_ items: [String]) -> String {
+        guard items.count > 1 else { return items.first ?? "" }
+        return items.dropLast().joined(separator: ", ") + " and " + items[items.count - 1]
+    }
+
+    /// The reveal's line for one character with a recorded death.
+    static func deathLine(_ character: Character, _ placement: DeathPlacement) -> String? {
+        let name = character.name
+        let years = character.death.years.sorted().map(String.init).joined(separator: ", ")
+        let when = years.isEmpty ? "" : " (\(years))"
+        switch placement {
+        case .notRecorded:
+            return nil
+        case .onlyShow:
+            return "\(name) dies\(when)."
+        case .inShowYears(let matched):
+            let list = andList(matched.map(String.init))
+            return "\(name) dies\(when). The record belongs to the character, not to one show; it is counted here because \(list) \(matched.count == 1 ? "is" : "are") among \(name)\u{2019}s years in this show."
+        case .noDeathYear:
+            return "\(name): not recorded in this show. LezWatch.TV records a death for \(name) but no year, so it cannot say whether it happens in this show."
+        case .noShowYears:
+            return "\(name): not recorded in this show. LezWatch.TV records a death for \(name)\(when) but not \(name)\u{2019}s years in this show, so it cannot say whether it happens here."
+        case .outsideShowYears:
+            return "\(name): not recorded in this show. LezWatch.TV records a death for \(name)\(when), but not in a year \(name) appears in this show. It may happen in another show."
+        }
+    }
+
     public static func showDeaths(cast: [Character], show: Show) -> ShowDeaths {
         var notes: [String] = []
         let spoilerTags = show.tropes.filter { deathSpoilerTropeSlugs.contains($0.slug) }
@@ -143,35 +227,80 @@ public enum Presentation {
             notes += spoilerTags.map(spoilerTagNote)
             return ShowDeaths(headline: noListedCast, lines: [], notes: notes)
         }
-        let dead = cast.filter { $0.death.deathKnown && $0.death.died == true }
+        let placed = cast.map { ($0, deathPlacement($0, inShow: show.id)) }
+        let counted = placed.filter { $0.1.counts }
+        let elsewhere = placed.filter { $0.1.elsewhere }
+        let inThisShow = elsewhere.isEmpty ? "" : " in this show"
         let listed = "\(cast.count) listed \(cast.count == 1 ? "character" : "characters")"
-        if let reported = show.counts.deathsSourceReported, reported != dead.count {
-            notes.append("LezWatch.TV's own tally for this show is \(reported) \(reported == 1 ? "death" : "deaths"); its character records list \(dead.count).")
+        if !elsewhere.isEmpty {
+            notes.append(elsewhere.count == 1
+                ? "One listed character has a recorded death that LezWatch.TV does not place in this show, so it is not counted here."
+                : "\(elsewhere.count) listed characters have a recorded death that LezWatch.TV does not place in this show, so they are not counted here.")
+        }
+        if let reported = show.counts.deathsSourceReported, reported != counted.count {
+            let records = elsewhere.isEmpty ? "list \(counted.count)" : "place \(counted.count) in this show"
+            notes.append("LezWatch.TV's own tally for this show is \(reported) \(reported == 1 ? "death" : "deaths"); its character records \(records).")
         }
         notes += spoilerTags.map(spoilerTagNote)
-        guard !dead.isEmpty else {
+        // Counted deaths first, then the ones this show's years do not place.
+        let lines = (counted + elsewhere).compactMap { deathLine($0.0, $0.1) }
+        guard !counted.isEmpty else {
             return ShowDeaths(
                 headline: cast.count == 1
-                    ? "Not recorded. This snapshot does not record a death for the one listed character."
-                    : "Not recorded. This snapshot does not record a death for any of the \(listed).",
-                lines: [],
+                    ? "Not recorded. This snapshot does not record a death\(inThisShow) for the one listed character."
+                    : "Not recorded. This snapshot does not record a death\(inThisShow) for any of the \(listed).",
+                lines: lines,
                 notes: notes
             )
         }
-        let lines = dead.map { character -> String in
-            let years = character.death.years.sorted().map(String.init).joined(separator: ", ")
-            let when = years.isEmpty ? "" : " (\(years))"
-            let showCount = Set(character.shows.map(\.showID)).count
-            if showCount > 1 {
-                return "\(character.name): a death is recorded\(when). \(character.name) appears in \(showCount) shows, and the record does not say which one."
-            }
-            return "\(character.name) dies\(when)."
-        }
         return ShowDeaths(
-            headline: "\(dead.count) of \(listed) \(dead.count == 1 ? "has" : "have") a recorded death.",
+            headline: "\(counted.count) of \(listed) \(counted.count == 1 ? "has" : "have") a recorded death\(inThisShow).",
             lines: lines,
             notes: notes
         )
+    }
+
+    // MARK: Trigger-warning level
+
+    /// LezWatch.TV's trigger-warning level for a show, labeled and explained.
+    /// The snapshot carries only the level's name ("High"); on its own that
+    /// says nothing about what is measured. The meanings are LezWatch.TV's
+    /// own wording, from its page for each level (checked 2026-11-05). No
+    /// link to those pages: the app's source names one host only
+    /// (SourceTreeGuardTests), and the show's own LezWatch.TV link is on
+    /// the same screen. An unrated show says it is unrated, never "none".
+    public struct TriggerWarning: Equatable, Sendable {
+        public let heading: String
+        /// "High", "Medium", "Low", or "Not rated".
+        public let level: String
+        /// What the level means, or what an unrated show does not mean.
+        public let meaning: String
+
+        public var spoken: String { "\(heading): \(level). \(meaning)" }
+    }
+
+    public static let triggerHeading = "LezWatch.TV trigger-warning level"
+
+    static let triggerMeanings: [String: String] = [
+        "high": "LezWatch.TV: \u{201c}Scenes of explicit violence, drug use, suicide, sex, and/or abuse occur regularly. Not intended for children or sensitive viewers.\u{201d}",
+        "medium": "LezWatch.TV: \u{201c}Designated as \u{2018}strong content,\u{2019} subject matter regularly discusses and sometimes depicts violence and abuse. Viewer discretion is advised.\u{201d}",
+        "low": "LezWatch.TV: \u{201c}While generally acceptable for the over 14 crowd, there may be some sensitive topics now and then.\u{201d}",
+    ]
+
+    public static func triggerWarning(_ triggers: [Term]) -> TriggerWarning {
+        guard !triggers.isEmpty else {
+            return TriggerWarning(
+                heading: triggerHeading,
+                level: "Not rated",
+                meaning: "LezWatch.TV has not given this show a level. That does not mean it has no difficult content."
+            )
+        }
+        let level = triggers.map(\.name).joined(separator: ", ")
+        let known = triggers.compactMap { triggerMeanings[$0.slug] }
+        let meaning = known.isEmpty
+            ? "LezWatch.TV gives this level without a description in this snapshot."
+            : known.joined(separator: " ")
+        return TriggerWarning(heading: triggerHeading, level: level, meaning: meaning)
     }
 
     // MARK: Where to watch / schedule

@@ -86,7 +86,16 @@ did not ask to be told. It sits inside a native ``<details>`` element that is
 closed when the page loads, and nowhere else: not in the title, the
 description, the structured data, a heading, the facts or the list of
 characters. LezWatch's death-revealing terms (the cliche ``dead`` and the
-trope ``dead-queers``) and its trigger warnings stay in that element too.
+trope ``dead-queers``) stay in that element too. LezWatch's trigger-warning
+level (``low``, ``medium`` or ``high``, which says how intense a show is and
+nothing about who dies) is a facts row; any other trigger term is never
+printed (DECISIONS 0031).
+
+Seasons (``seasons_fact``, DECISIONS 0031). For a show TVmaze lists as Ended, when TVmaze's last season number differs from
+LezWatch's season count, the page shows TVmaze's, labeled "per TVmaze".
+When LezWatch has no count, TVmaze's latest season fills it ("3 so far" for
+a show still running). A TVmaze season number of 1900 or more is a year (a
+show numbered by year), not a count, and is never used.
 
 What a page never says. LezWatch records deaths, not survival
 (``schema/README.md``), so a character with no recorded death is "Unknown",
@@ -209,6 +218,13 @@ DEATH_SPOILER_CLICHES = frozenset({"dead"})
 DEATH_SPOILER_TROPES = frozenset({"dead-queers"})
 UNKNOWN = "Unknown"
 NOT_RECORDED = "Not recorded"
+# LezWatch's trigger-warning levels (DECISIONS 0031). They rate how intense
+# a show is and name no event, so the level is a facts row. Any other
+# trigger term is never printed outside the answer.
+TRIGGER_LEVELS = {"low": "Low", "medium": "Medium", "high": "High"}
+# A TVmaze season number this large is a year (soaps and anime numbered by
+# year, "2011"), not a season count (DECISIONS 0031).
+SEASON_IS_A_YEAR = 1900
 
 _ENV = jinja2.Environment(
     loader=jinja2.PackageLoader("qtv_pipeline", "templates"),
@@ -736,10 +752,8 @@ def _answer(show: dict[str, Any], cast: list[CharacterView]) -> Answer:
             f"Yes. {len(dead)} of {listed} {_plural(len(dead), 'dies', 'die')}: {', '.join(dead)}."
         )
         if len(dead) < n:
-            notes.append(
-                f"For the other {n - len(dead)}, the answer is {UNKNOWN.lower()}: "
-                "LezWatch.TV records deaths, not survival."
-            )
+            # The fixed line under the notes says why (show.html.j2).
+            notes.append(f"For the other {n - len(dead)}, the answer is {UNKNOWN.lower()}.")
     if elsewhere:
         notes.append(
             f"{'One listed character has' if elsewhere == 1 else f'{elsewhere} listed characters have'}"
@@ -758,22 +772,76 @@ def _years(years: dict[str, Any]) -> str:
     return f"{start} to present" if years["on_air"] == "yes" else f"{start} (end year not recorded)"
 
 
-def _facts(show: dict[str, Any]) -> list[tuple[str, str]]:
+def _tvmaze_last_season(show: dict[str, Any]) -> int | None:
+    """TVmaze's latest aired season number, or None when TVmaze has none or
+    numbers this show's seasons by year."""
     sched = show["schedule"]
-    seasons = show["seasons"]
+    if sched["schedule_known"] is not True:
+        return None
+    season = (sched["previous_episode"] or {}).get("season")
+    if isinstance(season, bool) or not isinstance(season, int):
+        return None
+    return season if 1 <= season < SEASON_IS_A_YEAR else None
+
+
+def seasons_fact(show: dict[str, Any]) -> tuple[str, str, int | None]:
+    """(label, value, count for structured data) for the Seasons row
+    (DECISIONS 0031). For an ended show TVmaze's last season wins when the
+    two disagree; when LezWatch has no count, TVmaze's latest season fills
+    it. Absence stays "Not recorded", never a number."""
+    recorded = show["seasons"]
+    tvmaze = _tvmaze_last_season(show)
+    ended = show["schedule"]["status"] == "Ended"
+    if tvmaze is not None and (recorded is None or (ended and tvmaze != recorded)):
+        return "Seasons, per TVmaze", str(tvmaze) if ended else f"{tvmaze} so far", tvmaze
+    if recorded is None:
+        return "Seasons", NOT_RECORDED, None
+    return "Seasons", str(recorded), recorded
+
+
+def _tvmaze_channel(show: dict[str, Any]) -> str | None:
+    sched = show["schedule"]
+    if sched["schedule_known"] is not True:
+        return None
+    return (sched["network"] or sched["web_channel"] or {}).get("name") or None
+
+
+def network_fact(show: dict[str, Any]) -> tuple[str, str]:
+    """(label, value) for the Network row: LezWatch's stations, then
+    TVmaze's network or web channel."""
+    sched = show["schedule"]
     channel = (
         ", ".join(n["name"] for n in show["networks"])
         or (sched["network"] or sched["web_channel"] or {}).get("name")
         or NOT_RECORDED
     )
+    return "Network", channel
+
+
+def trigger_level(show: dict[str, Any]) -> str:
+    """LezWatch's trigger-warning level, "Not rated" when none is recorded.
+    A term that is not one of the three levels is not printed (it could name
+    an event); the row then points to LezWatch.TV."""
+    slugs = [t["slug"] for t in show["triggers"]]
+    if not slugs:
+        return "Not rated"
+    if len(slugs) == 1 and slugs[0] in TRIGGER_LEVELS:
+        return TRIGGER_LEVELS[slugs[0]]
+    return "See LezWatch.TV"
+
+
+def _facts(show: dict[str, Any]) -> list[tuple[str, str]]:
+    sched = show["schedule"]
+    seasons_label, seasons, _ = seasons_fact(show)
     return [
         ("Years", _years(show["years"])),
-        ("Seasons", NOT_RECORDED if seasons is None else str(seasons)),
+        (seasons_label, seasons),
         ("Format", _term_name(show["format"])),
-        ("Network", channel),
+        network_fact(show),
         ("Country", ", ".join(c["name"] for c in show["countries"]) or NOT_RECORDED),
         ("Genres", ", ".join(g["name"] for g in show["genres"]) or NOT_RECORDED),
         ("Worth it, per LezWatch.TV", show["ratings"]["worth_it"] or "Not rated"),
+        ("Trigger warning, per LezWatch.TV", trigger_level(show)),
         (
             "Run status, per TVmaze",
             sched["status"] if sched["schedule_known"] and sched["status"] else UNKNOWN,
@@ -854,11 +922,7 @@ def _opening_network(show: dict[str, Any]) -> str | None:
     names = [n["name"] for n in show["networks"] if n.get("name")]
     if names:
         return _and_list(names)
-    sched = show["schedule"]
-    if sched["schedule_known"] is not True:
-        return None
-    channel = sched["network"] or sched["web_channel"] or {}
-    return channel.get("name") or None
+    return _tvmaze_channel(show)
 
 
 def _opening_episodes(show: dict[str, Any]) -> str | None:
@@ -919,8 +983,9 @@ def _series(show: dict[str, Any], canonical: str, cast: list[CharacterView]) -> 
         series["startDate"] = str(years["start"])
     if years["end"] is not None:
         series["endDate"] = str(years["end"])
-    if show["seasons"] is not None:
-        series["numberOfSeasons"] = show["seasons"]
+    seasons = seasons_fact(show)[2]
+    if seasons is not None:
+        series["numberOfSeasons"] = seasons
     if show["genres"]:
         series["genre"] = [g["name"] for g in show["genres"]]
     if show["countries"]:

@@ -91,6 +91,14 @@ level (``low``, ``medium`` or ``high``, which says how intense a show is and
 nothing about who dies) is a facts row; any other trigger term is never
 printed (DECISIONS 0031).
 
+The character list (DECISIONS 0035). Outside the answer, each listed
+character is one item, regulars first, with a link anchor from the
+character's LezWatch slug (``anchors``: stable, unique on the page) and
+"played by <actor>" with the actor names LezWatch.TV gives. It never shows a
+character's years in the show (a run that ends before the show does gives a
+death away), a death date or year, or any cliche or trope. There are no
+actor pages.
+
 Seasons (``seasons_fact``, DECISIONS 0031). For a show TVmaze lists as Ended, when TVmaze's last season number differs from
 LezWatch's season count, the page shows TVmaze's, labeled "per TVmaze".
 When LezWatch has no count, TVmaze's latest season fills it ("3 so far" for
@@ -250,6 +258,11 @@ class CharacterView:
     # A death LezWatch records for the character that this show's years do
     # not place in this show (DECISIONS 0030). Never a yes.
     elsewhere: bool = False
+    # The page's link anchor for this character (``anchors``, DECISIONS 0035).
+    anchor: str = ""
+    # Actor names exactly as LezWatch.TV lists them; an actor id that did not
+    # resolve to a name is left out, never printed as a placeholder.
+    actors: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -703,7 +716,8 @@ def _characters(
 ) -> list[CharacterView]:
     views = []
     pairs = (index if index is not None else cast_index(doc)).get(show["id"], [])
-    for c, link in pairs:
+    ids = anchors([c for c, _ in pairs])
+    for (c, link), anchor in zip(pairs, ids, strict=True):
         others = {lk["show_id"] for lk in c["shows"]} - {show["id"]}
         years_here = [y for lk in c["shows"] if lk["show_id"] == show["id"] for y in lk["years"]]
         dies, status = _death_status(c["death"], len(others), years_here)
@@ -718,9 +732,52 @@ def _characters(
                 dies=dies,
                 status=status,
                 elsewhere=elsewhere,
+                anchor=anchor,
+                actors=_actor_names(c),
             )
         )
     return views
+
+
+# Ids the page's own markup uses; a character anchor never takes one.
+RESERVED_IDS = frozenset({"main"})
+
+
+def anchors(characters: list[dict[str, Any]]) -> list[str]:
+    """One link anchor per character on a show page, in order (DECISIONS
+    0035). It is the character's LezWatch slug, so it stays the same from
+    build to build (``#candy-ferocity``). A slug that is not a plain slug, is
+    reserved, or repeats one earlier on the page falls back to
+    ``character-<LezWatch id>``, then a ``-2``, ``-3`` suffix, so no two are
+    alike. Nothing about deaths or years goes into an anchor."""
+    used: set[str] = set(RESERVED_IDS)
+    out = []
+    for c in characters:
+        slug = c["slug"]
+        base = slug if isinstance(slug, str) and SLUG.fullmatch(slug) and "%" not in slug else ""
+        if not base or base in used:
+            base = f"character-{c['lwtv_id']}"
+        anchor, n = base, 2
+        while anchor in used:
+            anchor, n = f"{base}-{n}", n + 1
+        used.add(anchor)
+        out.append(anchor)
+    return out
+
+
+def _actor_names(character: dict[str, Any]) -> tuple[str, ...]:
+    names: list[str] = []
+    for actor in character["actors"]:
+        name = actor["name"]
+        if isinstance(name, str) and name.strip() and name.strip() not in names:
+            names.append(name.strip())
+    return tuple(names)
+
+
+def played_by(c: CharacterView) -> str | None:
+    """ "played by <actor>" from LezWatch.TV's actor names, or None when it
+    names no actor (the clause is then left out)."""
+    return f"played by {_and_list(list(c.actors))}" if c.actors else None
 
 
 def _answer(show: dict[str, Any], cast: list[CharacterView]) -> Answer:
@@ -1080,6 +1137,7 @@ def render_show(
         breadcrumb=_structured(_breadcrumb(crumbs), _series(show, canonical, cast)),
         facts=_facts(show),
         cast=cast,
+        listed=[(c, played_by(c)) for c in _ranked(cast)],
         answer=_answer(show, cast),
         tvmaze_url=show["schedule"]["tvmaze_url"],
         others=[

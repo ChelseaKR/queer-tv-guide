@@ -300,7 +300,7 @@ def test_the_home_page_links_to_the_shows_only_when_they_are_published(doc, tmp_
     for href in _home_hrefs_into_shows(text):
         path = href.removeprefix(f"{DOMAIN}/").split("#")[0]
         assert (site / path / "index.html").is_file(), href
-    assert "<script" not in text
+    assert text.count("<script") == 1 and '<script type="application/ld+json">' in text
 
 
 def test_the_home_page_head_is_complete_and_within_limits(doc):
@@ -325,7 +325,8 @@ def test_the_home_page_head_is_complete_and_within_limits(doc):
 
 def test_the_home_page_loads_nothing_from_anywhere(doc):
     page = htmlprobe.parse(site_index.render_index(doc))
-    assert page.named("script") == []
+    # The one script is the WebSite data block, which a browser never runs.
+    assert page.named("script") == [{"type": "application/ld+json"}]
     for forbidden in ("img", "iframe", "form", "input", "video", "audio", "object", "embed"):
         assert page.named(forbidden) == [], forbidden
     assert [a for a in page.named("link") if a.get("rel") != "canonical"] == []

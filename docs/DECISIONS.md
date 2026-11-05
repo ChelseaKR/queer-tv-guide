@@ -791,8 +791,13 @@ Cobra Kai's season counts, Buffy on The CW, and the year of Dana Fairbanks's
 death) are to be reported to LezWatch.TV by Chelsea; this rule does not wait
 for them.
 
-**Not changed.** The app, the years row, the title, description and
-selection. A season count from TVmaze can still differ from a show's
+**Not changed.** The network. It stays LezWatch.TV's stations first, then
+TVmaze's only when LezWatch.TV lists none, in both the facts row and the
+opening sentence, as in 0029. Chelsea chose this on 2026-11-05 after a trial
+of TVmaze's network showed TVmaze names a show's current home (The L Word:
+"Paramount+ with Showtime"). Buffy's "The CW" is left to LezWatch.TV to
+correct. Also not changed: the app, the years row, the title, description
+and selection. A season count from TVmaze can still differ from a show's
 official count where TVmaze numbers seasons differently (Wentworth's final
 20 episodes are season 8 in most sources and seasons 8 and 9 on TVmaze); the
 label says whose number it is.

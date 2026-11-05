@@ -155,8 +155,10 @@ struct ShowDetailView: View {
         }
     }
 
-    /// Death-revealing trope tags ("Bury Your Queers") are left out here
-    /// and stated inside the reveal above instead.
+    /// Death-revealing trope tags ("Bury Your Queers", "Happiness then
+    /// Tragedy", "None!"; `Presentation.deathSpoilerTropeSlugs`) are left
+    /// out here and stated inside the reveal above instead. They are not
+    /// rendered at all, so VoiceOver cannot read them before Reveal.
     @ViewBuilder
     private func tropesAndTriggers(_ show: Show) -> some View {
         let tropes = Presentation.withoutSpoilers(show.tropes, Presentation.deathSpoilerTropeSlugs)

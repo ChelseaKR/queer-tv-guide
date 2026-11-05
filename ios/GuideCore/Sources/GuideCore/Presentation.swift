@@ -105,8 +105,28 @@ public enum Presentation {
     /// on 648 of the 677 characters with a recorded death and on no other
     /// character; the show trope "Bury Your Queers" (`dead-queers`) is on
     /// 427 shows.
+    ///
+    /// The show tropes, checked against every trope in the 2026-11-04
+    /// snapshot (2,289 shows, 19% with a recorded death):
+    /// - "Bury Your Queers" (`dead-queers`): 421 of 430 tagged shows have a
+    ///   recorded death (98%).
+    /// - "Happiness then Tragedy" (`happy-then-not`): 51 of 67 (76%), and
+    ///   the name itself foretells the fate.
+    /// - "None!" (`none`): 0 of 224. Seeing it says no "Bury Your Queers"
+    ///   tag, so it answers the question the other way.
+    /// No other trope is a fate tag or moves far from the 19% base rate
+    /// ("Happy Ending" is 21%), so the rest stay visible. This is the one
+    /// list: the show screen, the reveal's notes and the trope filter all
+    /// read it.
     public static let deathSpoilerClicheSlugs: Set<String> = ["dead"]
-    public static let deathSpoilerTropeSlugs: Set<String> = ["dead-queers"]
+    public static let deathSpoilerTropeSlugs: Set<String> = ["dead-queers", "happy-then-not", "none"]
+
+    /// The reveal's note for a spoiler trope tag.
+    static func spoilerTagNote(_ tag: Term) -> String {
+        tag.slug == "none"
+            ? "LezWatch.TV lists no tropes for this show (“None!”)."
+            : "LezWatch.TV tags this show “\(tag.name)”."
+    }
 
     /// `terms` minus any whose slug is in `spoilers`, order kept.
     public static func withoutSpoilers(_ terms: [Term], _ spoilers: Set<String>) -> [Term] {
@@ -120,7 +140,7 @@ public enum Presentation {
         var notes: [String] = []
         let spoilerTags = show.tropes.filter { deathSpoilerTropeSlugs.contains($0.slug) }
         guard !cast.isEmpty else {
-            notes += spoilerTags.map { "LezWatch.TV tags this show “\($0.name)”." }
+            notes += spoilerTags.map(spoilerTagNote)
             return ShowDeaths(headline: noListedCast, lines: [], notes: notes)
         }
         let dead = cast.filter { $0.death.deathKnown && $0.death.died == true }
@@ -128,7 +148,7 @@ public enum Presentation {
         if let reported = show.counts.deathsSourceReported, reported != dead.count {
             notes.append("LezWatch.TV's own tally for this show is \(reported) \(reported == 1 ? "death" : "deaths"); its character records list \(dead.count).")
         }
-        notes += spoilerTags.map { "LezWatch.TV tags this show “\($0.name)”." }
+        notes += spoilerTags.map(spoilerTagNote)
         guard !dead.isEmpty else {
             return ShowDeaths(
                 headline: cast.count == 1

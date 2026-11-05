@@ -257,7 +257,7 @@ final class ParityGoldenTests: XCTestCase {
                 "rating_quality": Presentation.rating(show.ratings.quality, label: "Quality"),
                 "score": Presentation.score(show.ratings.score),
                 "deaths": ["headline": deaths.headline, "lines": deaths.lines, "notes": deaths.notes, "spoken": deaths.spoken],
-                "deaths_summary": Presentation.deathsSummary(cast: cast),
+                "deaths_summary": Presentation.deathsSummary(cast: cast, showID: show.id),
                 "tropes_shown": Presentation.terms(Presentation.withoutSpoilers(show.tropes, Presentation.deathSpoilerTropeSlugs), empty: Presentation.noTropes),
                 "triggers": Presentation.terms(show.triggers, empty: Presentation.noTriggers),
                 "watch_links": show.watchLinks.map { ["label": Presentation.watchLinkLabel($0, networks: show.networks), "display_host": Presentation.displayHost($0.host)] },

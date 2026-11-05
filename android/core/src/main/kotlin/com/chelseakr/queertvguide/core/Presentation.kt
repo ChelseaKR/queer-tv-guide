@@ -47,9 +47,10 @@ object Presentation {
 
     fun deathShort(death: Death): String = if (death.isRecorded) "Dies" else "Death not recorded"
 
-    fun deathsSummary(cast: List<Character>): String {
+    /** Show-level summary. Counts only deaths placed in this show ([deathPlacement], DECISIONS 0030). */
+    fun deathsSummary(cast: List<Character>, showId: String): String {
         if (cast.isEmpty()) return NO_LISTED_CAST
-        val dead = cast.filter { it.death.isRecorded }
+        val dead = cast.filter { deathPlacement(it, showId).counts }
         val noun = if (cast.size == 1) "character" else "characters"
         if (dead.isEmpty()) return "Not recorded for any of the ${cast.size} listed $noun."
         val verb = if (dead.size == 1) "dies" else "die"
@@ -65,52 +66,155 @@ object Presentation {
     /**
      * LezWatch terms whose mere presence answers "does she die": kept out of
      * the always-visible trope lists so the reveal is not defeated by the line
-     * above it.
+     * above it. The same list as GuideCore's (DECISIONS 0030's audit): "Bury
+     * Your Queers", "Happiness then Tragedy" (51 of 67 tagged shows have a
+     * recorded death) and "None!" (0 of 224, so it answers the other way).
      */
     val deathSpoilerClicheSlugs: Set<String> = setOf("dead")
-    val deathSpoilerTropeSlugs: Set<String> = setOf("dead-queers")
+    val deathSpoilerTropeSlugs: Set<String> = setOf("dead-queers", "happy-then-not", "none")
+
+    /** The reveal's note for a spoiler trope tag. */
+    fun spoilerTagNote(tag: Term): String =
+        if (tag.slug == "none") "LezWatch.TV lists no tropes for this show (“None!”)." else "LezWatch.TV tags this show “${tag.name}”."
 
     fun withoutSpoilers(terms: List<Term>, spoilers: Set<String>): List<Term> = terms.filter { it.slug !in spoilers }
 
     const val NO_LISTED_CAST = "Not recorded. This snapshot does not list any queer characters for this show."
 
+    /**
+     * Where a character's recorded death falls for one show (DECISIONS 0030,
+     * GuideCore's `DeathPlacement`). For a character linked to more than one
+     * show, the death counts for this show only when a death year is one of
+     * the character's years in this show; otherwise it is unknown here.
+     */
+    sealed class DeathPlacement {
+        object NotRecorded : DeathPlacement()
+        object OnlyShow : DeathPlacement()
+        data class InShowYears(val matched: List<Int>) : DeathPlacement()
+        object NoDeathYear : DeathPlacement()
+        object NoShowYears : DeathPlacement()
+        object OutsideShowYears : DeathPlacement()
+
+        /** The death counts as happening in this show. */
+        val counts: Boolean get() = this is OnlyShow || this is InShowYears
+
+        /** Counted, or not placeable either way: the "no recorded deaths" filter reads this. */
+        val mayBeHere: Boolean get() = counts || this is NoDeathYear || this is NoShowYears
+
+        /** A recorded death that this show's years do not place here. */
+        val elsewhere: Boolean get() = this is NoDeathYear || this is NoShowYears || this is OutsideShowYears
+    }
+
+    fun deathPlacement(character: Character, showId: String): DeathPlacement {
+        val death = character.death
+        if (!death.isRecorded) return DeathPlacement.NotRecorded
+        val otherShows = character.shows.map { it.showId }.toSet() - showId
+        if (otherShows.isEmpty()) return DeathPlacement.OnlyShow
+        val here = character.shows.filter { it.showId == showId }.flatMap { it.years }.toSet()
+        val matched = death.years.sorted().filter { it.toString() in here }
+        if (matched.isNotEmpty()) return DeathPlacement.InShowYears(matched)
+        if (death.years.isEmpty()) return DeathPlacement.NoDeathYear
+        if (here.isEmpty()) return DeathPlacement.NoShowYears
+        return DeathPlacement.OutsideShowYears
+    }
+
+    /** "2017", "2017 and 2019", "2015, 2017 and 2019". */
+    internal fun andList(items: List<String>): String =
+        if (items.size <= 1) items.firstOrNull() ?: "" else items.dropLast(1).joinToString(", ") + " and " + items.last()
+
+    private fun deathLine(character: Character, placement: DeathPlacement): String? {
+        val name = character.name
+        val years = character.death.years.sorted().joinToString(", ")
+        val whenText = if (years.isEmpty()) "" else " ($years)"
+        return when (placement) {
+            DeathPlacement.NotRecorded -> null
+            DeathPlacement.OnlyShow -> "$name dies$whenText."
+            is DeathPlacement.InShowYears -> {
+                val list = andList(placement.matched.map { it.toString() })
+                val verb = if (placement.matched.size == 1) "is" else "are"
+                "$name dies$whenText. The record belongs to the character, not to one show; it is counted here because $list $verb among $name\u2019s years in this show."
+            }
+            DeathPlacement.NoDeathYear ->
+                "$name: not recorded in this show. LezWatch.TV records a death for $name but no year, so it cannot say whether it happens in this show."
+            DeathPlacement.NoShowYears ->
+                "$name: not recorded in this show. LezWatch.TV records a death for $name$whenText but not $name\u2019s years in this show, so it cannot say whether it happens here."
+            DeathPlacement.OutsideShowYears ->
+                "$name: not recorded in this show. LezWatch.TV records a death for $name$whenText, but not in a year $name appears in this show. It may happen in another show."
+        }
+    }
+
     fun showDeaths(cast: List<Character>, show: Show): ShowDeaths {
         val notes = mutableListOf<String>()
         val spoilerTags = show.tropes.filter { it.slug in deathSpoilerTropeSlugs }
         if (cast.isEmpty()) {
-            notes += spoilerTags.map { "LezWatch.TV tags this show “${it.name}”." }
+            notes += spoilerTags.map(::spoilerTagNote)
             return ShowDeaths(NO_LISTED_CAST, emptyList(), notes)
         }
-        val dead = cast.filter { it.death.isRecorded }
+        val placed = cast.map { it to deathPlacement(it, show.id) }
+        val counted = placed.filter { it.second.counts }
+        val elsewhere = placed.filter { it.second.elsewhere }
+        val inThisShow = if (elsewhere.isEmpty()) "" else " in this show"
         val listed = "${cast.size} listed ${if (cast.size == 1) "character" else "characters"}"
+        if (elsewhere.isNotEmpty()) {
+            notes += if (elsewhere.size == 1) {
+                "One listed character has a recorded death that LezWatch.TV does not place in this show, so it is not counted here."
+            } else {
+                "${elsewhere.size} listed characters have a recorded death that LezWatch.TV does not place in this show, so they are not counted here."
+            }
+        }
         val reported = show.counts.deathsSourceReported
-        if (reported != null && reported != dead.size) {
-            notes += "LezWatch.TV's own tally for this show is $reported ${if (reported == 1) "death" else "deaths"}; its character records list ${dead.size}."
+        if (reported != null && reported != counted.size) {
+            val records = if (elsewhere.isEmpty()) "list ${counted.size}" else "place ${counted.size} in this show"
+            notes += "LezWatch.TV's own tally for this show is $reported ${if (reported == 1) "death" else "deaths"}; its character records $records."
         }
-        notes += spoilerTags.map { "LezWatch.TV tags this show “${it.name}”." }
-        if (dead.isEmpty()) {
+        notes += spoilerTags.map(::spoilerTagNote)
+        val lines = (counted + elsewhere).mapNotNull { deathLine(it.first, it.second) }
+        if (counted.isEmpty()) {
             val headline = if (cast.size == 1) {
-                "Not recorded. This snapshot does not record a death for the one listed character."
+                "Not recorded. This snapshot does not record a death$inThisShow for the one listed character."
             } else {
-                "Not recorded. This snapshot does not record a death for any of the $listed."
+                "Not recorded. This snapshot does not record a death$inThisShow for any of the $listed."
             }
-            return ShowDeaths(headline, emptyList(), notes)
-        }
-        val lines = dead.map { character ->
-            val years = character.death.years.sorted().joinToString(", ")
-            val whenText = if (years.isEmpty()) "" else " ($years)"
-            val showCount = character.shows.map { it.showId }.toSet().size
-            if (showCount > 1) {
-                "${character.name}: a death is recorded$whenText. ${character.name} appears in $showCount shows, and the record does not say which one."
-            } else {
-                "${character.name} dies$whenText."
-            }
+            return ShowDeaths(headline, lines, notes)
         }
         return ShowDeaths(
-            headline = "${dead.size} of $listed ${if (dead.size == 1) "has" else "have"} a recorded death.",
+            headline = "${counted.size} of $listed ${if (counted.size == 1) "has" else "have"} a recorded death$inThisShow.",
             lines = lines,
             notes = notes,
         )
+    }
+
+    // Trigger-warning level
+
+    /**
+     * LezWatch.TV's trigger-warning level for a show, labeled and explained,
+     * as GuideCore's `TriggerWarning`. The meanings are LezWatch.TV's own
+     * wording from its page for each level (checked 2026-11-05). An unrated
+     * show says it is unrated, never "none".
+     */
+    data class TriggerWarning(val heading: String, val level: String, val meaning: String) {
+        val spoken: String get() = "$heading: $level. $meaning"
+    }
+
+    const val TRIGGER_HEADING = "LezWatch.TV trigger-warning level"
+
+    private val triggerMeanings: Map<String, String> = mapOf(
+        "high" to "LezWatch.TV: \u201cScenes of explicit violence, drug use, suicide, sex, and/or abuse occur regularly. Not intended for children or sensitive viewers.\u201d",
+        "medium" to "LezWatch.TV: \u201cDesignated as \u2018strong content,\u2019 subject matter regularly discusses and sometimes depicts violence and abuse. Viewer discretion is advised.\u201d",
+        "low" to "LezWatch.TV: \u201cWhile generally acceptable for the over 14 crowd, there may be some sensitive topics now and then.\u201d",
+    )
+
+    fun triggerWarning(triggers: List<Term>): TriggerWarning {
+        if (triggers.isEmpty()) {
+            return TriggerWarning(
+                TRIGGER_HEADING,
+                "Not rated",
+                "LezWatch.TV has not given this show a level. That does not mean it has no difficult content.",
+            )
+        }
+        val known = triggers.mapNotNull { triggerMeanings[it.slug] }
+        val meaning = if (known.isEmpty()) "LezWatch.TV gives this level without a description in this snapshot." else known.joinToString(" ")
+        return TriggerWarning(TRIGGER_HEADING, triggers.joinToString(", ") { it.name }, meaning)
     }
 
     // Where to watch / schedule

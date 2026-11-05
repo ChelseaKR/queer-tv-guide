@@ -63,10 +63,11 @@ public enum Presentation {
         death.deathKnown && death.died == true ? "Dies" : "Death not recorded"
     }
 
-    /// Show-level summary after the reveal.
-    public static func deathsSummary(cast: [Character]) -> String {
+    /// Show-level summary after the reveal. Counts only deaths placed in
+    /// this show (`deathPlacement`, DECISIONS 0030).
+    public static func deathsSummary(cast: [Character], showID: Show.ID) -> String {
         guard !cast.isEmpty else { return noListedCast }
-        let dead = cast.filter { $0.death.deathKnown && $0.death.died == true }
+        let dead = cast.filter { deathPlacement($0, inShow: showID).counts }
         if dead.isEmpty {
             return "Not recorded for any of the \(cast.count) listed \(cast.count == 1 ? "character" : "characters")."
         }
@@ -167,6 +168,16 @@ public enum Presentation {
             switch self {
             case .onlyShow, .inShowYears: return true
             case .notRecorded, .noDeathYear, .noShowYears, .outsideShowYears: return false
+            }
+        }
+
+        /// A death that could be in this show: counted, or one the snapshot
+        /// cannot place either way. The "no recorded deaths" filter reads
+        /// this, so it never admits a show on a guess.
+        public var mayBeHere: Bool {
+            switch self {
+            case .onlyShow, .inShowYears, .noDeathYear, .noShowYears: return true
+            case .notRecorded, .outsideShowYears: return false
             }
         }
 

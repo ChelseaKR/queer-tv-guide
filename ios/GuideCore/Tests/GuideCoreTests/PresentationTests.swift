@@ -60,8 +60,8 @@ final class PresentationTests: XCTestCase {
             Presentation.showDeaths(cast: s.characters(inShow: noneDead.id), show: noneDead).headline,
             Presentation.showDeaths(cast: [oneAlive], show: noneDead).headline,
             Presentation.showDeaths(cast: [], show: noCast).headline,
-            Presentation.deathsSummary(cast: s.characters(inShow: noneDead.id)),
-            Presentation.deathsSummary(cast: []),
+            Presentation.deathsSummary(cast: s.characters(inShow: noneDead.id), showID: noneDead.id),
+            Presentation.deathsSummary(cast: [], showID: noCast.id),
         ]
         XCTAssertEqual(answers.count, 6, "the denominator")
         for answer in answers {
@@ -87,11 +87,11 @@ final class PresentationTests: XCTestCase {
 
     func testDeathsSummary() throws {
         let s = try Repo.fixture()
-        XCTAssertEqual(Presentation.deathsSummary(cast: s.characters(inShow: "lwtv:show:102")),
+        XCTAssertEqual(Presentation.deathsSummary(cast: s.characters(inShow: "lwtv:show:102"), showID: "lwtv:show:102"),
                        "1 of 2 listed characters dies: Odile Brandt.")
-        XCTAssertEqual(Presentation.deathsSummary(cast: s.characters(inShow: "lwtv:show:101")),
+        XCTAssertEqual(Presentation.deathsSummary(cast: s.characters(inShow: "lwtv:show:101"), showID: "lwtv:show:101"),
                        "Not recorded for any of the 2 listed characters.")
-        XCTAssertEqual(Presentation.deathsSummary(cast: []),
+        XCTAssertEqual(Presentation.deathsSummary(cast: [], showID: "lwtv:show:104"),
                        "Not recorded. This snapshot does not list any queer characters for this show.")
     }
 
@@ -238,6 +238,30 @@ final class PresentationTests: XCTestCase {
         let odile = try XCTUnwrap(noDeathYear.character(id: "lwtv:character:203"))
         XCTAssertEqual(Presentation.deathPlacement(odile, inShow: home.id), .noDeathYear)
         XCTAssertFalse(Presentation.deathPlacement(odile, inShow: home.id).counts)
+    }
+
+    /// The summary and the "no recorded deaths" filter read the same rule.
+    /// A death placed in another show is not counted here; one that cannot
+    /// be placed keeps the show out of the filter, so it never admits a
+    /// show on a guess.
+    func testSummaryAndNoDeathsFilterFollowTheSameRule() throws {
+        let elsewhere = try odileAlsoIn101(years: ["2022"])
+        let show = try XCTUnwrap(elsewhere.show(id: "lwtv:show:101"))
+        XCTAssertEqual(Presentation.deathsSummary(cast: elsewhere.characters(inShow: show.id), showID: show.id),
+                       "Not recorded for any of the 3 listed characters.")
+        XCTAssertEqual(Presentation.deathsSummary(cast: elsewhere.characters(inShow: "lwtv:show:102"), showID: "lwtv:show:102"),
+                       "1 of 2 listed characters dies: Odile Brandt.")
+        let idx = SearchIndex(snapshot: elsewhere)
+        XCTAssertEqual(idx.deathCoverage(show), SearchIndex.DeathCoverage(hasCharacters: true, anyRecordedDeath: false))
+        XCTAssertTrue(idx.browse(filters: .init(noRecordedDeaths: true)).contains { $0.id == show.id })
+
+        let unplaced = try odileAlsoIn101(years: [])
+        let unplacedIdx = SearchIndex(snapshot: unplaced)
+        let same = try XCTUnwrap(unplaced.show(id: "lwtv:show:101"))
+        XCTAssertEqual(unplacedIdx.deathCoverage(same).anyRecordedDeath, true, "a death that cannot be placed is not ruled out")
+        XCTAssertFalse(unplacedIdx.browse(filters: .init(noRecordedDeaths: true)).contains { $0.id == same.id })
+        XCTAssertEqual(Presentation.deathsSummary(cast: unplaced.characters(inShow: same.id), showID: same.id),
+                       "Not recorded for any of the 3 listed characters.")
     }
 
     /// A character in one show keeps its death there, with or without years.

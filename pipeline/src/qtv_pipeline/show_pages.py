@@ -45,6 +45,17 @@ Shows with no listed character are never built, pinned or not: they have
 nothing to answer from. Episode counts are not in the snapshot, so "most
 episodes" is not a usable rule.
 
+Which pages search engines may index (``indexed_show_ids``, DECISIONS
+0028). Every chosen show gets a page, and every page stays linked from the
+shows index and its neighbors, but only the hand-picked list (or, with no
+list, the first ``PINNED_MAX`` pages in the published order) is in the
+sitemap. Every other show page carries ``<meta name="robots"
+content="noindex,follow">``: search engines may follow its links but are
+asked not to show it. The list or rule in ``INDEX_EXTRA_IDS`` and
+``INDEX_MIN_LISTED`` widens the indexed set. That one function decides
+both the sitemap and the robots tag, and ``index_problems`` refuses a build
+in which they disagree.
+
 Words for search (DECISIONS 0024 and 0027). The title asks the question
 people type, with the count of listed characters when it fits ("Do any of
 the <n> queer characters in <show> die?", then the 0024 forms with
@@ -98,12 +109,14 @@ from __future__ import annotations
 
 import argparse
 import datetime as dt
+import html
 import json
 import re
 import sys
 import unicodedata
 import urllib.parse
 from dataclasses import dataclass
+from html.parser import HTMLParser
 from pathlib import Path
 from typing import Any
 
@@ -133,6 +146,14 @@ PINNED_MAX = 50
 MIN_LISTED = 5
 # Fewer pages than this and the most-listed shows fill the gap (see above).
 PAGE_FLOOR = 50
+# Which show pages search engines may index (DECISIONS 0028): the hand-picked
+# list, and nothing else until the widen criterion there is met. To widen, add
+# LezWatch ids here (by list), or set INDEX_MIN_LISTED to index every built
+# show with at least that many listed characters (by rule). Every other show
+# page carries ROBOTS_HOLD and is left out of the sitemap.
+INDEX_EXTRA_IDS: frozenset[int] = frozenset()
+INDEX_MIN_LISTED: int | None = None
+ROBOTS_HOLD = "noindex,follow"
 RELATED_LIMIT = 4
 # A chosen show whose slug is unsafe or repeated is left out and logged; more
 # than this share of them left out refuses the build (``_drop_bad_slugs``).
@@ -446,6 +467,37 @@ def select_shows(
 ) -> list[dict[str, Any]]:
     """The shows to build, in order (see the module docstring)."""
     return plan_selection(doc, limit, pinned)[0]
+
+
+def indexed_show_ids(
+    shows: list[dict[str, Any]],
+    pinned: list[Pin] | None,
+    listed: dict[str, int],
+    *,
+    extra_ids: frozenset[int] | None = None,
+    min_listed: int | None = None,
+) -> set[str]:
+    """The ids of the built shows that search engines may index (DECISIONS
+    0028). The one place that decides it: the sitemap lists exactly these,
+    and every other show page carries ``ROBOTS_HOLD``.
+
+    With a pinned list, the pinned shows that were built. Without one, the
+    first ``PINNED_MAX`` pages in the published order (the 0019 rule's 50).
+    Then, to widen: any built show whose LezWatch id is in ``extra_ids``
+    (default ``INDEX_EXTRA_IDS``), and, when ``min_listed`` (default
+    ``INDEX_MIN_LISTED``) is set, every built show with at least that many
+    listed characters. Nothing about deaths goes into it."""
+    extra = INDEX_EXTRA_IDS if extra_ids is None else extra_ids
+    floor = INDEX_MIN_LISTED if min_listed is None else min_listed
+    if pinned is None:
+        ids = {s["id"] for s in shows[:PINNED_MAX]}
+    else:
+        pinned_ids = {p.lezwatch_id for p in pinned}
+        ids = {s["id"] for s in shows if s["lwtv_id"] in pinned_ids}
+    ids |= {s["id"] for s in shows if s["lwtv_id"] in extra}
+    if floor is not None:
+        ids |= {s["id"] for s in shows if listed.get(s["id"], 0) >= floor}
+    return ids
 
 
 def fit(candidates: list[str], limit: int) -> str:
@@ -786,7 +838,10 @@ def render_show(
     similar: list[dict[str, Any]] | None = None,
     total: int = 1,
     index: dict[str, list[tuple[dict[str, Any], dict[str, Any]]]] | None = None,
+    indexed: bool = True,
 ) -> str:
+    """One show's page. ``indexed`` False adds the ``ROBOTS_HOLD`` tag
+    (DECISIONS 0028); nothing else on the page changes."""
     cast = _characters(doc, show, index)
     canonical = f"{base_url}/shows/{show['slug']}/"
     crumbs = [
@@ -813,6 +868,7 @@ def render_show(
             {"title": s["title"], "url": f"{base_url}/shows/{s['slug']}/"} for s in similar or []
         ],
         total=total,
+        robots=None if indexed else ROBOTS_HOLD,
     )
 
 
@@ -910,18 +966,91 @@ def render_index(
     )
 
 
-def render_sitemap(doc: dict[str, Any], shows: list[dict[str, Any]], *, base_url: str) -> str:
-    # The home page (site_index.py, always published) first, then the shows.
+def render_sitemap(
+    doc: dict[str, Any],
+    shows: list[dict[str, Any]],
+    *,
+    base_url: str,
+    indexed: set[str] | None = None,
+) -> str:
+    """The home page (site_index.py, always published) first, the shows
+    index, then each show in ``indexed`` (``indexed_show_ids``; None means
+    every show) in the published order."""
     urls = [
         f"{base_url}/",
         f"{base_url}/shows/",
-        *(f"{base_url}/shows/{s['slug']}/" for s in shows),
+        *(f"{base_url}/shows/{s['slug']}/" for s in shows if indexed is None or s["id"] in indexed),
     ]
     if len(urls) > SITEMAP_MAX_URLS:
         raise ShowPagesError(
             f"{len(urls)} URLs is more than one sitemap file may list ({SITEMAP_MAX_URLS})"
         )
     return _ENV.get_template("sitemap.xml.j2").render(urls=urls, lastmod=doc["generated_at"][:10])
+
+
+class _HeadProbe(HTMLParser):
+    """A page's canonical URL and robots tag, read with html.parser."""
+
+    def __init__(self) -> None:
+        super().__init__(convert_charrefs=True)
+        self.canonical: str | None = None
+        self.robots: list[str] = []
+
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        a = dict(attrs)
+        if tag == "link" and a.get("rel") == "canonical":
+            self.canonical = a.get("href")
+        elif tag == "meta" and (a.get("name") or "").lower() == "robots":
+            self.robots.append(a.get("content") or "")
+
+
+def _sitemap_locs(xml: str) -> list[str]:
+    locs: list[str] = []
+    for part in xml.split("<loc>")[1:]:
+        locs.append(html.unescape(part.split("</loc>", 1)[0]))
+    return locs
+
+
+def index_problems(files: dict[str, str], *, base_url: str) -> list[str]:
+    """Every way the sitemap and the robots tags of ``files`` disagree; empty
+    when they agree (DECISIONS 0028).
+
+    A show page or the shows index whose canonical URL is in the sitemap must
+    carry no robots tag; one that is not in the sitemap must carry exactly
+    ``ROBOTS_HOLD``. Every show URL in the sitemap must be a page in
+    ``files``, and the home page and the shows index must be listed."""
+    locs = _sitemap_locs(files["sitemap.xml"])
+    listed = set(locs)
+    problems: list[str] = []
+    if len(listed) != len(locs):
+        problems.append("the sitemap lists a URL twice")
+    for required in (f"{base_url}/", f"{base_url}/shows/"):
+        if required not in listed:
+            problems.append(f"the sitemap does not list {required}")
+    pages: set[str] = set()
+    for path, text in sorted(files.items()):
+        if not (path.startswith("shows/") and path.endswith("/index.html")):
+            continue
+        probe = _HeadProbe()
+        probe.feed(text)
+        url = probe.canonical
+        if not url:
+            problems.append(f"{path}: no canonical URL")
+            continue
+        pages.add(url)
+        if url in listed and probe.robots:
+            problems.append(f"{path}: in the sitemap but tagged {probe.robots}")
+        elif url not in listed and probe.robots != [ROBOTS_HOLD]:
+            problems.append(
+                f"{path}: left out of the sitemap but its robots tags are {probe.robots}, "
+                f"not [{ROBOTS_HOLD!r}]"
+            )
+    problems += [
+        f"the sitemap lists {u}, which is not a page of this build"
+        for u in locs
+        if u.startswith(f"{base_url}/shows/") and u not in pages
+    ]
+    return problems
 
 
 def _clean_base_url(value: str) -> str:
@@ -954,6 +1083,7 @@ def render_site(
     if not shows:
         raise ShowPagesError("no show has a listed character; nothing to build")
     pinned_ids = {p.lezwatch_id for p in pinned or []}
+    indexed = indexed_show_ids(shows, pinned, _listed_characters(doc))
     files = {
         "shows/index.html": render_index(
             doc,
@@ -976,9 +1106,15 @@ def render_site(
             similar=related(shows, i),
             total=len(shows),
             index=index,
+            indexed=show["id"] in indexed,
         )
-    files["sitemap.xml"] = render_sitemap(doc, shows, base_url=base)
+    files["sitemap.xml"] = render_sitemap(doc, shows, base_url=base, indexed=indexed)
     files["robots.txt"] = render_robots(base_url=base)
+    problems = index_problems(files, base_url=base)
+    if problems:
+        raise ShowPagesError(
+            "the sitemap and the robots tags disagree, refusing the build: " + "; ".join(problems)
+        )
     return files
 
 
@@ -1055,8 +1191,14 @@ def main(argv: list[str]) -> int:
             raise
         print(f"show_pages: refused: {exc}", file=sys.stderr)
         return 1
-    for line in plan_selection(doc, args.limit, pinned)[1]:
+    shows, notes = plan_selection(doc, args.limit, pinned)
+    for line in notes:
         print(line)
+    held = len(shows) - len(indexed_show_ids(shows, pinned, _listed_characters(doc)))
+    print(
+        f"show_pages: {len(shows) - held} show pages in the sitemap, "
+        f"{held} held back with {ROBOTS_HOLD} (DECISIONS 0028)"
+    )
     print(f"show_pages: wrote {len(files)} files to {args.out_dir}")
     return 0
 

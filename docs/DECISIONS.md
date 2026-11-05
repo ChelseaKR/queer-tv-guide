@@ -482,7 +482,9 @@ template lines and `related`.
 **Status: accepted (owner, 2026-10-29: "Expand now"). It supersedes the
 evidence rule in 0019 and 0020 (wait eight weeks after indexing before any
 expansion) and the "Not done" line of 0024. The hand-picked list of 0021,
-and everything 0019 to 0024 decided about what a page says, stand.**
+and everything 0019 to 0024 decided about what a page says, stand. Partly
+reversed by 0028 (2026-11-03): the pages are still built and linked, but
+only the hand-picked 50 are in the sitemap and open to indexing.**
 
 **Decision.** After the pinned list, `qtv_pipeline.show_pages` builds every
 show with at least 5 characters listed in the snapshot and a TVmaze match (a
@@ -605,3 +607,63 @@ on the App Store yet.
 **Reversible.** Yes: restore the 0024 `show_title` and `show_description`
 and the old home description.
 
+## 0028 — Only the hand-picked show pages are open to search, for now (2026-11-03)
+
+**Status: accepted (owner, 2026-11-03). It partly reverses 0025 ("Expand
+now"): every page 0025 builds is still built and linked, but only the
+hand-picked list of 0021 is in the sitemap. What a page says (0019 to 0027)
+does not change.**
+
+**Evidence.** Search Console for `sc-domain:queerframe.app`, 10-22 to
+11-03: 96 impressions, 0 clicks, average position 9.3. Every impression
+went to a hand-picked page (28 of them), the home page or /shows/; none
+went to the 313 pages 0025 added on 10-30. URL Inspection called 9 of 9
+sampled added pages "URL is unknown to Google". Google last read the sitemap
+on 10-29, when it listed 51 URLs; it now lists 365. The added pages share
+most of their text: at the median, about 68% of a page's words are
+sentences found on at least 30% of pages. A young domain that suddenly
+shows Google hundreds of similar template pages is the most plausible cause
+of Trout Truck's fall of about 97% in impressions on 10-22. That cause was
+never confirmed, so this is a hedge, not a measured fix.
+
+**Decision.** `show_pages.indexed_show_ids` is the one place that decides
+which show pages may be indexed: the hand-picked shows that were built
+(without a pinned list, the first 50 pages in the published order). The
+sitemap lists the home page, /shows/ and those pages, and no other show
+page. Every other show page carries `<meta name="robots"
+content="noindex,follow">`. It stays built, keeps its URL and canonical, and
+is still linked from the shows index (which the home page links to) and
+from the pages next to it, so search engines can still reach it and follow
+its links. On the 2026-11-03
+snapshot the sitemap goes from 365 URLs to 52: 50 show pages are indexed and
+313 are held back. Privacy, terms, support and /data/ carry no robots tag
+and stay out of the sitemap, as before. The site has no IndexNow key and
+pings nothing, so the sitemap is the only list search engines are given.
+
+**The check.** `show_pages.index_problems` runs on every build and refuses
+it if the sitemap and the robots tags disagree: a page in the sitemap with a
+robots tag, a page left out without exactly `noindex,follow`, a sitemap URL
+that is not a built page, or a sitemap without the home page or /shows/.
+`tests/test_show_pages_indexing.py` has negative controls that break each
+side and assert the build is refused.
+
+**How to widen.** In `show_pages.py`, add LezWatch ids to `INDEX_EXTRA_IDS`
+(by list), or set `INDEX_MIN_LISTED` so every built show with at least that
+many listed characters is indexed (by rule). Both go through a reviewed PR,
+and the check keeps the sitemap and the tags in step. Setting
+`INDEX_MIN_LISTED` to `MIN_LISTED` (5) undoes this decision.
+
+**When to widen.** After Google has read the 52-URL sitemap, the
+hand-picked pages need steady clicks for 4 weeks: at least one click in
+each of 4 weeks in a row in Search Console, with weekly impressions not
+falling. Then open the held-back pages in batches of about 50, most listed
+characters first, and wait 2 weeks between batches. Stop and roll back the
+last batch if the hand-picked pages' impressions fall. Next look: about
+11-17.
+
+**Not changed.** Page content, titles, descriptions, structured data, the
+shows index, the app and the App Store material. Do not resubmit the
+sitemap in Search Console until this is live; after that, resubmitting is
+fine.
+
+**Reversible.** Yes, with one constant (see "How to widen").

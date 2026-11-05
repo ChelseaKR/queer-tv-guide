@@ -924,7 +924,9 @@ still counts as content. It then compares that with the live
 `lastmod.json` and keeps the sitemap pages that are new or whose
 fingerprint changed. A separate `indexnow` job, which needs `deploy` and
 has read-only permissions and no secret, submits the list. A rebuild of
-unchanged data announces nothing and sends no request. Only https URLs on
+unchanged data announces nothing and sends no request, except the
+airing-now page (0033): its window starts on the build day, so a build on
+a new day changes it and it is announced, one URL a night. Only https URLs on
 queerframe.app, only built pages without a robots noindex (so the held-back
 show pages are never sent), at most 10,000 a request. If the live
 `lastmod.json` cannot be read, nothing is sent. The first deploy finds no
@@ -932,9 +934,9 @@ live copy (404) and announces every sitemap page once. The script exits 0
 on any problem and prints a notice, so the snapshot always publishes.
 
 **The check.** `tests/test_indexnow.py` builds the fixture site twice with
-only the build date changed and requires identical fingerprints and an
-empty submission, so a reworded footer fails CI instead of announcing
-every page every night. A changed show title in the same test does select
+only the build date changed and requires identical fingerprints for every
+page but `/airing/`, and an empty submission for a same-day rebuild, so a
+reworded footer fails CI instead of announcing every page every night. A changed show title in the same test does select
 pages.
 
 **Not changed.** No analytics, no third-party request from any page, no

@@ -21,7 +21,8 @@ consumer of the published snapshot, would notice.
 - After each nightly deploy, the website's new and changed pages are
   announced to IndexNow (https://www.indexnow.org/documentation), so Bing
   and the other participating engines can crawl them sooner (DECISIONS
-  0034). A night with no real change announces nothing. The site root
+  0034). A night with no real change announces nothing but the
+  airing-now page, whose date window moves each day. The site root
   serves the IndexNow key file and `lastmod.json`, one fingerprint per
   sitemap page. No page text changes.
 - One airing-now page on the website, `/airing/` (DECISIONS 0033): the

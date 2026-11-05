@@ -283,19 +283,25 @@ def test_negative_control_a_rebuild_with_a_new_build_date_announces_nothing(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     """The nightly case: same data, next day's build. The pages differ
-    (the footer date moved), but nothing is announced. Changing a show's
-    title in the data does announce, so the quiet case is not an accident."""
+    (the footer date moved), but only the airing-now page is announced: its
+    window starts on the build day (DECISIONS 0033), and a date other than
+    the footer's counts as content (0034). Changing a show's title in the
+    data does announce, so the quiet case is not an accident."""
     first = _build(tmp_path, "first", _doc(generated_at="2026-11-13T09:20:00Z"))
     again = _build(tmp_path, "again", _doc(generated_at="2026-11-14T09:20:00Z"))
     a = (first / "index.html").read_text(encoding="utf-8")
     b = (again / "index.html").read_text(encoding="utf-8")
     assert a != b  # the build date really is on the page
-    assert ix.select_changed(_tokens(first), _tokens(again)) == []
+    airing = f"{DOMAIN}/airing/"
+    assert ix.select_changed(_tokens(first), _tokens(again)) == [airing]
     live = (first / "lastmod.json").read_text(encoding="utf-8")
     quiet = _select(tmp_path, again, live, monkeypatch, base=DOMAIN)
-    assert quiet["urlList"] == []
+    assert quiet["urlList"] == [airing]
+    # Rebuilt on the same day, the airing page is quiet too: nothing is sent.
+    same = _build(tmp_path, "same", _doc(generated_at="2026-11-13T21:00:00Z"))
+    assert ix.select_changed(_tokens(first), _tokens(same)) == []
     client = FakeClient()
-    ix.submit(quiet, client)
+    ix.submit(_select(tmp_path, same, live, monkeypatch, base=DOMAIN), client)
     assert client.calls == []
 
     renamed = _doc(generated_at="2026-11-14T09:20:00Z")

@@ -513,6 +513,38 @@ def test_colors_are_the_browsers_own_system_colors(doc, tmp_path):
     assert "opacity" not in css
 
 
+def _reflow_problems(css: str) -> list[str]:
+    """What would make the facts list wider than a 320 px screen (WCAG
+    1.4.10): a column sized to its longest label or value, or a value that
+    cannot wrap. The measured check (Chromium at 320 px, 100% to 200% text)
+    is in the PR; this keeps the rules that made it pass."""
+    flat = " ".join(css.split())
+    problems = []
+    if (
+        "dl.facts { display: grid; grid-template-columns: minmax(0, auto) minmax(0, 1fr);"
+        not in flat
+    ):
+        problems.append("dl.facts columns can grow past the screen")
+    if "max-content" in flat:
+        problems.append("a max-content size")
+    if "dl.facts dd { margin: 0; overflow-wrap: anywhere; }" not in flat:
+        problems.append("a facts value cannot wrap")
+    if "@media (max-width: 30rem) { dl.facts { grid-template-columns: minmax(0, 1fr);" not in flat:
+        problems.append("the facts list does not stack on a narrow screen")
+    return problems
+
+
+def test_the_facts_list_fits_a_320px_screen(doc, tmp_path):
+    css = _build(doc, tmp_path)["shows/harbor-lights/index.html"].css
+    assert _reflow_problems(css) == []
+    # Negative control: the old rule, a label column sized to its longest label.
+    old = css.replace("minmax(0, auto) minmax(0, 1fr)", "max-content 1fr", 1)
+    assert old != css
+    assert "dl.facts columns can grow past the screen" in _reflow_problems(old)
+    stuck = css.replace("overflow-wrap: anywhere;", "", 1)
+    assert stuck != css and "a facts value cannot wrap" in _reflow_problems(stuck)
+
+
 # --- accessibility basics ------------------------------------------------
 
 

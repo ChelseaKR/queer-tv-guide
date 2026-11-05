@@ -37,6 +37,7 @@ from typing import Any
 from qtv_pipeline.app_store import INDEX_SLOT
 from qtv_pipeline.show_pages import (
     _ENV,
+    AIRING_PATH,
     DEFAULT_BASE_URL,
     DEFAULT_PINNED_PATH,
     SITE_NAME,
@@ -79,11 +80,14 @@ def render_index(
     featured: list[dict[str, str]] | None = None,
     featured_total: int = 0,
     base_url: str = DEFAULT_BASE_URL,
+    airing_link: bool = False,
 ) -> str:
     """The home page. ``shows_link`` is whether the shows index is published
     beside it; without it there is no link into the show pages at all.
     ``featured`` is the hand-picked shows to name (``{"title", "url"}``),
-    ``featured_total`` how many hand-picked pages there are in all."""
+    ``featured_total`` how many hand-picked pages there are in all.
+    ``airing_link`` is whether the airing-now page (DECISIONS 0033) is
+    published beside it; it is linked only then, and only with the shows."""
     base = _clean_base_url(base_url)
     linked = shows_link and shows_total > 0
     return _ENV.get_template("home.html.j2").render(
@@ -97,6 +101,7 @@ def render_index(
         shows_total=shows_total if linked else 0,
         featured=(featured or [])[:FEATURED_ON_HOME] if linked else [],
         featured_total=featured_total if linked else 0,
+        airing_link=linked and airing_link,
         lezwatch_url=_source_url(doc, "lezwatch"),
         tvmaze_url=_source_url(doc, "tvmaze"),
         app_slot=INDEX_SLOT,
@@ -173,6 +178,7 @@ def write_site(
         featured=[{"title": f["title"], "url": f"{base}/shows/{f['slug']}/"} for f in featured],
         featured_total=featured_total,
         base_url=base,
+        airing_link=(site_dir / AIRING_PATH).is_file(),
     )
     data = render_data_page(doc, base_url=base)
     data_target = site_dir / DATA_PATH

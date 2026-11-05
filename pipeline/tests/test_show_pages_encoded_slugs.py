@@ -61,9 +61,9 @@ def test_an_encoded_slug_is_written_decoded_and_linked_encoded():
 
 def test_every_sitemap_url_resolves_on_a_plain_slug_site_too():
     files = show_pages.render_site(_sixty(), base_url=BASE)
-    # Home, index and the first 50 of the 60 shows; with no pinned list the
-    # other 10 are held back from the sitemap (DECISIONS 0028).
-    assert len(htmlprobe.sitemap(files["sitemap.xml"])["loc"]) == 52
+    # Home, index, airing/ and the first 50 of the 60 shows; with no pinned
+    # list the other 10 are held back from the sitemap (DECISIONS 0028).
+    assert len(htmlprobe.sitemap(files["sitemap.xml"])["loc"]) == 53
     assert _unresolved(files) == []
 
 

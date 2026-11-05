@@ -6,7 +6,8 @@ Built from the same snapshot the app reads (DECISIONS 0019), on this command:
         [--app-store-live VALUE] [--limit N] [--notice-on-failure]
 
 It writes ``shows/index.html``, ``shows/<slug>/index.html`` for each chosen
-show, ``sitemap.xml`` and ``robots.txt`` into OUT_DIR. Nothing else, and no
+show, ``airing/index.html`` (airing_page.py, DECISIONS 0033), ``sitemap.xml``
+and ``robots.txt`` into OUT_DIR. Nothing else, and no
 page reads anything but the snapshot. Every file is rendered before the
 first is written, so a build that fails leaves OUT_DIR as it was.
 
@@ -181,6 +182,8 @@ PAGE_FLOOR = 50
 INDEX_EXTRA_IDS: frozenset[int] = frozenset()
 INDEX_MIN_LISTED: int | None = None
 ROBOTS_HOLD = "noindex,follow"
+# The airing-now page (airing_page.py, DECISIONS 0033), built with the show pages.
+AIRING_PATH = "airing/index.html"
 RELATED_LIMIT = 4
 # A chosen show whose slug is unsafe or repeated is left out and logged; more
 # than this share of them left out refuses the build (``_drop_bad_slugs``).
@@ -1194,10 +1197,12 @@ def render_index(
     base_url: str,
     app_store_live: bool = False,
     featured: list[dict[str, Any]] | None = None,
+    airing: bool = False,
 ) -> str:
     """The shows index: the hand-picked shows first (``featured``), then every
     show A to Z under a letter heading, with a list of letters to jump to.
-    The structured data lists every show in the published order."""
+    The structured data lists every show in the published order. ``airing``
+    adds the link to the airing-now page (DECISIONS 0033)."""
     canonical = f"{base_url}/shows/"
     crumbs = [(SITE_NAME, f"{base_url}/"), ("Shows", canonical)]
     return _ENV.get_template("index.html.j2").render(
@@ -1235,6 +1240,7 @@ def render_index(
             },
         ),
         total=len(shows),
+        airing_url=f"{base_url}/airing/" if airing else None,
         featured=[_index_entry(s) for s in featured or []],
         groups=[
             {**g, "shows": [_index_entry(s) for s in g["shows"]]} for g in letter_groups(shows)
@@ -1248,13 +1254,16 @@ def render_sitemap(
     *,
     base_url: str,
     indexed: set[str] | None = None,
+    airing: bool = False,
 ) -> str:
     """The home page (site_index.py, always published) first, the shows
-    index, then each show in ``indexed`` (``indexed_show_ids``; None means
-    every show) in the published order."""
+    index, the airing-now page when ``airing`` (DECISIONS 0033), then each
+    show in ``indexed`` (``indexed_show_ids``; None means every show) in the
+    published order."""
     urls = [
         f"{base_url}/",
         f"{base_url}/shows/",
+        *([f"{base_url}/airing/"] if airing else []),
         *(f"{base_url}/shows/{s['slug']}/" for s in shows if indexed is None or s["id"] in indexed),
     ]
     if len(urls) > SITEMAP_MAX_URLS:
@@ -1287,6 +1296,26 @@ def _sitemap_locs(xml: str) -> list[str]:
     return locs
 
 
+def _airing_problems(files: dict[str, str], listed: set[str], base_url: str) -> list[str]:
+    """The airing-now page (DECISIONS 0033) is open to search: built means
+    listed in the sitemap, with its own canonical URL and no robots tag, and
+    not built means not listed."""
+    url = f"{base_url}/airing/"
+    text = files.get(AIRING_PATH)
+    if text is None:
+        return (
+            [f"the sitemap lists {url}, which is not a page of this build"] if url in listed else []
+        )
+    problems = [] if url in listed else [f"the sitemap does not list {url}"]
+    probe = _HeadProbe()
+    probe.feed(text)
+    if probe.canonical != url:
+        problems.append(f"{AIRING_PATH}: canonical is {probe.canonical!r}, not {url!r}")
+    if probe.robots:
+        problems.append(f"{AIRING_PATH}: in the sitemap but tagged {probe.robots}")
+    return problems
+
+
 def index_problems(files: dict[str, str], *, base_url: str) -> list[str]:
     """Every way the sitemap and the robots tags of ``files`` disagree; empty
     when they agree (DECISIONS 0028).
@@ -1294,7 +1323,9 @@ def index_problems(files: dict[str, str], *, base_url: str) -> list[str]:
     A show page or the shows index whose canonical URL is in the sitemap must
     carry no robots tag; one that is not in the sitemap must carry exactly
     ``ROBOTS_HOLD``. Every show URL in the sitemap must be a page in
-    ``files``, and the home page and the shows index must be listed."""
+    ``files``, and the home page and the shows index must be listed. The
+    airing-now page (DECISIONS 0033), when built, must be listed and carry
+    no robots tag, and the sitemap must not list it when it is not built."""
     locs = _sitemap_locs(files["sitemap.xml"])
     listed = set(locs)
     problems: list[str] = []
@@ -1303,6 +1334,7 @@ def index_problems(files: dict[str, str], *, base_url: str) -> list[str]:
     for required in (f"{base_url}/", f"{base_url}/shows/"):
         if required not in listed:
             problems.append(f"the sitemap does not list {required}")
+    problems += _airing_problems(files, listed, base_url)
     pages: set[str] = set()
     for path, text in sorted(files.items()):
         if not (path.startswith("shows/") and path.endswith("/index.html")):
@@ -1348,8 +1380,10 @@ def render_site(
     app_store_live: bool = False,
     limit: int = DEFAULT_LIMIT,
     pinned: list[Pin] | None = None,
+    airing: bool = True,
 ) -> dict[str, str]:
-    """Every file of the site, as ``{relative path: text}``; writes nothing."""
+    """Every file of the site, as ``{relative path: text}``; writes nothing.
+    ``airing`` builds the airing-now page (DECISIONS 0033) and links to it."""
     base = _clean_base_url(base_url)
     if not isinstance(doc, dict):
         raise ShowPagesError("the snapshot file is not a JSON object")
@@ -1367,8 +1401,19 @@ def render_site(
             base_url=base,
             app_store_live=app_store_live,
             featured=[s for s in shows if s["lwtv_id"] in pinned_ids],
+            airing=airing,
         )
     }
+    if airing:
+        # Imported here: airing_page builds on this module's helpers.
+        from qtv_pipeline import airing_page
+
+        files[AIRING_PATH] = airing_page.render_airing(
+            doc,
+            base_url=base,
+            built={s["id"]: f"{base}/shows/{s['slug']}/" for s in shows},
+            app_store_live=app_store_live,
+        )
     index = cast_index(doc)
     for i, show in enumerate(shows):
         # Decoded on disk, encoded in every URL (``slug_dir``). _drop_bad_slugs
@@ -1384,7 +1429,7 @@ def render_site(
             index=index,
             indexed=show["id"] in indexed,
         )
-    files["sitemap.xml"] = render_sitemap(doc, shows, base_url=base, indexed=indexed)
+    files["sitemap.xml"] = render_sitemap(doc, shows, base_url=base, indexed=indexed, airing=airing)
     files["robots.txt"] = render_robots(base_url=base)
     problems = index_problems(files, base_url=base)
     if problems:
@@ -1475,6 +1520,11 @@ def main(argv: list[str]) -> int:
         f"show_pages: {len(shows) - held} show pages in the sitemap, "
         f"{held} held back with {ROBOTS_HOLD} (DECISIONS 0028)"
     )
+    from qtv_pipeline import airing_page
+
+    built = {s["id"]: f"/shows/{s['slug']}/" for s in shows}
+    for line in airing_page.plan_airing(doc, built).notes:
+        print(line)
     print(f"show_pages: wrote {len(files)} files to {args.out_dir}")
     return 0
 

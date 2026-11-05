@@ -4,11 +4,11 @@
 {% block content %}
 <h1>Do any queer characters die in {{ show.title }}?</h1>
 <p class="opening">{{ opening }}</p>
-<p>Does she die in {{ show.title }}? {{ site_name }} answers from LezWatch.TV's records, so you can check for the bury-your-gays trope before you start the show. Nothing is revealed until you open the answer below.</p>
+<p>Does she die in {{ show.title }}? {{ site_name }} answers from LezWatch.TV's records, so you can check for the bury-your-gays trope before you start the show. LezWatch.TV covers queer women, non-binary and trans characters, so this page does not list cisgender gay and bisexual men. Nothing is revealed until you open the answer below.</p>
 <p class="spoiler-warning"><strong>Spoiler warning:</strong> the answer below says which listed characters LezWatch.TV records as dying, if any.</p>
 <details class="answer">
 <summary>Show the answer (spoilers)</summary>
-<div class="answer-body">
+<div class="answer-body" data-nosnippet>
 <p data-answer="headline"><strong>{{ answer.headline }}</strong></p>
 <ul>
 {%- for c in cast %}
@@ -34,7 +34,7 @@
 {%- endfor %}
 </dl>
 <p class="small">Run status, and the network when LezWatch.TV lists none, come from TVmaze, licensed <a href="{{ licence.snapshot.url }}">CC BY-SA 4.0</a>: {% if tvmaze_url %}<a href="{{ tvmaze_url }}">this show on TVmaze</a>{% else %}<a href="https://www.tvmaze.com/">TVmaze</a>{% endif %}.</p>
-<h2>LGBTQ characters in {{ show.title }}</h2>
+<h2>Queer women, non-binary and trans characters in {{ show.title }}</h2>
 <p>LezWatch.TV lists {{ cast|length }} queer {{ 'character' if cast|length == 1 else 'characters' }} in {{ show.title }}. Each name links to the character's LezWatch.TV page.</p>
 <ul class="cast">
 {%- for c in cast %}

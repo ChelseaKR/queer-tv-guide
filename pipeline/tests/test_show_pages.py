@@ -366,7 +366,7 @@ def test_network_falls_back_to_tvmaze(doc, tmp_path):
 
 def test_characters_list_outside_the_answer_has_no_status(doc, tmp_path):
     page = _build(doc, tmp_path)["shows/the-cartographers/index.html"]
-    assert "LGBTQ characters in The Cartographers" in page.outside
+    assert "Queer women, non-binary and trans characters in The Cartographers" in page.outside
     assert any(t.startswith("Role: Regular. Gender:") or "Role: " in t for t in page.outside)
     assert not any("Unknown." in t or "Dies" in t for t in page.outside)
 
@@ -685,7 +685,7 @@ def test_title_and_description_ask_the_question_and_name_the_characters(doc, tmp
         "(lesbian) and Thea Marsh (queer). Who dies, if anyone, is behind a spoiler warning."
     )
     assert "Do any queer characters die in The Cartographers?" in page.outside
-    assert "LGBTQ characters in The Cartographers" in page.outside
+    assert "Queer women, non-binary and trans characters in The Cartographers" in page.outside
     assert any("bury-your-gays trope" in t for t in page.outside)
 
 

@@ -712,3 +712,38 @@ the shows index, the home page and the app.
 
 **Reversible.** Yes: restore the old first paragraph in `show.html.j2` and
 drop `opening`.
+
+## 0030 — A death counts for a show only when it falls in that show (2026-11-05)
+
+**Evidence.** The 2026-11-05 quality audit found show pages counting a
+death from another show. The L Word: Generation Q said "Yes. 1 of 42 listed
+characters dies: Dana Fairbanks." Her recorded death (2007) is in The L
+Word; LezWatch.TV links her to Generation Q only as a 2022 guest. Supergirl
+counted Sara Lance (Arrow and Legends) and Nora West-Allen (The Flash), and
+Batwoman counted Sara Lance. LezWatch.TV records a death on the character,
+not on a show.
+
+**Decision.** For a character linked to more than one show, the death
+counts for a show only when a death year is one of the character's years in
+that show (the link's `years`, already in the snapshot). Otherwise the
+character's line says Unknown, names the recorded death year, and says it
+is not in a year the character appears in this show; a note under the
+headline says how many such characters are not counted. A death with no
+year, or a link with no years, is also Unknown for a multi-show character:
+the snapshot cannot place it, so the page does not guess either way. A
+character linked to one show keeps its death, as before. On the 2026-11-04
+snapshot this changes the headline on 7 of 363 pages (Batwoman, Scandal,
+Steven Universe, Supergirl, The L Word: Generation Q, The Vampire Diaries,
+Vis a Vis); 3 of them move from "Yes" to "Unknown".
+
+**Also.** Every show page now says, beside its credit to LezWatch.TV, that
+LezWatch.TV covers queer women, non-binary and trans characters, so the
+page does not list cisgender gay and bisexual men. The characters heading
+says "Queer women, non-binary and trans characters in <show>" instead of
+"LGBTQ characters in <show>". The answer element carries `data-nosnippet`,
+so a search engine does not quote it.
+
+**Not changed.** The app (the same rule goes into `Presentation.showDeaths`
+in a later build), the title, description, opening and selection.
+
+**Reversible.** Yes: drop the `show_years` check in `_death_status`.

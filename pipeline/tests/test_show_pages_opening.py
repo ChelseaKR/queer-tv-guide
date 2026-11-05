@@ -58,8 +58,8 @@ def placeholder_problems(text: str) -> list[str]:
 
 def test_an_ended_show_with_every_fact(doc):
     assert _opening(doc, "the-cartographers") == (
-        "LezWatch.TV lists 2 queer characters in The Cartographers (Example Network, "
-        "2016 to 2018): Odile Brandt and Thea Marsh. Its last "
+        "LezWatch.TV lists 2 queer characters in The Cartographers (Example Network "
+        "and Another Example, 2016 to 2018): Odile Brandt and Thea Marsh. Its last "
         "episode on TVmaze aired on May 20, 2018 (season 2, episode 10)."
     )
 
@@ -86,24 +86,20 @@ def test_more_characters_than_names_says_including(doc):
 def test_a_list_of_networks_is_kept_apart_from_the_years(doc):
     show = _show(doc, "the-cartographers")
     show["networks"].append({"name": "Third Example", "slug": "third"})
-    show["schedule"]["schedule_known"] = False  # LezWatch's stations only then
     text = show_pages.opening(show, show_pages._characters(doc, show))
     assert "(Example Network, Another Example, and Third Example; 2016 to 2018)" in text
 
 
-def test_the_network_is_tvmazes_when_the_schedule_is_known(doc):
-    """The same source as the Network row (DECISIONS 0031)."""
+def test_the_network_falls_back_to_tvmaze_only_when_the_schedule_is_known(doc):
     show = _show(doc, "harbor-lights")
-    show["networks"] = [{"name": "The CW", "slug": "the-cw"}]
+    show["networks"] = []
     cast = show_pages._characters(doc, show)
     assert "(Example Network, 2021 to present)" in show_pages.opening(show, cast)
     show["schedule"]["network"] = None
     show["schedule"]["web_channel"] = {"name": "Example Streaming", "country_code": None}
     assert "(Example Streaming, 2021 to present)" in show_pages.opening(show, cast)
-    assert "The CW" not in show_pages.opening(show, cast)
     show["schedule"]["schedule_known"] = False
-    text = show_pages.opening(show, cast)
-    assert "Example Streaming" not in text and "(The CW, 2021 to present)" in text
+    assert "Example Streaming" not in show_pages.opening(show, cast)
 
 
 def test_it_is_the_first_paragraph_of_the_page(doc, tmp_path):

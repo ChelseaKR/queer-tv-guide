@@ -784,15 +784,6 @@ a row.
   are one of the three levels, and 50 of the 363 pages show one.
 - The note under a "Yes" answer now says only "For the other N, the answer
   is unknown." The fixed line under it already says why.
-- Network (`network_fact`). The Network row and the opening sentence use
-  TVmaze's network or web channel whenever the TVmaze schedule is known, in
-  a row labeled "Network, per TVmaze" (Buffy: UPN, where LezWatch.TV says
-  The CW and The WB). LezWatch.TV's stations are used only when there is no
-  TVmaze schedule, labeled "Network, per LezWatch.TV". This replaces 0029's
-  LezWatch-first order. On the 2026-11-05 snapshot it changes the network on
-  147 of 363 pages. TVmaze names a show's current home, so some older shows
-  now show a later name (The L Word: "Paramount+ with Showtime"; The Walking
-  Dead: "AMC+"); the label says whose name it is.
 
 On the 2026-11-05 snapshot the Seasons row changes on 93 of 363 pages.
 The four record errors found in LezWatch.TV's own data (Wentworth's and
@@ -806,6 +797,5 @@ official count where TVmaze numbers seasons differently (Wentworth's final
 20 episodes are season 8 in most sources and seasons 8 and 9 on TVmaze); the
 label says whose number it is.
 
-**Reversible.** Yes: `seasons_fact` returns LezWatch's count, the trigger
-row is dropped from `_facts`, and `network_fact` and `_opening_network` go
-back to LezWatch's stations first. Each is its own commit.
+**Reversible.** Yes: `seasons_fact` returns LezWatch's count, and the
+trigger row is dropped from `_facts`.

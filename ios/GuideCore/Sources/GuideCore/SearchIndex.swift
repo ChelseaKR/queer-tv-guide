@@ -36,7 +36,8 @@ public struct SearchIndex: Sendable {
         /// Only shows whose worth-it verdict is one of these known values.
         /// Empty = no filter.
         public var worthIt: Set<WorthIt> = []
-        /// Only shows in which no listed character has a recorded death. A
+        /// Only shows in which no listed character has a recorded death that
+        /// could be in this show (`deathCoverage`, DECISIONS 0030). A
         /// show with no listed characters at all does NOT pass this filter:
         /// absence of any character is not the same as a checked, deathless
         /// cast (see `deathCoverage`).
@@ -221,12 +222,17 @@ public struct SearchIndex: Sendable {
         public let anyRecordedDeath: Bool
     }
 
-    /// Whether any listed character in `show` has a recorded death,
-    /// alongside whether the show has any listed characters at all — the
-    /// two numbers a "no deaths" filter must not conflate.
+    /// Whether any listed character in `show` has a recorded death that may
+    /// be in this show, alongside whether the show has any listed
+    /// characters at all — the two numbers a "no deaths" filter must not
+    /// conflate. Per DECISIONS 0030, a death the snapshot places in another
+    /// show (no death year among the character's years here) does not
+    /// count. A death it cannot place at all (no death year, or no years on
+    /// the link) still counts here, so the filter never admits a show on a
+    /// guess.
     public func deathCoverage(_ show: Show) -> DeathCoverage {
         let cast = snapshot.characters(inShow: show.id)
-        let anyDeath = cast.contains { $0.death.deathKnown && $0.death.died == true }
+        let anyDeath = cast.contains { Presentation.deathPlacement($0, inShow: show.id).mayBeHere }
         return DeathCoverage(hasCharacters: !cast.isEmpty, anyRecordedDeath: anyDeath)
     }
 

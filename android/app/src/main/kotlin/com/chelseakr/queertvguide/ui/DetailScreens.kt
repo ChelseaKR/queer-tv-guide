@@ -177,18 +177,23 @@ fun ShowScreen(model: AppModel, state: AppModel.State, id: String, canGoBack: Bo
             }
         }
 
-        // Death-revealing tropes ("Bury Your Queers") are left out here and stated in the reveal instead.
+        // Death-revealing tropes ("Bury Your Queers", "Happiness then Tragedy", "None!") are left out
+        // here and stated in the reveal instead. The trigger-warning level is always shown, labeled as
+        // LezWatch.TV's and with what it means in LezWatch.TV's words, or "Not rated".
         val tropes = Presentation.withoutSpoilers(show.tropes, Presentation.deathSpoilerTropeSlugs)
-        if (tropes.isNotEmpty() || show.triggers.isNotEmpty()) {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                if (tropes.isNotEmpty()) {
-                    SectionHeading("Tropes")
-                    Text(Presentation.terms(tropes, Presentation.NO_TROPES))
-                }
-                if (show.triggers.isNotEmpty()) {
-                    SectionHeading("Trigger warnings")
-                    Text(Presentation.terms(show.triggers, Presentation.NO_TRIGGERS))
-                }
+        val trigger = Presentation.triggerWarning(show.triggers)
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            if (tropes.isNotEmpty()) {
+                SectionHeading("Tropes")
+                Text(Presentation.terms(tropes, Presentation.NO_TROPES))
+            }
+            SectionHeading(trigger.heading)
+            Column(
+                Modifier.clearAndSetSemantics { contentDescription = "${trigger.level}. ${trigger.meaning}" },
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+            ) {
+                Text(trigger.level)
+                Text(trigger.meaning, style = MaterialTheme.typography.bodyMedium, color = subdued)
             }
         }
 

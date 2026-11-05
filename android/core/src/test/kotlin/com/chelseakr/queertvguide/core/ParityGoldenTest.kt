@@ -174,7 +174,7 @@ class ParityGoldenTest {
             check("$id deaths lines", d["lines"]!!.strings(), deaths.lines)
             check("$id deaths notes", d["notes"]!!.strings(), deaths.notes)
             check("$id deaths spoken", d["spoken"]!!.s(), deaths.spoken)
-            check("$id deaths summary", o["deaths_summary"]!!.s(), Presentation.deathsSummary(cast))
+            check("$id deaths summary", o["deaths_summary"]!!.s(), Presentation.deathsSummary(cast, show.id))
             check("$id tropes shown", o["tropes_shown"]!!.s(), Presentation.terms(Presentation.withoutSpoilers(show.tropes, Presentation.deathSpoilerTropeSlugs), Presentation.NO_TROPES))
             check("$id triggers", o["triggers"]!!.s(), Presentation.terms(show.triggers, Presentation.NO_TRIGGERS))
             val links = o["watch_links"]!!.jsonArray.map { it.jsonObject }

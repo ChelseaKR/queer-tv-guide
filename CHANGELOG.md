@@ -13,6 +13,11 @@ consumer of the published snapshot, would notice.
 
 ### Added
 
+- Each character on a show page has a link anchor from its LezWatch slug
+  (`/shows/pose/#candy-ferocity`) and says who plays her, with the actor
+  names LezWatch.TV gives ("Candy Ferocity, played by Angelica Ross"),
+  regulars first (DECISIONS 0035). No new pages, no actor pages, and still
+  no character years, death dates or clichés outside the closed answer.
 - Each show page opens with a sentence only that show can have (DECISIONS
   0029), built from the snapshot: the number of listed characters, the
   network and years, two character names (regulars first) and, from
@@ -121,7 +126,7 @@ consumer of the published snapshot, would notice.
 ### Changed
 
 - The Good Wife's show page is open to search again, and The Simpsons' page
-  is held back in its place (DECISIONS 0035). The Good Wife earned 9 search
+  is held back in its place (DECISIONS 0036). The Good Wife earned 9 search
   impressions at position 3 in the 28 days to 2026-11-05 while it was
   noindex; The Simpsons, the one pin no owner list named, earned 2 at
   position 16. Still 50 pinned pages and 52 sitemap URLs.
@@ -133,6 +138,21 @@ consumer of the published snapshot, would notice.
   rule in `show_pages.py` widens the set, and the decision says when.
 
 ### Fixed
+
+- The apps count a death on a show only when it falls in that show
+  (DECISIONS 0030 and 0032), as the show pages do. The L Word: Generation
+  Q's reveal no longer counts Dana Fairbanks, whose recorded death is in
+  The L Word; it says the death is not recorded in this show and that one
+  death is not counted. The show summary and the "no recorded deaths"
+  filter use the same rule. On the 2026-11-05 snapshot this changes 21 of
+  2,289 shows.
+- The show screen labels the trigger warning as LezWatch.TV's
+  trigger-warning level, quotes what LezWatch.TV says the level means, and
+  says "Not rated" when there is none, instead of a bare "High" under
+  "Trigger warnings". The store listings and the support page say
+  "trigger-warning level" instead of "content notes".
+- On Android, "Happiness then Tragedy" and "None!" are kept behind the
+  reveal, as on iOS.
 
 - Show pages for titles with a non-Latin slug answer at their published URL
   instead of a 404. LezWatch.TV percent-encodes such a slug

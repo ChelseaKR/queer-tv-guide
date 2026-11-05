@@ -1,5 +1,5 @@
 {
- "how_chosen": "Hand-picked by the owner's list of flagship titles, 2026-10-23, from the snapshot generated 2026-10-23T04:07:58Z. A flagship title is kept only if the snapshot has it with at least 2 listed characters; flagship titles not in the snapshot or below 2 are left out and recorded in DECISIONS 0021. Remaining slots go to the highest-TVmaze-weight shows that list at least 8 characters, excluding daytime and long-running soaps. Each reason is taken from the snapshot only (listed-character count, TVmaze weight, that it is a named flagship); none claims anything about search volume. Order is the order of the pages in the sitemap and on the shows index. select_shows builds these in this order, skips any entry that is missing from the snapshot or lists no character (logging it by name), and fills the freed slots with the character-count rule. On 2026-11-05 the one filled slot went from The Simpsons to The Good Wife, by measured Search Console impressions rather than TVmaze weight (DECISIONS 0035).",
+ "how_chosen": "Hand-picked by the owner's list of flagship titles, 2026-10-23, from the snapshot generated 2026-10-23T04:07:58Z. A flagship title is kept only if the snapshot has it with at least 2 listed characters; flagship titles not in the snapshot or below 2 are left out and recorded in DECISIONS 0021. Remaining slots go to the highest-TVmaze-weight shows that list at least 8 characters, excluding daytime and long-running soaps. Each reason is taken from the snapshot only (listed-character count, TVmaze weight, that it is a named flagship); none claims anything about search volume. Order is the order of the pages in the sitemap and on the shows index. select_shows builds these in this order, skips any entry that is missing from the snapshot or lists no character (logging it by name), and fills the freed slots with the character-count rule. On 2026-11-05 the one filled slot went from The Simpsons to The Good Wife, by measured Search Console impressions rather than TVmaze weight (DECISIONS 0036).",
  "shows": [
   {
    "lezwatch_id": 211,
@@ -299,7 +299,7 @@
    "lezwatch_id": 69,
    "slug": "the-good-wife",
    "title": "The Good Wife",
-   "reason": "Swapped into the one filled slot on 2026-11-05 (DECISIONS 0035), replacing The Simpsons: it is the held-back page that earned the most impressions while it was noindex; the snapshot lists 12 queer characters for it."
+   "reason": "Swapped into the one filled slot on 2026-11-05 (DECISIONS 0036), replacing The Simpsons: it is the held-back page that earned the most impressions while it was noindex; the snapshot lists 12 queer characters for it."
   }
  ]
 }

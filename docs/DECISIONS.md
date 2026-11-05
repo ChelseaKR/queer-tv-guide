@@ -805,7 +805,78 @@ label says whose number it is.
 **Reversible.** Yes: `seasons_fact` returns LezWatch's count, and the
 trigger row is dropped from `_facts`.
 
-## 0035 — The Good Wife takes the one filled pin from The Simpsons (2026-11-05)
+## 0032 — The apps follow 0030, and say what a trigger-warning level means (2026-11-05)
+
+**Evidence.** 0030 changed the show pages only. The iOS and Android apps
+still counted a death from another show: The L Word: Generation Q's reveal
+said "1 of 42 listed characters has a recorded death" (Dana Fairbanks, who
+dies in The L Word). The show screen also printed LezWatch.TV's trigger
+level as a bare word under "Trigger warnings" ("High"), and the store
+listings promised "content notes".
+
+**Decision.** `Presentation.deathPlacement` (GuideCore) and its Kotlin
+port apply 0030's rule to the reveal, the show summary and the "no recorded
+deaths" filter. A death the snapshot places in another show (no death year
+among the character's years in this show) is not counted. The reveal says
+it is not recorded in this show, and a note says how many are left out. The
+filter is stricter than the reveal: a death the snapshot cannot place at
+all (no death year, or a link with no years) still keeps the show out, so
+the filter never admits a show on a guess. On the 2026-11-05 snapshot the
+reveal changes for 21 of 2,289 shows; 13 of them move from "Yes" to "Not
+recorded".
+
+The show screen's heading is "LezWatch.TV trigger-warning level". The level
+is followed by LezWatch.TV's own description of it, quoted from its page
+for that level, or "Not rated" with a line saying that does not mean the
+show has no difficult content. The store listings and the support page say
+"trigger-warning level" instead of "content notes". The Android app also
+gets "Happiness then Tragedy" and "None!" behind the reveal, as on iOS
+(#112).
+
+**Not changed.** No link to LezWatch.TV's level pages: the app source names
+one host (SourceTreeGuardTests), so adding one is a separate decision.
+
+**Reversible.** Yes: `deathPlacement` returning "only show" for every
+recorded death restores the old count.
+
+## 0035 — Show pages list each character with an anchor and "played by" (2026-11-05)
+
+**Status: accepted (Chelsea approved the Stage 2 plan's character-list change, 2026-11-05).**
+
+**Evidence.** Of the 17 Search Console impressions from 2026-10-20 to
+2026-11-05 that came with a named query, 8 were for a character ("candy
+ferocity", "sense8 lila", "molly milkovich gender", "adriana delgadillo
+grey's anatomy", "faking it lauren", "is lisa simpson a lesbian"), at
+positions 8 to 50. Every one of those characters is already on a hand-picked
+show page, as a bare line with no actor.
+
+**Decision.** On existing show pages only (no new URL), the character list
+outside the answer gives each character, regulars first:
+
+- a link anchor from the character's LezWatch slug (`#candy-ferocity`). It
+  is the same from build to build and unique on the page: a slug that is not
+  a plain slug, is reserved (`main`) or repeats one earlier on the page
+  falls back to `character-<LezWatch id>`, then a `-2` suffix;
+- "played by <actor>", with the actor names exactly as LezWatch.TV gives
+  them. An actor id that did not resolve to a name is left out, and a
+  character with no named actor gets no clause, never a placeholder. Actor
+  names are plain text; there are no actor pages.
+
+The list never shows a character's years in the show (of the 711
+dead-character links that have years, 63% end before the show does, so
+years give a death away), a death date or year, or any cliche or trope. The
+answer stays in the closed `<details>`. LezWatch.TV attribution and the
+no-analytics rule are unchanged.
+
+**Tests.** `test_show_pages_characters.py`: a planted character year, a
+death date and a death-revealing cliche must each be caught by the leak
+checker when sabotaged into the list; swapping every death record leaves the
+list byte for byte the same; anchors are unique per page, and a repeated
+anchor is caught.
+
+**Reversible.** Yes: the template's list goes back to the plain line.
+
+## 0036 — The Good Wife takes the one filled pin from The Simpsons (2026-11-05)
 
 **Status: accepted (owner, 2026-11-05: option A of the indexing review).
 It changes one entry of the hand-picked list of 0021. Indexing (0028) and

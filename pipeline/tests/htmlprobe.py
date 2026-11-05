@@ -25,6 +25,9 @@ class Page:
     statuses: list[tuple[str, str]] = field(default_factory=list)  # (data-status, text)
     css: str = ""
     ids: set[str] = field(default_factory=set)
+    id_list: list[str] = field(default_factory=list)  # every id, repeats kept
+    cast: list[str] = field(default_factory=list)  # text inside <ul class="cast">
+    cast_ids: list[str] = field(default_factory=list)  # ids of its <li> items
     facts: dict[str, str] = field(default_factory=dict)  # <dt> text -> <dd> text
 
     def named(self, name: str) -> list[dict[str, str | None]]:
@@ -45,6 +48,7 @@ class _Probe(HTMLParser):
         self._script_ld = False
         self._term: str | None = None
         self._cell = ""
+        self._cast = 0
 
     def _head(self, tag: str, a: dict[str, str | None]) -> None:
         p = self.page
@@ -55,6 +59,14 @@ class _Probe(HTMLParser):
         if tag == "link" and a.get("rel") == "canonical":
             p.canonical = a.get("href") or ""
 
+    def _cast_start(self, tag: str, a: dict[str, str | None]) -> None:
+        if self._cast:
+            self._cast += tag not in VOID
+            if tag == "li" and self._cast == 2:
+                self.page.cast_ids.append(a.get("id") or "")
+        elif tag == "ul" and a.get("class") == "cast":
+            self._cast = 1
+
     def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
         a = dict(attrs)
         p = self.page
@@ -62,6 +74,8 @@ class _Probe(HTMLParser):
         self._head(tag, a)
         if a.get("id"):
             p.ids.add(a["id"])
+            p.id_list.append(a["id"])
+        self._cast_start(tag, a)
         if tag in {"h1", "h2", "h3", "h4", "h5", "h6"}:
             p.headings.append(int(tag[1]))
         if tag in {"dt", "dd"}:
@@ -77,6 +91,8 @@ class _Probe(HTMLParser):
             self._stack.append(tag)
 
     def handle_endtag(self, tag: str) -> None:
+        if self._cast:
+            self._cast -= 1
         if tag == "details":
             self._details -= 1
         if tag in {"dt", "dd"}:
@@ -106,12 +122,18 @@ class _Probe(HTMLParser):
                 p.ld_json.append(data)
         elif "body" in self._stack:
             (p.inside if self._details else p.outside).append(text)
-            if self._cell == "dt":
-                self._term = text
-            elif self._cell == "dd" and self._term is not None:
-                p.facts[self._term] = text
-            if self._status_kind is not None:
-                p.statuses.append((self._status_kind, text))
+            self._cell_data(text)
+
+    def _cell_data(self, text: str) -> None:
+        p = self.page
+        if self._cast:
+            p.cast.append(text)
+        if self._cell == "dt":
+            self._term = text
+        elif self._cell == "dd" and self._term is not None:
+            p.facts[self._term] = text
+        if self._status_kind is not None:
+            p.statuses.append((self._status_kind, text))
 
 
 def parse(html: str) -> Page:
@@ -157,6 +179,11 @@ def answer_leaks(page: Page, answers: list[str]) -> list[str]:
     return [a for a in answers if any(a in v for v in visible)]
 
 
+def duplicate_ids(page: Page) -> list[str]:
+    """Ids that appear more than once on a page (a link anchor must be unique)."""
+    return sorted({i for i in page.id_list if page.id_list.count(i) > 1})
+
+
 def no_for_unknown(page: Page) -> list[str]:
     """Statuses that are not a recorded death yet do not say Unknown."""
     bad = []
@@ -175,6 +202,14 @@ class _Sitemap(HTMLParser):
         super().__init__()
         self.entries: dict[str, list[str]] = {"loc": [], "lastmod": []}
         self._open: str | None = None
+
+    def _cast_start(self, tag: str, a: dict[str, str | None]) -> None:
+        if self._cast:
+            self._cast += tag not in VOID
+            if tag == "li" and self._cast == 2:
+                self.page.cast_ids.append(a.get("id") or "")
+        elif tag == "ul" and a.get("class") == "cast":
+            self._cast = 1
 
     def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
         self._open = tag if tag in self.entries else None

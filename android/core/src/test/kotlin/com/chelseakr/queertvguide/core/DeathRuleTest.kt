@@ -105,6 +105,60 @@ class DeathRuleTest {
         )
     }
 
+    /** The fixture with show 101 tagged with `tags`, each also added to the trope taxonomy. */
+    private fun show101Tagged(tags: List<Pair<String, String>>): Snapshot {
+        var root = Repo.fixtureJson().editObject("taxonomies") { tax ->
+            val tropes = (tax["tropes"] as JsonArray) + tags.mapIndexed { n, (slug, name) ->
+                JsonObject(mapOf("lwtv_id" to JsonPrimitive(9990 + n), "slug" to JsonPrimitive(slug), "name" to JsonPrimitive(name), "count" to JsonPrimitive(1)))
+            }
+            tax.with("tropes", JsonArray(tropes))
+        }
+        root = root.editArray("shows", 0) { show ->
+            val tropes = (show["tropes"] as JsonArray) + tags.map { (slug, name) ->
+                JsonObject(mapOf("slug" to JsonPrimitive(slug), "name" to JsonPrimitive(name)))
+            }
+            show.with("tropes", JsonArray(tropes))
+        }
+        val s = SnapshotDecoder.decode(Repo.bytes(root))
+        assertTrue("the edit landed", s.show("lwtv:show:101")!!.tropes.map { it.slug }.containsAll(tags.map { it.first }))
+        return s
+    }
+
+    private val spoilers = listOf("dead-queers" to "Bury Your Queers", "happy-then-not" to "Happiness then Tragedy", "none" to "None!")
+
+    /**
+     * #112 on Android (Android audit 2026-11-05, finding 1): every spoiler
+     * trope stays off the show screen's visible list and out of the trope
+     * filter, so the filter's "Tropes that give away a death are not listed"
+     * is true, and each is stated inside the reveal instead.
+     */
+    @Test
+    fun noSpoilerTropeIsShownOrOfferedAndEachIsStatedInsideTheReveal() {
+        val s = show101Tagged(spoilers)
+        val show = s.show("lwtv:show:101")!!
+        assertEquals(listOf("slow-burn", "found-family"), Presentation.withoutSpoilers(show.tropes, Presentation.deathSpoilerTropeSlugs).map { it.slug })
+        assertEquals(listOf("found-family", "slow-burn"), SearchIndex(s).filterOptions.tropes.map { it.slug })
+        assertEquals(
+            listOf(
+                "LezWatch.TV tags this show “Bury Your Queers”.",
+                "LezWatch.TV tags this show “Happiness then Tragedy”.",
+                "LezWatch.TV lists no tropes for this show (“None!”).",
+            ),
+            Presentation.showDeaths(s.charactersInShow(show.id), show).notes,
+        )
+        assertEquals(listOf("LezWatch.TV lists no tropes for this show (“None!”)."), Presentation.showDeaths(emptyList(), show101Tagged(listOf("none" to "None!")).show("lwtv:show:101")!!).notes)
+    }
+
+    /** Negative control: an ordinary trope added the same way is shown and offered, so the test above can fail. */
+    @Test
+    fun anOrdinaryTropeAddedTheSameWayIsShownAndOffered() {
+        val s = show101Tagged(listOf("happy-ending" to "Happy Ending"))
+        val show = s.show("lwtv:show:101")!!
+        assertTrue(Presentation.withoutSpoilers(show.tropes, Presentation.deathSpoilerTropeSlugs).any { it.slug == "happy-ending" })
+        assertTrue(SearchIndex(s).filterOptions.tropes.any { it.slug == "happy-ending" })
+        assertEquals(emptyList<String>(), Presentation.showDeaths(s.charactersInShow(show.id), show).notes)
+    }
+
     @Test
     fun theSpoilerTropesMatchGuideCore() {
         assertEquals(setOf("dead-queers", "happy-then-not", "none"), Presentation.deathSpoilerTropeSlugs)

@@ -667,3 +667,48 @@ sitemap in Search Console until this is live; after that, resubmitting is
 fine.
 
 **Reversible.** Yes, with one constant (see "How to widen").
+
+## 0029 — Each show page opens with a sentence only that show can have (2026-11-04)
+
+**Status: proposed (agent, 2026-11-04). It extends 0024 and 0027 and keeps
+the spoiler rule of 0019 to 0028. Indexing (0028) does not change.**
+
+**Evidence.** The 2026-11-03 search review found that the opening paragraph
+of every show page was the same except for the show's name, and that at the
+median about 68% of a page's words are sentences found on at least 30% of
+pages. Measured again on the 2026-11-04 snapshot (363 pages, sentences split
+on end punctuation, the same 30% threshold): the median repeated share falls
+from 65.0% to 60.6%, and the median of show-specific words rises from 215 to
+248. Most of what remains is the shared credits and license block, which
+this change does not touch (shortening it needs a licensing sign-off).
+
+**Decision.** `show_pages.opening` writes the page's first paragraph, right
+under the heading: "LezWatch.TV lists <n> queer characters in <show>
+(<network>, <years>), including <name> and <name>." then, from TVmaze, "Its
+most recent episode on TVmaze aired on <date> (season <s>, episode <e>),
+and the next is listed for <date>." ("last" instead of "most recent" when
+TVmaze says the show has ended and lists no next episode). The count is of
+listed characters, as in the title. The names are the first two in the
+description's order (regulars first, then the page's order), never an order
+a death could affect. The network is LezWatch.TV's, then TVmaze's only when
+the schedule is known, as in the facts list. The fixed paragraph after it is
+shorter and still names the bury-your-gays trope (0024).
+
+**What it never says.** No death, death count, death year or death trope,
+and no episode name (one can give the answer away: "Dead Air"). A test swaps
+every death record and death tally and asserts no opening changes.
+
+**Absence.** A fact the snapshot lacks is left out of the sentence, never
+printed: no years, no network, no TVmaze match, an unreadable date or a
+missing season or episode number each make the sentence shorter. A show
+with none of them gets "LezWatch.TV lists one queer character in <show>:
+<name>." A start year with no end year and no "on air" flag says "from
+<year>", never "to present". The facts list keeps saying "Not recorded"
+where a value is missing, as before.
+
+**Not changed.** The title, description, structured data, the closed answer,
+the facts list, the credits and license block, the sitemap and robots tags,
+the shows index, the home page and the app.
+
+**Reversible.** Yes: restore the old first paragraph in `show.html.j2` and
+drop `opening`.

@@ -71,6 +71,13 @@ data block holds a BreadcrumbList and a schema.org TVSeries (name, page,
 LezWatch.TV and TVmaze pages, years, seasons, genres, countries and the
 characters' names). There is no FAQPage: its answer would be the spoiler.
 
+The opening (``opening``, DECISIONS 0029). A page's first paragraph is a
+sentence only that show can have: the number of listed characters, the
+network and years, two names (regulars first) and, from TVmaze, when the most
+recent episode aired and when the next is listed. It uses no death record and
+no episode name, and a fact the snapshot lacks is left out of the sentence,
+never printed as a placeholder.
+
 What a page may say. The answer to "does she die" is the one thing a visitor
 did not ask to be told. It sits inside a native ``<details>`` element that is
 closed when the page loads, and nowhere else: not in the title, the
@@ -160,6 +167,8 @@ RELATED_LIMIT = 4
 SKIP_MAX_SHARE = 0.05
 # Character names in a description, at most; regulars first (``_roles_first``).
 DESCRIPTION_NAMES = 3
+# Character names in the page's opening sentence (``opening``, DECISIONS 0029).
+OPENING_NAMES = 2
 ROLE_ORDER = {"regular": 0, "recurring": 1, "guest": 2}
 # The description's identity labels (``identity``, DECISIONS 0027).
 LESBIAN_SEXUALITIES = frozenset({"Homosexual", "Lesbian"})
@@ -751,6 +760,99 @@ def _description(name: str, cast: list[CharacterView]) -> str:
     )
 
 
+_MONTHS = (
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+)
+
+
+def _long_date(value: Any) -> str | None:
+    """ "March 8, 2009" from an ISO date, or None when there is no readable
+    date (never a placeholder)."""
+    if not isinstance(value, str):
+        return None
+    try:
+        day = dt.date.fromisoformat(value)
+    except ValueError:
+        return None
+    return f"{_MONTHS[day.month - 1]} {day.day}, {day.year}"
+
+
+def _opening_years(years: dict[str, Any]) -> str | None:
+    start, end = years["start"], years["end"]
+    if start is None:
+        return None
+    if end is not None:
+        return str(start) if end == start else f"{start} to {end}"
+    return f"{start} to present" if years["on_air"] == "yes" else f"from {start}"
+
+
+def _opening_network(show: dict[str, Any]) -> str | None:
+    names = [n["name"] for n in show["networks"] if n.get("name")]
+    if names:
+        return _and_list(names)
+    sched = show["schedule"]
+    if sched["schedule_known"] is not True:
+        return None
+    channel = sched["network"] or sched["web_channel"] or {}
+    return channel.get("name") or None
+
+
+def _opening_episodes(show: dict[str, Any]) -> str | None:
+    """The TVmaze sentence: when the most recent episode aired (season and
+    number when both are known) and when the next is listed. Episode names
+    are left out: one can give away a death ("Dead Air")."""
+    sched = show["schedule"]
+    if sched["schedule_known"] is not True:
+        return None
+    prev, nxt = sched["previous_episode"] or {}, sched["next_episode"] or {}
+    prev_on, next_on = _long_date(prev.get("airdate")), _long_date(nxt.get("airdate"))
+    if prev_on:
+        which = "last" if sched["status"] == "Ended" and not next_on else "most recent"
+        text = f"Its {which} episode on TVmaze aired on {prev_on}"
+        if isinstance(prev.get("season"), int) and isinstance(prev.get("number"), int):
+            text += f" (season {prev['season']}, episode {prev['number']})"
+        return text + (f", and the next is listed for {next_on}." if next_on else ".")
+    if next_on:
+        return f"TVmaze lists its next episode for {next_on}."
+    return None
+
+
+def opening(show: dict[str, Any], cast: list[CharacterView]) -> str:
+    """The page's first sentence, which only this show can have: how many
+    characters LezWatch.TV lists, the network and years, up to
+    ``OPENING_NAMES`` names (regulars first, never in an order a death could
+    affect), then the TVmaze episode dates. Built only from facts that cannot
+    answer the question: no death, death count, death year or trope, and no
+    episode name. A fact the snapshot lacks is left out, never printed as
+    "Unknown" or "Not recorded" (the facts list says that)."""
+    n = len(cast)
+    who = "one queer character" if n == 1 else f"{n} queer characters"
+    context = [part for part in (_opening_network(show), _opening_years(show["years"])) if part]
+    # A semicolon keeps a list of networks apart from the years.
+    joiner = "; " if any("," in part for part in context) else ", "
+    where = show["title"] + (f" ({joiner.join(context)})" if context else "")
+    names = [c.name for c in _ranked(cast)][:OPENING_NAMES]
+    if not names:
+        first = f"LezWatch.TV lists {who} in {where}."
+    elif n > len(names):
+        first = f"LezWatch.TV lists {who} in {where}, including {_and_list(names)}."
+    else:
+        first = f"LezWatch.TV lists {who} in {where}: {_and_list(names)}."
+    episodes = _opening_episodes(show)
+    return f"{first} {episodes}" if episodes else first
+
+
 def _series(show: dict[str, Any], canonical: str, cast: list[CharacterView]) -> dict[str, Any]:
     """schema.org TVSeries from snapshot facts only; nothing about deaths."""
     series: dict[str, Any] = {
@@ -853,6 +955,7 @@ def render_show(
         **_common(doc, base_url, app_store_live),
         title=show_title(show["title"], len(cast)),
         description=_description(show["title"], cast),
+        opening=opening(show, cast),
         canonical=canonical,
         show=show,
         crumbs=crumbs,

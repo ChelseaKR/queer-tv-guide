@@ -159,7 +159,8 @@ def test_on_keeps_android_wording_inside_its_region(site):
 def test_on_adds_no_script_and_no_image(site):
     assert play_store.main([str(site), "true"]) == 0
     index = (site / "index.html").read_text(encoding="utf-8").lower()
-    assert "<script" not in index
+    # The one script allowed is the WebSite data block, never code.
+    assert re.search(r'<script(?! type="application/ld\+json">)', index) is None
     assert "<img" not in index
 
 

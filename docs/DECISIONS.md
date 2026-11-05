@@ -748,6 +748,63 @@ in a later build), the title, description, opening and selection.
 
 **Reversible.** Yes: drop the `show_years` check in `_death_status`.
 
+## 0031 — Show-page facts: TVmaze's season count for an ended show, the trigger level, one survival sentence (2026-11-05)
+
+**Status: accepted (Chelsea, decision D6, 2026-11-05).**
+
+**Evidence.** The 2026-11-05 quality audit found LezWatch.TV season counts
+that are wrong for ended shows: Wentworth "11" (it had 8 by most sources;
+TVmaze's last season is 9), Cobra Kai "4" (6; it ended February 13, 2025),
+Bad Girls "5" (8), and 69 pages saying "Seasons: Not recorded" two lines
+under an opening that names the latest season from TVmaze. It also found
+that no page showed LezWatch.TV's trigger-warning level, and that 150
+"Yes" answers printed "LezWatch.TV records deaths, not survival." twice in
+a row.
+
+**Decision.**
+
+- Seasons (`seasons_fact`). TVmaze's season number is the season of the
+  latest aired episode it lists (`schedule.previous_episode.season`, already
+  in the snapshot; no new request to TVmaze). For a show TVmaze lists as
+  Ended, when that number differs from LezWatch's count, the page shows
+  TVmaze's, in a row labeled "Seasons, per TVmaze". When LezWatch has no
+  count, TVmaze's number fills it, as "3" for an ended show and "3 so far"
+  for any other. A running show keeps LezWatch's count, since a next season
+  may be announced before TVmaze lists it. A TVmaze season number of 1900 or
+  more is a year (soaps and anime numbered by year), not a count, and is
+  never used; a show with neither stays "Not recorded". The schema.org
+  `numberOfSeasons` uses the same number. There is no hand-kept override
+  file: the rule is the only source of a changed number.
+- Trigger warning. A facts row, "Trigger warning, per LezWatch.TV", shows
+  LezWatch.TV's level (Low, Medium or High), or "Not rated" when none is
+  recorded. The three levels rate how intense a show is and name no event,
+  so they can sit outside the answer. Any other trigger term is not printed
+  anywhere on the page (it could name a death); the row then says "See
+  LezWatch.TV". On the 2026-11-05 snapshot all 192 recorded trigger terms
+  are one of the three levels, and 50 of the 363 pages show one.
+- The note under a "Yes" answer now says only "For the other N, the answer
+  is unknown." The fixed line under it already says why.
+
+On the 2026-11-05 snapshot the Seasons row changes on 93 of 363 pages.
+The four record errors found in LezWatch.TV's own data (Wentworth's and
+Cobra Kai's season counts, Buffy on The CW, and the year of Dana Fairbanks's
+death) are to be reported to LezWatch.TV by Chelsea; this rule does not wait
+for them.
+
+**Not changed.** The network. It stays LezWatch.TV's stations first, then
+TVmaze's only when LezWatch.TV lists none, in both the facts row and the
+opening sentence, as in 0029. Chelsea chose this on 2026-11-05 after a trial
+of TVmaze's network showed TVmaze names a show's current home (The L Word:
+"Paramount+ with Showtime"). Buffy's "The CW" is left to LezWatch.TV to
+correct. Also not changed: the app, the years row, the title, description
+and selection. A season count from TVmaze can still differ from a show's
+official count where TVmaze numbers seasons differently (Wentworth's final
+20 episodes are season 8 in most sources and seasons 8 and 9 on TVmaze); the
+label says whose number it is.
+
+**Reversible.** Yes: `seasons_fact` returns LezWatch's count, and the
+trigger row is dropped from `_facts`.
+
 ## 0032 — The apps follow 0030, and say what a trigger-warning level means (2026-11-05)
 
 **Evidence.** 0030 changed the show pages only. The iOS and Android apps

@@ -64,8 +64,10 @@ listed characters, regulars first, each with the identity the page shows
 ("Lisa Simpson (bisexual)"), because people search "does <character> die
 in <show>" and "is <character> a lesbian", and says who dies is behind the
 spoiler warning; the
-characters heading says "LGBTQ characters in <show>"; and one fixed sentence
-on every page names the bury-your-gays trope. None of these depends on any
+characters heading says "Queer women, non-binary and trans characters in
+<show>", because that is what LezWatch.TV covers; one fixed sentence on every
+page names the bury-your-gays trope and another says that cisgender gay and
+bisexual men are not listed. None of these depends on any
 death record, so none of them can answer the question. The one structured
 data block holds a BreadcrumbList and a schema.org TVSeries (name, page,
 LezWatch.TV and TVmaze pages, years, seasons, genres, countries and the
@@ -122,6 +124,7 @@ import re
 import sys
 import unicodedata
 import urllib.parse
+from collections.abc import Iterable
 from dataclasses import dataclass
 from html.parser import HTMLParser
 from pathlib import Path
@@ -225,6 +228,9 @@ class CharacterView:
     sexuality: str
     dies: bool
     status: str
+    # A death LezWatch records for the character that this show's years do
+    # not place in this show (DECISIONS 0030). Never a yes.
+    elsewhere: bool = False
 
 
 @dataclass(frozen=True)
@@ -608,21 +614,53 @@ def _term_name(term: dict[str, Any] | None) -> str:
     return term["name"] if term else NOT_RECORDED
 
 
-def _death_status(death: dict[str, Any], other_shows: int) -> tuple[bool, str]:
+def _death_status(
+    death: dict[str, Any], other_shows: int, show_years: Iterable[str] = ()
+) -> tuple[bool, str]:
     """(dies, sentence). Only a recorded death is a yes; everything else is
-    Unknown, because LezWatch records deaths, not survival."""
+    Unknown, because LezWatch records deaths, not survival.
+
+    LezWatch records a death on the character, not on a show (DECISIONS
+    0030). For a character linked to more than one show, the death counts for
+    this show only when a death year is one of the character's years in this
+    show (``show_years``, the link's years). Otherwise the snapshot cannot
+    place the death in this show, so the answer here is Unknown, never a
+    guess either way."""
     if death["death_known"] is not True or death["died"] is not True:
         return False, f"{UNKNOWN}. LezWatch.TV has not recorded a death."
     years = sorted(death["years"])
+    listed = ", ".join(map(str, years))
     if not years:
         text = "Dies (year not recorded)."
     elif len(years) > 1:
-        text = f"Dies more than once ({', '.join(map(str, years))})."
+        text = f"Dies more than once ({listed})."
     else:
         text = f"Dies ({years[0]})."
-    if other_shows:
-        text += " The record belongs to the character, not to one show, so it does not say whether it happens in this one."
-    return True, text
+    if not other_shows:
+        return True, text
+    here = {str(y) for y in show_years}
+    matched = [str(y) for y in years if str(y) in here]
+    if matched:
+        verb = "is" if len(matched) == 1 else "are"
+        text += (
+            " The record belongs to the character, not to one show; it is counted here"
+            f" because {_and_list(matched)} {verb} among this character's years in this show."
+        )
+        return True, text
+    if not years:
+        return False, (
+            f"{UNKNOWN}. LezWatch.TV records a death for this character but no year,"
+            " so it cannot say whether it happens in this show."
+        )
+    if not here:
+        return False, (
+            f"{UNKNOWN}. LezWatch.TV records a death for this character ({listed}) but not"
+            " the character's years in this show, so it cannot say whether it happens here."
+        )
+    return False, (
+        f"{UNKNOWN}. LezWatch.TV records a death for this character ({listed}), but not in"
+        " a year the character appears in this show. It may happen in another show."
+    )
 
 
 def cast_index(doc: dict[str, Any]) -> dict[str, list[tuple[dict[str, Any], dict[str, Any]]]]:
@@ -647,7 +685,10 @@ def _characters(
     views = []
     pairs = (index if index is not None else cast_index(doc)).get(show["id"], [])
     for c, link in pairs:
-        dies, status = _death_status(c["death"], len(c["shows"]) - 1)
+        others = {lk["show_id"] for lk in c["shows"]} - {show["id"]}
+        years_here = [y for lk in c["shows"] if lk["show_id"] == show["id"] for y in lk["years"]]
+        dies, status = _death_status(c["death"], len(others), years_here)
+        elsewhere = not dies and c["death"]["died"] is True and c["death"]["death_known"] is True
         views.append(
             CharacterView(
                 name=c["name"],
@@ -657,6 +698,7 @@ def _characters(
                 sexuality=_term_name(c["sexuality"]),
                 dies=dies,
                 status=status,
+                elsewhere=elsewhere,
             )
         )
     return views
@@ -678,9 +720,11 @@ def _answer(show: dict[str, Any], cast: list[CharacterView]) -> Answer:
     ]
     n = len(cast)
     listed = f"{n} listed {_plural(n, 'character', 'characters')}"
+    elsewhere = sum(1 for c in cast if c.elsewhere)
     if not dead:
         headline = (
-            f"{UNKNOWN}. LezWatch.TV has no death on record for "
+            f"{UNKNOWN}. LezWatch.TV has no death on record "
+            f"{'in this show ' if elsewhere else ''}for "
             f"{'the one listed character' if n == 1 else f'any of the {listed}'}. "
             "It records deaths and nothing else, so this does not say anyone lives."
         )
@@ -693,6 +737,12 @@ def _answer(show: dict[str, Any], cast: list[CharacterView]) -> Answer:
                 f"For the other {n - len(dead)}, the answer is {UNKNOWN.lower()}: "
                 "LezWatch.TV records deaths, not survival."
             )
+    if elsewhere:
+        notes.append(
+            f"{'One listed character has' if elsewhere == 1 else f'{elsewhere} listed characters have'}"
+            " a recorded death that LezWatch.TV does not place in this show, so"
+            f" {'it is' if elsewhere == 1 else 'they are'} not counted here."
+        )
     return Answer(headline, notes)
 
 

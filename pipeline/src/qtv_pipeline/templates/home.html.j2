@@ -7,6 +7,11 @@
 <meta property="og:url" content="{{ canonical }}">
 <meta property="og:locale" content="en_US">
 <meta name="twitter:card" content="summary">
+{#- The site's name and address for search engines' site-name line: the
+    header's brand and this page's canonical URL, nothing else. No
+    SearchAction, since the site has no search page. Data, not code: a
+    browser never runs an ld+json block. #}
+<script type="application/ld+json">{{ {"@context": "https://schema.org", "@type": "WebSite", "name": site_name, "url": base_url ~ "/"}|tojson }}</script>
 {%- endblock %}
 {% block content %}
 <h1>{{ site_name }}: queer TV, spoiler-free</h1>

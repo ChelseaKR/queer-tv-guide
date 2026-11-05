@@ -5,6 +5,7 @@ fail."""
 from __future__ import annotations
 
 import copy
+import re
 
 import pytest
 
@@ -82,7 +83,8 @@ def test_the_home_page_says_the_sources_do_not_endorse_the_app(built_doc):
     doc, _cache, _out = built_doc
     page = site_index.render_index(doc)
     assert "LezWatch.TV and TVmaze do not endorse this app." in page
-    assert "<script" not in page.lower()
+    # The one script allowed is the WebSite data block, never code.
+    assert re.search(r'<script(?! type="application/ld\+json">)', page.lower()) is None
 
 
 def test_the_data_page_links_the_files_at_their_unchanged_urls(built_doc):

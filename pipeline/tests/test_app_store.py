@@ -277,7 +277,14 @@ def test_a_marked_region_on_another_page_is_caught():
 def test_on_adds_no_script(site):
     assert app_store.main([str(site), "true"]) == 0
     for page in site.glob("*.html"):
-        assert "<script" not in page.read_text(encoding="utf-8").lower(), page.name
+        # The one script allowed is the home page's WebSite data block, never code.
+        assert (
+            re.search(
+                r'<script(?! type="application/ld\+json">)',
+                page.read_text(encoding="utf-8").lower(),
+            )
+            is None
+        ), page.name
 
 
 def test_a_second_run_is_refused_rather_than_doubling_the_tag(site):

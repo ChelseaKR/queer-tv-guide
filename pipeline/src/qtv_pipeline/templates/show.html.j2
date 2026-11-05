@@ -35,10 +35,10 @@
 </dl>
 <p class="small">Facts marked “per TVmaze”, and the network when LezWatch.TV lists none, come from TVmaze, licensed <a href="{{ licence.snapshot.url }}">CC BY-SA 4.0</a>: {% if tvmaze_url %}<a href="{{ tvmaze_url }}">this show on TVmaze</a>{% else %}<a href="https://www.tvmaze.com/">TVmaze</a>{% endif %}.</p>
 <h2>Queer women, non-binary and trans characters in {{ show.title }}</h2>
-<p>LezWatch.TV lists {{ cast|length }} queer {{ 'character' if cast|length == 1 else 'characters' }} in {{ show.title }}. Each name links to the character's LezWatch.TV page.</p>
+<p>LezWatch.TV lists {{ cast|length }} queer {{ 'character' if cast|length == 1 else 'characters' }} in {{ show.title }}, regulars first. Each name links to the character's LezWatch.TV page, and actors are named as LezWatch.TV lists them.</p>
 <ul class="cast">
-{%- for c in cast %}
-<li><a href="{{ c.source_url }}">{{ c.name }}</a>. Role: {{ c.role }}. Gender: {{ c.gender }}. Sexuality: {{ c.sexuality }}.</li>
+{%- for c, actor in listed %}
+<li id="{{ c.anchor }}"><strong><a href="{{ c.source_url }}">{{ c.name }}</a></strong>{% if actor %}, {{ actor }}{% endif %}. Role: {{ c.role }}. Gender: {{ c.gender }}. Sexuality: {{ c.sexuality }}.</li>
 {%- endfor %}
 </ul>
 <p><a href="{{ show.source_url }}">View {{ show.title }} on LezWatch.TV</a></p>

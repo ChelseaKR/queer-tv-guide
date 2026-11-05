@@ -13,6 +13,11 @@ consumer of the published snapshot, would notice.
 
 ### Added
 
+- Each character on a show page has a link anchor from its LezWatch slug
+  (`/shows/pose/#candy-ferocity`) and says who plays her, with the actor
+  names LezWatch.TV gives ("Candy Ferocity, played by Angelica Ross"),
+  regulars first (DECISIONS 0035). No new pages, no actor pages, and still
+  no character years, death dates or clichés outside the closed answer.
 - Each show page opens with a sentence only that show can have (DECISIONS
   0029), built from the snapshot: the number of listed characters, the
   network and years, two character names (regulars first) and, from

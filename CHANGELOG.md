@@ -140,6 +140,21 @@ consumer of the published snapshot, would notice.
 
 ### Fixed
 
+- The apps count a death on a show only when it falls in that show
+  (DECISIONS 0030 and 0032), as the show pages do. The L Word: Generation
+  Q's reveal no longer counts Dana Fairbanks, whose recorded death is in
+  The L Word; it says the death is not recorded in this show and that one
+  death is not counted. The show summary and the "no recorded deaths"
+  filter use the same rule. On the 2026-11-05 snapshot this changes 21 of
+  2,289 shows.
+- The show screen labels the trigger warning as LezWatch.TV's
+  trigger-warning level, quotes what LezWatch.TV says the level means, and
+  says "Not rated" when there is none, instead of a bare "High" under
+  "Trigger warnings". The store listings and the support page say
+  "trigger-warning level" instead of "content notes".
+- On Android, "Happiness then Tragedy" and "None!" are kept behind the
+  reveal, as on iOS.
+
 - Show pages for titles with a non-Latin slug answer at their published URL
   instead of a 404. LezWatch.TV percent-encodes such a slug
   ("the-air-%e0%b9%80..."), and the page was written to a folder named

@@ -79,9 +79,18 @@ class BundledSnapshotTest {
         for (show in kept) {
             val cast = snapshot.charactersInShow(show.id)
             assertTrue(show.id, cast.isNotEmpty())
-            assertTrue(show.id, cast.none { it.death.isRecorded })
+            // DECISIONS 0030/0032: no death that could be in this show. A death the
+            // snapshot places in another show does not keep a show out.
+            assertTrue(show.id, cast.none { Presentation.deathPlacement(it, show.id).mayBeHere })
         }
         assertTrue(kept.size < snapshot.shows.size)
+        // Real data has shows whose only recorded deaths are placed in another show
+        // (The L Word: Generation Q, Supergirl on the 2026-11-05 snapshot).
+        assertTrue(
+            kept.any { show ->
+                snapshot.charactersInShow(show.id).any { it.death.isRecorded }
+            },
+        )
     }
 
     @Test

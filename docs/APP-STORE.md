@@ -95,7 +95,7 @@ only a keyword, and people browsing the App Store never see keywords.
 is the word the app already uses for itself. Each keyword matches
 something on screen:
 
-- "trigger" and "warning": the show screen's "Trigger warnings" heading.
+- "trigger" and "warning": the show screen's "LezWatch.TV trigger-warning level" heading.
 - "spoiler": the reveal.
 - "trope": the tropes list.
 - "where" and "watch": the where-to-watch links.

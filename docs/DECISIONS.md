@@ -805,6 +805,40 @@ label says whose number it is.
 **Reversible.** Yes: `seasons_fact` returns LezWatch's count, and the
 trigger row is dropped from `_facts`.
 
+## 0032 — The apps follow 0030, and say what a trigger-warning level means (2026-11-05)
+
+**Evidence.** 0030 changed the show pages only. The iOS and Android apps
+still counted a death from another show: The L Word: Generation Q's reveal
+said "1 of 42 listed characters has a recorded death" (Dana Fairbanks, who
+dies in The L Word). The show screen also printed LezWatch.TV's trigger
+level as a bare word under "Trigger warnings" ("High"), and the store
+listings promised "content notes".
+
+**Decision.** `Presentation.deathPlacement` (GuideCore) and its Kotlin
+port apply 0030's rule to the reveal, the show summary and the "no recorded
+deaths" filter. A death the snapshot places in another show (no death year
+among the character's years in this show) is not counted. The reveal says
+it is not recorded in this show, and a note says how many are left out. The
+filter is stricter than the reveal: a death the snapshot cannot place at
+all (no death year, or a link with no years) still keeps the show out, so
+the filter never admits a show on a guess. On the 2026-11-05 snapshot the
+reveal changes for 21 of 2,289 shows; 13 of them move from "Yes" to "Not
+recorded".
+
+The show screen's heading is "LezWatch.TV trigger-warning level". The level
+is followed by LezWatch.TV's own description of it, quoted from its page
+for that level, or "Not rated" with a line saying that does not mean the
+show has no difficult content. The store listings and the support page say
+"trigger-warning level" instead of "content notes". The Android app also
+gets "Happiness then Tragedy" and "None!" behind the reveal, as on iOS
+(#112).
+
+**Not changed.** No link to LezWatch.TV's level pages: the app source names
+one host (SourceTreeGuardTests), so adding one is a separate decision.
+
+**Reversible.** Yes: `deathPlacement` returning "only show" for every
+recorded death restores the old count.
+
 ## 0034 — Announce new and changed pages to IndexNow after each deploy (2026-11-05)
 
 **Evidence.** IndexNow is how a site tells Bing (which ChatGPT search leans

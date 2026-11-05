@@ -209,4 +209,26 @@ final class SearchIndexTests: XCTestCase {
         XCTAssertFalse(offered.contains("dead-queers"))
         XCTAssertEqual(offered, ["found-family", "slow-burn"])
     }
+    /// Every spoiler trope, not only "Bury Your Queers", stays out of the
+    /// filter list ("Tropes that give away a death are not listed").
+    func testNoSpoilerTropeIsOffered() throws {
+        let spoilers = [("dead-queers", "Bury Your Queers"), ("happy-then-not", "Happiness then Tragedy"), ("none", "None!")]
+        let data = try JSONEdit.edit(try Repo.fixtureData()) { root in
+            var taxonomies = root["taxonomies"] as! [String: Any]
+            var tropes = taxonomies["tropes"] as! [[String: Any]]
+            for (n, (slug, name)) in spoilers.enumerated() {
+                tropes.append(["lwtv_id": 9990 + n, "slug": slug, "name": name, "count": 1])
+            }
+            taxonomies["tropes"] = tropes
+            root["taxonomies"] = taxonomies
+            var shows = root["shows"] as! [[String: Any]]
+            var show = shows[0]
+            show["tropes"] = (show["tropes"] as! [[String: Any]]) + spoilers.map { ["slug": $0.0, "name": $0.1] }
+            shows[0] = show
+            root["shows"] = shows
+        }
+        let s = try SnapshotDecoder().decode(data)
+        XCTAssertEqual(Set(s.shows[0].tropes.map(\.slug)).intersection(spoilers.map(\.0)).count, 3, "the edit landed")
+        XCTAssertEqual(SearchIndex(snapshot: s).filterOptions.tropes.map(\.slug), ["found-family", "slow-burn"])
+    }
 }

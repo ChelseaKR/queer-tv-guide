@@ -140,10 +140,15 @@ class SearchIndex(private val snapshot: Snapshot) {
 
     data class DeathCoverage(val hasCharacters: Boolean, val anyRecordedDeath: Boolean)
 
-    /** Whether any listed character has a recorded death, alongside whether any is listed at all. */
+    /**
+     * Whether any listed character has a recorded death that may be in this
+     * show, alongside whether any is listed at all. Per DECISIONS 0030 a death
+     * placed in another show does not count; one that cannot be placed still
+     * does, so the "no recorded deaths" filter never admits a show on a guess.
+     */
     fun deathCoverage(show: Show): DeathCoverage {
         val cast = snapshot.charactersInShow(show.id)
-        return DeathCoverage(cast.isNotEmpty(), cast.any { it.death.isRecorded })
+        return DeathCoverage(cast.isNotEmpty(), cast.any { Presentation.deathPlacement(it, show.id).mayBeHere })
     }
 
     private fun passes(hit: Hit, filters: Filters): Boolean {

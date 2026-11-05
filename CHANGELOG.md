@@ -13,6 +13,17 @@ consumer of the published snapshot, would notice.
 
 ### Added
 
+- Each show page opens with a sentence only that show can have (DECISIONS
+  0029), built from the snapshot: the number of listed characters, the
+  network and years, two character names (regulars first) and, from
+  TVmaze, when the most recent episode aired and when the next is listed.
+  For example: "LezWatch.TV lists 61 queer characters in The L Word
+  (Showtime, 2004 to 2009), including Shane McCutcheon and Alice
+  Pieszecki. Its last episode on TVmaze aired on March 8, 2009 (season 6,
+  episode 8)." It says nothing a death record decides and no episode name,
+  and a fact the snapshot lacks is left out rather than shown as "Unknown".
+  The fixed paragraph after it is shorter and still names the
+  bury-your-gays trope.
 - A plain-language terms of use page for the website, `terms.html`, static
   like the privacy and support pages and copied into the site by the same
   publish step. Every generated page's footer links it next to the privacy

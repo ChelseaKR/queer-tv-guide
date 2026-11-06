@@ -56,6 +56,7 @@ from typing import Any
 from qtv_pipeline.show_pages import (
     _ENV,
     SITE_NAME,
+    SOAP_GENRES,
     TITLE_MAX,
     _breadcrumb,
     _common,
@@ -65,14 +66,13 @@ from qtv_pipeline.show_pages import (
     _structured,
     fit,
     sort_title,
+    us_date,
 )
 
 # The window ends on the last day of the month this many months after the
 # snapshot's month (November 2026 -> March 31, 2027).
 WINDOW_MONTHS = 4
-SOAP_GENRES = frozenset({"soap-opera", "telenovela"})
 DESCRIPTION_MAX = 155
-_WEEKDAYS = ("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")
 _MONTHS = (
     "January",
     "February",
@@ -125,11 +125,6 @@ def window_end(start: dt.date, months: int = WINDOW_MONTHS) -> dt.date:
     index = start.year * 12 + start.month - 1 + months + 1  # the month after the last
     first_after = dt.date(index // 12, index % 12 + 1, 1)
     return first_after - dt.timedelta(days=1)
-
-
-def us_date(day: dt.date) -> str:
-    """ "Friday, November 20, 2026": weekday, month spelled out, no ordinal."""
-    return f"{_WEEKDAYS[day.weekday()]}, {_MONTHS[day.month - 1]} {day.day}, {day.year}"
 
 
 def month_year(day: dt.date) -> str:

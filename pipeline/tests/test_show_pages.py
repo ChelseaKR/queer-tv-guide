@@ -338,7 +338,10 @@ def test_negative_control_a_leaking_title_is_caught(doc, tmp_path):
 
 
 def _facts(page: htmlprobe.Page) -> dict[str, str]:
-    assert len(page.facts) == 9  # the denominator: every fact row was read
+    # The denominator: every fact row was read. The next-episode row
+    # (DECISIONS 0037) is the one row that is left out when it has no value.
+    upcoming = show_pages.NEXT_EPISODE_LABEL in page.facts
+    assert len(page.facts) == 9 + upcoming
     return page.facts
 
 
@@ -744,9 +747,10 @@ def test_a_few_hundred_pages_from_the_real_snapshot(tmp_path):
     assert 300 <= len(want) <= show_pages.DEFAULT_LIMIT  # a few hundred, not all 2,287
     assert len(pages) == len(want) + 1
     assert len({p.title for p in pages.values()}) == len(pages)
-    # The home page, the index and the hand-picked pages only (DECISIONS 0028).
+    # The home page, the index, the airing-now page (DECISIONS 0033) and the
+    # hand-picked pages only (DECISIONS 0028).
     locs = htmlprobe.sitemap(_raw(tmp_path, "sitemap.xml"))["loc"]
-    assert len(locs) == len(pinned_built) + 2 < len(pages)
+    assert len(locs) == len(pinned_built) + 3 < len(pages)
     held = [p for rel, p in pages.items() if rel != "shows/index.html" and p.canonical not in locs]
     assert len(held) == len(pages) - 1 - len(pinned_built)
     for page in held:

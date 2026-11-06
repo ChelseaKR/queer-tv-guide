@@ -1019,3 +1019,49 @@ step, as before.
 
 **Reversible.** Yes: restore the entry. When the held-back pages open in
 batches (0028, "When to widen"), The Simpsons comes back on its own.
+
+## 0037 — Show pages date the next episode, and name a season premiere (2026-11-05)
+
+**Status: proposed (agent, 2026-11-05). It adds one facts row and one
+clause to the 0029 opening, and keeps the spoiler rule of 0019 to 0035.
+Selection (0021, 0025) and indexing (0028, 0036) do not change.**
+
+**Evidence.** On the 2026-11-05 snapshot, 9 shows have a TVmaze season
+premiere from November 2026 through February 2027 (the airing page's
+season-premiere group, 0033). Three have a show page: Yellowjackets
+(season 4, November 20, 2026; pinned and indexed), Only Murders in the
+Building (season 6, December 8, 2026) and The Rookie (season 9, January 6,
+2027), both held back with `noindex,follow`. Each page has its character
+list with "played by" (0035) and full facts, but said only that "the next
+is listed for <date>", never that the date opens a new season, and the
+facts list had no date at all. The other six (Shetland, P-Valley, Emily in
+Paris, Your Friendly Neighborhood Spider-Man, Common Side Effects, High
+Potential) list 1 to 3 characters, under the 5 of 0025, so they get no page
+and the airing page links them to LezWatch.TV.
+
+**Decision.** A facts row, "Next episode, per TVmaze", follows the run
+status (`show_pages.next_episode_fact`): "Season 4 premiere, Friday,
+November 20, 2026" for episode 1 of a numbered season, "Season 10, episode
+4, Thursday, November 5, 2026" otherwise, and only the date for a soap or
+telenovela (0033's genres) or when a number is missing or is a year. The
+opening says "and the first episode of season 4 is listed for November 20,
+2026" in place of "and the next is listed for" when the next episode is a
+premiere. Both come from the snapshot's TVmaze schedule; there is no new
+source and no new request. On the 2026-11-05 snapshot 22 of 363 show pages
+change; the airing page does not.
+
+**Absence.** No row when TVmaze has no schedule, lists no next episode,
+gives an unreadable date or a date before the snapshot's day (a stale
+listing). "No next episode listed" is not a value, so the row is left out
+rather than printed as "Not recorded".
+
+**What it never says.** No episode name, no "final season" or other claim
+TVmaze's schedule does not carry, and nothing a death record decides (a test
+swaps every death record and asserts the row and opening do not change).
+
+**Not changed.** Which shows get pages, and which pages are indexed. The
+premiering held-back pages stay `noindex,follow` until 0028's "When to
+widen" test is met; opening them early is Chelsea's call. Also not changed:
+the airing page, the pins, the app.
+
+**Reversible.** Yes: `_facts` without `today`, and the old opening clause.

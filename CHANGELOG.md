@@ -13,6 +13,11 @@ consumer of the published snapshot, would notice.
 
 ### Added
 
+- Show pages date the next episode from TVmaze in a "Next episode, per
+  TVmaze" row ("Season 4 premiere, Friday, November 20, 2026"), and the
+  opening sentence says when a listed date is the first episode of a new
+  season (DECISIONS 0037). No row when TVmaze lists nothing usable, and no
+  episode names.
 - Each character on a show page has a link anchor from its LezWatch slug
   (`/shows/pose/#candy-ferocity`) and says who plays her, with the actor
   names LezWatch.TV gives ("Candy Ferocity, played by Angelica Ross"),

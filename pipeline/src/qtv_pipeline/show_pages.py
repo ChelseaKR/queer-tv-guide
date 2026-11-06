@@ -887,9 +887,12 @@ def trigger_level(show: dict[str, Any]) -> str:
     return "See LezWatch.TV"
 
 
-def _facts(show: dict[str, Any]) -> list[tuple[str, str]]:
+def _facts(show: dict[str, Any], today: dt.date | None = None) -> list[tuple[str, str]]:
+    """The facts rows. With ``today`` (the snapshot's day), a next-episode row
+    follows the run status when TVmaze lists one (``next_episode_fact``)."""
     sched = show["schedule"]
     seasons_label, seasons, _ = seasons_fact(show)
+    upcoming = next_episode_fact(show, today) if today is not None else None
     return [
         ("Years", _years(show["years"])),
         (seasons_label, seasons),
@@ -903,6 +906,7 @@ def _facts(show: dict[str, Any]) -> list[tuple[str, str]]:
             "Run status, per TVmaze",
             sched["status"] if sched["schedule_known"] and sched["status"] else UNKNOWN,
         ),
+        *([upcoming] if upcoming else []),
     ]
 
 
@@ -966,6 +970,71 @@ def _long_date(value: Any) -> str | None:
     return f"{_MONTHS[day.month - 1]} {day.day}, {day.year}"
 
 
+_WEEKDAYS = ("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")
+# LezWatch.TV genres that air so often that a season and episode number mean
+# little: the airing page (DECISIONS 0033) and the next-episode row (0037)
+# give a soap only its date.
+SOAP_GENRES = frozenset({"soap-opera", "telenovela"})
+NEXT_EPISODE_LABEL = "Next episode, per TVmaze"
+
+
+def us_date(day: dt.date) -> str:
+    """ "Friday, November 20, 2026": weekday, month spelled out, no ordinal."""
+    return f"{_WEEKDAYS[day.weekday()]}, {_MONTHS[day.month - 1]} {day.day}, {day.year}"
+
+
+def _season_number(value: Any) -> int | None:
+    """A season or episode number that counts, or None (not a number, or a
+    season numbered by year, ``SEASON_IS_A_YEAR``)."""
+    if isinstance(value, bool) or not isinstance(value, int):
+        return None
+    return value if 1 <= value < SEASON_IS_A_YEAR else None
+
+
+def _premiere_season(show: dict[str, Any]) -> int | None:
+    """The season TVmaze's next episode opens (episode 1 of a numbered
+    season), or None: not a premiere, numbers missing, or a soap."""
+    sched = show["schedule"]
+    if sched["schedule_known"] is not True or not sched["next_episode"]:
+        return None
+    if any(g["slug"] in SOAP_GENRES for g in show["genres"]):
+        return None
+    nxt = sched["next_episode"]
+    season = _season_number(nxt.get("season"))
+    return season if season is not None and _season_number(nxt.get("number")) == 1 else None
+
+
+def next_episode_fact(show: dict[str, Any], today: dt.date) -> tuple[str, str] | None:
+    """(label, value) for the next-episode row (DECISIONS 0037), or None.
+
+    The date is TVmaze's, as a dated fact: "Season 4 premiere, Friday,
+    November 20, 2026", "Season 10, episode 4, Thursday, ...", or only the
+    date for a soap or when TVmaze gives no usable numbers. No row at all when
+    TVmaze has no schedule, lists no next episode, its date is unreadable, or
+    the date is before the snapshot's day (a stale listing): "no next episode
+    listed" is not a value, so it is never printed as one. Never the episode
+    name: one can give a death away ("Dead Air")."""
+    sched = show["schedule"]
+    if sched["schedule_known"] is not True or not sched["next_episode"]:
+        return None
+    nxt = sched["next_episode"]
+    raw = nxt.get("airdate")
+    if not isinstance(raw, str) or _long_date(raw) is None:
+        return None
+    day = dt.date.fromisoformat(raw)
+    if day < today:
+        return None
+    when = us_date(day)
+    premiere = _premiere_season(show)
+    if premiere is not None:
+        return NEXT_EPISODE_LABEL, f"Season {premiere} premiere, {when}"
+    season, number = _season_number(nxt.get("season")), _season_number(nxt.get("number"))
+    soap = any(g["slug"] in SOAP_GENRES for g in show["genres"])
+    if season is not None and number is not None and not soap:
+        return NEXT_EPISODE_LABEL, f"Season {season}, episode {number}, {when}"
+    return NEXT_EPISODE_LABEL, when
+
+
 def _opening_years(years: dict[str, Any]) -> str | None:
     start, end = years["start"], years["end"]
     if start is None:
@@ -991,12 +1060,19 @@ def _opening_episodes(show: dict[str, Any]) -> str | None:
         return None
     prev, nxt = sched["previous_episode"] or {}, sched["next_episode"] or {}
     prev_on, next_on = _long_date(prev.get("airdate")), _long_date(nxt.get("airdate"))
+    premiere = _premiere_season(show)
     if prev_on:
         which = "last" if sched["status"] == "Ended" and not next_on else "most recent"
         text = f"Its {which} episode on TVmaze aired on {prev_on}"
         if isinstance(prev.get("season"), int) and isinstance(prev.get("number"), int):
             text += f" (season {prev['season']}, episode {prev['number']})"
-        return text + (f", and the next is listed for {next_on}." if next_on else ".")
+        if not next_on:
+            return text + "."
+        if premiere is not None:
+            return text + f", and the first episode of season {premiere} is listed for {next_on}."
+        return text + f", and the next is listed for {next_on}."
+    if next_on and premiere is not None:
+        return f"TVmaze lists the first episode of season {premiere} for {next_on}."
     if next_on:
         return f"TVmaze lists its next episode for {next_on}."
     return None
@@ -1135,7 +1211,7 @@ def render_show(
         show=show,
         crumbs=crumbs,
         breadcrumb=_structured(_breadcrumb(crumbs), _series(show, canonical, cast)),
-        facts=_facts(show),
+        facts=_facts(show, dt.date.fromisoformat(doc["generated_at"][:10])),
         cast=cast,
         listed=[(c, played_by(c)) for c in _ranked(cast)],
         answer=_answer(show, cast),

@@ -1,48 +1,89 @@
-  :root { color-scheme: light dark; --bg: Canvas; --fg: CanvasText; --link: LinkText; --visited: VisitedText; --line: CanvasText; }
-  body { margin: 0 auto; max-width: 42rem; padding: 0 1rem 3rem; background: var(--bg); color: var(--fg); font: 1.0625rem/1.55 -apple-system, system-ui, sans-serif; overflow-wrap: break-word; }
-  a { color: var(--link); }
+  /* Queer Frame's identity (DECISIONS 0038): the app icon's aubergine and
+     coral, its diagonal split as the one motif, a condensed display face for
+     titles. System fonts only, nothing loaded. Every text pair is held to
+     WCAG AA in both schemes by tests/test_site_identity.py. */
+  :root {
+    color-scheme: light dark;
+    --paper: #f6f1fa; --surface: #ece3f4; --ink: #2b1740; --muted: #5e4a6e;
+    --link: #6a2c9c; --visited: #8b2a63; --coral: #ff6f4f; --coral-text: #b8381c;
+    --seal: #2b1740; --on-seal: #fbf3ee; --seal-corner: #ff6f4f; --line: #2b1740; --focus: #b8381c; --mark-edge: transparent;
+    --display: "Avenir Next Condensed", "Roboto Condensed", "Arial Narrow", sans-serif-condensed, system-ui, sans-serif;
+    --text: -apple-system, system-ui, "Segoe UI", Roboto, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #1d1027; --surface: #2a1a37; --ink: #f3ecf7; --muted: #cdb8d8;
+      --link: #d9b8ff; --visited: #f2a6d4; --coral: #ff8a6b; --coral-text: #ff8a6b;
+      --seal: #ff8a6b; --on-seal: #1d1027; --seal-corner: #5a2d7a; --line: #cdb8d8; --focus: #ff8a6b; --mark-edge: #cdb8d8;
+    }
+  }
+  body { margin: 0 auto; max-width: 42rem; padding: 0 1rem 3rem; background: var(--paper); color: var(--ink); font: 1.0625rem/1.55 var(--text); overflow-wrap: break-word; }
+  a { color: var(--link); text-underline-offset: 0.15em; text-decoration-thickness: 1px; }
   a:visited { color: var(--visited); }
-  a:focus-visible, summary:focus-visible { outline: 3px solid var(--link); outline-offset: 2px; }
+  a:hover { text-decoration-thickness: 2px; }
+  a:focus-visible, summary:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
   .skip { position: absolute; left: -999px; }
   .skip:focus { position: static; display: inline-block; padding: 0.5rem 0; }
-  header { padding-top: 1rem; }
-  .brand { margin: 0; font-weight: 700; }
-  .crumbs { display: flex; flex-wrap: wrap; gap: 0.25rem 0.5rem; margin: 0.25rem 0 0; padding: 0; list-style: none; font-size: 0.9375rem; }
+  header { padding: 1rem 0 0.75rem; border-bottom: 3px solid var(--line); }
+  .masthead { display: flex; align-items: center; gap: 0.625rem; }
+  .mark { flex: none; width: 2rem; height: 2rem; border-radius: 7px; box-shadow: 0 0 0 1px var(--mark-edge); }
+  .brand { margin: 0; font: 800 1.375rem/1 var(--display); letter-spacing: 0.01em; }
+  .brand a, .brand a:visited { color: var(--ink); text-decoration: none; display: inline-block; padding: 0.5rem 0; }
+  .brand a:hover { text-decoration: underline; }
+  .crumbs { display: flex; flex-wrap: wrap; gap: 0.25rem 0.5rem; margin: 0.25rem 0 0; padding: 0; list-style: none; font-size: 0.9375rem; color: var(--muted); }
   .crumbs li + li::before { content: "/"; margin-right: 0.5rem; }
-  h1 { font-size: 1.75rem; line-height: 1.2; margin: 1.25rem 0 0.5rem; }
-  h2 { font-size: 1.25rem; margin: 2rem 0 0.5rem; }
+  h1, h2, h3 { font-family: var(--display); font-weight: 800; text-wrap: balance; }
+  h1 { font-size: clamp(2rem, 1.35rem + 3vw, 2.875rem); line-height: 1.04; letter-spacing: -0.005em; margin: 1.5rem 0 0.75rem; }
+  h2 { font-size: 1.5rem; line-height: 1.15; margin: 2.25rem 0 0.5rem; }
+  h3 { font-size: 1.25rem; margin: 1.5rem 0 0.25rem; }
+  .opening, .lede { font-size: 1.1875rem; }
   dl.facts { display: grid; grid-template-columns: minmax(0, auto) minmax(0, 1fr); gap: 0.25rem 1rem; margin: 0; }
-  dl.facts dt { font-weight: 700; }
+  dl.facts dt { font-weight: 700; color: var(--muted); }
   dl.facts dd { margin: 0; overflow-wrap: anywhere; }
   @media (max-width: 30rem) {
     dl.facts { grid-template-columns: minmax(0, 1fr); gap: 0; }
     dl.facts dd { margin-bottom: 0.5rem; }
   }
-  details.answer { margin: 1.5rem 0; border: 2px solid var(--line); border-radius: 0.5rem; }
-  details.answer summary { cursor: pointer; padding: 0.75rem 1rem; min-height: 44px; box-sizing: border-box; font-weight: 700; }
-  .answer-body { padding: 0 1rem 1rem; border-top: 1px solid var(--line); }
+  /* The one bold element: the sealed answer. Closed, only the summary bar is
+     drawn; nothing here changes what a closed details element renders. */
+  .spoiler-warning { margin: 1.75rem 0 0; }
+  details.answer { margin: 0.5rem 0 1.5rem; border: 3px solid var(--seal); border-radius: 0.375rem; background: var(--paper); }
+  details.answer summary { cursor: pointer; padding: 0.875rem 3rem 0.875rem 1rem; min-height: 44px; box-sizing: border-box; font: 800 1.25rem/1.2 var(--display); background: linear-gradient(225deg, var(--seal-corner) 0 1.5rem, transparent 1.5rem) var(--seal); color: var(--on-seal); }
+  details.answer summary::marker { color: var(--on-seal); }
+  details[open].answer summary { border-bottom: 3px solid var(--seal); }
+  .answer-body { padding: 0.25rem 1rem 1rem; }
   .answer-body ul { padding-left: 1.25rem; }
+  @media (prefers-reduced-motion: no-preference) {
+    details[open].answer .answer-body { animation: qf-reveal 180ms ease-out; }
+    @keyframes qf-reveal { from { opacity: 0; } to { opacity: 1; } }
+  }
   .cast { padding-left: 1.25rem; }
   .cast li { margin-bottom: 0.5rem; }
   .small { font-size: 0.9375rem; }
-  .cta { margin: 1.5rem 0; font-weight: 700; }
-  .spoiler-warning { margin: 1.5rem 0 0; }
-  details.answer { margin-top: 0.5rem; }
+  .cta, .app-soon { margin: 1.5rem 0; padding: 0.75rem 1rem; border-left: 6px solid var(--coral); background: var(--surface); font-weight: 700; }
   .more, .similar { padding-left: 1.25rem; }
   .more li, .similar li { margin-bottom: 0.5rem; }
-  footer { margin-top: 3rem; border-top: 1px solid var(--line); }
-  footer h2 { font-size: 1.0625rem; }
+  footer { margin-top: 3rem; padding: 0.25rem 1rem 1rem; border-top: 3px solid var(--line); background: var(--surface); color: var(--muted); font-size: 0.9375rem; }
+  footer h2 { font-size: 1.125rem; color: var(--ink); }
   footer li { margin-bottom: 0.5rem; }
-  h3 { font-size: 1.125rem; margin: 1.5rem 0 0.25rem; }
-  .letters { display: flex; flex-wrap: wrap; gap: 0.25rem; margin: 0; padding: 0; list-style: none; }
-  .letters a { display: inline-block; min-width: 44px; min-height: 44px; line-height: 44px; text-align: center; }
+  .letters { display: flex; flex-wrap: wrap; gap: 0.375rem; margin: 0.5rem 0 0; padding: 0; list-style: none; }
+  .letters a { display: inline-block; min-width: 44px; min-height: 44px; line-height: 40px; box-sizing: border-box; text-align: center; border: 2px solid var(--line); border-radius: 0.25rem; font: 800 1.125rem/40px var(--display); text-decoration: none; }
+  .letters a:hover { background: var(--surface); }
   .shows { padding-left: 1.25rem; }
   .shows li { margin-bottom: 0.375rem; }
-  .lede { font-size: 1.1875rem; }
   .go { margin: 1rem 0; padding: 0; list-style: none; }
-  .go li { margin-bottom: 0.25rem; }
-  .go a { display: inline-block; min-height: 44px; line-height: 44px; font-weight: 700; }
-  .how dt { font-weight: 700; margin-top: 1rem; }
+  .go li { margin-bottom: 0.5rem; }
+  .go a { display: block; min-height: 44px; box-sizing: border-box; padding: 0.625rem 1rem; border-left: 6px solid var(--coral); background: var(--surface); font-weight: 700; }
+  .how dt { font: 800 1.1875rem/1.2 var(--display); margin-top: 1.25rem; }
   .how dd { margin: 0.25rem 0 0; }
   .airing { padding-left: 1.25rem; }
   .airing li { margin-bottom: 0.5rem; }
+  .airing time { font-weight: 700; }
+  /* Windows high contrast and other forced palettes: the system's colors
+     win, the drawn frame keeps a visible border. */
+  @media (forced-colors: active) {
+    details.answer, header, footer { border-color: CanvasText; }
+    details.answer summary { background: Canvas; color: CanvasText; }
+    a:focus-visible, summary:focus-visible { outline-color: Highlight; }
+    .go a, .cta, .app-soon { border-left-color: LinkText; }
+  }

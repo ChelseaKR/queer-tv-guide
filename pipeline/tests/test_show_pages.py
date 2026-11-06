@@ -495,7 +495,7 @@ def test_pages_load_nothing_and_set_nothing(doc, tmp_path):
         assert all("src" not in s for s in scripts)
         for forbidden in ("img", "iframe", "form", "input", "video", "audio", "object", "embed"):
             assert page.named(forbidden) == [], (rel, forbidden)
-        assert [a for a in page.named("link") if a.get("rel") != "canonical"] == []
+        assert htmlprobe.foreign_links(page, BASE) == []
         assert [a for t, a in page.tags if "src" in a or "srcset" in a] == []
         assert [a for t, a in page.tags if any(k.startswith("on") for k in a)] == []
         assert [a for a in page.named("meta") if a.get("http-equiv")] == []
@@ -503,16 +503,6 @@ def test_pages_load_nothing_and_set_nothing(doc, tmp_path):
         hosts = {urlsplit(h).hostname for h in page.hrefs() if h.startswith("http")}
         assert hosts <= ALLOWED_HOSTS, (rel, hosts - ALLOWED_HOSTS)
         assert not any("analytics" in h or "google" in h for h in page.hrefs())
-
-
-def test_colors_are_the_browsers_own_system_colors(doc, tmp_path):
-    # The privacy and support pages use CanvasText and LinkText; reusing the
-    # system colors keeps their contrast in light, dark and high-contrast.
-    css = _build(doc, tmp_path)["shows/harbor-lights/index.html"].css
-    assert "#" not in css and "rgb" not in css and "hsl" not in css
-    for token in ("Canvas", "CanvasText", "LinkText", "VisitedText", "color-scheme: light dark"):
-        assert token in css
-    assert "opacity" not in css
 
 
 def _reflow_problems(css: str) -> list[str]:

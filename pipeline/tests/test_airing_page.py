@@ -394,7 +394,8 @@ def test_no_script_image_or_request_to_another_host(doc):
     assert [a.get("type") for a in page.named("script")] == ["application/ld+json"]
     for tag in ("img", "iframe", "form", "link"):
         if tag == "link":
-            assert [a.get("rel") for a in page.named("link")] == ["canonical"]
+            assert [a.get("rel") for a in page.named("link")] == ["canonical", "icon"]
+            assert htmlprobe.foreign_links(page, BASE) == []
         else:
             assert page.named(tag) == [], tag
     assert "analytics" not in _airing(doc).replace("has no analytics", "")

@@ -47,6 +47,21 @@ final class QueerTVGuideUITests: XCTestCase {
         XCTAssertTrue(rate.isEnabled)
     }
 
+    /// About's "Email support" row, under Rate (DECISIONS 0039). Not tapped
+    /// here; it leaves the app for the mail app.
+    func testAboutOffersAnEmailSupportRow() throws {
+        let app = XCUIApplication.guide()
+        app.launch()
+
+        XCTAssertTrue(app.tabBars.buttons["About"].waitForExistence(timeout: 30))
+        app.tabBars.buttons["About"].tap()
+        let email = app.buttons["email-support"]
+        for _ in 0..<10 where !(email.exists && email.isHittable) { app.swipeUp() }
+        XCTAssertTrue(email.waitForExistence(timeout: 10), "About has no Email support row")
+        XCTAssertEqual(email.label, "Email support")
+        XCTAssertTrue(email.isEnabled)
+    }
+
     func testFavoritesTabShowsEmptyStateOnFirstLaunch() throws {
         let app = XCUIApplication.guide()
         app.launch()

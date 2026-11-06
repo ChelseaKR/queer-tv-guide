@@ -86,6 +86,17 @@ struct AboutView: View {
                     Button("Rate \(AppIdentity.displayName)") { openURL(AppStoreReview.writeReviewURL) }
                         .accessibilityHint("Opens the App Store to rate or review this app")
                         .accessibilityIdentifier("rate-app")
+                    // A new message in the person's own mail app (DECISIONS
+                    // 0039); the app sends nothing. With no mail app set up,
+                    // the support page, which lists the same address.
+                    Button("Email support") {
+                        let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String
+                        openURL(SupportEmail.url(appName: AppIdentity.displayName, version: version)) { opened in
+                            if !opened { openURL(SupportPage.url) }
+                        }
+                    }
+                    .accessibilityHint("Opens a new email to the developer in your mail app")
+                    .accessibilityIdentifier("email-support")
                 }
 
                 // The first-run page again, last, so the sections above keep

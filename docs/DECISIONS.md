@@ -1065,3 +1065,39 @@ widen" test is met; opening them early is Chelsea's call. Also not changed:
 the airing page, the pins, the app.
 
 **Reversible.** Yes: `_facts` without `today`, and the old opening clause.
+
+## 0039 — About gets an "Email support" row, on iOS and Android (2026-11-06)
+
+**Status: proposed (agent, 2026-11-06). Branch only; it merges when
+Chelsea decides, since the app may be in or near App Review.**
+
+**Evidence.** The 2026-11-05 app parity audit found no in-app way to write
+to the developer (0 `mailto:` in the app). About had a "Support" button that
+opens the support page in the browser, and that page lists the address
+(0015), so reaching a person took two apps and a copy. Family Greenhouse,
+the portfolio's reference app, has a direct help path.
+
+**Decision.** A row, "Email support", follows "Rate <app name>" in About's
+Version section on both platforms. It hands a `mailto:` link to the system
+(iOS `openURL`, Android `ACTION_SENDTO`), so the person's own mail app opens
+a new message to `chelsea@chelseakr.com` with the subject "<app name>
+<version>". The link is built in one tested place per platform (GuideCore
+`SupportEmail`, the Android core's `SupportEmail`), and a test checks the
+address against the support page and the Play listing. When no mail app
+can take it, the row opens the support page instead.
+
+**Privacy.** The app sends nothing: a `mailto:` link names no host and makes
+no request (the one-host guards are unchanged), and the draft carries only
+the app name and version, never the device model, OS version, favorites or
+anything else. The person can edit the subject or not send it.
+
+**Absence.** With no version available, the subject is the app name alone,
+not a placeholder.
+
+**Not changed.** The privacy label and Data safety answers, the App Store
+and Play copy, the screenshots (the Version section is below the fold on
+both About screenshots), and the purchase model: paid up front with no
+in-app purchase (0003, 0011, 0018), so there is nothing to restore and no
+"Restore purchases" button, by design.
+
+**Reversible.** Yes: remove the row and the two `SupportEmail` files.

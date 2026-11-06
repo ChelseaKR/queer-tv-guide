@@ -981,3 +981,41 @@ list byte for byte the same; anchors are unique per page, and a repeated
 anchor is caught.
 
 **Reversible.** Yes: the template's list goes back to the plain line.
+
+## 0036 — The Good Wife takes the one filled pin from The Simpsons (2026-11-05)
+
+**Status: accepted (owner, 2026-11-05: option A of the indexing review).
+It changes one entry of the hand-picked list of 0021. Indexing (0028) and
+the cap of 50 do not change.**
+
+**Evidence.** Search Console for `sc-domain:queerframe.app`, pages, 28 days
+to 2026-11-05 (`dataState: all`), read with the read-only Search Console
+scope. The Good Wife's page earned 9 impressions at an average position of
+3 while it carried `noindex,follow`, the most of any held-back page (the
+next ones have 1 or 2 each). Its noindex is now taking it out of Google's
+index. The Simpsons, the one pin that no owner list named (0021 gave it the
+last slot by TVmaze weight), earned 2 impressions at an average position of
+16. The snapshot lists 12 queer characters for The Good Wife and 25 for The
+Simpsons.
+
+**Why this pin.** Nineteen of the 49 named flagships earned no impressions
+in those 28 days, so by impressions alone several pins are weaker than The
+Simpsons. They are on the owner's list of flagship titles, and the site's
+search data starts on 2026-10-22, so a few quiet weeks say little about
+them. The
+Simpsons is the one slot that a rule filled rather than the owner, which
+makes it the one this data can overrule without second-guessing that list.
+
+**Decision.** In `pipeline/data/show_pages_pinned.json`, entry 50 is The
+Good Wife (LezWatch id 69) in place of The Simpsons (id 4082), in the same
+position. The Good Wife's page is in the sitemap and carries no robots tag;
+The Simpsons' page is still built (25 listed characters meet the inclusion
+rule of 0025), keeps its URL and links, and carries `noindex,follow`. The
+sitemap stays at 52 URLs. `index_problems` keeps the sitemap and the tags in
+step, as before.
+
+**Not changed.** Page content, titles and descriptions, the other 49 pins,
+`INDEX_EXTRA_IDS`, `INDEX_MIN_LISTED`, the app.
+
+**Reversible.** Yes: restore the entry. When the held-back pages open in
+batches (0028, "When to widen"), The Simpsons comes back on its own.

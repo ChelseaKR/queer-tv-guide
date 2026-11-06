@@ -140,6 +140,11 @@ consumer of the published snapshot, would notice.
 
 ### Changed
 
+- The Good Wife's show page is open to search again, and The Simpsons' page
+  is held back in its place (DECISIONS 0036). The Good Wife earned 9 search
+  impressions at position 3 in the 28 days to 2026-11-05 while it was
+  noindex; The Simpsons, the one pin no owner list named, earned 2 at
+  position 16. Still 50 pinned pages and 52 sitemap URLs.
 - Only the 50 hand-picked show pages are open to search for now
   (DECISIONS 0028). The other show pages are still built and linked from
   the shows index, but carry `noindex,follow` and are left out of the

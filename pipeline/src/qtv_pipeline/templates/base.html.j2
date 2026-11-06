@@ -8,7 +8,10 @@
 {%- endif %}
 <title>{{ title }}</title>
 <meta name="description" content="{{ description }}">
+{%- if canonical %}
 <link rel="canonical" href="{{ canonical }}">
+{%- endif %}
+<link rel="icon" href="{{ base_url }}/favicon.svg" type="image/svg+xml">
 {%- block head_extra %}{% endblock %}
 <style>
 {% include "style.css" %}
@@ -20,7 +23,10 @@
 <body>
 <a class="skip" href="#main">Skip to the content</a>
 <header>
+<div class="masthead">
+{% include "mark.svg" %}
 <p class="brand"><a href="{{ base_url }}/">{{ site_name }}</a></p>
+</div>
 {%- if crumbs %}
 <nav aria-label="Breadcrumb">
 <ol class="crumbs">

@@ -5,14 +5,29 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Queer Frame terms of use</title>
 <style>
-  :root { color-scheme: light dark; }
-  body { font: 1.0625rem/1.55 -apple-system, system-ui, sans-serif; max-width: 40rem; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
-  h1 { font-size: 1.6rem; margin-bottom: 0.25rem; }
-  h2 { font-size: 1.15rem; margin-top: 2rem; }
-  .date { color: CanvasText; opacity: 0.8; margin-top: 0; }
+  /* The site's identity (DECISIONS 0038), the same tokens as the show pages. */
+  :root { color-scheme: light dark; --paper: #f6f1fa; --ink: #2b1740; --muted: #5e4a6e; --link: #6a2c9c; --visited: #8b2a63; --line: #2b1740; --focus: #b8381c; --mark-edge: transparent; --display: "Avenir Next Condensed", "Roboto Condensed", "Arial Narrow", sans-serif-condensed, system-ui, sans-serif; }
+  @media (prefers-color-scheme: dark) { :root { --paper: #1d1027; --ink: #f3ecf7; --muted: #cdb8d8; --link: #d9b8ff; --visited: #f2a6d4; --line: #cdb8d8; --focus: #ff8a6b; --mark-edge: #cdb8d8; } }
+  body { font: 1.0625rem/1.55 -apple-system, system-ui, "Segoe UI", Roboto, sans-serif; max-width: 40rem; margin: 0 auto; padding: 0 1rem 3rem; background: var(--paper); color: var(--ink); overflow-wrap: break-word; }
+  a { color: var(--link); text-underline-offset: 0.15em; }
+  a:visited { color: var(--visited); }
+  a:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+  header { display: flex; align-items: center; gap: 0.625rem; padding: 1rem 0 0.75rem; border-bottom: 3px solid var(--line); }
+  .mark { flex: none; width: 2rem; height: 2rem; border-radius: 7px; box-shadow: 0 0 0 1px var(--mark-edge); }
+  .brand { margin: 0; font: 800 1.375rem/1 var(--display); }
+  .brand a, .brand a:visited { color: var(--ink); text-decoration: none; display: inline-block; padding: 0.5rem 0; }
+  h1, h2 { font-family: var(--display); font-weight: 800; }
+  h1 { font-size: 2.25rem; line-height: 1.05; margin: 1.5rem 0 0.25rem; }
+  h2 { font-size: 1.375rem; margin-top: 2rem; }
+  .date { color: var(--muted); margin-top: 0; }
+  @media (forced-colors: active) { header { border-color: CanvasText; } a:focus-visible { outline-color: Highlight; } }
 </style>
 </head>
 <body>
+<header>
+<svg class="mark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32" aria-hidden="true" focusable="false"><rect width="32" height="32" rx="7" fill="#2b1740"/><path d="M13 0h12a7 7 0 0 1 7 7v19z" fill="#ff6f4f"/><path d="M12 10v12l10-6z" fill="#fbf3ee"/></svg>
+<p class="brand"><a href="./">Queer Frame</a></p>
+</header>
 <main>
 <h1>Queer Frame terms of use</h1>
 <p class="date">The queerframe.app website. Last updated 2026-11-03.</p>

@@ -228,3 +228,17 @@ def sitemap(xml: str) -> dict[str, list[str]]:
     probe.feed(xml)
     probe.close()
     return probe.entries
+
+
+def foreign_links(page: Page, base_url: str) -> list[dict[str, str | None]]:
+    """Every <link> but the canonical and the site's own favicon (DECISIONS
+    0038), the one icon a page may name, served from ``base_url`` itself."""
+    icon = base_url.rstrip("/") + "/favicon.svg"
+    return [
+        a
+        for a in page.named("link")
+        if a.get("rel") != "canonical"
+        and not (
+            a.get("rel") == "icon" and a.get("href") == icon and a.get("type") == "image/svg+xml"
+        )
+    ]

@@ -329,7 +329,7 @@ def test_the_home_page_loads_nothing_from_anywhere(doc):
     assert page.named("script") == [{"type": "application/ld+json"}]
     for forbidden in ("img", "iframe", "form", "input", "video", "audio", "object", "embed"):
         assert page.named(forbidden) == [], forbidden
-    assert [a for a in page.named("link") if a.get("rel") != "canonical"] == []
+    assert htmlprobe.foreign_links(page, show_pages.DEFAULT_BASE_URL) == []
     assert [a for t, a in page.tags if "src" in a or "srcset" in a] == []
     assert "url(" not in page.css and "@import" not in page.css
     hosts = {urlsplit(h).hostname for h in page.hrefs() if h.startswith("http")}

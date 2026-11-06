@@ -13,6 +13,12 @@ consumer of the published snapshot, would notice.
 
 ### Added
 
+- The website has its own look, taken from the app icon: aubergine and
+  coral colors in light and dark mode, a condensed title face, the icon as a
+  header mark and browser-tab icon, and the answer box drawn as a sealed
+  frame (DECISIONS 0038). It still loads nothing from any other site, and a
+  closed answer still shows nothing. Addresses with no page get a
+  Queer Frame not-found page with links home, instead of GitHub's.
 - An "Email support" row in About, on iOS and Android, under "Rate": it
   opens a new message in the person's own mail app to the support page's
   address, with the app and version in the subject (DECISIONS 0039). The app

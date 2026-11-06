@@ -13,6 +13,12 @@ consumer of the published snapshot, would notice.
 
 ### Added
 
+- The website has its own look, taken from the app icon: aubergine and
+  coral colors in light and dark mode, a condensed title face, the icon as a
+  header mark and browser-tab icon, and the answer box drawn as a sealed
+  frame (DECISIONS 0038). It still loads nothing from any other site, and a
+  closed answer still shows nothing. Addresses with no page get a
+  Queer Frame not-found page with links home, instead of GitHub's.
 - Show pages date the next episode from TVmaze in a "Next episode, per
   TVmaze" row ("Season 4 premiere, Friday, November 20, 2026"), and the
   opening sentence says when a listed date is the first episode of a new

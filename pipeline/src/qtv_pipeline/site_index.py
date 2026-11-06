@@ -2,7 +2,7 @@
 
     python -m qtv_pipeline.site_index out/snapshot.v1.json site/index.html
 
-writes two pages next to the snapshot files:
+writes these next to the snapshot files:
 
 - ``index.html``, the home page: what Queer Frame is, how the answer stays
   closed, the privacy and data-source lines, links into the show pages, and
@@ -15,6 +15,9 @@ writes two pages next to the snapshot files:
   published for anyone to take carries its license and credits where people
   find it, not only inside the JSON. The data files themselves keep their
   URLs at the site root (the app fetches ``snapshot.v1.json`` there).
+- ``404.html``, which GitHub Pages serves for an address with no page, and
+  ``favicon.svg``, the header's brand mark as the browser-tab icon
+  (DECISIONS 0038).
 
 Both pages carry the same footer as the show pages: the license, every
 source credit with links, and the privacy, support and data links.
@@ -31,6 +34,7 @@ from __future__ import annotations
 
 import json
 import sys
+from importlib import resources
 from pathlib import Path
 from typing import Any
 
@@ -66,6 +70,13 @@ DATA_DESCRIPTION = (
     "published under CC BY-SA 4.0 with its credits."
 )
 DATA_PATH = "data/index.html"
+# GitHub Pages serves this file for any address that has no page
+# (DECISIONS 0038). Its links are absolute, since it answers at any depth.
+NOT_FOUND_PATH = "404.html"
+NOT_FOUND_TITLE = "Page not found: Queer Frame"
+NOT_FOUND_DESCRIPTION = "This address has no page on Queer Frame."
+# The brand mark as the browser-tab icon, served from this site only.
+FAVICON_PATH = "favicon.svg"
 
 
 def _source_url(doc: dict[str, Any], source: str) -> str:
@@ -134,6 +145,33 @@ def render_data_page(doc: dict[str, Any], *, base_url: str = DEFAULT_BASE_URL) -
     )
 
 
+def render_not_found(
+    doc: dict[str, Any],
+    *,
+    shows_link: bool = False,
+    airing_link: bool = False,
+    base_url: str = DEFAULT_BASE_URL,
+) -> str:
+    """The page for an address with no page: no canonical, kept out of
+    search, and links only to pages published beside it."""
+    base = _clean_base_url(base_url)
+    return _ENV.get_template("404.html.j2").render(
+        **_common(doc, base, False),
+        title=NOT_FOUND_TITLE,
+        description=NOT_FOUND_DESCRIPTION,
+        canonical=None,
+        crumbs=[],
+        breadcrumb=None,
+        shows_link=shows_link,
+        airing_link=shows_link and airing_link,
+    )
+
+
+def favicon() -> str:
+    """The brand mark as a standalone SVG file, the same drawing the header shows."""
+    return resources.files("qtv_pipeline").joinpath("templates/mark.svg").read_text("utf-8")
+
+
 def published_shows(
     doc: dict[str, Any], site_dir: Path, pinned_path: Path = DEFAULT_PINNED_PATH
 ) -> tuple[int, list[dict[str, str]], int]:
@@ -164,7 +202,8 @@ def write_site(
     base_url: str = DEFAULT_BASE_URL,
     pinned_path: Path = DEFAULT_PINNED_PATH,
 ) -> list[Path]:
-    """Write the home page to ``target`` and the data page beside it."""
+    """Write the home page to ``target``, and the data page, the not-found
+    page and the favicon beside it."""
     site_dir = target.parent
     base = _clean_base_url(base_url)
     shows_link = (site_dir / "shows" / "index.html").is_file()
@@ -183,9 +222,17 @@ def write_site(
     data = render_data_page(doc, base_url=base)
     data_target = site_dir / DATA_PATH
     data_target.parent.mkdir(parents=True, exist_ok=True)
+    not_found = render_not_found(
+        doc,
+        shows_link=shows_link,
+        airing_link=(site_dir / AIRING_PATH).is_file(),
+        base_url=base,
+    )
     target.write_text(home, encoding="utf-8")
     data_target.write_text(data, encoding="utf-8")
-    return [target, data_target]
+    (site_dir / NOT_FOUND_PATH).write_text(not_found, encoding="utf-8")
+    (site_dir / FAVICON_PATH).write_text(favicon(), encoding="utf-8")
+    return [target, data_target, site_dir / NOT_FOUND_PATH, site_dir / FAVICON_PATH]
 
 
 def main(argv: list[str]) -> int:

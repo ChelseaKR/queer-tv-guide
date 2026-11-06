@@ -1,0 +1,53 @@
+{% extends "base.html.j2" %}
+{%- macro line(a) -%}
+<li>{% if a.own_page %}<a href="{{ a.url }}">{{ a.title }}</a>{% else %}{{ a.title }} (<a href="{{ a.url }}">on LezWatch.TV</a>){% endif %}{% if a.network %}, {{ a.network }}{% endif %}.
+{%- if a.kind == "premiere" %} Season {{ a.season }} premieres <time datetime="{{ a.airdate }}">{{ a.when }}</time>.
+{%- else %} Next episode <time datetime="{{ a.airdate }}">{{ a.when }}</time>{% if a.season %} (season {{ a.season }}, episode {{ a.number }}){% endif %}.
+{%- endif %}
+{%- if a.listed %} LezWatch.TV lists {{ 'one queer character' if a.listed == 1 else a.listed ~ ' queer characters' }}.{% endif %}</li>
+{%- endmacro %}
+{% block content %}
+<h1>Queer TV airing now: new episodes through {{ through }}</h1>
+<p class="opening">These are the shows LezWatch.TV marks as on air that TVmaze lists a new episode for between {{ start_text }} and {{ end_text }}. LezWatch.TV covers queer women, non-binary and trans characters, so this list does not cover shows whose only queer characters are cisgender gay and bisexual men.</p>
+<p>No spoilers: this page names no episode and no character, and says nothing about who dies. Each show page keeps that answer closed until you open it.</p>
+{%- if not plan.schedules_known %}
+<p>This build of the data has no TVmaze schedules, so this page cannot list upcoming episodes tonight. That does not mean no show is coming back.</p>
+{%- elif not plan.total %}
+<p>TVmaze lists no new episode before {{ end_text }} for any show LezWatch.TV marks as on air. Schedules are often announced late, so check back.</p>
+{%- endif %}
+{%- if plan.premieres %}
+<h2 id="season-premieres">Season premieres</h2>
+<ul class="airing">
+{%- for a in plan.premieres %}
+{{ line(a) }}
+{%- endfor %}
+</ul>
+{%- endif %}
+{%- if plan.episodes %}
+<h2 id="new-episodes">More new episodes</h2>
+<ul class="airing">
+{%- for a in plan.episodes %}
+{{ line(a) }}
+{%- endfor %}
+</ul>
+{%- endif %}
+{%- if plan.soaps %}
+<h2 id="soaps">Soaps and telenovelas</h2>
+<p class="small">Soaps air often, so each line gives only the date TVmaze lists next.</p>
+<ul class="airing">
+{%- for a in plan.soaps %}
+{{ line(a) }}
+{%- endfor %}
+</ul>
+{%- endif %}
+<p class="small">Shows TVmaze lists no date for are not here. That does not mean they are not coming back. Dates are the first broadcast in the show's home country, as TVmaze lists them, and can change; this page is rebuilt every night.</p>
+<h2 id="reminders">Get a reminder when it airs</h2>
+{% if app_store_url %}
+<p>In the {{ site_name }} iPhone app, favorite a show and turn on new-episode reminders, or add the Up Next widget to see the next episode of each show you starred.</p>
+<p class="cta">Get the app: <a href="{{ app_store_url }}">{{ app_store_copy }}</a></p>
+{% else %}
+<p>The {{ site_name }} iPhone app can remind you when a new episode airs, and its Up Next widget shows the next episode of each show you starred. It is not on the App Store yet.</p>
+{% endif %}
+<p><a href="{{ base_url }}/shows/">Browse every show, A to Z</a></p>
+<p class="small">Episode dates come from TVmaze, licensed <a href="{{ licence.snapshot.url }}">CC BY-SA 4.0</a>: <a href="{{ tvmaze_url }}">TVmaze</a>. Shows and character counts come from LezWatch.TV.</p>
+{% endblock %}

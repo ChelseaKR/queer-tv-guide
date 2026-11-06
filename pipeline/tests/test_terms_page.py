@@ -10,6 +10,8 @@ SNAPSHOT_WORKFLOW = Path(__file__).resolve().parents[2] / ".github" / "workflows
 
 
 def _text(html: str) -> str:
+    # The words a reader reads: the stylesheet is not part of the page's length.
+    html = re.sub(r"<style>.*?</style>", " ", html, flags=re.S)
     return " ".join(re.sub(r"<[^>]+>", " ", html).split())
 
 

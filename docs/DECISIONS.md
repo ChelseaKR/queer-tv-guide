@@ -1066,12 +1066,61 @@ the airing page, the pins, the app.
 
 **Reversible.** Yes: `_facts` without `today`, and the old opening clause.
 
+## 0038 — The website gets its own look: the app icon's colors, a condensed title face, a sealed answer (2026-11-05)
+
+**Status: proposed (agent, 2026-11-05). Visual and structural only: no URL,
+`<title>`, H1 or meta description changes, and the spoiler rule of 0019 to
+0037 holds. It replaces the "system colors only" rule the stylesheet test
+held since 0019.**
+
+**Why.** The pages used the browser's own colors and font, so they looked
+like an unstyled document and like nothing else Queer Frame makes. The app
+icon (aubergine, coral, a diagonal split, a cream play triangle) is the one
+brand mark Queer Frame has; the site did not use it anywhere, not even as a
+browser-tab icon. The portfolio also has a live App Store 4.3(a) "template"
+problem, so each product's identity is chosen from its own subject.
+
+**Decision.** One stylesheet, still inline and still loading nothing:
+- Palette from the icon. Light: paper #f6f1fa, ink #2b1740, links #6a2c9c,
+  coral #ff6f4f for bars and edges only (never text on paper). Dark: paper
+  #1d1027, ink #f3ecf7, links #d9b8ff, coral #ff8a6b. Every text pair is
+  WCAG AA (4.5:1) and every border and focus ring 3:1, in both schemes,
+  checked by `tests/test_site_identity.py` with negative controls.
+- Type: system fonts only. Titles in a heavy condensed face (Avenir Next
+  Condensed on Apple devices, Roboto Condensed elsewhere, then the system
+  font); body text in the system font. No web font, so no request.
+- The one bold element is the answer box: a thick aubergine frame (coral in
+  dark mode) whose summary bar carries the icon's diagonal corner. The CSS
+  never styles a closed answer's content: no `::details-content`, no
+  generated text, no display or position rule on the answer body (tested).
+  Opening it fades the answer in, only when reduced motion is not asked for.
+- A header mark: the icon drawn as a 32 px inline SVG, `aria-hidden`, next
+  to the unchanged "Queer Frame" link. The same drawing is `/favicon.svg`,
+  named by a `<link rel="icon">` on every generated page, served from this site.
+- Forced-colors mode (Windows high contrast) hands every color back to the
+  system's, as the old rule did.
+- A not-found page, `/404.html`, which GitHub Pages serves for any address
+  with no page: `noindex`, no canonical, absolute links home and, when they
+  are published, to the A to Z list and the airing page.
+- The privacy, support and terms pages share the palette, the mark and a
+  link home. Their words do not change, and they still have no `<link>`:
+  privacy and support are the App Store's URLs, and GuideCore's
+  AppStoreReadinessTests hold them to no requests of their own.
+
+**Not changed.** Titles, headings, descriptions, structured data, which
+pages exist (apart from the 404), indexing, the app. Every page's bytes
+change, so the next IndexNow run (0034) announces every sitemap page once.
+
+**Reversible.** Yes: the previous `style.css`, base template and static
+page styles; delete `404.html.j2`, `mark.svg` and the two `write_site`
+lines.
+
 ## 0041 — The snapshot places each recorded death in a season and episode (2026-11-06)
 
 **Status: proposed (agent, 2026-11-06). Step 1 of the 1.1 "so far" feature
 Chelsea approved on 2026-11-06 (growth/qf-progress-and-stats-2026-11-06.md,
 decisions 1A to 4A). Data only: no app screen and no website page changes.
-0038 to 0040 are taken on open branches.**
+0039 and 0040 are taken on open branches.**
 
 **Evidence.** LezWatch.TV records a full date for every recorded death, and
 the date is the episode's air date. On the 2026-11-06 snapshot with TVmaze's

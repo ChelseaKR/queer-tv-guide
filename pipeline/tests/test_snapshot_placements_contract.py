@@ -141,6 +141,9 @@ def _site(doc: dict[str, Any]) -> dict[str, str]:
         doc, shows_link=True, shows_total=3, featured=[], featured_total=0, airing_link=True
     )
     pages["data/index.html"] = site_index.render_data_page(doc)
+    pages[site_index.NOT_FOUND_PATH] = site_index.render_not_found(
+        doc, shows_link=True, airing_link=True
+    )
     shows, _notes = show_pages.plan_selection(doc, show_pages.DEFAULT_LIMIT, None)
     built = {s["id"]: f"/shows/{s['slug']}/" for s in shows}
     plan = airing_page.plan_airing(doc, built)
@@ -149,7 +152,7 @@ def _site(doc: dict[str, Any]) -> dict[str, str]:
 
 
 def test_the_site_renders_the_same_with_or_without_the_new_fields() -> None:
-    """This change adds data only. Every page, the sitemap, robots.txt and the
+    """This change adds data only. Every page, the 404 page, the sitemap, robots.txt and the
     airing-now plan come out byte for byte as they did."""
     with_fields = json.loads(PLACEMENTS_FIXTURE.read_text())
     before = _site(_without_placements(with_fields))

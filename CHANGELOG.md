@@ -13,6 +13,16 @@ consumer of the published snapshot, would notice.
 
 ### Added
 
+- The snapshot places each recorded death in a season and, where the air
+  date allows, an episode (DECISIONS 0041): `placements` on each
+  `death.dates[]` entry, `episode_counts` on each show, and
+  `coverage.placements`. They come from TVmaze's episode lists for joined
+  shows with a recorded death (season, number, air date and type only). On
+  the 2026-11-06 data, 67.5% of death events place at the episode level,
+  15.4% in a season only, and 16.8% cannot be placed, which the snapshot
+  says with a reason. The fields are optional, `schema_version` stays "1",
+  and the apps and the website do not change yet.
+
 - Show pages date the next episode from TVmaze in a "Next episode, per
   TVmaze" row ("Season 4 premiere, Friday, November 20, 2026"), and the
   opening sentence says when a listed date is the first episode of a new

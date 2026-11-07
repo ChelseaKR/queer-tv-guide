@@ -20,6 +20,7 @@ import com.chelseakr.queertvguide.core.SnapshotRefresher
 import com.chelseakr.queertvguide.core.SnapshotStore
 import com.chelseakr.queertvguide.core.UpNext
 import com.chelseakr.queertvguide.core.UpNextStore
+import com.chelseakr.queertvguide.core.WatchPositionStore
 import com.chelseakr.queertvguide.reminders.ReminderScheduler
 import com.chelseakr.queertvguide.widget.UpNextWidget
 import kotlinx.coroutines.Dispatchers
@@ -44,6 +45,8 @@ class AppModel(
     private val context: Context,
     private val store: SnapshotStore,
     val favorites: FavoritesStore,
+    /** Where the viewer is in each show, for "so far" (DECISIONS 0044): on this device only. */
+    val watchPositions: WatchPositionStore,
     val prefs: SharedPreferences,
     private val now: () -> Instant,
     /** Debug builds only: a refresh problem every look reports, for screenshots and UI tests. */
@@ -235,6 +238,7 @@ class AppModel(
                 context = context.applicationContext,
                 store = store,
                 favorites = FavoritesStore(storage),
+                watchPositions = WatchPositionStore(storage),
                 prefs = prefs,
                 now = { (if (BuildConfig.DEBUG) debugClock else null) ?: Instant.now() },
                 forcedProblem = { if (BuildConfig.DEBUG) debugProblem else null },

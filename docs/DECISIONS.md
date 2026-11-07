@@ -1350,3 +1350,50 @@ placements yet.
 
 **Reversible.** Yes: drop `SoFarSection` from the show screen. The decoded
 fields stay harmless.
+
+## 0044 — "Has anyone died so far?" on the Android show screen (2026-11-06)
+
+**Status: step 3 of 3 under Chelsea's approval of 0043 (2026-11-06). Stacks on
+the iPhone PR; for 1.1, after 1.0.1 ships.**
+
+**Decision.** The Android show screen gets the section 0043 gives the iPhone,
+in the same place (after "Do any queer characters die?") and with the same
+rules. `core`'s `SoFar.kt` is a line-for-line twin of GuideCore's
+`SoFar.swift`: every headline and line is the same text, and `SoFarTest` is
+the same 23 tests, asserting the same strings. The section shows for any
+snapshot with `coverage.placements`, whatever the show, and not at all for
+older files. The picker's ranges come from LezWatch.TV's season count only
+(plus one for a show on air; 1 to 99 when unknown) and 1 to 999 episodes,
+never from `episode_counts`.
+
+**Decoding.** `Snapshot.kt` now reads `coverage.placements`,
+`show.episode_counts` and `death.dates[].placements`, each nullable and
+absent from older files. A precision the app does not know reads as
+unrecognized and is treated as unplaced, so a newer pipeline never makes the
+file unreadable. `PlacementFieldsCompatibilityTest` now checks both
+directions, as GuideCore's does: an old file decodes with every new field
+null, and the placements fixture decodes to the same snapshot apart from
+those fields.
+
+**Where Android differs from iOS, and why.**
+- Android has no system stepper, so each picker is a minus and a plus button
+  beside "Season 3" (stacked under it from font scale 1.6). TalkBack hears one
+  adjustable element, "Season, 3", changed by swiping up or down or with
+  "Increase season" and "Decrease season" actions; the label and buttons are
+  not separate stops.
+- The place is one string per show ("3,4") in the app's private preferences,
+  beside favorites (`WatchPositionStore` on the same `KeyValueStore`). Like
+  favorites it stays out of Google's cloud backup and moves only with a
+  direct phone-to-phone transfer; it is not in the favorites backup file.
+  About and the privacy page's Android paragraph say so.
+- There is no Debug launch argument for a test snapshot. The on-device tests
+  build an `AppModel` on the placements fixture themselves, so the app ships
+  no test hook.
+- Compose has no equivalent of Xcode's accessibility audit. `SoFarSectionTest`
+  instead checks, at font scale 1 and 2, that neither answer is in the
+  semantics tree before its tap, that no text overflows or is cut short, and
+  that every tap target is at least 48dp. Like the other on-device tests it
+  runs with `make -C android instrumented`, not in CI (0018).
+
+**Reversible.** Yes: drop `SoFarSection` from the show screen. The decoded
+fields stay harmless.

@@ -165,29 +165,45 @@ fun TvmazeCreditLinks(credit: Attribution.TvmazeCredit) {
  * readable). `SpoilerRevealTest` checks this on a device. The answer is a
  * polite live region, so TalkBack reads it out as it appears, and the tap
  * gets a light haptic.
+ *
+ * A screen with more than one reveal gives each its own [prompt] and test
+ * tags (the "so far" reveals, DECISIONS 0044). A screen that must know, or
+ * reset, whether the answer is open passes [revealed] and
+ * [onRevealedChange] (the "so far" reveals close again when the viewer's
+ * place changes); otherwise the reveal keeps its own state.
  */
 @Composable
-fun SpoilerReveal(revealedHint: String, content: @Composable () -> Unit) {
-    var revealed by rememberSaveable { mutableStateOf(false) }
+fun SpoilerReveal(
+    revealedHint: String,
+    prompt: String = "Reveal",
+    tag: String = "spoiler-reveal",
+    answerTag: String = "spoiler-answer",
+    revealed: Boolean? = null,
+    onRevealedChange: (Boolean) -> Unit = {},
+    content: @Composable () -> Unit,
+) {
+    var ownRevealed by rememberSaveable { mutableStateOf(false) }
+    val isRevealed = revealed ?: ownRevealed
     val haptics = LocalHapticFeedback.current
     val reduceMotion = LocalReduceMotion.current
-    if (!revealed) {
+    val open = {
+        haptics.performHapticFeedback(HapticFeedbackType.Confirm)
+        if (revealed != null) onRevealedChange(true) else ownRevealed = true
+    }
+    if (!isRevealed) {
         FilledTonalButton(
-            onClick = {
-                haptics.performHapticFeedback(HapticFeedbackType.Confirm)
-                revealed = true
-            },
+            onClick = open,
             // The one coral touch (DECISIONS 0040): an edge around the sealed
             // answer, as on queerframe.app. Decoration only.
             border = BorderStroke(2.dp, accentEdge),
             modifier = Modifier
                 .heightIn(min = 48.dp)
-                .testTag("spoiler-reveal")
-                .semantics { onClick(label = revealedHint) { haptics.performHapticFeedback(HapticFeedbackType.Confirm); revealed = true; true } },
+                .testTag(tag)
+                .semantics { onClick(label = revealedHint) { open(); true } },
         ) {
             Icon(Icons.Filled.VisibilityOff, contentDescription = null, modifier = Modifier.size(18.dp))
             Spacer(Modifier.width(8.dp))
-            Text("Reveal")
+            Text(prompt)
         }
     } else {
         val focus = remember { FocusRequester() }
@@ -195,7 +211,7 @@ fun SpoilerReveal(revealedHint: String, content: @Composable () -> Unit) {
         AnimatedVisibility(visible = true, enter = if (reduceMotion) fadeIn(initialAlpha = 1f) else fadeIn()) {
             Column(
                 Modifier
-                    .testTag("spoiler-answer")
+                    .testTag(answerTag)
                     .focusRequester(focus)
                     .semantics { liveRegion = LiveRegionMode.Polite },
             ) { content() }

@@ -85,7 +85,17 @@ data class Coverage(
     val tvmaze: TvmazeCoverage,
     /** Keyed by dotted field path, e.g. "shows.watch_links". */
     val fields: Map<String, PresentVsAbsent>,
+    /**
+     * How many death events were placed at each precision (DECISIONS 0041).
+     * Added after the first v1 files: null means this build did not place
+     * deaths in episodes at all, so the app cannot answer "so far" and does
+     * not offer to.
+     */
+    val placements: Placements? = null,
 ) {
+    @Serializable
+    data class Placements(@SerialName("death_events") val deathEvents: Int)
+
     @Serializable
     data class LezWatchCoverage(
         val shows: FetchedVsAvailable,
@@ -269,10 +279,88 @@ data class Show(
     val notes: ShowNotes,
     val schedule: Schedule,
     @SerialName("source_modified_at") val sourceModifiedAt: String,
+    /**
+     * Numbered regular episodes per season from TVmaze's list, ascending by
+     * season (DECISIONS 0041). Null when this build has no episode list for
+     * the show, which never means zero episodes. The pipeline fetches a list
+     * only for a show with a recorded death, so whether this is null gives a
+     * death away: read it only behind a reveal ([SoFar]).
+     */
+    @SerialName("episode_counts") val episodeCounts: List<SeasonEpisodeCount>? = null,
 )
 
+/** One season of a show's TVmaze episode list: how many numbered regular episodes it has (specials not counted). */
 @Serializable
-data class DeathDate(val date: String? = null, val year: Int? = null, val raw: String)
+data class SeasonEpisodeCount(val season: Int, val episodes: Int)
+
+/**
+ * Where one recorded death date falls in one show, matched by air date to
+ * TVmaze's episode list (DECISIONS 0041, schema/README.md). A date says only
+ * that the character died at some point; LezWatch.TV records no date for a
+ * return, so nothing here means "still dead". The Kotlin twin of GuideCore's
+ * `DeathPlacement`.
+ */
+@Serializable
+data class DeathPlacement(
+    @SerialName("show_id") val showId: String? = null,
+    /** The pipeline's precision verbatim; read [precision]. Kept as text so a new value never refuses the file. */
+    @SerialName("precision") val precisionRaw: String,
+    /** Which matching rule decided the precision, verbatim; read [reason]. */
+    @SerialName("reason") val reasonRaw: String? = null,
+    val season: Int? = null,
+    val episodes: List<Int>? = null,
+    /** YYYY-MM-DD; set only for a special. */
+    val airdate: String? = null,
+) {
+    enum class Precision(val raw: String?) {
+        /** One episode: [season] and one number in [episodes]. */
+        EPISODE("episode"),
+        /** Two episodes aired that day: "episode 7 or 8", never one of them. */
+        EPISODE_PAIR("episode_pair"),
+        /** A TVmaze special, named by [airdate], not by a number. */
+        SPECIAL("special"),
+        /** The season only (often a season released all at once). */
+        SEASON("season"),
+        /** Neither season nor episode; [reason] says why. */
+        UNPLACED("unplaced"),
+        /** A crossover date that lands on another show's episode: not counted for this show. */
+        OTHER_SHOW("other_show"),
+        /**
+         * A precision a newer pipeline wrote that this app does not know. Read
+         * as unplaced, so a new value never breaks the whole file and is never
+         * shown as a place it is not.
+         */
+        UNRECOGNIZED(null),
+        ;
+
+        companion object {
+            fun from(raw: String): Precision = entries.firstOrNull { it.raw == raw } ?: UNRECOGNIZED
+        }
+    }
+
+    val precision: Precision get() = Precision.from(precisionRaw)
+
+    /** Which matching rule decided the precision (pipeline/src/qtv_pipeline/episodes.py), e.g. "season_drop"; "" when absent. */
+    val reason: String get() = reasonRaw ?: ""
+
+    companion object {
+        fun of(showId: String?, precision: Precision, reason: String, season: Int? = null, episodes: List<Int>? = null, airdate: String? = null) =
+            DeathPlacement(showId, precision.raw ?: error("UNRECOGNIZED has no raw value"), reason, season, episodes, airdate)
+    }
+}
+
+@Serializable
+data class DeathDate(
+    val date: String? = null,
+    val year: Int? = null,
+    val raw: String,
+    /**
+     * Where this death falls, one entry per show it counts for (DECISIONS
+     * 0041). Null in files built before placements: not computed, never
+     * "nowhere".
+     */
+    val placements: List<DeathPlacement>? = null,
+)
 
 /**
  * LezWatch records deaths, not survival: [died] is true or null, never false.

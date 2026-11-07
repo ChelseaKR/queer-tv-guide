@@ -42,8 +42,9 @@ all says the schedules are missing from this build, never "nothing airs".
 
 The app. While the App Store switch is off, one sentence says the iPhone app
 (new-episode reminders, the Up Next widget) is not on the App Store yet,
-with no link. On, it links to the plain App Store URL in ``app_store.py``,
-with no campaign or tracking parameter. The page has no analytics and no
+with no link. On, the shared "Get the iPhone app" block
+(``app_store.get_app_block``, DECISIONS 0047) links to the plain App Store
+URL in ``app_store.py``, with no campaign or tracking parameter. The page has no analytics and no
 script, like every other page.
 """
 

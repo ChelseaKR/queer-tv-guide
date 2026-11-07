@@ -112,11 +112,13 @@ blank is "Not recorded", never zero.
 
 Privacy. A page has no script (its one ``<script>`` is schema.org
 ``application/ld+json`` data, which a browser never runs), no cookie, no
-form, no image, no font, no stylesheet link and no request to any host. Every
+form, no font, no stylesheet link and no request to another host. Every
 link to another host is an anchor the visitor chooses to follow. The App
 Store link, and Safari's Smart App Banner tag (a ``<meta>``, which fetches
 nothing), appear only when the launch switch is on, with the same URL, tag
-and price copy as ``app_store.py`` (DECISIONS 0023).
+and price copy as ``app_store.py`` (DECISIONS 0023). With the switch on, the
+page's one image is Apple's App Store badge, served from this site
+(``app_store.get_app_block``, DECISIONS 0047); off, a page has no image.
 
 While the switch is off, a show page says in one fixed sentence that
 Queer Frame is also an iPhone app that is not on the App Store yet, with no
@@ -152,9 +154,12 @@ import jinja2
 
 from qtv_pipeline.app_store import (
     APP_STORE_URL,
+    BADGE_FILE,
+    BADGE_STYLE,
     BANNER,
     PRICE_COPY,
     SwitchError,
+    get_app_block,
     live_or_false,
 )
 
@@ -1164,6 +1169,10 @@ def _common(doc: dict[str, Any], base_url: str, app_store_live: bool) -> dict[st
         "app_store_url": APP_STORE_URL if app_store_live else None,
         "app_store_banner": BANNER if app_store_live else None,
         "app_store_copy": PRICE_COPY,
+        # The one "Get the app" block (DECISIONS 0047), badge by absolute
+        # URL: app_store.apply publishes the file at the site root.
+        "app_store_block": get_app_block(f"{base_url}/{BADGE_FILE}") if app_store_live else None,
+        "app_store_style": BADGE_STYLE,
     }
 
 

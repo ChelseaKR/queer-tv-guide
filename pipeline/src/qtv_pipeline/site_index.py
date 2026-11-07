@@ -17,7 +17,9 @@ writes these next to the snapshot files:
   URLs at the site root (the app fetches ``snapshot.v1.json`` there).
 - ``llms.txt``, the site described for AI assistants (llmstxt.org), with
   no show named and no answer given.
-- ``404.html``, which GitHub Pages serves for an address with no page, and
+- ``404.html``, which GitHub Pages serves for an address with no page
+  (with the App Store switch on, it ends with the "Get the iPhone app"
+  block, DECISIONS 0047), and
   ``favicon.svg``, the header's brand mark as the browser-tab icon
   (DECISIONS 0038).
 
@@ -158,12 +160,18 @@ def render_not_found(
     shows_link: bool = False,
     airing_link: bool = False,
     base_url: str = DEFAULT_BASE_URL,
+    app_store_live: bool = False,
 ) -> str:
     """The page for an address with no page: no canonical, kept out of
-    search, and links only to pages published beside it."""
+    search, and links only to pages published beside it. With the App Store
+    switch on it ends with the "Get the iPhone app" block (DECISIONS 0047);
+    the Smart App Banner tag is left to ``app_store.apply``, which adds it to
+    every top-level page."""
     base = _clean_base_url(base_url)
+    common = _common(doc, base, app_store_live)
+    common["app_store_banner"] = None
     return _ENV.get_template("404.html.j2").render(
-        **_common(doc, base, False),
+        **common,
         title=NOT_FOUND_TITLE,
         description=NOT_FOUND_DESCRIPTION,
         canonical=None,
@@ -312,6 +320,7 @@ def write_site(
         shows_link=shows_link,
         airing_link=(site_dir / AIRING_PATH).is_file(),
         base_url=base,
+        app_store_live=app_store_live,
     )
     target.write_text(home, encoding="utf-8")
     data_target.write_text(data, encoding="utf-8")

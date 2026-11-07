@@ -15,7 +15,7 @@ from urllib.parse import urlsplit
 
 import pytest
 
-from qtv_pipeline import show_pages, site_index
+from qtv_pipeline import app_store, show_pages, site_index
 from tests import htmlprobe
 
 REPO = Path(__file__).resolve().parents[2]
@@ -208,6 +208,34 @@ def test_the_not_found_page_is_kept_out_of_search_and_links_home(doc):
     # No link is relative: the page answers at any depth.
     assert all(urlsplit(h).scheme == "https" or h == "#main" for h in full.hrefs())
     assert htmlprobe.foreign_links(full, BASE) == []
+
+
+def test_the_not_found_page_offers_the_app_only_when_the_switch_is_on(doc):
+    # DECISIONS 0047: a visitor who lands on a dead link can still find the
+    # app, by the same block every page uses, with an absolute badge address
+    # (the 404 page answers at any depth). The banner tag is left to
+    # app_store.apply, which adds it to every top-level page.
+    off = site_index.render_not_found(doc, shows_link=True, base_url=BASE)
+    assert not any(m in off for m in ("apps.apple.com", "app-store-badge", "apple-itunes-app"))
+    on = site_index.render_not_found(doc, shows_link=True, base_url=BASE, app_store_live=True)
+    assert on.count(app_store.get_app_block(f"{BASE}/{app_store.BADGE_FILE}")) == 1
+    assert on.count(app_store.BADGE_STYLE) == 1
+    assert "apple-itunes-app" not in on
+    page = htmlprobe.parse(on)
+    assert [a.get("href") for a in page.named("a")].count(app_store.APP_STORE_URL) == 1
+    assert [a["src"] for a in page.named("img")] == [f"{BASE}/{app_store.BADGE_FILE}"]
+
+
+def test_write_site_passes_the_switch_to_the_not_found_page(doc, tmp_path):
+    show_pages.build_site(doc, tmp_path, base_url=BASE, app_store_live=True)
+    site_index.write_site(doc, tmp_path / "index.html", base_url=BASE, app_store_live=True)
+    text = (tmp_path / "404.html").read_text(encoding="utf-8")
+    assert app_store.APP_STORE_URL in text
+    # The step after it (app_store.apply) adds the banner and the home badge.
+    app_store.apply(tmp_path)
+    assert (tmp_path / "404.html").read_text(encoding="utf-8").count("apple-itunes-app") == 1
+    home = (tmp_path / "index.html").read_text(encoding="utf-8")
+    assert home.count(app_store.BADGE_BLOCK) == 1 and home.count(app_store.BADGE_STYLE) == 1
 
 
 def test_the_not_found_page_names_no_character_and_no_death(doc):

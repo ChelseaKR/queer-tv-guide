@@ -31,6 +31,6 @@
 </ul>
 {%- endfor %}
 {% if app_store_url %}
-<p class="cta">Get the app: <a href="{{ app_store_url }}">{{ app_store_copy }}</a></p>
+{{ app_store_block|safe }}
 {% endif %}
 {% endblock %}

@@ -1343,3 +1343,48 @@ tags (0028).
 
 **Reversible.** Yes: restore the 0027 `show_title` and the old description
 sentence.
+
+## 0047 — Every page offers the app the same way: one sentence, Apple's badge (2026-11-07)
+
+**Status: proposed on `feat/web-to-app`. It extends 0023 and changes
+nothing else it decided.**
+
+**Decision.** With `APP_STORE_LIVE` on (set 2026-11-06, the day Apple
+approved 1.0.0), the home page, every show page, the shows index, the airing
+page and the 404 page carry one "Get the iPhone app" block,
+`app_store.get_app_block`: one sentence on what the app adds over the website
+(favorites with each show's next episode, the Up Next widget, new-episode
+reminders, offline use, no account, no ads, no subscription), then Apple's
+"Download on the App Store" badge as the link, with
+`app_store.PRICE_COPY`. Before this, only the home page had the badge; the
+show pages, the shows index and the airing page had a text link
+("Get the app: Queer Frame for iPhone. $4.99 on the App Store.") that said
+nothing about what the app does, and the 404 page had no link at all.
+
+- The badge is the same unedited file (`BADGE_SHA256`) at Apple's 40px
+  on-screen minimum with 10px of clear space and Apple's own words as its
+  alt text. Pages below the root name it by absolute URL on this site, so
+  `/shows/<slug>/` and the 404 page (served at any depth) find it.
+- The block's rules (`BADGE_STYLE`) travel with it, in the head of the
+  pages that carry it, so a page with the switch off has no trace of the
+  app, byte for byte as before. `app_store.apply` still adds the banner tag
+  to the top-level pages and the block to the home page; the 404 page
+  renders the block itself and leaves the banner to `apply`.
+- The block is never inside the spoiler answer. The link is the plain
+  listing URL, with no campaign token or any other parameter; the site
+  still has no analytics.
+- Every claim is a feature of the approved 1.0.0 build (the listing
+  description, `UpNextWidget.swift`, `ReminderScheduler.swift` at the
+  `v1.0.0` tag). The iPhone is the only platform named.
+
+**Why.** Search brings people to show pages, not the home page. A visitor
+who arrives from Google and reads the answer had no reason given to buy the
+app, and no recognizable way to get it. One honest sentence and the
+badge people know, once per page, is the least that does both.
+
+**Cost.** A show page now loads one image from its own site (10.8 KB, the
+same file on every page, so cached after the first). The privacy page's
+"load nothing from any other site" stays true. The Smart App Banner is
+unchanged.
+
+**Reversible.** Yes: switch off, or revert the block to a text link.

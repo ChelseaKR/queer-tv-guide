@@ -43,8 +43,7 @@
 <p class="small">Shows TVmaze lists no date for are not here. That does not mean they are not coming back. Dates are the first broadcast in the show's home country, as TVmaze lists them, and can change; this page is rebuilt every night.</p>
 <h2 id="reminders">Get a reminder when it airs</h2>
 {% if app_store_url %}
-<p>In the {{ site_name }} iPhone app, favorite a show and turn on new-episode reminders, or add the Up Next widget to see the next episode of each show you starred.</p>
-<p class="cta">Get the app: <a href="{{ app_store_url }}">{{ app_store_copy }}</a></p>
+{{ app_store_block|safe }}
 {% else %}
 <p>The {{ site_name }} iPhone app can remind you when a new episode airs, and its Up Next widget shows the next episode of each show you starred. It is not on the App Store yet.</p>
 {% endif %}

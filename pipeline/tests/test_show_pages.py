@@ -743,10 +743,11 @@ def test_a_few_hundred_pages_from_the_real_snapshot(tmp_path):
     assert 300 <= len(want) <= show_pages.DEFAULT_LIMIT  # a few hundred, not all 2,287
     assert len(pages) == len(want) + 1
     assert len({p.title for p in pages.values()}) == len(pages)
-    # The home page, the index, the airing-now page (DECISIONS 0033) and the
-    # hand-picked pages only (DECISIONS 0028).
+    # The home page, the index, the airing-now page (DECISIONS 0033), the
+    # findings and press pages (DECISIONS 0042) and the hand-picked pages only
+    # (DECISIONS 0028).
     locs = htmlprobe.sitemap(_raw(tmp_path, "sitemap.xml"))["loc"]
-    assert len(locs) == len(pinned_built) + 3 < len(pages)
+    assert len(locs) == len(pinned_built) + 5 < len(pages)
     held = [p for rel, p in pages.items() if rel != "shows/index.html" and p.canonical not in locs]
     assert len(held) == len(pages) - 1 - len(pinned_built)
     for page in held:

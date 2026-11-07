@@ -77,6 +77,34 @@ listed in `coverage.tvmaze.shared_tvmaze_ids` as `{tvmaze_id, show_ids}`, for a
 person to review and fix at the source. Both fields were added after the first
 v1 files, so a reader treats their absence as "not checked", not as zero.
 
+### Where a death falls in a show (added after the first v1 files)
+
+DECISIONS 0041. Each `death.dates[]` entry may carry `placements`: one per show
+the death counts for under DECISIONS 0030, matched by air date to TVmaze's
+episode list for that show.
+
+| `precision` | What it says | What the app may say |
+|---|---|---|
+| `episode` | `season` and one number in `episodes` | "season 2, episode 7" |
+| `episode_pair` | two episodes aired that day | "season 2, episode 7 or 8"; never pick one |
+| `special` | a TVmaze special; `airdate` set, `episodes` null | "a special that aired <date>" |
+| `season` | `season` only (often a season released at once) | "in season 2"; inside that season, "may be before or after" |
+| `unplaced` | `reason` says why; `season` null | that a death is recorded but cannot be placed; never "0" or "none" |
+| `other_show` | a crossover date that lands on an episode of another of the character's shows | not counted for this show |
+
+`show_id` is null only when the date counts for none of the character's shows.
+A date says only that the character died at some point; LezWatch.TV records no
+date for a return, so never read a placement as "still dead".
+
+`show.episode_counts` lists numbered regular episodes per season (specials not
+counted), for a season-and-episode picker. It is null when this build has no
+episode list for the show (only joined shows with a recorded death are
+fetched); null never means zero episodes. `coverage.placements` counts the
+death events by precision and reason, and carries the placebo control the
+build gates on.
+
+A reader treats any of these fields' absence as "not computed".
+
 ### Attribution and license
 
 `attribution[]` holds one entry per source with display text, link, license

@@ -15,7 +15,7 @@ from typing import Any
 
 import jsonschema
 
-from . import __version__, fields, lezwatch, normalize, terms, tvmaze
+from . import __version__, episodes, fields, lezwatch, normalize, terms, tvmaze
 from . import coverage as coverage_mod
 from . import digest as digest_mod
 from . import license as license_mod
@@ -104,6 +104,17 @@ def run_fetch(
                 )
         matched = sum(1 for j in joins.values() if j.get("matched"))
         log(f"tvmaze: {matched}/{len(joins)} shows joined this run")
+
+        wanted = episodes.shows_with_a_death(lezwatch.load_characters(cache_dir))
+        ep_report = episodes.EpisodeSyncReport()
+        try:
+            episodes.sync_episodes(client, cache_dir, joins, wanted, full=full, report=ep_report)
+        finally:
+            log(
+                f"tvmaze episodes: {ep_report.attempted} lists fetched for "
+                f"{ep_report.wanted} joined shows with a recorded death"
+                + (f"; {len(ep_report.degraded)} degraded" if ep_report.degraded else "")
+            )
 
         counters = client.counters_as_dict()
 
@@ -195,6 +206,7 @@ def run_build(
     _attach_schedules(shows, joins, cache_dir)
     show_ids = _drop_dangling_references(shows, characters)
     _count_characters_per_show(shows, characters)
+    placements_cov = _place_deaths(shows, characters, cache_dir)
 
     tvmaze_cov = coverage_mod.tvmaze_coverage(shows)
     clean_shows = [normalize.strip_internal(s) for s in shows]
@@ -209,6 +221,7 @@ def run_build(
         },
         "tvmaze": tvmaze_cov,
         "fields": field_cov,
+        "placements": placements_cov,
     }
 
     taxonomies_block = {
@@ -385,6 +398,46 @@ def _count_characters_per_show(
         show["counts"]["deaths"] = sum(1 for c in here if c["death"]["death_known"])
 
 
+def _place_deaths(
+    shows: list[dict[str, Any]],
+    characters: list[dict[str, Any]],
+    cache_dir: Path,
+    *,
+    matcher: episodes.Matcher = episodes.place,
+) -> dict[str, Any]:
+    """Give each show its `episode_counts` and each death date its `placements`
+    (DECISIONS 0041), from the cached TVmaze episode lists. Only a show with a usable
+    TVmaze join (`schedule_known`) is matched against episodes; a shared TVmaze id is
+    not usable, for the same reason its schedule is not. Refuses the build when the
+    placebo control says the matcher matches shifted dates too."""
+    by_show: dict[str, list[episodes.Episode] | None] = {}
+    for show in shows:
+        show["episode_counts"] = None
+        tvmaze_id = show["schedule"]["tvmaze_id"] if show["schedule"]["schedule_known"] else None
+        if tvmaze_id is None:
+            continue
+        slimmed = episodes.load(cache_dir, int(tvmaze_id))
+        if slimmed is None:
+            by_show[show["id"]] = None
+            continue
+        by_show[show["id"]] = episodes.parse(slimmed)
+        show["episode_counts"] = episodes.episode_counts(slimmed) or None
+
+    episodes.place_all(characters, by_show, matcher=matcher)
+    control = episodes.shifted_control(characters, by_show, matcher=matcher)
+    problem = episodes.control_problem(control)
+    if problem:
+        raise BuildError(problem)
+    with_death = {show["id"] for show in shows if show["counts"]["deaths"]}
+    wanted = with_death & set(by_show)
+    return episodes.coverage(
+        characters,
+        lists_wanted=len(wanted),
+        lists_cached=sum(1 for sid in wanted if by_show[sid] is not None),
+        control=control,
+    )
+
+
 def _validate(doc: dict[str, Any], schema_path: Path, show_ids: set[str]) -> None:
     """Refuse a document that fails the schema or references a missing show."""
     schema = json.loads(schema_path.read_text())
@@ -447,5 +500,7 @@ def _write_outputs(
     coverage_path.write_text(json.dumps(coverage, indent=1, sort_keys=True))
 
     for line in coverage_mod.summary_lines(coverage):
+        log(line)
+    for line in episodes.summary_lines(coverage["placements"]):
         log(line)
     log(f"wrote {out_path} ({len(raw)} bytes), content_digest={doc['content_digest']}")

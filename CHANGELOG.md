@@ -193,6 +193,12 @@ consumer of the published snapshot, would notice.
 
 ### Fixed
 
+- A running show's Seasons row no longer shows LezWatch.TV's count when
+  TVmaze has aired a later season: For All Mankind now reads "5 so far" in
+  a row labeled "per TVmaze", not "1" (DECISIONS 0048). It needs TVmaze's
+  premiere year to match LezWatch.TV's start year within a year; otherwise
+  LezWatch.TV's count stays.
+
 - The apps count a death on a show only when it falls in that show
   (DECISIONS 0030 and 0032), as the show pages do. The L Word: Generation
   Q's reveal no longer counts Dana Fairbanks, whose recorded death is in

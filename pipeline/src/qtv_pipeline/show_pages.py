@@ -101,8 +101,11 @@ actor pages.
 
 Seasons (``seasons_fact``, DECISIONS 0031). For a show TVmaze lists as Ended, when TVmaze's last season number differs from
 LezWatch's season count, the page shows TVmaze's, labeled "per TVmaze".
-When LezWatch has no count, TVmaze's latest season fills it ("3 so far" for
-a show still running). A TVmaze season number of 1900 or more is a year (a
+For a show LezWatch marks on air and TVmaze does not list as Ended, TVmaze's
+latest season replaces a lower LezWatch count, as "5 so far, per TVmaze", when
+TVmaze's premiere year is within a year of LezWatch's start year (DECISIONS
+0048); otherwise LezWatch's count stays. When LezWatch has no count, TVmaze's
+latest season fills it ("3 so far" for a show still running). A TVmaze season number of 1900 or more is a year (a
 show numbered by year), not a count, and is never used.
 
 What a page never says. LezWatch records deaths, not survival
@@ -844,15 +847,47 @@ def _tvmaze_last_season(show: dict[str, Any]) -> int | None:
     return season if 1 <= season < SEASON_IS_A_YEAR else None
 
 
+def _same_show_by_year(show: dict[str, Any]) -> bool:
+    """True when TVmaze's premiere year is within a year of LezWatch's start
+    year (DECISIONS 0048). The join is by id, never by title; this is a second
+    check before TVmaze may raise a running show's count, so a join to a
+    same-named reboot or original cannot. Either year missing is False."""
+    start = show["years"]["start"]
+    premiered = show["schedule"]["premiered"]
+    if not isinstance(start, int) or not isinstance(premiered, str):
+        return False
+    head = premiered[:4]
+    return head.isdigit() and abs(int(head) - start) <= 1
+
+
+def _running_count_lags(show: dict[str, Any], recorded: int | None, tvmaze: int | None) -> bool:
+    """DECISIONS 0048: a show LezWatch marks on air, that TVmaze does not list
+    as Ended, whose LezWatch count is below TVmaze's latest season."""
+    return (
+        recorded is not None
+        and tvmaze is not None
+        and tvmaze > recorded
+        and show["years"]["on_air"] == "yes"
+        and show["schedule"]["status"] != "Ended"
+        and _same_show_by_year(show)
+    )
+
+
 def seasons_fact(show: dict[str, Any]) -> tuple[str, str, int | None]:
     """(label, value, count for structured data) for the Seasons row
-    (DECISIONS 0031). For an ended show TVmaze's last season wins when the
-    two disagree; when LezWatch has no count, TVmaze's latest season fills
-    it. Absence stays "Not recorded", never a number."""
+    (DECISIONS 0031, 0048). For an ended show TVmaze's last season wins when
+    the two disagree; for a running show TVmaze's latest season wins only when
+    it is higher and the premiere years agree; when LezWatch has no count,
+    TVmaze's latest season fills it. Absence stays "Not recorded", never a
+    number."""
     recorded = show["seasons"]
     tvmaze = _tvmaze_last_season(show)
     ended = show["schedule"]["status"] == "Ended"
-    if tvmaze is not None and (recorded is None or (ended and tvmaze != recorded)):
+    if tvmaze is not None and (
+        recorded is None
+        or (ended and tvmaze != recorded)
+        or _running_count_lags(show, recorded, tvmaze)
+    ):
         return "Seasons, per TVmaze", str(tvmaze) if ended else f"{tvmaze} so far", tvmaze
     if recorded is None:
         return "Seasons", NOT_RECORDED, None

@@ -235,7 +235,7 @@ final class AccessibilityAuditTests: XCTestCase {
     /// The About rows under allowance 3, by element type and label.
     static let aboutRowsThatScale: [(type: XCUIElement.ElementType, label: String)] = [
         (.staticText, "That file is served by GitHub Pages, which, like any web server, sees your IP address and logs it for security. The developer never sees that log."),
-        (.staticText, "Favorites are stored only on this device and are never sent anywhere."),
+        (.staticText, "Favorites, and where you are in each show, are stored only on this device and are never sent anywhere."),
         (.button, "Privacy policy"),
         (.button, "Support"),
     ]
@@ -765,6 +765,134 @@ final class AccessibilityAuditTests: XCTestCase {
         let showAnswer = try revealAfterCheckingItWasClosed(app, question: "Do any queer characters die?", spoilerTerms: reference.spoilerTerms)
         XCTAssertTrue(showAnswer.hasPrefix("Not recorded."), showAnswer)
         XCTAssertFalse(Self.opensWithNo(showAnswer), showAnswer)
+    }
+
+    // MARK: "Has anyone died so far?" (DECISIONS 0043)
+    //
+    // On the hand-made placements fixture (invented shows and names), loaded
+    // with the Debug-only `-UITestSnapshotPath`: the published snapshot does
+    // not carry placements yet, and the section shows only for one that does.
+    // In the fixture, The Cartographers has one recorded death, in season 2,
+    // episode 7.
+
+    static let placementsFixture = URL(fileURLWithPath: #filePath)
+        .deletingLastPathComponent() // QueerTVGuideUITests
+        .deletingLastPathComponent() // ios
+        .appendingPathComponent("GuideCore/Tests/Fixtures/snapshot.placements.fixture.json")
+    static let soFarAnswer = "so-far-answer"
+    static let laterAnswer = "later-deaths-answer"
+
+    /// The fixture app on The Cartographers, scrolled to the "so far" section.
+    @MainActor
+    private func openSoFar(textSize: String? = nil) -> XCUIApplication {
+        // The fixture's own day, so it is not shown as stale data.
+        let app = launch(textSize: textSize, arguments: ["-UITestSnapshotPath", Self.placementsFixture.path, "-UITestClock", "2026-09-13T21:00:00Z"])
+        app.openShow(titled: "The Cartographers")
+        let heading = app.staticTexts["Has anyone died so far?"]
+        XCTAssertTrue(heading.waitForExistence(timeout: 10), "no so-far section")
+        let reveal = app.buttons["Reveal deaths so far"]
+        for _ in 0..<8 where !(reveal.exists && reveal.isHittable) { app.swipeUp() }
+        XCTAssertTrue(reveal.isHittable, "the so-far reveal is not on screen")
+        return app
+    }
+
+    /// Steps a "so far" stepper to `target`.
+    @MainActor
+    private func step(_ app: XCUIApplication, _ identifier: String, to target: Int) {
+        let stepper = app.steppers[identifier]
+        XCTAssertTrue(stepper.waitForExistence(timeout: 10), "no \(identifier) stepper")
+        for _ in 0..<60 {
+            guard let current = Int(stepper.value as? String ?? "") else { XCTFail("\(identifier) has no number value"); return }
+            if current == target { return }
+            stepper.buttons["\(identifier)-\(current < target ? "Increment" : "Decrement")"].tap()
+        }
+        XCTFail("\(identifier) did not reach \(target)")
+    }
+
+    /// Both answers are out of the accessibility tree until their own tap;
+    /// the later one appears only after the first; each says only its side
+    /// of the viewer; a new place closes both. Audited closed and open.
+    @MainActor
+    func testSoFarAnswersAreClosedUntilTappedAndPassTheAudit() throws {
+        let app = openSoFar()
+        step(app, "so-far-season", to: 2)
+        step(app, "so-far-episode", to: 6)
+        let soFar = app.descendants(matching: .any)[Self.soFarAnswer]
+        let later = app.descendants(matching: .any)[Self.laterAnswer]
+        let revealLater = app.buttons["Reveal later deaths"]
+        XCTAssertFalse(soFar.exists, "the closed so-far answer is in the accessibility tree")
+        XCTAssertFalse(later.exists, "the later answer is in the accessibility tree")
+        XCTAssertFalse(revealLater.exists, "the later reveal shows before the so-far one is opened")
+        let closedTree = try Self.readableText(app)
+        XCTAssertGreaterThan(closedTree.count, 5, "the tree read came back nearly empty, so it proves nothing")
+        XCTAssertEqual(closedTree.filter { $0.contains("season 2, episode 7") }, [], "the death's place is readable before any reveal")
+        XCTAssertEqual(app.steppers["so-far-season"].label, "Season")
+        try auditScrolledSoFar(app)
+
+        app.buttons["Reveal deaths so far"].tap()
+        XCTAssertTrue(soFar.waitForExistence(timeout: 10), "the so-far reveal did not open")
+        XCTAssertTrue(soFar.label.hasPrefix("Not recorded through season 2, episode 6."), soFar.label)
+        XCTAssertFalse(soFar.label.contains("Odile"), "a later death is in the so-far answer: \(soFar.label)")
+        XCTAssertEqual(Self.leaks(of: soFar.label, in: closedTree), [], "readable before the reveal was opened")
+        XCTAssertTrue(revealLater.waitForExistence(timeout: 10), "no second reveal for later deaths")
+        XCTAssertFalse(later.exists, "the later answer opened with the first tap")
+        XCTAssertFalse(try Self.readableText(app).contains { $0.contains("season 2, episode 7") }, "the later death is readable before its own tap")
+        Thread.sleep(forTimeInterval: 1)
+        try auditScrolledSoFar(app)
+
+        revealLater.tap()
+        XCTAssertTrue(later.waitForExistence(timeout: 10), "the later reveal did not open")
+        XCTAssertTrue(later.label.contains("Odile Brandt: season 2, episode 7."), later.label)
+        Thread.sleep(forTimeInterval: 1)
+        try auditScrolledSoFar(app)
+
+        // One more episode: both answers close, then say it is so far.
+        step(app, "so-far-episode", to: 7)
+        XCTAssertTrue(soFar.waitForNonExistence(timeout: 10), "a new place left the old answer open")
+        XCTAssertFalse(later.exists)
+        app.buttons["Reveal deaths so far"].tap()
+        XCTAssertTrue(soFar.waitForExistence(timeout: 10))
+        XCTAssertTrue(soFar.label.hasPrefix("Yes. 1 recorded death through season 2, episode 7."), soFar.label)
+    }
+
+    /// The section sits mid-screen once scrolled to, so the show's earlier
+    /// texts are under the navigation bar, where the contrast audit fails
+    /// them (as for the where-to-watch test). They pass where a person reads
+    /// them, in the show-screen audit. So: every other audit type on the
+    /// scrolled screen, and each of this section's own elements measured
+    /// from its pixels at 4.5:1, the measure allowance 2 uses.
+    @MainActor
+    private func auditScrolledSoFar(_ app: XCUIApplication) throws {
+        try audit(app, XCUIAccessibilityAuditType.all.subtracting(.contrast))
+        let elements = [
+            app.staticTexts["Has anyone died so far?"], app.staticTexts["Where are you?"],
+            app.staticTexts["Kept on this device only."],
+            app.buttons["Reveal deaths so far"], app.buttons["Reveal later deaths"],
+            app.descendants(matching: .any)[Self.soFarAnswer], app.descendants(matching: .any)[Self.laterAnswer],
+        ]
+        var measured = 0
+        for element in elements where element.exists && element.isHittable {
+            let ratio = try XCTUnwrap(Self.renderedContrast(of: element), "could not measure \(Self.describe(element))")
+            XCTAssertGreaterThanOrEqual(ratio, 4.5, "drawn contrast of \(Self.describe(element))")
+            measured += 1
+        }
+        XCTAssertGreaterThanOrEqual(measured, 3, "too few so-far elements on screen to measure")
+    }
+
+    /// The largest accessibility text size: the pickers and both answers
+    /// are not clipped, and every font scales.
+    @MainActor
+    func testLargestTextSizeSoFarPassesDynamicTypeAndClippingAudits() throws {
+        let app = openSoFar(textSize: Self.largestTextSize)
+        try audit(app, [.dynamicType, .textClipped])
+        app.buttons["Reveal deaths so far"].tap()
+        let revealLater = app.buttons["Reveal later deaths"]
+        XCTAssertTrue(revealLater.waitForExistence(timeout: 10))
+        for _ in 0..<8 where !revealLater.isHittable { app.swipeUp() }
+        revealLater.tap()
+        XCTAssertTrue(app.descendants(matching: .any)[Self.laterAnswer].waitForExistence(timeout: 10))
+        Thread.sleep(forTimeInterval: 1)
+        try audit(app, [.dynamicType, .textClipped])
     }
 
     /// The checks themselves: the sentence splitter keeps what identifies a

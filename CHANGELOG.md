@@ -13,6 +13,12 @@ consumer of the published snapshot, would notice.
 
 ### Added
 
+- iPhone, for 1.1: "Has anyone died so far?" on each show screen
+  (DECISIONS 0043). Say where you are (season and episode) and tap to see
+  only the recorded deaths up to there; later deaths stay behind a second
+  tap. Each answer says how precisely a death is placed (an episode, one of
+  two episodes aired the same day, a season, or not placeable) and never
+  shows an unplaced death as none. Where you are is kept on the device only.
 - A dated findings page, `/findings/finales/`: of queer regulars who die
   and whose death can be placed in an episode, 35% die in a season finale,
   against 8% of episodes; deaths are spread evenly across a show's seasons;

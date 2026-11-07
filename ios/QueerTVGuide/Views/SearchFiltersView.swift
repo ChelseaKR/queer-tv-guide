@@ -124,6 +124,7 @@ struct SearchFiltersView: View {
             dismiss()
         } label: {
             Text(Self.showResultsTitle(matchingShows))
+                .foregroundStyle(.onAccent)
                 .frame(maxWidth: .infinity)
         }
         .buttonStyle(.borderedProminent)

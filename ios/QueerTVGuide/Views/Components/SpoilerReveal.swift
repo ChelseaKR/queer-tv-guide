@@ -42,6 +42,15 @@ struct SpoilerReveal<Content: View>: View {
                         .font(.body.weight(.medium))
                 }
                 .buttonStyle(.bordered)
+                .buttonBorderShape(.capsule)
+                // The one coral touch (DECISIONS 0040): an edge around the
+                // sealed answer, as on queerframe.app. Decoration only.
+                .overlay {
+                    Capsule()
+                        .strokeBorder(.accentEdge, lineWidth: 2)
+                        .accessibilityHidden(true)
+                        .allowsHitTesting(false)
+                }
                 .accessibilityHint(revealedHint)
             }
         }

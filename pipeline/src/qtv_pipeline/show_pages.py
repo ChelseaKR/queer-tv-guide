@@ -57,14 +57,14 @@ asked not to show it. The list or rule in ``INDEX_EXTRA_IDS`` and
 both the sitemap and the robots tag, and ``index_problems`` refuses a build
 in which they disagree.
 
-Words for search (DECISIONS 0024 and 0027). The title asks the question
-people type, with the count of listed characters when it fits ("Do any of
-the <n> queer characters in <show> die?", then the 0024 forms with
-"Spoiler-free"); the description gives that count and names up to three
+Words for search (DECISIONS 0024, 0027 and 0045). The title leads with what
+people type, the count of listed characters and the show, then asks the
+question ("<n> LGBTQ characters in <show>. Do any die? No spoilers", then
+shorter forms); the description gives that count and names up to three
 listed characters, regulars first, each with the identity the page shows
 ("Lisa Simpson (bisexual)"), because people search "does <character> die
-in <show>" and "is <character> a lesbian", and says who dies is behind the
-spoiler warning; the
+in <show>" and "is <character> a lesbian", and ends with one fixed
+sentence saying whether anyone dies stays hidden until a tap; the
 characters heading says "Queer women, non-binary and trans characters in
 <show>", because that is what LezWatch.TV covers; one fixed sentence on every
 page names the bury-your-gays trope and another says that cisgender gay and
@@ -224,6 +224,11 @@ DEFAULT_PINNED_PATH = Path(__file__).resolve().parents[2] / "data" / "show_pages
 SITE_NAME = "Queer Frame"
 TITLE_MAX = 60
 DESCRIPTION_MAX = 155
+# Below this a description is padded with ``DESCRIPTION_PAD`` (DECISIONS 0045).
+DESCRIPTION_MIN = 120
+# The description's last sentence: the same on every page, so it cannot hint.
+DESCRIPTION_TAIL = "Whether anyone dies stays hidden until you tap."
+DESCRIPTION_PAD = "Names and identities from LezWatch.TV."
 # LezWatch slugs are WordPress slugs: lowercase, digits, hyphens, and the
 # percent-encoding of non-Latin titles. Anything else would be a path or a
 # query to a static host, so the build refuses it.
@@ -564,19 +569,23 @@ def fit(candidates: list[str], limit: int) -> str:
 
 
 def show_title(name: str, count: int = 0) -> str:
-    """The question people search, longest form that fits, with the number of
-    listed characters when there are several (DECISIONS 0027). No answer in
-    it: the count is of listed characters, never of deaths."""
+    """The words people search, then the question, longest form that fits
+    (DECISIONS 0045). Search Console's queries are mostly "<show> LGBTQ
+    characters" and "is <character> gay", so the title leads with the count
+    of listed characters and the show; the death question follows, asked the
+    same way of every show. No answer in it: the count is of listed
+    characters, never of deaths, and nothing here reads a death record."""
     candidates = []
     if count >= 2:
-        candidates.append(f"Do any of the {count} queer characters in {name} die?")
+        candidates.append(f"{count} LGBTQ characters in {name}. Do any die? No spoilers")
+        candidates.append(f"{count} LGBTQ characters in {name}. Do any die?")
     return fit(
         [
             *candidates,
-            f"Do any queer characters die in {name}? Spoiler-free",
-            f"Do queer characters die in {name}? Spoiler-free",
-            f"Does she die in {name}? Spoiler-free",
-            f"Does she die in {name}?",
+            f"LGBTQ characters in {name}. Do any die? No spoilers",
+            f"LGBTQ characters in {name}, no spoilers",
+            f"{name} LGBTQ characters, no spoilers",
+            f"{name} LGBTQ characters",
         ],
         TITLE_MAX,
     )
@@ -621,12 +630,13 @@ def show_description(
     labels: list[str | None] | None = None,
 ) -> str:
     """Says how many characters LezWatch.TV lists, names up to three of them
-    (with ``labels``, each one's identity) and says who dies is behind the
-    spoiler warning. ``names`` is in page order, never by death, and
-    ``labels`` is parallel to it (DECISIONS 0024 and 0027)."""
+    (with ``labels``, each one's identity) and ends with the same sentence on
+    every page (``DESCRIPTION_TAIL``). ``names`` is in page order, never by
+    death, and ``labels`` is parallel to it (DECISIONS 0024, 0027 and 0045).
+    A result under ``DESCRIPTION_MIN`` gets the fixed ``DESCRIPTION_PAD``."""
     names = names or []
     labels = labels if labels is not None else [None] * len(names)
-    tail = "Who dies, if anyone, is behind a spoiler warning."
+    tail = DESCRIPTION_TAIL
     who = "one LGBTQ character" if count == 1 else f"{count} LGBTQ characters"
     who_first = who[0].upper() + who[1:]
     # Labelled names first (they answer "is <character> a lesbian"), then
@@ -646,8 +656,13 @@ def show_description(
             candidates.append(f"{who_first} in {name}: {listed}. {tail}")
     if count:
         candidates.append(f"LezWatch.TV lists {who} in {name}. {tail}")
-    candidates += [f"Do any queer characters die in {name}? {tail}"] * 2
-    return fit(candidates, DESCRIPTION_MAX)
+    candidates += [f"LGBTQ characters in {name}: does anyone die? {tail}"] * 2
+    text = fit(candidates, DESCRIPTION_MAX)
+    # Too short for a useful snippet: add a fixed sentence, the same on every
+    # page, that says nothing about any death record.
+    if len(text) < DESCRIPTION_MIN and len(text) + 1 + len(DESCRIPTION_PAD) <= DESCRIPTION_MAX:
+        text = f"{text} {DESCRIPTION_PAD}"
+    return text
 
 
 def _term_name(term: dict[str, Any] | None) -> str:

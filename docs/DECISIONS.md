@@ -1299,6 +1299,51 @@ rate, which showed no clear difference.
 **Reversible.** Yes: drop the two templates, `findings.py`, the data file, the
 two sitemap entries and the footer links.
 
+## 0045 — Show page titles lead with the LGBTQ characters, then ask the question (2026-11-06)
+
+**Status: proposed (agent, 2026-11-06). It amends the title and description
+wording of 0027 and keeps the spoiler rule of 0019 to 0027.**
+
+**Evidence.** Search Console for `sc-domain:queerframe.app`, 10-09 to 11-06:
+397 impressions, 4 clicks, impression-weighted position 7.8, 118 pages. 278 of
+the impressions came on 11-05 and 11-06. Google reported a query for 50 of
+them: 23 were show-level ("the mentalist lgbt characters", "are there gay
+characters in vampire diaries"), 12 asked about one character ("is amanda
+wagner gay", "is julie gay in from"), 7 were a character name, 4 asked about
+deaths ("who dies in the l word") and 4 were for LezWatch.TV. The 0027 title
+("Do any of the 7 queer characters in Will Trent die?") led with the shape of
+4 of those 50. The sample is small, so this is a wording change toward the
+searches, not a tested result.
+
+**Decision.** (1) Title: "<n> LGBTQ characters in <show>. Do any die? No
+spoilers" when there are at least two listed characters and it fits in 60
+characters; then "<n> LGBTQ characters in <show>. Do any die?"; then the same
+without the count; then "<show> LGBTQ characters", with or without "no
+spoilers". The count is of listed characters, never of deaths. (2)
+Description: as 0027 (count, up to three names with the identity the page
+shows, regulars first), ending with one fixed sentence, "Whether anyone dies
+stays hidden until you tap." A description under 120 characters gets a second
+fixed sentence, "Names and identities from LezWatch.TV.", when it fits in 155.
+Never "gay" as a label (0027); "LGBTQ" is the word LezWatch.TV's scope allows.
+
+**The check.** `pipeline/tests/test_show_pages_snippets.py`: for every show
+with a recorded death, no title or description holds an answer word ("died",
+"dead", "survives" and the like) or a recorded death year, outside the fixed
+sentence and the show's own name; and every title and description is the same
+when every listed character dies and when none does. Negative controls make a
+description name who died, put a death year in a title, and make a
+description depend on deaths, and assert each sabotage changed the output and
+was caught. On the 2026-11-06 snapshot: 363 pages, 141 with a recorded death,
+0 problems; titles at most 60 characters (one clipped), descriptions 133 to
+155.
+
+**Not changed.** The heading, the opening, the structured data (it uses the
+show's name, not the page title), the home page, the sitemap and the robots
+tags (0028).
+
+**Reversible.** Yes: restore the 0027 `show_title` and the old description
+sentence.
+
 ## 0047 — Every page offers the app the same way: one sentence, Apple's badge (2026-11-07)
 
 **Status: proposed on `feat/web-to-app`. It extends 0023 and changes

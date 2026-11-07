@@ -180,6 +180,10 @@ consumer of the published snapshot, would notice.
 
 ### Changed
 
+- Show page titles lead with what people search, "<n> LGBTQ characters in
+  <show>", then ask "Do any die?" (DECISIONS 0045). Descriptions end with
+  "Whether anyone dies stays hidden until you tap." Neither ever depends on
+  a death record, and a test checks that.
 - The iOS and Android apps and their widgets use queerframe.app's aubergine
   in place of blue for links, buttons and the selected tab (#6A2C9C in
   light, #D9B8FF in dark), and the closed Reveal button has a coral edge

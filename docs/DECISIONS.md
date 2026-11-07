@@ -1299,6 +1299,58 @@ rate, which showed no clear difference.
 **Reversible.** Yes: drop the two templates, `findings.py`, the data file, the
 two sitemap entries and the footer links.
 
+## 0043 — "Has anyone died so far?" on the iPhone show screen (2026-11-06)
+
+**Status: approved by Chelsea (2026-11-06) as a 1.1 feature (research
+decisions 1A to 4A in `_agent-tools/growth/qf-progress-and-stats-2026-11-06.md`).
+Step 2 of 3: 0041 put the placements in the snapshot; this is the iPhone app;
+Android follows in its own PR. For 1.1, after 1.0.1 ships. Queer Frame is a
+one-time purchase with no in-app purchase, so this is simply in the app, not
+on the free website.**
+
+**Decision.** Under the show's existing reveal, a "Has anyone died so far?"
+section: a "Where are you?" season stepper and episode stepper, then
+"Reveal deaths so far", which opens only the deaths at or before that episode.
+Once it is open, a second button, "Reveal later deaths", opens the rest.
+Changing the place closes both. GuideCore's `SoFar.answer` decides the words;
+the view only lays them out.
+
+**Honest wording per precision.** One episode: "season 2, episode 7". Two
+episodes aired the same day: "episode 7 or 8", never one of them; on the first
+of the two, "this episode or the next". A special: by its air date. A season
+only: counted once the viewer is past that season (or has reached its last
+listed episode), otherwise "may be before or after episode 4", without a name.
+Unplaced: "LezWatch.TV records a death in 2019 that we can't match to an
+episode", never "0" or "none". No episode list: "we can only answer for the
+whole show". A character with several death dates gets each one placed on its
+own; a crossover placed in another show is not counted here. Every answer ends
+with the sources and "a recorded death means a character died at some point,
+not that they stay dead". An unknown precision from a newer pipeline reads as
+unplaced, so it never breaks the file.
+
+**The picker gives nothing away.** `episode_counts` exists only for shows with
+a recorded death (0041 fetches those lists only), so it is read only inside
+the answer. The steppers' ranges come from LezWatch.TV's season count, already
+on the screen (plus one for a show on air; 1 to 99 when unknown), and 1 to 999
+episodes for every show. The section shows for any snapshot that has
+`coverage.placements`, whatever the show, and not at all for older files.
+
+**The place stays on the device** (data posture 0002): `WatchPositionStore`,
+one UserDefaults entry per show, never sent, synced or put in the favorites
+backup. About and the privacy page say so.
+
+**Accessibility.** Both answers are built only when opened, so VoiceOver
+cannot read them before the tap; each is one VoiceOver stop. Each stepper is
+one adjustable element ("Season, 3"), stacked under its label at the
+accessibility text sizes. AccessibilityAuditTests audit the section closed and
+open, at the default and the largest text size, and check the closed tree.
+They load the hand-made placements fixture through a Debug-only
+`-UITestSnapshotPath`, because the published snapshot does not carry
+placements yet.
+
+**Reversible.** Yes: drop `SoFarSection` from the show screen. The decoded
+fields stay harmless.
+
 ## 0045 — Show page titles lead with the LGBTQ characters, then ask the question (2026-11-06)
 
 **Status: proposed (agent, 2026-11-06). It amends the title and description

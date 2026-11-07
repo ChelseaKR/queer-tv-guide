@@ -15,9 +15,22 @@ struct SpoilerReveal<Content: View>: View {
     static var answerIdentifier: String { "spoiler-answer" }
     let prompt: String
     let revealedHint: String
+    /// The answer's UI-test identifier; screens with more than one reveal
+    /// give each its own (the "so far" reveals, DECISIONS 0043).
+    var identifier: String = "spoiler-answer"
+    /// Set when the screen needs to know, or reset, whether the answer is
+    /// open (the "so far" reveals close again when the viewer's place
+    /// changes). Otherwise the reveal keeps its own state.
+    var isRevealed: Binding<Bool>? = nil
     @ViewBuilder let content: () -> Content
 
-    @State private var revealed = false
+    @State private var ownRevealed = false
+    private var revealed: Bool {
+        get { isRevealed?.wrappedValue ?? ownRevealed }
+        nonmutating set {
+            if let isRevealed { isRevealed.wrappedValue = newValue } else { ownRevealed = newValue }
+        }
+    }
     @AccessibilityFocusState private var answerFocused: Bool
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
@@ -28,7 +41,7 @@ struct SpoilerReveal<Content: View>: View {
                 // move focus to the answer that replaced it so it is read
                 // out, rather than leaving focus to land somewhere else.
                 content()
-                    .accessibilityIdentifier(Self.answerIdentifier)
+                    .accessibilityIdentifier(identifier)
                     .accessibilityFocused($answerFocused)
                     .onAppear { answerFocused = true }
                     .transition(reduceMotion ? .identity : .opacity)

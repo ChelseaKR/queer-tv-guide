@@ -277,10 +277,21 @@ public struct Coverage: Codable, Equatable, Sendable {
             case showsTotal = "shows_total", withJoinKey = "with_join_key", joined, joinRate = "join_rate", misses
         }
     }
+    /// How many death events were placed at each precision (DECISIONS 0041).
+    /// Added after the first v1 files: `nil` means this build did not place
+    /// deaths in episodes at all, so the app cannot answer "so far" and does
+    /// not offer to.
+    public struct Placements: Codable, Equatable, Sendable {
+        public let deathEvents: Int
+        private enum CodingKeys: String, CodingKey {
+            case deathEvents = "death_events"
+        }
+    }
     public let lezwatch: LezWatch
     public let tvmaze: TVmaze
     /// Keyed by dotted field path, e.g. "shows.watch_links".
     public let fields: [String: PresentVsAbsent]
+    public let placements: Placements?
 }
 
 // MARK: - Show
@@ -489,6 +500,12 @@ public struct Show: Codable, Equatable, Sendable, Identifiable {
     public let notes: ShowNotes
     public let schedule: Schedule
     public let sourceModifiedAt: Date
+    /// Numbered regular episodes per season from TVmaze's list, ascending
+    /// by season (DECISIONS 0041). `nil` when this build has no episode list
+    /// for the show, which never means zero episodes. The pipeline fetches a
+    /// list only for a show with a recorded death, so whether this is `nil`
+    /// gives a death away: read it only behind a reveal (`SoFar`).
+    public let episodeCounts: [SeasonEpisodeCount]?
 
     private enum CodingKeys: String, CodingKey {
         case id
@@ -502,6 +519,7 @@ public struct Show: Codable, Equatable, Sendable, Identifiable {
         case similarShowIDs = "similar_show_ids"
         case notes, schedule
         case sourceModifiedAt = "source_modified_at"
+        case episodeCounts = "episode_counts"
     }
 
     public init(from decoder: Decoder) throws {
@@ -531,10 +549,94 @@ public struct Show: Codable, Equatable, Sendable, Identifiable {
         notes = try c.decode(ShowNotes.self, forKey: .notes)
         schedule = try c.decode(Schedule.self, forKey: .schedule)
         sourceModifiedAt = try c.decode(TaggedDate.self, forKey: .sourceModifiedAt).date
+        episodeCounts = try c.decodeIfPresent([SeasonEpisodeCount].self, forKey: .episodeCounts)
     }
 
     public func encode(to encoder: Encoder) throws {
         fatalError("Show is decode-only in this app")
+    }
+}
+
+/// One season of a show's TVmaze episode list: how many numbered regular
+/// episodes it has (specials not counted).
+public struct SeasonEpisodeCount: Codable, Equatable, Sendable {
+    public let season: Int
+    public let episodes: Int
+    public init(season: Int, episodes: Int) {
+        self.season = season
+        self.episodes = episodes
+    }
+}
+
+/// Where one recorded death date falls in one show, matched by air date to
+/// TVmaze's episode list (DECISIONS 0041, schema/README.md). A date says only
+/// that the character died at some point; LezWatch.TV records no date for a
+/// return, so nothing here means "still dead".
+public struct DeathPlacement: Decodable, Equatable, Sendable {
+    public enum Precision: Equatable, Sendable {
+        /// One episode: `season` and one number in `episodes`.
+        case episode
+        /// Two episodes aired that day: "episode 7 or 8", never one of them.
+        case episodePair
+        /// A TVmaze special, named by `airdate`, not by a number.
+        case special
+        /// The season only (often a season released all at once).
+        case season
+        /// Neither season nor episode; `reason` says why.
+        case unplaced
+        /// A crossover date that lands on another show's episode: not
+        /// counted for this show.
+        case otherShow
+        /// A precision a newer pipeline wrote that this app does not know.
+        /// Read as `unplaced`, so a new value never breaks the whole file and
+        /// is never shown as a place it is not.
+        case unrecognized(String)
+
+        init(raw: String) {
+            switch raw {
+            case "episode": self = .episode
+            case "episode_pair": self = .episodePair
+            case "special": self = .special
+            case "season": self = .season
+            case "unplaced": self = .unplaced
+            case "other_show": self = .otherShow
+            default: self = .unrecognized(raw)
+            }
+        }
+    }
+
+    public let showID: Show.ID?
+    public let precision: Precision
+    /// Which matching rule decided the precision, verbatim
+    /// (pipeline/src/qtv_pipeline/episodes.py), e.g. "season_drop".
+    public let reason: String
+    public let season: Int?
+    public let episodes: [Int]?
+    /// YYYY-MM-DD; set only for `.special`.
+    public let airdate: String?
+
+    public init(showID: Show.ID?, precision: Precision, reason: String, season: Int?, episodes: [Int]?, airdate: String?) {
+        self.showID = showID
+        self.precision = precision
+        self.reason = reason
+        self.season = season
+        self.episodes = episodes
+        self.airdate = airdate
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case showID = "show_id"
+        case precision, reason, season, episodes, airdate
+    }
+
+    public init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        showID = try c.decodeIfPresent(Show.ID.self, forKey: .showID)
+        precision = Precision(raw: try c.decode(String.self, forKey: .precision))
+        reason = try c.decodeIfPresent(String.self, forKey: .reason) ?? ""
+        season = try c.decodeIfPresent(Int.self, forKey: .season)
+        episodes = try c.decodeIfPresent([Int].self, forKey: .episodes)
+        airdate = try c.decodeIfPresent(String.self, forKey: .airdate)
     }
 }
 
@@ -549,6 +651,17 @@ public struct Death: Decodable, Equatable, Sendable {
         public let year: Int?
         /// LezWatch's value verbatim (usually YYYYMMDD).
         public let raw: String
+        /// Where this death falls, one entry per show it counts for
+        /// (DECISIONS 0041). `nil` in files built before placements: not
+        /// computed, never "nowhere".
+        public let placements: [DeathPlacement]?
+
+        public init(date: String?, year: Int?, raw: String, placements: [DeathPlacement]? = nil) {
+            self.date = date
+            self.year = year
+            self.raw = raw
+            self.placements = placements
+        }
     }
     public let died: Bool?
     public let deathKnown: Bool

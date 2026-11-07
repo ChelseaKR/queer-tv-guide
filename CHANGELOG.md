@@ -13,6 +13,12 @@ consumer of the published snapshot, would notice.
 
 ### Added
 
+- iPhone, for 1.1: "Has anyone died so far?" on each show screen
+  (DECISIONS 0043). Say where you are (season and episode) and tap to see
+  only the recorded deaths up to there; later deaths stay behind a second
+  tap. Each answer says how precisely a death is placed (an episode, one of
+  two episodes aired the same day, a season, or not placeable) and never
+  shows an unplaced death as none. Where you are is kept on the device only.
 - Every show page, the shows index, the airing page and the 404 page now
   end with the same "Get the iPhone app" block as the home page: one
   sentence on what the app adds (favorites with next episodes, the Up Next

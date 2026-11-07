@@ -59,7 +59,10 @@ final class AppModel {
     /// The bundled snapshot shipped inside the app, matched to
     /// `SnapshotStore.defaultDirectory()` for downloaded replacements.
     static func live() -> AppModel {
-        AppModel(
+        #if DEBUG
+        if let model = uiTestSnapshotModel() { return model }
+        #endif
+        return AppModel(
             store: SnapshotStore(
                 directory: SnapshotStore.defaultDirectory(),
                 bundledURL: Bundle.main.url(forResource: "snapshot.v1", withExtension: "json")
@@ -67,6 +70,30 @@ final class AppModel {
             now: uiTestClock() ?? Date.init
         )
     }
+
+    /// Debug builds only: a UI test can load another snapshot file with the
+    /// launch argument `-UITestSnapshotPath <path>` (the "so far" tests use
+    /// the hand-made placements fixture until the published snapshot carries
+    /// placements). It is read from a fresh empty directory and never
+    /// refreshed, so neither a stored download nor the network replaces it.
+    /// A Release build never reads it.
+    #if DEBUG
+    private static func uiTestSnapshotModel() -> AppModel? {
+        guard let path = UserDefaults.standard.string(forKey: "UITestSnapshotPath"), !path.isEmpty else { return nil }
+        let directory = FileManager.default.temporaryDirectory
+            .appendingPathComponent("UITestSnapshot-\(UUID().uuidString)", isDirectory: true)
+        try? FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        let model = AppModel(
+            store: SnapshotStore(directory: directory, bundledURL: URL(fileURLWithPath: path)),
+            now: uiTestClock() ?? Date.init
+        )
+        model.refreshDisabled = true
+        return model
+    }
+    #endif
+
+    /// Set only by `uiTestSnapshotModel` (Debug): the test's file stays put.
+    @ObservationIgnored private var refreshDisabled = false
 
     /// Debug builds only: a UI test can pin the clock with the launch
     /// argument `-UITestClock <ISO 8601 date>`, to show the app holding data
@@ -171,7 +198,7 @@ final class AppModel {
     /// its `generated_at` stay exactly as they were; only `lastRefreshError`
     /// changes, so the UI can say a refresh failed without losing data.
     func refresh() async {
-        guard !isRefreshing else { return }
+        guard !isRefreshing, !refreshDisabled else { return }
         isRefreshing = true
         defer { isRefreshing = false }
         refreshGate.recordAttempt(at: now())

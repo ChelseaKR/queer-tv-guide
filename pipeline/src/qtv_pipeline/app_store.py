@@ -9,9 +9,13 @@ from site_index, privacy.html and support.html copied from docs/site/) and then 
 Off (APP_STORE_LIVE unset, empty or "false", which is how it stays until
 Apple approves the app) it changes nothing: not a byte of any page, and no
 file is added. On ("true") every page gets Safari's Smart App Banner tag,
-and the home page's "coming soon" line (INDEX_SLOT) is replaced by Apple's
-"Download on the App Store" badge linking to the app's US listing, with its
-price. Any other value is refused (exit 1), so a
+and the home page's "coming soon" line (INDEX_SLOT) is replaced by the
+"Get the iPhone app" block (``get_app_block``): one sentence on what the app
+adds over the website, then Apple's "Download on the App Store" badge linking
+to the app's US listing, with its price. The show pages, the shows index,
+the airing page and the 404 page render the same block themselves
+(DECISIONS 0047), with the badge's address absolute so it resolves from any
+directory. Any other value is refused (exit 1), so a
 typo can neither hide the badge after the owner believes it is on nor show
 it by accident. ``--check`` runs that refusal early in the workflow, before
 anything is published.
@@ -51,22 +55,53 @@ INDEX_SLOT = (
 PRICE = "$4.99"
 PRICE_COPY = f"Queer Frame for iPhone. {PRICE} on the App Store."
 
-# The badge brings its own rules rather than relying on the page's stylesheet. The
-# img's width and height attributes reserve its box before the SVG loads, so
-# nothing shifts. The link's padding is the badge's clear space, so the
-# focus outline and the text sit outside it.
+# What the app adds over the website, in one sentence. Every claim is a
+# feature of the approved 1.0.0 build (docs/app-store-listing.json, the
+# Up Next widget and ReminderScheduler in ios/); the iPhone is the only
+# platform on the App Store. Not a pitch inside the spoiler: the block is
+# always outside the answer.
+APP_PITCH = (
+    "Favorite the shows you follow and see each one's next episode at a glance, "
+    "add the Up Next widget to your Home Screen, or turn on new-episode reminders. "
+    "It works offline. No account, no ads, no subscription."
+)
+APP_PITCH_LEAD = "Get the iPhone app."
+
+
+def get_app_block(badge_src: str) -> str:
+    """The one "Get the app" block a page carries: the pitch, then Apple's
+    unedited badge as the link, with the price. ``badge_src`` is where the
+    page finds the badge file (the home page uses the bare file name, pages
+    in subdirectories the absolute URL). The badge's look comes from the
+    block's own stylesheet, BADGE_STYLE: the img width and height attributes
+    reserve its box before the SVG loads, so nothing shifts."""
+    return (
+        '<div class="get-app">'
+        f"<p><strong>{APP_PITCH_LEAD}</strong> {APP_PITCH}</p>"
+        '<p class="app-store-cta">'
+        f'<a class="app-store-badge" href="{APP_STORE_URL}">'
+        f'<img src="{badge_src}" width="120" height="40" alt="Download on the App Store"></a>'
+        f" <span>{PRICE_COPY}</span></p>"
+        "</div>"
+    )
+
+
+BADGE_BLOCK = get_app_block(BADGE_FILE)
+
+# The block brings its own rules rather than relying on the page's
+# stylesheet, so a page with the switch off carries no trace of the app. The
+# home page gets them from apply(); the pages that render the block
+# themselves put them in their head (base.html.j2). The link's padding is the
+# badge's clear space, so the focus outline and the text sit outside it.
 BADGE_STYLE = """<style>
-  .app-store-cta { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; margin: 0.5rem 0; }
+  .get-app { margin: 1.5rem 0; padding: 0.75rem 1rem; border-left: 6px solid var(--coral); background: var(--surface); }
+  .get-app p { margin: 0; }
+  .app-store-cta { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; margin: 0.25rem 0 0; }
   .app-store-badge { display: inline-block; padding: 10px; line-height: 0; }
   .app-store-badge:focus-visible { outline: 3px solid LinkText; outline-offset: 2px; }
   .app-store-badge img { display: block; width: 120px; height: 40px; }
+  @media (forced-colors: active) { .get-app { border-left-color: LinkText; } }
 </style>"""
-BADGE_BLOCK = (
-    '<p class="app-store-cta">'
-    f'<a class="app-store-badge" href="{APP_STORE_URL}">'
-    f'<img src="{BADGE_FILE}" width="120" height="40" alt="Download on the App Store"></a>'
-    f" <span>{PRICE_COPY}</span></p>"
-)
 
 
 class SwitchError(ValueError):

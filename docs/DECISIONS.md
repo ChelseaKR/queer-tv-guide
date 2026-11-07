@@ -1299,6 +1299,96 @@ rate, which showed no clear difference.
 **Reversible.** Yes: drop the two templates, `findings.py`, the data file, the
 two sitemap entries and the footer links.
 
+## 0045 — Show page titles lead with the LGBTQ characters, then ask the question (2026-11-06)
+
+**Status: proposed (agent, 2026-11-06). It amends the title and description
+wording of 0027 and keeps the spoiler rule of 0019 to 0027.**
+
+**Evidence.** Search Console for `sc-domain:queerframe.app`, 10-09 to 11-06:
+397 impressions, 4 clicks, impression-weighted position 7.8, 118 pages. 278 of
+the impressions came on 11-05 and 11-06. Google reported a query for 50 of
+them: 23 were show-level ("the mentalist lgbt characters", "are there gay
+characters in vampire diaries"), 12 asked about one character ("is amanda
+wagner gay", "is julie gay in from"), 7 were a character name, 4 asked about
+deaths ("who dies in the l word") and 4 were for LezWatch.TV. The 0027 title
+("Do any of the 7 queer characters in Will Trent die?") led with the shape of
+4 of those 50. The sample is small, so this is a wording change toward the
+searches, not a tested result.
+
+**Decision.** (1) Title: "<n> LGBTQ characters in <show>. Do any die? No
+spoilers" when there are at least two listed characters and it fits in 60
+characters; then "<n> LGBTQ characters in <show>. Do any die?"; then the same
+without the count; then "<show> LGBTQ characters", with or without "no
+spoilers". The count is of listed characters, never of deaths. (2)
+Description: as 0027 (count, up to three names with the identity the page
+shows, regulars first), ending with one fixed sentence, "Whether anyone dies
+stays hidden until you tap." A description under 120 characters gets a second
+fixed sentence, "Names and identities from LezWatch.TV.", when it fits in 155.
+Never "gay" as a label (0027); "LGBTQ" is the word LezWatch.TV's scope allows.
+
+**The check.** `pipeline/tests/test_show_pages_snippets.py`: for every show
+with a recorded death, no title or description holds an answer word ("died",
+"dead", "survives" and the like) or a recorded death year, outside the fixed
+sentence and the show's own name; and every title and description is the same
+when every listed character dies and when none does. Negative controls make a
+description name who died, put a death year in a title, and make a
+description depend on deaths, and assert each sabotage changed the output and
+was caught. On the 2026-11-06 snapshot: 363 pages, 141 with a recorded death,
+0 problems; titles at most 60 characters (one clipped), descriptions 133 to
+155.
+
+**Not changed.** The heading, the opening, the structured data (it uses the
+show's name, not the page title), the home page, the sitemap and the robots
+tags (0028).
+
+**Reversible.** Yes: restore the 0027 `show_title` and the old description
+sentence.
+
+## 0047 — Every page offers the app the same way: one sentence, Apple's badge (2026-11-07)
+
+**Status: proposed on `feat/web-to-app`. It extends 0023 and changes
+nothing else it decided.**
+
+**Decision.** With `APP_STORE_LIVE` on (set 2026-11-06, the day Apple
+approved 1.0.0), the home page, every show page, the shows index, the airing
+page and the 404 page carry one "Get the iPhone app" block,
+`app_store.get_app_block`: one sentence on what the app adds over the website
+(favorites with each show's next episode, the Up Next widget, new-episode
+reminders, offline use, no account, no ads, no subscription), then Apple's
+"Download on the App Store" badge as the link, with
+`app_store.PRICE_COPY`. Before this, only the home page had the badge; the
+show pages, the shows index and the airing page had a text link
+("Get the app: Queer Frame for iPhone. $4.99 on the App Store.") that said
+nothing about what the app does, and the 404 page had no link at all.
+
+- The badge is the same unedited file (`BADGE_SHA256`) at Apple's 40px
+  on-screen minimum with 10px of clear space and Apple's own words as its
+  alt text. Pages below the root name it by absolute URL on this site, so
+  `/shows/<slug>/` and the 404 page (served at any depth) find it.
+- The block's rules (`BADGE_STYLE`) travel with it, in the head of the
+  pages that carry it, so a page with the switch off has no trace of the
+  app, byte for byte as before. `app_store.apply` still adds the banner tag
+  to the top-level pages and the block to the home page; the 404 page
+  renders the block itself and leaves the banner to `apply`.
+- The block is never inside the spoiler answer. The link is the plain
+  listing URL, with no campaign token or any other parameter; the site
+  still has no analytics.
+- Every claim is a feature of the approved 1.0.0 build (the listing
+  description, `UpNextWidget.swift`, `ReminderScheduler.swift` at the
+  `v1.0.0` tag). The iPhone is the only platform named.
+
+**Why.** Search brings people to show pages, not the home page. A visitor
+who arrives from Google and reads the answer had no reason given to buy the
+app, and no recognizable way to get it. One honest sentence and the
+badge people know, once per page, is the least that does both.
+
+**Cost.** A show page now loads one image from its own site (10.8 KB, the
+same file on every page, so cached after the first). The privacy page's
+"load nothing from any other site" stays true. The Smart App Banner is
+unchanged.
+
+**Reversible.** Yes: switch off, or revert the block to a text link.
+
 ## 0048 — A running show shows TVmaze's higher season count, "N so far" (2026-11-07)
 
 **Status: accepted (Chelsea, option A of the 2026-11-07 fact-check).**

@@ -60,7 +60,7 @@
   .cast { padding-left: 1.25rem; }
   .cast li { margin-bottom: 0.5rem; }
   .small { font-size: 0.9375rem; }
-  .cta, .app-soon { margin: 1.5rem 0; padding: 0.75rem 1rem; border-left: 6px solid var(--coral); background: var(--surface); font-weight: 700; }
+  .app-soon { margin: 1.5rem 0; padding: 0.75rem 1rem; border-left: 6px solid var(--coral); background: var(--surface); font-weight: 700; }
   .more, .similar { padding-left: 1.25rem; }
   .more li, .similar li { margin-bottom: 0.5rem; }
   footer { margin-top: 3rem; padding: 0.25rem 1rem 1rem; border-top: 3px solid var(--line); background: var(--surface); color: var(--muted); font-size: 0.9375rem; }
@@ -95,5 +95,5 @@
     details.answer, header, footer { border-color: CanvasText; }
     details.answer summary { background: Canvas; color: CanvasText; }
     a:focus-visible, summary:focus-visible { outline-color: Highlight; }
-    .go a, .cta, .app-soon { border-left-color: LinkText; }
+    .go a, .app-soon { border-left-color: LinkText; }
   }

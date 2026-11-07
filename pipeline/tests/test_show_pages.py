@@ -129,10 +129,16 @@ def test_files_and_sitemap(doc, tmp_path):
     ]
     entries = htmlprobe.sitemap(_raw(tmp_path, "sitemap.xml"))
     # The home page (site_index.py) first, then every page built here,
-    # the airing-now page among them (DECISIONS 0033).
+    # the airing-now page among them (DECISIONS 0033), and the findings and
+    # press pages site_index.py always publishes (DECISIONS 0042).
     assert entries["loc"][0] == f"{BASE}/"
     assert sorted(entries["loc"][1:]) == sorted(
-        [f"{BASE}/airing/", *(p.canonical for p in pages.values())]
+        [
+            f"{BASE}/airing/",
+            f"{BASE}/findings/finales/",
+            f"{BASE}/press/",
+            *(p.canonical for p in pages.values()),
+        ]
     )
     assert (tmp_path / "airing" / "index.html").is_file()
     assert set(entries["lastmod"]) == {doc["generated_at"][:10]}

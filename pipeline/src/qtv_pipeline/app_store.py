@@ -47,7 +47,9 @@ INDEX_SLOT = (
     '<p class="app-soon">The Queer Frame iPhone app is coming soon. '
     "It is not on the App Store yet.</p>"
 )
-PRICE_COPY = "Queer Frame for iPhone. $4.99 on the App Store."
+# The one-time price (docs/app-store-listing.json price_usd), also on /press/.
+PRICE = "$4.99"
+PRICE_COPY = f"Queer Frame for iPhone. {PRICE} on the App Store."
 
 # The badge brings its own rules rather than relying on the page's stylesheet. The
 # img's width and height attributes reserve its box before the SVG loads, so

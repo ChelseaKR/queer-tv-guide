@@ -79,6 +79,16 @@
   .airing { padding-left: 1.25rem; }
   .airing li { margin-bottom: 0.5rem; }
   .airing time { font-weight: 700; }
+  /* The findings tables (DECISIONS 0042): scroll sideways inside their own
+     box on a narrow phone, never the page. */
+  .table-wrap { overflow-x: auto; margin: 0.75rem 0; }
+  table { border-collapse: collapse; width: 100%; font-size: 0.9375rem; font-variant-numeric: tabular-nums; }
+  caption { text-align: left; font-weight: 700; padding-bottom: 0.375rem; }
+  th, td { padding: 0.375rem 0.5rem; border-bottom: 1px solid var(--line); text-align: right; vertical-align: top; }
+  th[scope="row"], thead th:first-child { text-align: left; }
+  thead th { border-bottom-width: 3px; }
+  .press-images { display: grid; grid-template-columns: repeat(auto-fill, minmax(8rem, 1fr)); gap: 1rem; margin: 1rem 0; padding: 0; list-style: none; }
+  .press-images img { display: block; width: 100%; height: auto; border-radius: 0.375rem; box-shadow: 0 0 0 1px var(--line); }
   /* Windows high contrast and other forced palettes: the system's colors
      win, the drawn frame keeps a visible border. */
   @media (forced-colors: active) {

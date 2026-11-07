@@ -1,0 +1,99 @@
+{
+  "death_events": 673,
+  "episodes_fetched_on": "2026-11-06",
+  "format": 1,
+  "most_finale_deaths_one_show": 3,
+  "most_regular_finale_deaths_one_show": 2,
+  "placed": 431,
+  "placed_shows": 266,
+  "regular_ci95": [
+    0.2784,
+    0.4336
+  ],
+  "season_finale": {
+    "all": {
+      "baseline": 0.0797,
+      "deaths": 431,
+      "in_position": 81
+    },
+    "era:2010 or later": {
+      "baseline": 0.0825,
+      "deaths": 314,
+      "in_position": 60
+    },
+    "era:before 2010": {
+      "baseline": 0.0725,
+      "deaths": 117,
+      "in_position": 21
+    },
+    "regular-era:2010 or later": {
+      "baseline": 0.081,
+      "deaths": 102,
+      "in_position": 39
+    },
+    "regular-era:before 2010": {
+      "baseline": 0.0755,
+      "deaths": 40,
+      "in_position": 11
+    },
+    "regular-release:broadcast": {
+      "baseline": 0.0779,
+      "deaths": 123,
+      "in_position": 44
+    },
+    "regular-release:streaming": {
+      "baseline": 0.0896,
+      "deaths": 19,
+      "in_position": 6
+    },
+    "release:broadcast": {
+      "baseline": 0.075,
+      "deaths": 365,
+      "in_position": 69
+    },
+    "release:streaming": {
+      "baseline": 0.1062,
+      "deaths": 66,
+      "in_position": 12
+    },
+    "role:guest": {
+      "baseline": 0.0832,
+      "deaths": 165,
+      "in_position": 11
+    },
+    "role:recurring": {
+      "baseline": 0.0755,
+      "deaths": 124,
+      "in_position": 20
+    },
+    "role:regular": {
+      "baseline": 0.0794,
+      "deaths": 142,
+      "in_position": 50
+    }
+  },
+  "season_order": {
+    "1": {
+      "baseline": 0.2756,
+      "deaths": 431,
+      "in_position": 117
+    },
+    "2": {
+      "baseline": 0.1761,
+      "deaths": 431,
+      "in_position": 75
+    },
+    "3+": {
+      "baseline": 0.5483,
+      "deaths": 431,
+      "in_position": 239
+    }
+  },
+  "series_finale": {
+    "baseline": 0.0317,
+    "deaths": 329,
+    "in_position": 32
+  },
+  "snapshot_content_digest": "sha256:3af8a99f75d6e94032ad7b645ff9a49e855c23ac14bc0319b5efb80cfd1cd5dd",
+  "snapshot_generated_at": "2026-11-06T23:21:02Z"
+}

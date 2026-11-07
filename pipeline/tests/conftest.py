@@ -55,6 +55,36 @@ def _tvmaze_show_routes(bodies: dict[int, dict]):
     }
 
 
+def synthetic_episode_list() -> list[dict]:
+    """A made-up TVmaze `/shows/{id}/episodes?specials=1` answer: one weekly season
+    and one special, with the name, summary and image fields TVmaze sends, so a
+    test can check that only season, number, airdate and type are kept."""
+    weekly = [
+        {
+            "id": 900 + n,
+            "season": 1,
+            "number": n,
+            "type": "regular",
+            "airdate": f"2026-06-{7 * n:02d}",
+            "name": f"Invented episode {n}",
+            "summary": "<p>An invented summary.</p>",
+            "image": {"medium": "https://static.tvmaze.com/invented.jpg"},
+        }
+        for n in range(1, 5)
+    ]
+    special = {
+        "id": 999,
+        "season": 1,
+        "number": None,
+        "type": "significant_special",
+        "airdate": "2026-07-10",
+        "name": "Invented special",
+        "summary": None,
+        "image": None,
+    }
+    return [*weekly, special]
+
+
 def build_handler(
     *,
     grant_present: bool = True,
@@ -113,6 +143,7 @@ def build_handler(
         "/wp-json/lwtv/v1/export/list/characters/": lambda _p: _json_response(id_list_characters),
         "/updates/shows": lambda _p: _json_response({}),
         "/shows/33320": lambda _p: _json_response(tvmaze_derry),
+        "/shows/33320/episodes": lambda _p: _json_response(synthetic_episode_list()),
         "/shows/55555": lambda _p: _json_response(tvmaze_imdb_only),
         "/shows/9999999": lambda _p: httpx.Response(404, json={"message": "not found"}),
         "/lookup/shows": imdb_lookup,

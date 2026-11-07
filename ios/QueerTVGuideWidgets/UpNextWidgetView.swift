@@ -150,11 +150,12 @@ struct UpNextWidgetView: View {
 
 /// The app's contrast-checked colors (`AccessibleStyle.swift`, where the
 /// measurements are), repeated here because the widget is its own module.
+/// The accent is the aubergine pair (DECISIONS 0040).
 enum WidgetColors {
     static let accent = Color(uiColor: UIColor { traits in
         traits.userInterfaceStyle == .dark
-            ? UIColor(red: 0.45, green: 0.72, blue: 1.0, alpha: 1)
-            : UIColor(red: 0.0, green: 0.34, blue: 0.70, alpha: 1)
+            ? UIColor(red: 0xD9 / 255, green: 0xB8 / 255, blue: 0xFF / 255, alpha: 1)
+            : UIColor(red: 0x6A / 255, green: 0x2C / 255, blue: 0x9C / 255, alpha: 1)
     })
 
     static let subdued = Color(uiColor: UIColor { traits in

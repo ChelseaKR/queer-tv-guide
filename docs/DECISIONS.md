@@ -1151,6 +1151,112 @@ in-app purchase (0003, 0011, 0018), so there is nothing to restore and no
 
 **Reversible.** Yes: remove the row and the two `SupportEmail` files.
 
+## 0040 — The apps take the website's aubergine accent, with coral as an edge (2026-11-06)
+
+**Status: proposed (agent, 2026-11-06), for 1.0.1. Chelsea chose this on
+2026-11-06 (option a): keep blue through App Review, then move the apps to
+the website's look. 1.0.0 shipped blue; this changes no store copy.**
+
+**Evidence.** queerframe.app's identity (0038, PR #121) is the app icon's
+aubergine and coral: links #6A2C9C in light and #D9B8FF in dark, coral only
+for bars and edges. The apps still used the blue chosen for contrast in
+`AccessibleStyle.swift` (#0057B3 / #73B8FF), so the site and the app it
+sells looked like two products. The app parity audit (2026-11-05) ranked
+matching the site's look as QF's fourth gap, and the 4.3(a) template risk
+says each app should take its own site's palette rather than a shared one.
+
+**Decision.** One accent pair everywhere the apps draw one: the iOS tint
+(`accessibleAccent`), the iOS widget (`WidgetColors.accent`), the Android
+theme (`QfColors`, used as Material `primary`) and the Android widget.
+Light #6A2C9C (8.6:1 on white, 6.9:1 on the darkest Android surface),
+dark #D9B8FF (12.3:1 on black, 7.7:1 on the lightest dark surface). On an
+accent fill, iOS `.borderedProminent` labels and Android `onPrimary` are
+white in light and #1D1027 in dark, because white on the lilac is only
+1.7:1 (the old blue's white label was 2.1:1). Android's containers (the
+selected tab's indicator, the Reveal button) become lilac #ECE3F4 with
+#2B1740 in light and #3A2650 with #F3ECF7 in dark. Coral (#FF6F4F light,
+#FF8A6B dark) appears once per app, as a 2-point edge around the closed
+Reveal control, as the site frames its sealed answer. It is never text: it
+is under 3:1 on white.
+
+**Tests.** `tests/test_app_accent_contrast.py` (in `make policy`) reads the
+colors from the Swift and Kotlin sources and asserts the same pair on all
+four surfaces with no blue left, 4.5:1 for every accent text, link and
+selected-tab pair and every label on a fill in both schemes, and coral only
+in a stroke or border. Each checker has a negative control that sabotages
+the real source. The iOS accessibility audit (`make a11y`) still measures
+the drawn screens.
+
+**Not changed.** The app icon, backgrounds, text and subdued colors, the
+spoiler rule (the edge is drawn on the closed button; nothing of the answer
+is built until the tap), layout, App Store and Play listing text. No new
+in-app mark: the apps had none to update. The App Store and Play
+screenshots show blue until they are re-shot (an owner step).
+
+**Reversible.** Yes: the four color definitions and the two edge modifiers.
+
+## 0041 — The snapshot places each recorded death in a season and episode (2026-11-06)
+
+**Status: proposed (agent, 2026-11-06). Step 1 of the 1.1 "so far" feature
+Chelsea approved on 2026-11-06 (growth/qf-progress-and-stats-2026-11-06.md,
+decisions 1A to 4A). Data only: no app screen and no website page changes.
+0040 is the 1.0.1 app accent.**
+
+**Evidence.** LezWatch.TV records a full date for every recorded death, and
+the date is the episode's air date. On the 2026-11-06 snapshot with TVmaze's
+episode lists for the 390 joined shows that have a death, this pipeline's
+matcher places 470 of the 696 death events (character x date x show, under
+0030) at the episode level (67.5%): 435 one episode, 33 "episode 7 or 8"
+(two aired the same day) and 2 specials. 107 (15.4%) place in a season only,
+mostly streaming seasons released at once, 117 (16.8%) cannot be placed (56
+of them are on shows with no TVmaze join and 23 fall in none of the
+character's shows), and 2 crossover dates land on an episode of the other
+show. On the 50 pinned shows it is 77 of 91 (84.6%) at the episode level, 12
+season only and 2 not placed. Moving every date 3 days later, only 6.3% of
+the 617 dates with an episode list still place at the episode level, against
+76.2% as recorded.
+
+**Decision.** `qtv fetch` also fetches `/shows/{id}/episodes?specials=1` for
+each joined show with a recorded death, through the same paced client (one
+request a second), and caches only `season`, `number`, `airdate` and `type`
+(no names, summaries or images). It refreshes a list the way it refreshes a
+show: always on a full run, otherwise only for a running show or one TVmaze's
+`/updates/shows` lists. The first run is about 400 requests; a nightly run
+adds only the running shows with a death. `qtv build` matches each death date
+to the list (`pipeline/src/qtv_pipeline/episodes.py` has the rules) and adds
+three optional fields: `placements` on each `death.dates[]` entry (precision
+`episode`, `episode_pair`, `special`, `season`, `unplaced` or `other_show`,
+with the season, the episode numbers and the reason), `episode_counts` on
+each show (numbered regular episodes per season; null when no list was
+fetched), and `coverage.placements` with the counts above.
+
+**The placebo control is a gate.** Every build also runs the matcher on each
+date moved 3 days later. When at least 50 dates have an episode list and 10%
+or more of the moved dates still place at the episode level, the build
+refuses: a matcher that matches anything would otherwise pass as accurate.
+
+**Edge cases.** A whole-season drop (3 or more episodes of one season on one
+day) is the season, never episode 1. A crossover date stays in the show where
+it lands on an episode, when exactly one does, and is `other_show` in the
+rest. A character with several death dates gets a placement for each; a date
+says the character died at some point, and nothing in the snapshot says
+"still dead". A shared TVmaze id (`schedule_known: false`) is not matched, for
+the same reason its schedule is not shown.
+
+**Schema version.** Stays "1". The fields are optional and additive, which
+schema/README.md says does not bump the major version, and the 1.0.0 apps
+refuse any version but "1". GuideCore's `Snapshot.swift` and
+`SnapshotDecoder.swift` are unchanged since the v1.0.0 tag; its
+PlacementFieldsCompatibilityTests and Android's PlacementFieldsCompatibilityTest
+decode the v1 fixture with the new fields and get the same snapshot as without.
+
+**Not changed.** The website (a test renders every page with and without the
+new fields and compares them byte for byte), the apps, the 0030 rule, and
+TVmaze's terms (CC BY-SA 4.0, which the snapshot already carries).
+
+**Reversible.** Yes: drop the `sync_episodes` call and `_place_deaths`. A
+reader treats the absent fields as "not computed".
+
 ## 0042 — A dated findings page on when queer characters die, and a press page (2026-11-06)
 
 **Status: approved by Chelsea (2026-11-06) for findings A to C, on one dated

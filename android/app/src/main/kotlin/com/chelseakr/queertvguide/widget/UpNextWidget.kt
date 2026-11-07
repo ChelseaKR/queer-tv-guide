@@ -134,11 +134,11 @@ class UpNextWidget : GlanceAppWidget() {
         }
     }
 
-    /** The app's contrast-checked colors (ui/Theme.kt), day and night. */
+    /** The app's contrast-checked colors (ui/Theme.kt), day and night; the accent is the aubergine pair (DECISIONS 0040). */
     private object Colors {
         val background = ColorProvider(day = Color.White, night = Color(0xFF1E1E1E))
         val primary = ColorProvider(day = Color(0xFF111111), night = Color(0xFFF2F2F2))
-        val accent = ColorProvider(day = Color(0xFF0057B3), night = Color(0xFF73B8FF))
+        val accent = ColorProvider(day = Color(0xFF6A2C9C), night = Color(0xFFD9B8FF))
         val subdued = ColorProvider(day = Color(0xFF404040), night = Color(0xFFC7C7C7))
     }
 

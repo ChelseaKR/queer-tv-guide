@@ -13,6 +13,12 @@ consumer of the published snapshot, would notice.
 
 ### Added
 
+- Every show page, the shows index, the airing page and the 404 page now
+  end with the same "Get the iPhone app" block as the home page: one
+  sentence on what the app adds (favorites with next episodes, the Up Next
+  widget, new-episode reminders, offline use), Apple's App Store badge and
+  the price (DECISIONS 0047). Before, show pages had a plain text link and
+  the 404 page had none. Nothing changes while the App Store switch is off.
 - A dated findings page, `/findings/finales/`: of queer regulars who die
   and whose death can be placed in an episode, 35% die in a season finale,
   against 8% of episodes; deaths are spread evenly across a show's seasons;
@@ -174,6 +180,10 @@ consumer of the published snapshot, would notice.
 
 ### Changed
 
+- Show page titles lead with what people search, "<n> LGBTQ characters in
+  <show>", then ask "Do any die?" (DECISIONS 0045). Descriptions end with
+  "Whether anyone dies stays hidden until you tap." Neither ever depends on
+  a death record, and a test checks that.
 - 50 more show pages are open to search (DECISIONS 0046): the held-back
   pages that Google already showed in Search Console's 28 days to
   2026-11-07 (at least 5 impressions, a reported query, or a click). They
@@ -197,6 +207,12 @@ consumer of the published snapshot, would notice.
   rule in `show_pages.py` widens the set, and the decision says when.
 
 ### Fixed
+
+- A running show's Seasons row no longer shows LezWatch.TV's count when
+  TVmaze has aired a later season: For All Mankind now reads "5 so far" in
+  a row labeled "per TVmaze", not "1" (DECISIONS 0048). It needs TVmaze's
+  premiere year to match LezWatch.TV's start year within a year; otherwise
+  LezWatch.TV's count stays.
 
 - The apps count a death on a show only when it falls in that show
   (DECISIONS 0030 and 0032), as the show pages do. The L Word: Generation

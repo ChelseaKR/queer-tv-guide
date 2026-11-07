@@ -162,9 +162,9 @@ def test_long_titles_are_fitted_not_overrun():
     assert len(show_pages.show_title(name)) <= 60
     assert len(show_pages.show_description(name)) <= 155
     assert show_pages.show_title(name).endswith("…")
-    assert show_pages.show_title("Short") == "Do any queer characters die in Short? Spoiler-free"
-    assert show_pages.show_title("Twenty Character Name") == (
-        "Does she die in Twenty Character Name? Spoiler-free"
+    assert show_pages.show_title("Short") == "LGBTQ characters in Short. Do any die? No spoilers"
+    assert show_pages.show_title("A Show Title Of Thirty Letters") == (
+        "A Show Title Of Thirty Letters LGBTQ characters, no spoilers"
     )
 
 
@@ -334,7 +334,7 @@ def test_negative_control_a_leaking_title_is_caught(doc, tmp_path):
     page = pages["shows/the-cartographers/index.html"]
     answers = _answers(doc, "the-cartographers")
     raw = _raw(tmp_path, "shows/the-cartographers/index.html")
-    bad_raw = raw.replace("<title>Do ", "<title>" + answers[0] + " Do ")
+    bad_raw = raw.replace("<title>2 ", "<title>" + answers[0] + " 2 ")
     assert bad_raw != raw
     assert htmlprobe.answer_leaks(page, answers) == []
     assert htmlprobe.answer_leaks(htmlprobe.parse(bad_raw), answers) == [answers[0]]
@@ -400,7 +400,7 @@ def test_an_ended_show_takes_tvmazes_season_count_when_they_disagree(doc):
     assert _seasons(show, 11, "Ended", 9) == ("Seasons, per TVmaze", "9", 9)
     # They agree: LezWatch's count, unlabeled, as before.
     assert _seasons(show, 9, "Ended", 9) == ("Seasons", "9", 9)
-    # A running show keeps LezWatch's count; the next season may be announced.
+    # A running show keeps a higher LezWatch count; the next season may be announced.
     assert _seasons(show, 4, "Running", 3) == ("Seasons", "4", 4)
     # LezWatch has no count: TVmaze's latest season fills it.
     assert _seasons(show, None, "Ended", 3) == ("Seasons, per TVmaze", "3", 3)
@@ -575,7 +575,9 @@ def _banners(page: htmlprobe.Page) -> list[dict]:
 
 def test_no_app_link_while_the_switch_is_off(doc, tmp_path):
     for rel, page in _build(doc, tmp_path).items():
-        assert not any("Get the app" in t for t in page.outside), rel
+        assert not any("Get the" in t for t in page.outside), rel
+        assert page.named("img") == [], rel
+        assert "app-store-badge" not in _raw(tmp_path, rel), rel
         assert not any("apple.com" in h for h in page.hrefs())
         assert _banners(page) == [], rel
         assert "apple-itunes-app" not in _raw(tmp_path, rel)
@@ -585,12 +587,43 @@ def test_app_link_uses_the_existing_constant_when_on(doc, tmp_path):
     pages = _build(doc, tmp_path, app_store_live=True)
     for rel, page in pages.items():
         assert page.hrefs().count(app_store.APP_STORE_URL) == 1, rel
-        assert sum("Get the app" in t for t in page.outside) == 1, rel
+        assert page.outside.count(app_store.APP_PITCH_LEAD) == 1, rel
         # The link says where it goes and what it costs, from app_store.py.
         assert app_store.PRICE_COPY in page.outside, rel
+        # What the app adds over the website, one sentence, from app_store.py.
+        assert any(app_store.APP_PITCH in t for t in page.outside), rel
+        assert (
+            _raw(tmp_path, rel).count(app_store.get_app_block(f"{BASE}/app-store-badge.svg")) == 1
+        )
     # Not inside the spoiler: opening the answer is not a sales pitch.
     inside = pages["shows/the-cartographers/index.html"].inside
-    assert not any("Get the app" in t or app_store.PRICE_COPY in t for t in inside)
+    assert not any(
+        app_store.APP_PITCH_LEAD in t or app_store.PRICE_COPY in t or "App Store" in t
+        for t in inside
+    )
+
+
+def test_the_one_image_is_apples_badge_from_this_site_when_on(doc, tmp_path):
+    # DECISIONS 0047: Apple's badge is the link, unedited, 40px tall, with
+    # Apple's own words as its alt text, served from this site (absolute, so
+    # it resolves from /shows/<slug>/). Nothing else on the page is an image.
+    for rel, page in _build(doc, tmp_path, app_store_live=True).items():
+        assert page.named("img") == [
+            {
+                "src": f"{BASE}/{app_store.BADGE_FILE}",
+                "width": "120",
+                "height": "40",
+                "alt": "Download on the App Store",
+            }
+        ], rel
+        srcs = [a["src"] for t, a in page.tags if "src" in a]
+        assert srcs == [f"{BASE}/{app_store.BADGE_FILE}"], rel
+        assert htmlprobe.foreign_links(page, BASE) == []
+        raw = _raw(tmp_path, rel)
+        # The badge's rules travel with it, once, in the head.
+        assert raw.count(app_store.BADGE_STYLE) == 1, rel
+        assert raw.index(app_store.BADGE_STYLE) < raw.index("</head>"), rel
+        assert "?" not in app_store.APP_STORE_URL
 
 
 def test_smart_app_banner_on_every_built_page_when_on(doc, tmp_path):
@@ -789,12 +822,12 @@ def test_a_few_hundred_pages_from_the_real_snapshot(tmp_path):
 def test_title_and_description_ask_the_question_and_name_the_characters(doc, tmp_path):
     page = _build(doc, tmp_path)["shows/the-cartographers/index.html"]
     # The count is of listed characters, never of deaths (DECISIONS 0027).
-    assert page.title == "Do any of the 2 queer characters in The Cartographers die?"
+    assert page.title == "2 LGBTQ characters in The Cartographers. Do any die?"
     # Regulars first, then recurring: the order never depends on a death.
     # Each name carries the identity the page's character list shows.
     assert page.description == (
         "LezWatch.TV lists 2 LGBTQ characters in The Cartographers: Odile Brandt "
-        "(lesbian) and Thea Marsh (queer). Who dies, if anyone, is behind a spoiler warning."
+        "(lesbian) and Thea Marsh (queer). Whether anyone dies stays hidden until you tap."
     )
     assert "Do any queer characters die in The Cartographers?" in page.outside
     assert "Queer women, non-binary and trans characters in The Cartographers" in page.outside
@@ -824,23 +857,27 @@ def test_description_falls_back_to_fewer_names():
     assert len(text) <= 155
     # A labelled name is kept before more bare names are added.
     assert text == (
-        "12 LGBTQ characters in A Fairly Long Show Title, including Alexandra Longname "
-        "(lesbian). Who dies, if anyone, is behind a spoiler warning."
+        "LezWatch.TV lists 12 LGBTQ characters in A Fairly Long Show Title, including Alexandra Longname "
+        "(lesbian). Whether anyone dies stays hidden until you tap."
     )
     assert show_pages.show_description("Solo", ["Ana"], 1) == (
         "LezWatch.TV lists one LGBTQ character in Solo: Ana. "
-        "Who dies, if anyone, is behind a spoiler warning."
+        "Whether anyone dies stays hidden until you tap. Names and identities from LezWatch.TV."
     )
     assert show_pages.show_description("Bare") == (
-        "Do any queer characters die in Bare? Who dies, if anyone, is behind a spoiler warning."
+        "LGBTQ characters in Bare: does anyone die? Whether anyone dies stays hidden until you "
+        "tap. Names and identities from LezWatch.TV."
     )
 
 
 def test_title_counts_listed_characters_and_falls_back():
-    assert show_pages.show_title("Short", 12) == "Do any of the 12 queer characters in Short die?"
+    assert (
+        show_pages.show_title("Short", 12)
+        == "12 LGBTQ characters in Short. Do any die? No spoilers"
+    )
     # One character, or a title too long for the count, keeps the 0024 forms.
     assert show_pages.show_title("Short", 1) == show_pages.show_title("Short")
-    long_name = "Orange is the New Black"
+    long_name = "Adventure Time: Fionna and Cake, the Series"
     assert show_pages.show_title(long_name, 23) == show_pages.show_title(long_name)
 
 

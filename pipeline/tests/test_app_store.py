@@ -336,6 +336,19 @@ def test_on_the_badge_replaces_the_coming_soon_line(site):
     assert text.count(app_store.BADGE_BLOCK) == 1
 
 
+def test_on_the_home_page_says_what_the_app_adds(site):
+    # DECISIONS 0047: the badge comes with one sentence on what the app does
+    # that the website does not, iPhone only, and no claim the build lacks.
+    assert app_store.main([str(site), "true"]) == 0
+    text = (site / "index.html").read_text(encoding="utf-8")
+    assert text.count(app_store.APP_PITCH) == 1
+    assert "Get the iPhone app." in text
+    for claim in ("Up Next widget", "new-episode reminders", "works offline"):
+        assert claim in app_store.APP_PITCH
+    for overclaim in ("Android", "iPad", "Mac", "free", "best", "only"):
+        assert overclaim not in app_store.APP_PITCH, overclaim
+
+
 def test_an_index_without_the_coming_soon_line_is_refused(site):
     index = site / "index.html"
     before_text = index.read_text(encoding="utf-8")

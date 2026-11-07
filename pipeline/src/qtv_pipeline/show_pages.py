@@ -57,14 +57,14 @@ asked not to show it. The list or rule in ``INDEX_EXTRA_IDS`` and
 both the sitemap and the robots tag, and ``index_problems`` refuses a build
 in which they disagree.
 
-Words for search (DECISIONS 0024 and 0027). The title asks the question
-people type, with the count of listed characters when it fits ("Do any of
-the <n> queer characters in <show> die?", then the 0024 forms with
-"Spoiler-free"); the description gives that count and names up to three
+Words for search (DECISIONS 0024, 0027 and 0045). The title leads with what
+people type, the count of listed characters and the show, then asks the
+question ("<n> LGBTQ characters in <show>. Do any die? No spoilers", then
+shorter forms); the description gives that count and names up to three
 listed characters, regulars first, each with the identity the page shows
 ("Lisa Simpson (bisexual)"), because people search "does <character> die
-in <show>" and "is <character> a lesbian", and says who dies is behind the
-spoiler warning; the
+in <show>" and "is <character> a lesbian", and ends with one fixed
+sentence saying whether anyone dies stays hidden until a tap; the
 characters heading says "Queer women, non-binary and trans characters in
 <show>", because that is what LezWatch.TV covers; one fixed sentence on every
 page names the bury-your-gays trope and another says that cisgender gay and
@@ -101,8 +101,11 @@ actor pages.
 
 Seasons (``seasons_fact``, DECISIONS 0031). For a show TVmaze lists as Ended, when TVmaze's last season number differs from
 LezWatch's season count, the page shows TVmaze's, labeled "per TVmaze".
-When LezWatch has no count, TVmaze's latest season fills it ("3 so far" for
-a show still running). A TVmaze season number of 1900 or more is a year (a
+For a show LezWatch marks on air and TVmaze does not list as Ended, TVmaze's
+latest season replaces a lower LezWatch count, as "5 so far, per TVmaze", when
+TVmaze's premiere year is within a year of LezWatch's start year (DECISIONS
+0048); otherwise LezWatch's count stays. When LezWatch has no count, TVmaze's
+latest season fills it ("3 so far" for a show still running). A TVmaze season number of 1900 or more is a year (a
 show numbered by year), not a count, and is never used.
 
 What a page never says. LezWatch records deaths, not survival
@@ -112,11 +115,13 @@ blank is "Not recorded", never zero.
 
 Privacy. A page has no script (its one ``<script>`` is schema.org
 ``application/ld+json`` data, which a browser never runs), no cookie, no
-form, no image, no font, no stylesheet link and no request to any host. Every
+form, no font, no stylesheet link and no request to another host. Every
 link to another host is an anchor the visitor chooses to follow. The App
 Store link, and Safari's Smart App Banner tag (a ``<meta>``, which fetches
 nothing), appear only when the launch switch is on, with the same URL, tag
-and price copy as ``app_store.py`` (DECISIONS 0023).
+and price copy as ``app_store.py`` (DECISIONS 0023). With the switch on, the
+page's one image is Apple's App Store badge, served from this site
+(``app_store.get_app_block``, DECISIONS 0047); off, a page has no image.
 
 While the switch is off, a show page says in one fixed sentence that
 Queer Frame is also an iPhone app that is not on the App Store yet, with no
@@ -152,9 +157,12 @@ import jinja2
 
 from qtv_pipeline.app_store import (
     APP_STORE_URL,
+    BADGE_FILE,
+    BADGE_STYLE,
     BANNER,
     PRICE_COPY,
     SwitchError,
+    get_app_block,
     live_or_false,
 )
 
@@ -277,6 +285,11 @@ DEFAULT_PINNED_PATH = Path(__file__).resolve().parents[2] / "data" / "show_pages
 SITE_NAME = "Queer Frame"
 TITLE_MAX = 60
 DESCRIPTION_MAX = 155
+# Below this a description is padded with ``DESCRIPTION_PAD`` (DECISIONS 0045).
+DESCRIPTION_MIN = 120
+# The description's last sentence: the same on every page, so it cannot hint.
+DESCRIPTION_TAIL = "Whether anyone dies stays hidden until you tap."
+DESCRIPTION_PAD = "Names and identities from LezWatch.TV."
 # LezWatch slugs are WordPress slugs: lowercase, digits, hyphens, and the
 # percent-encoding of non-Latin titles. Anything else would be a path or a
 # query to a static host, so the build refuses it.
@@ -617,19 +630,23 @@ def fit(candidates: list[str], limit: int) -> str:
 
 
 def show_title(name: str, count: int = 0) -> str:
-    """The question people search, longest form that fits, with the number of
-    listed characters when there are several (DECISIONS 0027). No answer in
-    it: the count is of listed characters, never of deaths."""
+    """The words people search, then the question, longest form that fits
+    (DECISIONS 0045). Search Console's queries are mostly "<show> LGBTQ
+    characters" and "is <character> gay", so the title leads with the count
+    of listed characters and the show; the death question follows, asked the
+    same way of every show. No answer in it: the count is of listed
+    characters, never of deaths, and nothing here reads a death record."""
     candidates = []
     if count >= 2:
-        candidates.append(f"Do any of the {count} queer characters in {name} die?")
+        candidates.append(f"{count} LGBTQ characters in {name}. Do any die? No spoilers")
+        candidates.append(f"{count} LGBTQ characters in {name}. Do any die?")
     return fit(
         [
             *candidates,
-            f"Do any queer characters die in {name}? Spoiler-free",
-            f"Do queer characters die in {name}? Spoiler-free",
-            f"Does she die in {name}? Spoiler-free",
-            f"Does she die in {name}?",
+            f"LGBTQ characters in {name}. Do any die? No spoilers",
+            f"LGBTQ characters in {name}, no spoilers",
+            f"{name} LGBTQ characters, no spoilers",
+            f"{name} LGBTQ characters",
         ],
         TITLE_MAX,
     )
@@ -674,12 +691,13 @@ def show_description(
     labels: list[str | None] | None = None,
 ) -> str:
     """Says how many characters LezWatch.TV lists, names up to three of them
-    (with ``labels``, each one's identity) and says who dies is behind the
-    spoiler warning. ``names`` is in page order, never by death, and
-    ``labels`` is parallel to it (DECISIONS 0024 and 0027)."""
+    (with ``labels``, each one's identity) and ends with the same sentence on
+    every page (``DESCRIPTION_TAIL``). ``names`` is in page order, never by
+    death, and ``labels`` is parallel to it (DECISIONS 0024, 0027 and 0045).
+    A result under ``DESCRIPTION_MIN`` gets the fixed ``DESCRIPTION_PAD``."""
     names = names or []
     labels = labels if labels is not None else [None] * len(names)
-    tail = "Who dies, if anyone, is behind a spoiler warning."
+    tail = DESCRIPTION_TAIL
     who = "one LGBTQ character" if count == 1 else f"{count} LGBTQ characters"
     who_first = who[0].upper() + who[1:]
     # Labelled names first (they answer "is <character> a lesbian"), then
@@ -699,8 +717,13 @@ def show_description(
             candidates.append(f"{who_first} in {name}: {listed}. {tail}")
     if count:
         candidates.append(f"LezWatch.TV lists {who} in {name}. {tail}")
-    candidates += [f"Do any queer characters die in {name}? {tail}"] * 2
-    return fit(candidates, DESCRIPTION_MAX)
+    candidates += [f"LGBTQ characters in {name}: does anyone die? {tail}"] * 2
+    text = fit(candidates, DESCRIPTION_MAX)
+    # Too short for a useful snippet: add a fixed sentence, the same on every
+    # page, that says nothing about any death record.
+    if len(text) < DESCRIPTION_MIN and len(text) + 1 + len(DESCRIPTION_PAD) <= DESCRIPTION_MAX:
+        text = f"{text} {DESCRIPTION_PAD}"
+    return text
 
 
 def _term_name(term: dict[str, Any] | None) -> str:
@@ -902,15 +925,47 @@ def _tvmaze_last_season(show: dict[str, Any]) -> int | None:
     return season if 1 <= season < SEASON_IS_A_YEAR else None
 
 
+def _same_show_by_year(show: dict[str, Any]) -> bool:
+    """True when TVmaze's premiere year is within a year of LezWatch's start
+    year (DECISIONS 0048). The join is by id, never by title; this is a second
+    check before TVmaze may raise a running show's count, so a join to a
+    same-named reboot or original cannot. Either year missing is False."""
+    start = show["years"]["start"]
+    premiered = show["schedule"]["premiered"]
+    if not isinstance(start, int) or not isinstance(premiered, str):
+        return False
+    head = premiered[:4]
+    return head.isdigit() and abs(int(head) - start) <= 1
+
+
+def _running_count_lags(show: dict[str, Any], recorded: int | None, tvmaze: int | None) -> bool:
+    """DECISIONS 0048: a show LezWatch marks on air, that TVmaze does not list
+    as Ended, whose LezWatch count is below TVmaze's latest season."""
+    return (
+        recorded is not None
+        and tvmaze is not None
+        and tvmaze > recorded
+        and show["years"]["on_air"] == "yes"
+        and show["schedule"]["status"] != "Ended"
+        and _same_show_by_year(show)
+    )
+
+
 def seasons_fact(show: dict[str, Any]) -> tuple[str, str, int | None]:
     """(label, value, count for structured data) for the Seasons row
-    (DECISIONS 0031). For an ended show TVmaze's last season wins when the
-    two disagree; when LezWatch has no count, TVmaze's latest season fills
-    it. Absence stays "Not recorded", never a number."""
+    (DECISIONS 0031, 0048). For an ended show TVmaze's last season wins when
+    the two disagree; for a running show TVmaze's latest season wins only when
+    it is higher and the premiere years agree; when LezWatch has no count,
+    TVmaze's latest season fills it. Absence stays "Not recorded", never a
+    number."""
     recorded = show["seasons"]
     tvmaze = _tvmaze_last_season(show)
     ended = show["schedule"]["status"] == "Ended"
-    if tvmaze is not None and (recorded is None or (ended and tvmaze != recorded)):
+    if tvmaze is not None and (
+        recorded is None
+        or (ended and tvmaze != recorded)
+        or _running_count_lags(show, recorded, tvmaze)
+    ):
         return "Seasons, per TVmaze", str(tvmaze) if ended else f"{tvmaze} so far", tvmaze
     if recorded is None:
         return "Seasons", NOT_RECORDED, None
@@ -1207,6 +1262,10 @@ def _common(doc: dict[str, Any], base_url: str, app_store_live: bool) -> dict[st
         "app_store_url": APP_STORE_URL if app_store_live else None,
         "app_store_banner": BANNER if app_store_live else None,
         "app_store_copy": PRICE_COPY,
+        # The one "Get the app" block (DECISIONS 0047), badge by absolute
+        # URL: app_store.apply publishes the file at the site root.
+        "app_store_block": get_app_block(f"{base_url}/{BADGE_FILE}") if app_store_live else None,
+        "app_store_style": BADGE_STYLE,
     }
 
 

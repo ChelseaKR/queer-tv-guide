@@ -13,4 +13,7 @@
 <li><a href="{{ base_url }}/airing/">See what queer TV is airing now</a></li>
 {%- endif %}
 </ul>
+{%- if app_store_url %}
+{{ app_store_block|safe }}
+{%- endif %}
 {% endblock %}

@@ -1066,6 +1066,91 @@ the airing page, the pins, the app.
 
 **Reversible.** Yes: `_facts` without `today`, and the old opening clause.
 
+## 0038 — The website gets its own look: the app icon's colors, a condensed title face, a sealed answer (2026-11-05)
+
+**Status: proposed (agent, 2026-11-05). Visual and structural only: no URL,
+`<title>`, H1 or meta description changes, and the spoiler rule of 0019 to
+0037 holds. It replaces the "system colors only" rule the stylesheet test
+held since 0019.**
+
+**Why.** The pages used the browser's own colors and font, so they looked
+like an unstyled document and like nothing else Queer Frame makes. The app
+icon (aubergine, coral, a diagonal split, a cream play triangle) is the one
+brand mark Queer Frame has; the site did not use it anywhere, not even as a
+browser-tab icon. The portfolio also has a live App Store 4.3(a) "template"
+problem, so each product's identity is chosen from its own subject.
+
+**Decision.** One stylesheet, still inline and still loading nothing:
+- Palette from the icon. Light: paper #f6f1fa, ink #2b1740, links #6a2c9c,
+  coral #ff6f4f for bars and edges only (never text on paper). Dark: paper
+  #1d1027, ink #f3ecf7, links #d9b8ff, coral #ff8a6b. Every text pair is
+  WCAG AA (4.5:1) and every border and focus ring 3:1, in both schemes,
+  checked by `tests/test_site_identity.py` with negative controls.
+- Type: system fonts only. Titles in a heavy condensed face (Avenir Next
+  Condensed on Apple devices, Roboto Condensed elsewhere, then the system
+  font); body text in the system font. No web font, so no request.
+- The one bold element is the answer box: a thick aubergine frame (coral in
+  dark mode) whose summary bar carries the icon's diagonal corner. The CSS
+  never styles a closed answer's content: no `::details-content`, no
+  generated text, no display or position rule on the answer body (tested).
+  Opening it fades the answer in, only when reduced motion is not asked for.
+- A header mark: the icon drawn as a 32 px inline SVG, `aria-hidden`, next
+  to the unchanged "Queer Frame" link. The same drawing is `/favicon.svg`,
+  named by a `<link rel="icon">` on every generated page, served from this site.
+- Forced-colors mode (Windows high contrast) hands every color back to the
+  system's, as the old rule did.
+- A not-found page, `/404.html`, which GitHub Pages serves for any address
+  with no page: `noindex`, no canonical, absolute links home and, when they
+  are published, to the A to Z list and the airing page.
+- The privacy, support and terms pages share the palette, the mark and a
+  link home. Their words do not change, and they still have no `<link>`:
+  privacy and support are the App Store's URLs, and GuideCore's
+  AppStoreReadinessTests hold them to no requests of their own.
+
+**Not changed.** Titles, headings, descriptions, structured data, which
+pages exist (apart from the 404), indexing, the app. Every page's bytes
+change, so the next IndexNow run (0034) announces every sitemap page once.
+
+**Reversible.** Yes: the previous `style.css`, base template and static
+page styles; delete `404.html.j2`, `mark.svg` and the two `write_site`
+lines.
+
+## 0039 — About gets an "Email support" row, on iOS and Android (2026-11-06)
+
+**Status: proposed (agent, 2026-11-06). Branch only; it merges when
+Chelsea decides, since the app may be in or near App Review.**
+
+**Evidence.** The 2026-11-05 app parity audit found no in-app way to write
+to the developer (0 `mailto:` in the app). About had a "Support" button that
+opens the support page in the browser, and that page lists the address
+(0015), so reaching a person took two apps and a copy. Family Greenhouse,
+the portfolio's reference app, has a direct help path.
+
+**Decision.** A row, "Email support", follows "Rate <app name>" in About's
+Version section on both platforms. It hands a `mailto:` link to the system
+(iOS `openURL`, Android `ACTION_SENDTO`), so the person's own mail app opens
+a new message to `chelsea@chelseakr.com` with the subject "<app name>
+<version>". The link is built in one tested place per platform (GuideCore
+`SupportEmail`, the Android core's `SupportEmail`), and a test checks the
+address against the support page and the Play listing. When no mail app
+can take it, the row opens the support page instead.
+
+**Privacy.** The app sends nothing: a `mailto:` link names no host and makes
+no request (the one-host guards are unchanged), and the draft carries only
+the app name and version, never the device model, OS version, favorites or
+anything else. The person can edit the subject or not send it.
+
+**Absence.** With no version available, the subject is the app name alone,
+not a placeholder.
+
+**Not changed.** The privacy label and Data safety answers, the App Store
+and Play copy, the screenshots (the Version section is below the fold on
+both About screenshots), and the purchase model: paid up front with no
+in-app purchase (0003, 0011, 0018), so there is nothing to restore and no
+"Restore purchases" button, by design.
+
+**Reversible.** Yes: remove the row and the two `SupportEmail` files.
+
 ## 0040 — The apps take the website's aubergine accent, with coral as an edge (2026-11-06)
 
 **Status: proposed (agent, 2026-11-06), for 1.0.1. Chelsea chose this on

@@ -45,6 +45,7 @@ import com.chelseakr.queertvguide.core.Attribution
 import com.chelseakr.queertvguide.core.Endpoints
 import com.chelseakr.queertvguide.core.Presentation
 import com.chelseakr.queertvguide.core.SnapshotStore
+import com.chelseakr.queertvguide.core.SupportEmail
 import kotlinx.coroutines.launch
 
 /** The Play listing, opened by the "Rate" row. Shown to everyone the same way; nothing is offered for a rating. */
@@ -58,6 +59,20 @@ object PlayListing {
         } catch (_: ActivityNotFoundException) {
             openExternal(context, WEB_URL)
         }
+    }
+}
+
+/**
+ * A new message in the person's own mail app (DECISIONS 0039); the app sends nothing.
+ * With no mail app set up, the support page, which lists the same address.
+ */
+fun emailSupport(context: Context, appName: String) {
+    val intent = Intent(Intent.ACTION_SENDTO, SupportEmail.uri(appName, BuildConfig.VERSION_NAME).toUri())
+        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+    try {
+        context.startActivity(intent)
+    } catch (_: ActivityNotFoundException) {
+        openExternal(context, Endpoints.SUPPORT_URL)
     }
 }
 
@@ -144,6 +159,12 @@ fun AboutScreen(model: AppModel, state: AppModel.State) {
                                 onClick(label = "Opens Google Play to rate or review this app") { PlayListing.open(context); true }
                             },
                         ) { Text("Rate $name") }
+                        TextButton(
+                            onClick = { emailSupport(context, name) },
+                            modifier = Modifier.heightIn(min = 48.dp).testTag("email-support").semantics {
+                                onClick(label = "Opens a new email to the developer in your mail app") { emailSupport(context, name); true }
+                            },
+                        ) { Text("Email support") }
                     }
 
                     // The first-run pages again, last, so the sections above keep their place.

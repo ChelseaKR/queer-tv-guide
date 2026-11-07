@@ -1,0 +1,16 @@
+{% extends "base.html.j2" %}
+{% block head_extra %}
+<meta name="robots" content="noindex">{% endblock %}
+{% block content %}
+<h1>This page is not on {{ site_name }}</h1>
+<p class="lede">The address may be mistyped, or the page may have moved. Not every show on LezWatch.TV has a page here yet, so try the full list.</p>
+<ul class="go">
+<li><a href="{{ base_url }}/">Go to the {{ site_name }} home page</a></li>
+{%- if shows_link %}
+<li><a href="{{ base_url }}/shows/#a-to-z">Browse every show, A to Z</a></li>
+{%- endif %}
+{%- if airing_link %}
+<li><a href="{{ base_url }}/airing/">See what queer TV is airing now</a></li>
+{%- endif %}
+</ul>
+{% endblock %}

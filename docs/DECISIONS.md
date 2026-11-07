@@ -1388,3 +1388,38 @@ same file on every page, so cached after the first). The privacy page's
 unchanged.
 
 **Reversible.** Yes: switch off, or revert the block to a text link.
+
+## 0048 — A running show shows TVmaze's higher season count, "N so far" (2026-11-07)
+
+**Status: accepted (Chelsea, option A of the 2026-11-07 fact-check).**
+
+**Evidence.** The 2026-11-07 fact-check of the 50 pages #130 opens to search
+(`_agent-tools/growth/qf-index50-factcheck-2026-11-07.md`) found four running
+shows whose Seasons row is LezWatch.TV's stale count, under an opening that
+names a later season from TVmaze: For All Mankind 1 (5 aired), The Loud House
+3 (10), The Pitt 1 (2), Father Brown 6 (13). Each was confirmed by TVmaze and
+Wikipedia. 0031 kept LezWatch's count for every running show.
+
+**Decision.** `seasons_fact` extends 0031. For a show LezWatch.TV marks on air
+(`years.on_air` is "yes") and TVmaze does not list as Ended, when TVmaze's
+latest aired season is higher than LezWatch's count, the page shows TVmaze's,
+as "5 so far" in the row "Seasons, per TVmaze", and schema.org
+`numberOfSeasons` uses the same number. TVmaze can lag a running show's count
+but not overshoot it. The TVmaze join is by id (LezWatch's stored TVmaze id or
+an IMDb lookup), never by title; as a second check against a join to a
+same-named show, TVmaze's premiere year must be within one year of LezWatch's
+start year. When either year is missing, the years disagree, TVmaze has no
+match, or TVmaze's number is a year (0031), LezWatch's count stays. A higher
+LezWatch count stays. Ended shows follow 0031 unchanged. No new request to
+TVmaze: the season and premiere date are already in the snapshot.
+
+On the bundled snapshot of 2026-09-18 the rule changes the Seasons row on 28
+pages and holds none back on the year check.
+
+**Not changed.** The years row. All American ("2018 to present" while TVmaze
+says Ended), Chicago Med (LezWatch starts it in 2020; it premiered in 2015) and
+9-1-1 (2017; it premiered in 2018) are LezWatch year fields that 0031 left
+alone; using TVmaze's dates there is a separate rule. Rookie Blue's network
+and Holby City's undone death are LezWatch.TV corrections.
+
+**Reversible.** Yes: `_running_count_lags` returns False.

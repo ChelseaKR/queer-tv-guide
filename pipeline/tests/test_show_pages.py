@@ -400,7 +400,7 @@ def test_an_ended_show_takes_tvmazes_season_count_when_they_disagree(doc):
     assert _seasons(show, 11, "Ended", 9) == ("Seasons, per TVmaze", "9", 9)
     # They agree: LezWatch's count, unlabeled, as before.
     assert _seasons(show, 9, "Ended", 9) == ("Seasons", "9", 9)
-    # A running show keeps LezWatch's count; the next season may be announced.
+    # A running show keeps a higher LezWatch count; the next season may be announced.
     assert _seasons(show, 4, "Running", 3) == ("Seasons", "4", 4)
     # LezWatch has no count: TVmaze's latest season fills it.
     assert _seasons(show, None, "Ended", 3) == ("Seasons, per TVmaze", "3", 3)

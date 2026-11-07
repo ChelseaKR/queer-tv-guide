@@ -184,6 +184,11 @@ consumer of the published snapshot, would notice.
   <show>", then ask "Do any die?" (DECISIONS 0045). Descriptions end with
   "Whether anyone dies stays hidden until you tap." Neither ever depends on
   a death record, and a test checks that.
+- 50 more show pages are open to search (DECISIONS 0046): the held-back
+  pages that Google already showed in Search Console's 28 days to
+  2026-11-07 (at least 5 impressions, a reported query, or a click). They
+  join the sitemap and lose `noindex,follow`; their content does not change.
+  The sitemap goes from 55 to 105 URLs.
 - The iOS and Android apps and their widgets use queerframe.app's aubergine
   in place of blue for links, buttons and the selected tab (#6A2C9C in
   light, #D9B8FF in dark), and the closed Reveal button has a coral edge

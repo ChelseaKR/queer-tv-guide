@@ -183,11 +183,69 @@ MIN_LISTED = 5
 # Fewer pages than this and the most-listed shows fill the gap (see above).
 PAGE_FLOOR = 50
 # Which show pages search engines may index (DECISIONS 0028): the hand-picked
-# list, and nothing else until the widen criterion there is met. To widen, add
-# LezWatch ids here (by list), or set INDEX_MIN_LISTED to index every built
-# show with at least that many listed characters (by rule). Every other show
-# page carries ROBOTS_HOLD and is left out of the sitemap.
-INDEX_EXTRA_IDS: frozenset[int] = frozenset()
+# list, plus the ids below. To widen, add LezWatch ids here (by list), or set
+# INDEX_MIN_LISTED to index every built show with at least that many listed
+# characters (by rule). Every other show page carries ROBOTS_HOLD and is left
+# out of the sitemap.
+#
+# The first widening batch (DECISIONS 0046): every held-back page that, in
+# Search Console's 28 days to 2026-11-07, Google showed at least 5 times, or
+# for at least one query it reported, or that earned a click. The counts are
+# for that window.
+INDEX_EXTRA_IDS: frozenset[int] = frozenset(
+    {
+        84706,  # will-trent: 63 impressions, 1 click
+        98062,  # from: 61 impressions, 1 click
+        91890,  # the-mentalist: 49 impressions
+        61062,  # the-owl-house: 33 impressions
+        90168,  # elsbeth: 22 impressions
+        17014,  # swat: 17 impressions
+        1432,  # the-vampire-diaries: 15 impressions
+        50812,  # for-all-mankind: 12 impressions
+        13499,  # the-good-doctor: 11 impressions
+        77,  # the-fosters: 10 impressions
+        18740,  # the-loud-house: 10 impressions
+        82984,  # the-rookie-feds: 10 impressions, 1 click
+        32380,  # all-american: 9 impressions
+        64744,  # chicago-med: 9 impressions
+        72838,  # helluva-boss: 9 impressions
+        13266,  # scandal: 9 impressions
+        6003,  # the-flash: 9 impressions
+        47336,  # why-women-kill: 9 impressions
+        32,  # er: 8 impressions
+        83773,  # ghosts-us: 8 impressions
+        32468,  # manifest: 8 impressions
+        39687,  # coroner: 7 impressions
+        50486,  # craig-of-the-creek: 7 impressions
+        5407,  # holby-city: 7 impressions
+        33391,  # legacies: 7 impressions
+        62163,  # lovecraft-country: 7 impressions
+        1937,  # survivors-remorse: 7 impressions, 1 click
+        39604,  # the-dragon-prince: 7 impressions
+        2055,  # bones: 6 impressions
+        72939,  # new-amsterdam: 6 impressions
+        74270,  # q-force: 6 impressions
+        58721,  # snowpiercer: 6 impressions, 1 click
+        8393,  # the-blacklist: 6 impressions
+        12555,  # big-mouth: 5 impressions
+        76119,  # one-piece: 5 impressions
+        46097,  # the-boys: 5 impressions
+        76195,  # the-morning-show: 5 impressions
+        94173,  # the-pitt: 5 impressions
+        20769,  # 9-1-1: 4 impressions
+        151,  # pretty-little-liars: 4 impressions
+        1552,  # the-expanse: 4 impressions
+        9408,  # father-brown: 3 impressions, 1 click
+        1374,  # hollyoaks: 3 impressions
+        1420,  # nip-tuck: 3 impressions
+        34,  # rookie-blue: 2 impressions
+        82556,  # the-brokenwood-mysteries: 2 impressions, 1 click
+        4082,  # the-simpsons: 2 impressions
+        65982,  # as-five: 1 impression, 1 click
+        56,  # chasing-life: 1 impression
+        727,  # two-and-a-half-men: 1 impression, 1 click
+    }
+)
 INDEX_MIN_LISTED: int | None = None
 ROBOTS_HOLD = "noindex,follow"
 # The airing-now page (airing_page.py, DECISIONS 0033), built with the show pages.

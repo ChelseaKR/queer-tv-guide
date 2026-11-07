@@ -1344,6 +1344,61 @@ tags (0028).
 **Reversible.** Yes: restore the 0027 `show_title` and the old description
 sentence.
 
+## 0046 — Open the 50 held-back show pages that Google already shows (2026-11-07)
+
+**Status: proposed (branch `feat/sc-missing-shows`). Needs Chelsea: it opens
+the first widening batch of 0028 before that decision's click criterion is
+met. Merging it is the decision.**
+
+**Evidence.** Search Console for `sc-domain:queerframe.app`, 2026-10-10 to
+2026-11-07 (`dataState: all`), read with the read-only scope. 806
+impressions and 9 clicks in all. Of those, 670 impressions and all 9 clicks
+went to show pages that carry `noindex,follow` (121 pages); the 50
+hand-picked pages had 123 impressions and no click. 16 of the 20 pages with
+the most impressions are held back, led by Will Trent (63), FROM (61), The
+Mentalist (49) and The Owl House (33). These pages were open to search from
+10-30 to 11-03 (0025), Google indexed them then, and they drop out as
+Google rereads the tag, as The Good Wife's page did (0036). The impressions
+began to climb on 11-05 (176) and 11-06 (417).
+
+**What the searches ask, and whether the page answers.** Google reported a
+query for 121 impressions (85 query and page pairs). Every one landed on a
+page that exists and answers 200; none named a show without a page. Every
+named character in them is on its show's page with LezWatch.TV's gender and
+sexuality: Julie Matthews in FROM ("is julie gay in from" and three variants,
+11 impressions; bisexual), Asra Hadami in The Mentalist (5), Eda Clawthorne,
+Josie Saltzman, Isobel Flemming, Bradley Jackson, Barbie Wire, Simone
+Clark, Cherry Peck, Molly Milkovich, Lisa Simpson, Sandy Lopez, Amanda
+Wagner. Two cannot be answered from the sources: "is will trent gay" (the
+title character is a man, and the page already says LezWatch.TV does not
+list cisgender gay and bisexual men) and "is supergirl gay in the tv show"
+(LezWatch.TV lists no character by that name for Supergirl, and nothing in
+the sources says who the searcher means). So the gap is not missing pages
+or missing answers: it is that the pages that answer are held back.
+
+**Decision.** `show_pages.INDEX_EXTRA_IDS` lists 50 LezWatch ids: every
+held-back page that in that window Google showed at least 5 times (38), or
+for a query it reported (33), or that earned a click (9); 50 pages in all,
+with 525 of the 670 held-back impressions and all 9 clicks. They join the
+sitemap and lose the robots tag. On the 2026-11-07 snapshot the sitemap goes
+from 55 to 105 URLs (100 show pages); 263 pages stay held back. Page
+content, titles and descriptions do not change. `index_problems` keeps the
+sitemap and the tags in step, as before; the IndexNow step (0034) announces
+the 50 pages because they are no longer noindex.
+
+**Why now and not at 0028's criterion.** 0028 asked for a click in each of
+4 weeks in a row on the hand-picked pages. They have had none, while the
+held-back pages have had all 9. Waiting means the pages Google already
+ranks (median position about 7) are taken out of its index first. The
+batch is the size 0028 named (about 50), and its order is by evidence, not
+by listed characters.
+
+**The check.** At 2 weeks (about 11-21): if the hand-picked pages' weekly
+impressions fall, or the site's weekly impressions fall below the week to
+11-07, revert this batch. Otherwise the next batch follows 0028.
+
+**Reversible.** Yes: empty `INDEX_EXTRA_IDS`.
+
 ## 0047 — Every page offers the app the same way: one sentence, Apple's badge (2026-11-07)
 
 **Status: proposed on `feat/web-to-app`. It extends 0023 and changes

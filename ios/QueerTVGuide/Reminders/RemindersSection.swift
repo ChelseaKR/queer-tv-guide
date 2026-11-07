@@ -85,7 +85,7 @@ struct ReminderPrimingView: View {
                     Button {
                         finish(true)
                     } label: {
-                        Text("Turn on reminders").font(.headline).frame(maxWidth: .infinity)
+                        Text("Turn on reminders").font(.headline).foregroundStyle(.onAccent).frame(maxWidth: .infinity)
                     }
                     .buttonStyle(.borderedProminent)
                     .controlSize(.large)

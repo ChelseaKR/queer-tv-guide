@@ -164,6 +164,11 @@ consumer of the published snapshot, would notice.
 
 ### Changed
 
+- The iOS and Android apps and their widgets use queerframe.app's aubergine
+  in place of blue for links, buttons and the selected tab (#6A2C9C in
+  light, #D9B8FF in dark), and the closed Reveal button has a coral edge
+  (DECISIONS 0040). Every text use still clears 4.5:1 in both schemes, and
+  labels on a filled button are dark in dark mode.
 - The Good Wife's show page is open to search again, and The Simpsons' page
   is held back in its place (DECISIONS 0036). The Good Wife earned 9 search
   impressions at position 3 in the 28 days to 2026-11-05 while it was

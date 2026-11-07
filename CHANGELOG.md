@@ -28,6 +28,10 @@ consumer of the published snapshot, would notice.
   frame (DECISIONS 0038). It still loads nothing from any other site, and a
   closed answer still shows nothing. Addresses with no page get a
   Queer Frame not-found page with links home, instead of GitHub's.
+- An "Email support" row in About, on iOS and Android, under "Rate": it
+  opens a new message in the person's own mail app to the support page's
+  address, with the app and version in the subject (DECISIONS 0039). The app
+  sends nothing itself; with no mail app, the row opens the support page.
 - Show pages date the next episode from TVmaze in a "Next episode, per
   TVmaze" row ("Season 4 premiere, Friday, November 20, 2026"), and the
   opening sentence says when a listed date is the first episode of a new

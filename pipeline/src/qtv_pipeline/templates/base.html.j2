@@ -16,6 +16,9 @@
 <style>
 {% include "style.css" %}
 </style>
+{%- if app_store_block %}
+{{ app_store_style|safe }}
+{%- endif %}
 {%- if breadcrumb %}
 <script type="application/ld+json">{{ breadcrumb|tojson }}</script>
 {%- endif %}

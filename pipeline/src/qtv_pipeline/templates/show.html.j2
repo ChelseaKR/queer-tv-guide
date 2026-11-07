@@ -22,7 +22,7 @@
 </div>
 </details>
 {% if app_store_url %}
-<p class="cta">Get the app: <a href="{{ app_store_url }}">{{ app_store_copy }}</a></p>
+{{ app_store_block|safe }}
 {% else %}
 <p class="small">{{ site_name }} is also an iPhone app built from the same records. It is not on the App Store yet.</p>
 {% endif %}

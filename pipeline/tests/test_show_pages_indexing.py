@@ -229,3 +229,33 @@ def test_the_build_log_counts_the_held_back_pages(tmp_path, capsys):
         f"show_pages: {len(PINNED)} show pages in the sitemap, {held} held back with "
         "noindex,follow (DECISIONS 0028)"
     ) in out
+
+
+# ---- the first widening batch (DECISIONS 0046) --------------------------------
+
+
+def test_the_first_batch_adds_50_shows_none_of_them_pinned():
+    # Every entry must widen the set: an id that is already pinned would be a
+    # no-op that makes the batch look larger than it is.
+    pins = show_pages.load_pinned(show_pages.DEFAULT_PINNED_PATH)
+    assert pins is not None
+    pinned_ids = {p.lezwatch_id for p in pins}
+    assert len(show_pages.INDEX_EXTRA_IDS) == 50
+    assert not show_pages.INDEX_EXTRA_IDS & pinned_ids
+    assert show_pages.INDEX_MIN_LISTED is None  # the batch is a list, not a rule
+
+
+def test_a_batch_show_is_indexed_when_built_and_ignored_when_not(tmp_path):
+    # FROM (98062) is in the batch. Give a held-back fixture show its id: it is
+    # then in the sitemap with no robots tag. Every other batch id has no page
+    # in this data, so the sitemap gains exactly one show page.
+    doc = _doc()
+    pins = show_pages.load_pinned(_pins(PINNED, tmp_path))
+    before = show_pages.render_site(doc, base_url=BASE, pinned=pins)
+    held = next(s for s in doc["shows"] if s["slug"] == "show-012")
+    assert _robots(_page(before, "show-012")) == ["noindex,follow"]
+    held["lwtv_id"] = 98062
+    after = show_pages.render_site(doc, base_url=BASE, pinned=pins)
+    assert _robots(_page(after, "show-012")) == []
+    assert set(_locs(after)) - set(_locs(before)) == {_url("show-012")}
+    assert show_pages.index_problems(after, base_url=BASE) == []

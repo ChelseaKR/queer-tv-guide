@@ -143,6 +143,53 @@
           "type": "object",
           "additionalProperties": { "$ref": "#/$defs/present_vs_absent" },
           "description": "Keyed by dotted field path, e.g. \"shows.watch_links\", \"characters.death\". Two numbers for every field whose absence the app might otherwise read as a value."
+        },
+        "placements": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["death_events", "by_precision", "by_reason", "episode_lists", "shifted_control"],
+          "description": "How many death events (character x date x show, DECISIONS 0030 and 0041) were placed at each precision. Added after the first v1 files; absent means placements were not computed.",
+          "properties": {
+            "death_events": { "type": "integer", "minimum": 0 },
+            "by_precision": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["episode", "episode_pair", "special", "season", "unplaced", "other_show"],
+              "properties": {
+                "episode": { "type": "integer", "minimum": 0 },
+                "episode_pair": { "type": "integer", "minimum": 0 },
+                "special": { "type": "integer", "minimum": 0 },
+                "season": { "type": "integer", "minimum": 0 },
+                "unplaced": { "type": "integer", "minimum": 0 },
+                "other_show": { "type": "integer", "minimum": 0 }
+              }
+            },
+            "by_reason": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 0 } },
+            "episode_lists": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["wanted", "cached"],
+              "description": "Joined shows with a recorded death (wanted) and how many of them have a TVmaze episode list in this build (cached).",
+              "properties": {
+                "wanted": { "type": "integer", "minimum": 0 },
+                "cached": { "type": "integer", "minimum": 0 }
+              }
+            },
+            "shifted_control": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["shift_days", "eligible", "episode_level_rate", "shifted_episode_level_rate", "max_shifted_rate", "enforced"],
+              "description": "The placebo control: the share of death dates placed at the episode level as recorded and when moved shift_days later. The build refuses when an enforced control's shifted rate reaches max_shifted_rate. Rates are null when no date could be tried.",
+              "properties": {
+                "shift_days": { "type": "integer" },
+                "eligible": { "type": "integer", "minimum": 0 },
+                "episode_level_rate": { "type": ["number", "null"], "minimum": 0, "maximum": 1 },
+                "shifted_episode_level_rate": { "type": ["number", "null"], "minimum": 0, "maximum": 1 },
+                "max_shifted_rate": { "type": "number", "minimum": 0, "maximum": 1 },
+                "enforced": { "type": "boolean" }
+              }
+            }
+          }
         }
       }
     },
@@ -178,6 +225,43 @@
     }
   },
   "$defs": {
+    "placement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["show_id", "precision", "reason", "season", "episodes", "airdate"],
+      "description": "One recorded death date matched by air date to one show's TVmaze episode list (DECISIONS 0041). A date says only that the character died at some point; a later return is not recorded, so never read a placement as \"still dead\".",
+      "properties": {
+        "show_id": {
+          "oneOf": [ { "$ref": "#/$defs/show_id" }, { "type": "null" } ],
+          "description": "null only when the date counts for none of the character's shows (reason no_show_in_death_year or date_not_recorded)."
+        },
+        "precision": {
+          "enum": ["episode", "episode_pair", "special", "season", "unplaced", "other_show"],
+          "description": "episode: one episode (episodes has one number). episode_pair: two episodes aired the same day, say \"episode 7 or 8\". special: a TVmaze special, named by airdate, not by a number. season: the season only (season set, episodes null). unplaced: neither (season and episodes null). other_show: a crossover date that lands on an episode of another of the character's shows, so it is not counted here."
+        },
+        "reason": {
+          "enum": [
+            "exact_date", "one_day_off", "double_bill", "special_same_day",
+            "season_drop", "specials_same_day", "one_day_off_several", "within_a_week", "inside_season_span",
+            "several_seasons_same_day", "near_several_seasons", "overlapping_seasons", "before_first_episode",
+            "after_last_episode", "between_seasons", "no_dated_episodes", "no_tvmaze_join", "episodes_unavailable",
+            "no_show_in_death_year", "date_not_recorded", "year_only", "crossover_matched_other_show"
+          ],
+          "description": "Which matching rule decided the precision (pipeline/src/qtv_pipeline/episodes.py)."
+        },
+        "season": { "type": ["integer", "null"] },
+        "episodes": {
+          "oneOf": [
+            { "type": "null" },
+            { "type": "array", "minItems": 1, "maxItems": 2, "items": { "type": "integer" } }
+          ]
+        },
+        "airdate": {
+          "oneOf": [ { "$ref": "#/$defs/date" }, { "type": "null" } ],
+          "description": "Set only for precision special: the day the special aired."
+        }
+      }
+    },
     "datetime": {
       "type": "string",
       "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
@@ -423,7 +507,26 @@
           }
         },
         "schedule": { "$ref": "#/$defs/schedule" },
-        "source_modified_at": { "$ref": "#/$defs/datetime", "description": "LezWatch modified_gmt." }
+        "source_modified_at": { "$ref": "#/$defs/datetime", "description": "LezWatch modified_gmt." },
+        "episode_counts": {
+          "oneOf": [
+            { "type": "null" },
+            {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["season", "episodes"],
+                "properties": {
+                  "season": { "type": "integer" },
+                  "episodes": { "type": "integer", "minimum": 1 }
+                }
+              }
+            }
+          ],
+          "description": "TVmaze's numbered regular episodes per season, seasons ascending, aired or announced; specials are not counted (DECISIONS 0041). null when this build has no TVmaze episode list for the show: only joined shows with a recorded death are fetched. Never read null as zero episodes. Added after the first v1 files; absent means not computed."
+        }
       }
     },
     "death": {
@@ -446,7 +549,13 @@
             "properties": {
               "date": { "oneOf": [ { "$ref": "#/$defs/date" }, { "type": "null" } ] },
               "year": { "type": ["integer", "null"] },
-              "raw": { "type": "string", "description": "LezWatch's value verbatim (usually YYYYMMDD)." }
+              "raw": { "type": "string", "description": "LezWatch's value verbatim (usually YYYYMMDD)." },
+              "placements": {
+                "type": "array",
+                "minItems": 1,
+                "items": { "$ref": "#/$defs/placement" },
+                "description": "Where this death falls, one entry per show it counts for under DECISIONS 0030, by show id (DECISIONS 0041). Added after the first v1 files; absent means not computed."
+              }
             }
           },
           "description": "One entry per recorded death (a character can die more than once). Empty when death_known=false."

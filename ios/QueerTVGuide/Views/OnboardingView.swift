@@ -80,6 +80,7 @@ struct OnboardingView: View {
                     Button(action: finish) {
                         Text(isFirstRun ? "Start browsing" : "Done")
                             .font(.headline)
+                            .foregroundStyle(.onAccent)
                             .frame(maxWidth: .infinity)
                     }
                     .buttonStyle(.borderedProminent)

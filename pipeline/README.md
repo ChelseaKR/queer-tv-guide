@@ -45,7 +45,11 @@ What is fetched, and only this:
   deletions); `/tos/` (the license gate). No images, no posts, no comments.
 - TVmaze: `/shows/{id}?embed[]=nextepisode&embed[]=previousepisode` per joined
   show; `/lookup/shows?imdb=` as a fallback join; `/updates/shows` to decide
-  what to refresh. No images, no summaries, no cast.
+  what to refresh; `/shows/{id}/episodes?specials=1` per joined show with a
+  recorded death, to place each death in a season and episode (DECISIONS 0041;
+  about 400 requests on a full run, the running shows with a death on a
+  nightly one). Only each episode's season, number, air date and type are
+  kept. No images, no summaries, no cast.
 
 ## Incremental fetch and the cursor
 

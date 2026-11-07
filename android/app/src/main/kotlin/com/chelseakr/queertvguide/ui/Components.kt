@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.Intent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -176,6 +177,9 @@ fun SpoilerReveal(revealedHint: String, content: @Composable () -> Unit) {
                 haptics.performHapticFeedback(HapticFeedbackType.Confirm)
                 revealed = true
             },
+            // The one coral touch (DECISIONS 0040): an edge around the sealed
+            // answer, as on queerframe.app. Decoration only.
+            border = BorderStroke(2.dp, accentEdge),
             modifier = Modifier
                 .heightIn(min = 48.dp)
                 .testTag("spoiler-reveal")

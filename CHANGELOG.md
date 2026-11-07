@@ -208,6 +208,15 @@ consumer of the published snapshot, would notice.
 
 ### Fixed
 
+- The Years row, the opening sentence, the structured data and the shows
+  index take TVmaze's premiere year when the TVmaze join is by id and the
+  gap is one year, or up to 10 years earlier when LezWatch.TV's own
+  character years already start before its start year: Chicago Med now
+  reads "2015 to present", not "2020 to present", and 9-1-1 "2018 to
+  present" (DECISIONS 0049, proposed). A show TVmaze lists as Ended no
+  longer says "to present": All American reads "2018 to 2026", in a row
+  labeled "per TVmaze". Otherwise LezWatch.TV's years stay.
+
 - A running show's Seasons row no longer shows LezWatch.TV's count when
   TVmaze has aired a later season: For All Mankind now reads "5 so far" in
   a row labeled "per TVmaze", not "1" (DECISIONS 0048). It needs TVmaze's

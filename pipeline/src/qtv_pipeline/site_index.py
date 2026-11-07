@@ -40,7 +40,8 @@ from importlib import resources
 from pathlib import Path
 from typing import Any
 
-from qtv_pipeline.app_store import INDEX_SLOT
+from qtv_pipeline import findings
+from qtv_pipeline.app_store import INDEX_SLOT, PRICE, live_or_false
 from qtv_pipeline.show_pages import (
     _ENV,
     AIRING_PATH,
@@ -281,9 +282,13 @@ def write_site(
     *,
     base_url: str = DEFAULT_BASE_URL,
     pinned_path: Path = DEFAULT_PINNED_PATH,
+    findings_path: Path = findings.DEFAULT_FINDINGS_PATH,
+    repo_root: Path = findings.REPO_ROOT,
+    app_store_live: bool = False,
 ) -> list[Path]:
     """Write the home page to ``target``, and the data page, the not-found
-    page and the favicon beside it."""
+    page, the favicon, the findings page with its CSV and the press page
+    (DECISIONS 0042) beside it."""
     site_dir = target.parent
     base = _clean_base_url(base_url)
     shows_link = (site_dir / "shows" / "index.html").is_file()
@@ -326,15 +331,69 @@ def write_site(
         site_dir / NOT_FOUND_PATH,
         site_dir / FAVICON_PATH,
         site_dir / LLMS_PATH,
+        *write_findings_and_press(
+            doc,
+            site_dir,
+            base_url=base,
+            findings_path=findings_path,
+            repo_root=repo_root,
+            app_store_live=app_store_live,
+        ),
     ]
 
 
+def write_findings_and_press(
+    doc: dict[str, Any],
+    site_dir: Path,
+    *,
+    base_url: str,
+    findings_path: Path,
+    repo_root: Path,
+    app_store_live: bool,
+) -> list[Path]:
+    """The findings page, its CSV, the press page and the press images."""
+    data = findings.load(findings_path)
+    page = site_dir / findings.FINDINGS_PATH
+    table = site_dir / findings.CSV_PATH
+    press = site_dir / findings.PRESS_PATH
+    page.parent.mkdir(parents=True, exist_ok=True)
+    press.parent.mkdir(parents=True, exist_ok=True)
+    page.write_text(
+        findings.render_findings(doc, data, base_url=base_url, app_store_live=app_store_live),
+        encoding="utf-8",
+    )
+    table.write_text(
+        findings.findings_csv(data, licence_url=doc["licence"]["snapshot"]["url"]),
+        encoding="utf-8",
+    )
+    images = findings.copy_press_assets(press.parent, repo_root)
+    press.write_text(
+        findings.render_press(
+            doc,
+            data,
+            base_url=base_url,
+            app_store_live=app_store_live,
+            price=PRICE,
+            platform="iPhone",
+            images=images,
+        ),
+        encoding="utf-8",
+    )
+    return [page, table, press, *(press.parent / name for name in sorted(images))]
+
+
 def main(argv: list[str]) -> int:
-    if len(argv) != 2:
-        print("usage: python -m qtv_pipeline.site_index SNAPSHOT_JSON OUT_HTML", file=sys.stderr)
+    """``SNAPSHOT_JSON OUT_HTML [APP_STORE_LIVE]``: the third argument is the
+    same switch app_store.py reads; on, the press page links to the App Store."""
+    if len(argv) not in (2, 3):
+        print(
+            "usage: python -m qtv_pipeline.site_index SNAPSHOT_JSON OUT_HTML [APP_STORE_LIVE]",
+            file=sys.stderr,
+        )
         return 2
     doc = json.loads(Path(argv[0]).read_text(encoding="utf-8"))
-    write_site(doc, Path(argv[1]))
+    live = live_or_false(argv[2]) if len(argv) == 3 else False
+    write_site(doc, Path(argv[1]), app_store_live=live)
     return 0
 
 

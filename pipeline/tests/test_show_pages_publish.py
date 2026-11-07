@@ -111,6 +111,9 @@ def sitemap_problems(files: dict[str, str], doc: dict, limit: int = 50) -> list[
         f"{DOMAIN}/",
         *(f"{DOMAIN}/{n.removesuffix('index.html')}" for n in pages),
         *([f"{DOMAIN}/airing/"] if "airing/index.html" in files else []),
+        # Published by site_index.py beside the home page (DECISIONS 0042).
+        f"{DOMAIN}/findings/finales/",
+        f"{DOMAIN}/press/",
     }
     found = [f"missing from the sitemap: {u}" for u in sorted(want - set(entries["loc"]))]
     found += [f"not a built page: {u}" for u in sorted(set(entries["loc"]) - want)]
@@ -181,7 +184,7 @@ def test_the_sitemap_lists_the_index_and_the_fifty_pages_with_the_data_date(doc,
     files = _site(big, tmp_path)
     assert sitemap_problems(files, big) == []
     entries = htmlprobe.sitemap(files["sitemap.xml"])
-    assert len(entries["loc"]) == 53  # with airing/ (DECISIONS 0033)
+    assert len(entries["loc"]) == 55  # with airing/, findings and press (0033, 0042)
     assert entries["loc"][0] == f"{DOMAIN}/"
     assert set(entries["lastmod"]) == {DATA_DATE}
     assert f"{DOMAIN}/shows/" in entries["loc"]

@@ -1256,3 +1256,45 @@ TVmaze's terms (CC BY-SA 4.0, which the snapshot already carries).
 
 **Reversible.** Yes: drop the `sync_episodes` call and `_place_deaths`. A
 reader treats the absent fields as "not computed".
+
+## 0042 — A dated findings page on when queer characters die, and a press page (2026-11-06)
+
+**Status: approved by Chelsea (2026-11-06) for findings A to C, on one dated
+page, without the non-binary result. Branch only until she merges it.**
+
+**Evidence.** The 2026-11-06 research
+(`_agent-tools/growth/qf-progress-and-stats-2026-11-06.md`) matched LezWatch.TV
+death dates to TVmaze episode air dates. Recomputed here from the snapshot of
+2026-11-06T23:21:02Z and the TVmaze episode lists read that day: of 142 regulars'
+deaths placed in an episode, 50 (35%) fall in a season finale, against 8% of
+their shows' episodes; guests 11 of 165 (7%), against 8%. The first season holds
+27% of placed deaths and 28% of episodes. In ended shows, 32 of 329 deaths (10%)
+fall in the series finale, against 3%. LezWatch.TV publishes no statistic that
+uses episode or season structure, so these need TVmaze and are new.
+
+**Decision.** `/findings/finales/` states findings A (the headline), B (spread
+across seasons) and C (series finales, a supporting line with its sample size),
+with the date, method, definitions and caveats on the page, and a counts-only
+CSV, `/findings/finales/finales.csv`. Page and CSV are adapted from TVmaze's
+CC BY-SA 4.0 data, so both are CC BY-SA 4.0; LezWatch.TV and TVmaze are named
+and linked in the text as well as in the footer. `/press/` gives a one-paragraph
+description, key facts (price, platform, no data collected, sources), the
+findings headline, the contact address, and the app icon and App Store
+screenshots from this repository. Both are in the sitemap and linked from the
+footer of every generated page.
+
+**Frozen, not nightly.** `qtv_pipeline.findings compute` writes
+`pipeline/data/findings_finales.json` from a snapshot and a directory of TVmaze
+episode lists; the site build renders the pages from that file. Published
+claims change only when the owner regenerates it, and a test pins the approved
+figures so a regeneration is a visible change. The templates hold no typed
+number (a test fails on any digit outside a template expression).
+
+**Never on the page.** No character, show or episode name, and no list of
+deaths (one would be a spoiler list); the data file holds counts only and a
+test checks every string in it. Not the non-binary result, which may reflect
+recording practice and is sensitive. Not the streaming-versus-broadcast death
+rate, which showed no clear difference.
+
+**Reversible.** Yes: drop the two templates, `findings.py`, the data file, the
+two sitemap entries and the footer links.

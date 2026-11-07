@@ -129,10 +129,16 @@ def test_files_and_sitemap(doc, tmp_path):
     ]
     entries = htmlprobe.sitemap(_raw(tmp_path, "sitemap.xml"))
     # The home page (site_index.py) first, then every page built here,
-    # the airing-now page among them (DECISIONS 0033).
+    # the airing-now page among them (DECISIONS 0033), and the findings and
+    # press pages site_index.py always publishes (DECISIONS 0042).
     assert entries["loc"][0] == f"{BASE}/"
     assert sorted(entries["loc"][1:]) == sorted(
-        [f"{BASE}/airing/", *(p.canonical for p in pages.values())]
+        [
+            f"{BASE}/airing/",
+            f"{BASE}/findings/finales/",
+            f"{BASE}/press/",
+            *(p.canonical for p in pages.values()),
+        ]
     )
     assert (tmp_path / "airing" / "index.html").is_file()
     assert set(entries["lastmod"]) == {doc["generated_at"][:10]}
@@ -737,10 +743,11 @@ def test_a_few_hundred_pages_from_the_real_snapshot(tmp_path):
     assert 300 <= len(want) <= show_pages.DEFAULT_LIMIT  # a few hundred, not all 2,287
     assert len(pages) == len(want) + 1
     assert len({p.title for p in pages.values()}) == len(pages)
-    # The home page, the index, the airing-now page (DECISIONS 0033) and the
-    # hand-picked pages only (DECISIONS 0028).
+    # The home page, the index, the airing-now page (DECISIONS 0033), the
+    # findings and press pages (DECISIONS 0042) and the hand-picked pages only
+    # (DECISIONS 0028).
     locs = htmlprobe.sitemap(_raw(tmp_path, "sitemap.xml"))["loc"]
-    assert len(locs) == len(pinned_built) + 3 < len(pages)
+    assert len(locs) == len(pinned_built) + 5 < len(pages)
     held = [p for rel, p in pages.items() if rel != "shows/index.html" and p.canonical not in locs]
     assert len(held) == len(pages) - 1 - len(pinned_built)
     for page in held:

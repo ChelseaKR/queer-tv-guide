@@ -162,9 +162,9 @@ def test_long_titles_are_fitted_not_overrun():
     assert len(show_pages.show_title(name)) <= 60
     assert len(show_pages.show_description(name)) <= 155
     assert show_pages.show_title(name).endswith("…")
-    assert show_pages.show_title("Short") == "Do any queer characters die in Short? Spoiler-free"
-    assert show_pages.show_title("Twenty Character Name") == (
-        "Does she die in Twenty Character Name? Spoiler-free"
+    assert show_pages.show_title("Short") == "LGBTQ characters in Short. Do any die? No spoilers"
+    assert show_pages.show_title("A Show Title Of Thirty Letters") == (
+        "A Show Title Of Thirty Letters LGBTQ characters, no spoilers"
     )
 
 
@@ -334,7 +334,7 @@ def test_negative_control_a_leaking_title_is_caught(doc, tmp_path):
     page = pages["shows/the-cartographers/index.html"]
     answers = _answers(doc, "the-cartographers")
     raw = _raw(tmp_path, "shows/the-cartographers/index.html")
-    bad_raw = raw.replace("<title>Do ", "<title>" + answers[0] + " Do ")
+    bad_raw = raw.replace("<title>2 ", "<title>" + answers[0] + " 2 ")
     assert bad_raw != raw
     assert htmlprobe.answer_leaks(page, answers) == []
     assert htmlprobe.answer_leaks(htmlprobe.parse(bad_raw), answers) == [answers[0]]
@@ -789,12 +789,12 @@ def test_a_few_hundred_pages_from_the_real_snapshot(tmp_path):
 def test_title_and_description_ask_the_question_and_name_the_characters(doc, tmp_path):
     page = _build(doc, tmp_path)["shows/the-cartographers/index.html"]
     # The count is of listed characters, never of deaths (DECISIONS 0027).
-    assert page.title == "Do any of the 2 queer characters in The Cartographers die?"
+    assert page.title == "2 LGBTQ characters in The Cartographers. Do any die?"
     # Regulars first, then recurring: the order never depends on a death.
     # Each name carries the identity the page's character list shows.
     assert page.description == (
         "LezWatch.TV lists 2 LGBTQ characters in The Cartographers: Odile Brandt "
-        "(lesbian) and Thea Marsh (queer). Who dies, if anyone, is behind a spoiler warning."
+        "(lesbian) and Thea Marsh (queer). Whether anyone dies stays hidden until you tap."
     )
     assert "Do any queer characters die in The Cartographers?" in page.outside
     assert "Queer women, non-binary and trans characters in The Cartographers" in page.outside
@@ -824,23 +824,27 @@ def test_description_falls_back_to_fewer_names():
     assert len(text) <= 155
     # A labelled name is kept before more bare names are added.
     assert text == (
-        "12 LGBTQ characters in A Fairly Long Show Title, including Alexandra Longname "
-        "(lesbian). Who dies, if anyone, is behind a spoiler warning."
+        "LezWatch.TV lists 12 LGBTQ characters in A Fairly Long Show Title, including Alexandra Longname "
+        "(lesbian). Whether anyone dies stays hidden until you tap."
     )
     assert show_pages.show_description("Solo", ["Ana"], 1) == (
         "LezWatch.TV lists one LGBTQ character in Solo: Ana. "
-        "Who dies, if anyone, is behind a spoiler warning."
+        "Whether anyone dies stays hidden until you tap. Names and identities from LezWatch.TV."
     )
     assert show_pages.show_description("Bare") == (
-        "Do any queer characters die in Bare? Who dies, if anyone, is behind a spoiler warning."
+        "LGBTQ characters in Bare: does anyone die? Whether anyone dies stays hidden until you "
+        "tap. Names and identities from LezWatch.TV."
     )
 
 
 def test_title_counts_listed_characters_and_falls_back():
-    assert show_pages.show_title("Short", 12) == "Do any of the 12 queer characters in Short die?"
+    assert (
+        show_pages.show_title("Short", 12)
+        == "12 LGBTQ characters in Short. Do any die? No spoilers"
+    )
     # One character, or a title too long for the count, keeps the 0024 forms.
     assert show_pages.show_title("Short", 1) == show_pages.show_title("Short")
-    long_name = "Orange is the New Black"
+    long_name = "Adventure Time: Fionna and Cake, the Series"
     assert show_pages.show_title(long_name, 23) == show_pages.show_title(long_name)
 
 

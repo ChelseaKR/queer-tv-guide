@@ -31,6 +31,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -55,6 +56,7 @@ import com.chelseakr.queertvguide.core.Presentation
 import com.chelseakr.queertvguide.core.Sharing
 import com.chelseakr.queertvguide.core.Show
 import com.chelseakr.queertvguide.core.Snapshot
+import com.chelseakr.queertvguide.core.SoFar
 
 /** A readable column on wide screens, instead of a phone layout stretched edge to edge. */
 private val READABLE_WIDTH = 720.dp
@@ -175,6 +177,13 @@ fun ShowScreen(model: AppModel, state: AppModel.State, id: String, canGoBack: Bo
                     deaths.notes.forEach { Text(it, style = MaterialTheme.typography.bodyMedium, color = subdued) }
                 }
             }
+        }
+
+        // "Has anyone died so far?" (DECISIONS 0044): only for a snapshot that places deaths in
+        // episodes (DECISIONS 0041). Whether it shows depends on the snapshot alone, never on this
+        // show, so its presence gives nothing away. `key` gives each show its own remembered place.
+        if (SoFar.isAvailable(snapshot)) {
+            key(show.id) { SoFarSection(model.watchPositions, show, snapshot.charactersInShow(show.id)) }
         }
 
         // Death-revealing tropes ("Bury Your Queers", "Happiness then Tragedy", "None!") are left out

@@ -19,6 +19,10 @@ consumer of the published snapshot, would notice.
   tap. Each answer says how precisely a death is placed (an episode, one of
   two episodes aired the same day, a season, or not placeable) and never
   shows an unplaced death as none. Where you are is kept on the device only.
+- Android, for 1.1: the same "Has anyone died so far?" on each show screen
+  (DECISIONS 0044), with the same words as on iPhone for every kind of
+  placement. Where you are is kept on the phone only, left out of Google's
+  cloud backup like favorites.
 - A dated findings page, `/findings/finales/`: of queer regulars who die
   and whose death can be placed in an episode, 35% die in a season finale,
   against 8% of episodes; deaths are spread evenly across a show's seasons;

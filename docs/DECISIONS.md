@@ -1065,3 +1065,47 @@ widen" test is met; opening them early is Chelsea's call. Also not changed:
 the airing page, the pins, the app.
 
 **Reversible.** Yes: `_facts` without `today`, and the old opening clause.
+
+## 0040 — The apps take the website's aubergine accent, with coral as an edge (2026-11-06)
+
+**Status: proposed (agent, 2026-11-06), for 1.0.1. Chelsea chose this on
+2026-11-06 (option a): keep blue through App Review, then move the apps to
+the website's look. 1.0.0 shipped blue; this changes no store copy.**
+
+**Evidence.** queerframe.app's identity (0038, PR #121) is the app icon's
+aubergine and coral: links #6A2C9C in light and #D9B8FF in dark, coral only
+for bars and edges. The apps still used the blue chosen for contrast in
+`AccessibleStyle.swift` (#0057B3 / #73B8FF), so the site and the app it
+sells looked like two products. The app parity audit (2026-11-05) ranked
+matching the site's look as QF's fourth gap, and the 4.3(a) template risk
+says each app should take its own site's palette rather than a shared one.
+
+**Decision.** One accent pair everywhere the apps draw one: the iOS tint
+(`accessibleAccent`), the iOS widget (`WidgetColors.accent`), the Android
+theme (`QfColors`, used as Material `primary`) and the Android widget.
+Light #6A2C9C (8.6:1 on white, 6.9:1 on the darkest Android surface),
+dark #D9B8FF (12.3:1 on black, 7.7:1 on the lightest dark surface). On an
+accent fill, iOS `.borderedProminent` labels and Android `onPrimary` are
+white in light and #1D1027 in dark, because white on the lilac is only
+1.7:1 (the old blue's white label was 2.1:1). Android's containers (the
+selected tab's indicator, the Reveal button) become lilac #ECE3F4 with
+#2B1740 in light and #3A2650 with #F3ECF7 in dark. Coral (#FF6F4F light,
+#FF8A6B dark) appears once per app, as a 2-point edge around the closed
+Reveal control, as the site frames its sealed answer. It is never text: it
+is under 3:1 on white.
+
+**Tests.** `tests/test_app_accent_contrast.py` (in `make policy`) reads the
+colors from the Swift and Kotlin sources and asserts the same pair on all
+four surfaces with no blue left, 4.5:1 for every accent text, link and
+selected-tab pair and every label on a fill in both schemes, and coral only
+in a stroke or border. Each checker has a negative control that sabotages
+the real source. The iOS accessibility audit (`make a11y`) still measures
+the drawn screens.
+
+**Not changed.** The app icon, backgrounds, text and subdued colors, the
+spoiler rule (the edge is drawn on the closed button; nothing of the answer
+is built until the tap), layout, App Store and Play listing text. No new
+in-app mark: the apps had none to update. The App Store and Play
+screenshots show blue until they are re-shot (an owner step).
+
+**Reversible.** Yes: the four color definitions and the two edge modifiers.

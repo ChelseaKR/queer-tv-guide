@@ -5,15 +5,41 @@ import UIKit
 /// (AccessibilityAuditTests) flagged the system defaults on this app's
 /// backgrounds: `.secondary` text is ~3.4:1 on white and the default blue
 /// accent ~4.0:1, both under WCAG AA's 4.5:1 for body-size text.
+///
+/// The accent is queerframe.app's aubergine pair (DECISIONS 0040), and coral
+/// is only ever an edge, never text. `tests/test_app_accent_contrast.py`
+/// reads these hex values and holds every text use to 4.5:1 in both schemes.
 extension ShapeStyle where Self == Color {
-    /// The app-wide tint (links, buttons, navigation rows): a darker blue in
-    /// light mode (~7:1 on white) and a lighter one in dark mode (~9:1 on
-    /// black).
+    /// The app-wide tint (links, buttons, navigation rows, the selected tab):
+    /// aubergine #6A2C9C in light mode (8.6:1 on white, 7.7:1 on the grouped
+    /// gray) and lilac #D9B8FF in dark mode (12.3:1 on black, 8.1:1 on the
+    /// #2C2C2E cell).
     static var accessibleAccent: Color {
         Color(uiColor: UIColor { traits in
             traits.userInterfaceStyle == .dark
-                ? UIColor(red: 0.45, green: 0.72, blue: 1.0, alpha: 1)
-                : UIColor(red: 0.0, green: 0.34, blue: 0.70, alpha: 1)
+                ? UIColor(rgb: 0xD9B8FF)
+                : UIColor(rgb: 0x6A2C9C)
+        })
+    }
+
+    /// Text on an accent fill (`.borderedProminent`): white on aubergine
+    /// (8.6:1); in dark mode the lilac fill is too light for white (1.7:1),
+    /// so the label is the site's dark aubergine #1D1027 (10.6:1).
+    static var onAccent: Color {
+        Color(uiColor: UIColor { traits in
+            traits.userInterfaceStyle == .dark
+                ? UIColor(rgb: 0x1D1027)
+                : UIColor(rgb: 0xFFFFFF)
+        })
+    }
+
+    /// Coral, for an edge only (the Reveal control's outline), never for
+    /// text: it is under 3:1 on white.
+    static var accentEdge: Color {
+        Color(uiColor: UIColor { traits in
+            traits.userInterfaceStyle == .dark
+                ? UIColor(rgb: 0xFF8A6B)
+                : UIColor(rgb: 0xFF6F4F)
         })
     }
 
@@ -26,6 +52,19 @@ extension ShapeStyle where Self == Color {
                 ? UIColor(white: 0.78, alpha: 1)
                 : UIColor(white: 0.25, alpha: 1)
         })
+    }
+}
+
+extension UIColor {
+    /// A color from a 0xRRGGBB literal, so the palette reads as the hex the
+    /// website and the Android theme use.
+    convenience init(rgb: UInt32) {
+        self.init(
+            red: CGFloat((rgb >> 16) & 0xFF) / 255,
+            green: CGFloat((rgb >> 8) & 0xFF) / 255,
+            blue: CGFloat(rgb & 0xFF) / 255,
+            alpha: 1
+        )
     }
 }
 

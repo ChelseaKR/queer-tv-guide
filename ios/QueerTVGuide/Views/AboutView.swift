@@ -15,7 +15,7 @@ struct AboutView: View {
                     // DECISIONS 0007: say plainly who serves that file and
                     // what a web server sees.
                     Text("That file is served by GitHub Pages, which, like any web server, sees your IP address and logs it for security. The developer never sees that log.")
-                    Text("Favorites are stored only on this device and are never sent anywhere.")
+                    Text("Favorites, and where you are in each show, are stored only on this device and are never sent anywhere.")
                     Button("Privacy policy") { openURL(PrivacyPolicy.url) }
                         .accessibilityHint("Opens in Safari")
                     Button("Support") { openURL(SupportPage.url) }

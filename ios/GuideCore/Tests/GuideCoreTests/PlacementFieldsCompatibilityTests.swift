@@ -2,21 +2,48 @@ import XCTest
 @testable import GuideCore
 
 /// DECISIONS 0041 adds optional fields to the v1 snapshot: `episode_counts` on a
-/// show, `placements` on each death date and `coverage.placements`. The app as
-/// shipped in 1.0.0 must read such a file exactly as it read the file without
-/// them. `Snapshot.swift` and `SnapshotDecoder.swift` are unchanged since the
-/// v1.0.0 tag, so this decoder is the 1.0.0 decoder. The fixture is the v1
-/// fixture plus only the new fields (pipeline/tests/test_snapshot_placements_contract.py
-/// checks that, and that it validates against the schema).
+/// show, `placements` on each death date and `coverage.placements`. The 1.0.0
+/// decoder ignored them (this test proved it while `Snapshot.swift` was
+/// unchanged since the v1.0.0 tag; Android's PlacementFieldsCompatibilityTest
+/// still does for its decoder). From 1.1 GuideCore reads them for "so far"
+/// (DECISIONS 0043), so this test now checks both directions: a file without
+/// them decodes with every new field `nil` (not computed), and a file with
+/// them decodes to the same snapshot apart from those fields. The fixture is
+/// the v1 fixture plus only the new fields
+/// (pipeline/tests/test_snapshot_placements_contract.py checks that, and that
+/// it validates against the schema).
 final class PlacementFieldsCompatibilityTests: XCTestCase {
     private static let placementsFixtureURL: URL = Repo.iosRoot
         .appendingPathComponent("GuideCore/Tests/Fixtures/snapshot.placements.fixture.json")
 
-    func testTheNewFieldsDecodeToTheSameSnapshot() throws {
+    func testAFileWithoutTheFieldsDecodesWithNothingComputed() throws {
+        let without = try Repo.fixture()
+        XCTAssertNil(without.coverage.placements)
+        XCTAssertTrue(without.shows.allSatisfy { $0.episodeCounts == nil })
+        XCTAssertTrue(without.characters.flatMap(\.death.dates).allSatisfy { $0.placements == nil })
+        XCTAssertFalse(SoFar.isAvailable(in: without))
+    }
+
+    func testTheNewFieldsDecodeToTheSameSnapshotApartFromThem() throws {
         let withFields = try SnapshotDecoder().decode(try Data(contentsOf: Self.placementsFixtureURL))
         let without = try Repo.fixture()
-        XCTAssertEqual(withFields, without)
         XCTAssertEqual(withFields.schemaVersion, "1")
+        XCTAssertEqual(withFields.shows.map(\.id), without.shows.map(\.id))
+        XCTAssertEqual(withFields.shows.map(\.title), without.shows.map(\.title))
+        XCTAssertEqual(withFields.shows.map(\.schedule), without.shows.map(\.schedule))
+        XCTAssertEqual(withFields.characters.map(\.id), without.characters.map(\.id))
+        XCTAssertEqual(withFields.characters.map(\.death.dates.count), without.characters.map(\.death.dates.count))
+        XCTAssertEqual(withFields.characters.flatMap(\.death.dates).map(\.date), without.characters.flatMap(\.death.dates).map(\.date))
+        XCTAssertEqual(withFields.attribution, without.attribution)
+        XCTAssertEqual(withFields.coverage.fields, without.coverage.fields)
+
+        XCTAssertEqual(withFields.coverage.placements?.deathEvents, 1)
+        XCTAssertTrue(SoFar.isAvailable(in: withFields))
+        let cartographers = try XCTUnwrap(withFields.show(id: "lwtv:show:102"))
+        XCTAssertEqual(cartographers.episodeCounts, [SeasonEpisodeCount(season: 1, episodes: 10), SeasonEpisodeCount(season: 2, episodes: 10), SeasonEpisodeCount(season: 3, episodes: 6)])
+        XCTAssertNil(try XCTUnwrap(withFields.show(id: "lwtv:show:103")).episodeCounts, "null means no list, not zero episodes")
+        let odile = try XCTUnwrap(withFields.character(id: "lwtv:character:203"))
+        XCTAssertEqual(odile.death.dates.first?.placements, [DeathPlacement(showID: "lwtv:show:102", precision: .episode, reason: "exact_date", season: 2, episodes: [7], airdate: nil)])
     }
 
     func testTheFixtureReallyCarriesTheNewFields() throws {
@@ -50,6 +77,23 @@ final class PlacementFieldsCompatibilityTests: XCTestCase {
             death["dates"] = dates
             character["death"] = death
         }
-        XCTAssertEqual(try SnapshotDecoder().decode(data), try Repo.fixture())
+        let decoded = try SnapshotDecoder().decode(data)
+        let precisionsRead = try XCTUnwrap(decoded.characters[2].death.dates[0].placements).map(\.precision)
+        XCTAssertEqual(precisionsRead, [.episode, .episodePair, .special, .season, .unplaced, .otherShow, .unplaced])
+        XCTAssertEqual(decoded.characters[2].death.dates[0].placements?.last?.showID, nil)
+    }
+
+    /// A precision a newer pipeline adds must not make the whole file
+    /// unreadable: it reads as unrecognized, which "so far" treats as unplaced.
+    func testAnUnknownPrecisionDecodesAsUnrecognized() throws {
+        let data = try JSONEdit.editCharacter(try Data(contentsOf: Self.placementsFixtureURL), index: 2) { character in
+            var death = character["death"] as! [String: Any]
+            var dates = death["dates"] as! [[String: Any]]
+            dates[0]["placements"] = [["show_id": "lwtv:show:102", "precision": "scene", "reason": "new_rule", "season": 2, "episodes": [7], "airdate": NSNull()]]
+            death["dates"] = dates
+            character["death"] = death
+        }
+        let decoded = try SnapshotDecoder().decode(data)
+        XCTAssertEqual(decoded.characters[2].death.dates[0].placements?.first?.precision, .unrecognized("scene"))
     }
 }

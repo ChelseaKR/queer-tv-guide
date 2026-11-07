@@ -17,6 +17,7 @@ struct ShowDetailView: View {
                         worthItDetails(show)
                         schedule(show, snapshot: snapshot)
                         doAnyDie(show, snapshot: snapshot)
+                        soFar(show, snapshot: snapshot)
                         tropesAndTriggers(show)
                         characters(show, snapshot: snapshot)
                         similarShows(show, snapshot: snapshot)
@@ -155,6 +156,18 @@ struct ShowDetailView: View {
         }
     }
 
+    /// "Has anyone died so far?" (DECISIONS 0043): only for a snapshot that
+    /// places deaths in episodes (DECISIONS 0041). Whether it shows depends
+    /// on the snapshot alone, never on this show, so its presence gives
+    /// nothing away. `.id` gives each show its own remembered place.
+    @ViewBuilder
+    private func soFar(_ show: Show, snapshot: Snapshot) -> some View {
+        if SoFar.isAvailable(in: snapshot) {
+            SoFarSection(show: show, cast: snapshot.characters(inShow: show.id))
+                .id(show.id)
+        }
+    }
+
     /// Death-revealing trope tags ("Bury Your Queers", "Happiness then
     /// Tragedy", "None!"; `Presentation.deathSpoilerTropeSlugs`) are left
     /// out here and stated inside the reveal above instead. They are not
@@ -270,6 +283,10 @@ struct ShowDetailView: View {
                         .foregroundStyle(.subdued)
                         .multilineTextAlignment(.leading)
                 }
+                // A full-size target: the audit reported these as "Hit area
+                // is too small" once a test scrolled them into view.
+                .frame(minHeight: 44, alignment: .leading)
+                .contentShape(Rectangle())
             }
             DataStatusFooter(snapshot: snapshot)
         }

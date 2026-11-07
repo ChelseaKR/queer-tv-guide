@@ -184,6 +184,9 @@ INDEX_MIN_LISTED: int | None = None
 ROBOTS_HOLD = "noindex,follow"
 # The airing-now page (airing_page.py, DECISIONS 0033), built with the show pages.
 AIRING_PATH = "airing/index.html"
+# Pages site_index.py always publishes beside the home page, so the sitemap
+# always lists them (DECISIONS 0042): the findings page and the press page.
+ALWAYS_LISTED = ("findings/finales/", "press/")
 RELATED_LIMIT = 4
 # A chosen show whose slug is unsafe or repeated is left out and logged; more
 # than this share of them left out refuses the build (``_drop_bad_slugs``).
@@ -1333,13 +1336,15 @@ def render_sitemap(
     airing: bool = False,
 ) -> str:
     """The home page (site_index.py, always published) first, the shows
-    index, the airing-now page when ``airing`` (DECISIONS 0033), then each
-    show in ``indexed`` (``indexed_show_ids``; None means every show) in the
-    published order."""
+    index, the airing-now page when ``airing`` (DECISIONS 0033), the findings
+    and press pages (site_index.py, always published; DECISIONS 0042), then
+    each show in ``indexed`` (``indexed_show_ids``; None means every show) in
+    the published order."""
     urls = [
         f"{base_url}/",
         f"{base_url}/shows/",
         *([f"{base_url}/airing/"] if airing else []),
+        *(f"{base_url}/{path}" for path in ALWAYS_LISTED),
         *(f"{base_url}/shows/{s['slug']}/" for s in shows if indexed is None or s["id"] in indexed),
     ]
     if len(urls) > SITEMAP_MAX_URLS:
@@ -1407,7 +1412,11 @@ def index_problems(files: dict[str, str], *, base_url: str) -> list[str]:
     problems: list[str] = []
     if len(listed) != len(locs):
         problems.append("the sitemap lists a URL twice")
-    for required in (f"{base_url}/", f"{base_url}/shows/"):
+    for required in (
+        f"{base_url}/",
+        f"{base_url}/shows/",
+        *(f"{base_url}/{path}" for path in ALWAYS_LISTED),
+    ):
         if required not in listed:
             problems.append(f"the sitemap does not list {required}")
     problems += _airing_problems(files, listed, base_url)

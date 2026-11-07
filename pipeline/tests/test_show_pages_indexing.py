@@ -65,6 +65,8 @@ def test_only_the_pinned_pages_are_in_the_sitemap(tmp_path):
         f"{BASE}/",
         f"{BASE}/shows/",
         f"{BASE}/airing/",
+        f"{BASE}/findings/finales/",
+        f"{BASE}/press/",
         *map(_url, pinned_slugs),
     ]
     assert show_pages.index_problems(files, base_url=BASE) == []

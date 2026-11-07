@@ -1,0 +1,40 @@
+{% extends "base.html.j2" %}
+{#- DECISIONS 0042. Facts for anyone writing about the app. Images are the
+    app icon and App Store screenshots from this repository, served from this
+    site: no posters, network logos or cast photos. No figure is typed here;
+    the findings line comes from findings.view. #}
+{% block head_extra %}
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="{{ site_name }}">
+<meta property="og:title" content="{{ title }}">
+<meta property="og:description" content="{{ description }}">
+<meta property="og:url" content="{{ canonical }}">
+<meta property="og:locale" content="en_US">
+<meta name="twitter:card" content="summary">
+{%- endblock %}
+{% block content %}
+<h1>{{ site_name }} press kit</h1>
+<p class="lede">{{ site_name }} is a spoiler-free guide to TV shows with queer women, non-binary and trans characters. For each show it answers the question many viewers ask before they start watching, "Do any queer characters die?", and keeps that answer closed until the reader chooses to open it. It also gives LezWatch.TV's worth-it verdict and ratings, tropes, where to stream a show and when its next episode airs. The iPhone app and this website are built from the same public data, from LezWatch.TV and TVmaze, and neither one collects any data about the people who use it.</p>
+
+<h2 id="facts">Key facts</h2>
+<dl class="facts">
+<dt>Name</dt><dd>{{ site_name }}</dd>
+<dt>App</dt><dd>{{ platform }}, {{ price }}, one-time purchase. No subscription, no in-app purchases, no ads.{% if app_store_live %} <a href="{{ app_store_url }}">On the App Store</a>.{% else %} Coming soon to the App Store.{% endif %}</dd>
+<dt>Website</dt><dd><a href="{{ base_url }}/">{{ base_url }}</a>, free</dd>
+<dt>Data collected</dt><dd>None. The app has no account, no analytics, no crash reporting and no third-party code; favorites stay on the phone. This website has no analytics and no cookies. <a href="{{ base_url }}/privacy.html">Privacy policy</a>.</dd>
+<dt>Data sources</dt><dd>Shows and characters: <a href="{{ lezwatch_url }}">LezWatch.TV</a>, a volunteer-run database. Episodes and schedules: <a href="{{ tvmaze_url }}">TVmaze</a>, under <a href="{{ licence.snapshot.url }}">{{ licence.snapshot.name }}</a>. Neither endorses {{ site_name }}.</dd>
+<dt>Open data</dt><dd>The combined data file is published under {{ licence.snapshot.name }}: <a href="{{ base_url }}/data/">data files</a>.</dd>
+<dt>Contact</dt><dd><a href="mailto:{{ contact }}">{{ contact }}</a></dd>
+</dl>
+
+<h2 id="findings">Findings</h2>
+<p><a href="{{ findings_url }}">{{ headline }}</a>. Only {{ v.regular.baseline }} of those shows' episodes are finales ({{ v.regular.in_position }} of {{ v.regular.deaths }} deaths placed in an episode, data as of {{ v.as_of }}). The page states its method, definitions and caveats, names no show or character, and is free to reuse under {{ licence.snapshot.name }}.</p>
+
+<h2 id="images">Images</h2>
+<p>The app icon and screenshots from the app may be used to write about {{ site_name }}. Show titles in the screenshots belong to their owners.</p>
+<ul class="press-images">
+{%- for img in images %}
+<li><a href="{{ img.src }}"><img src="{{ img.src }}" alt="{{ img.alt }}" width="{{ img.width }}" height="{{ img.height }}" loading="lazy"></a></li>
+{%- endfor %}
+</ul>
+{% endblock %}

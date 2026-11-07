@@ -1,0 +1,96 @@
+{% extends "base.html.j2" %}
+{#- DECISIONS 0042. Every figure here comes from ``v`` (findings.view, built
+    from pipeline/data/findings_finales.json). Do not type a number into this
+    template: tests/test_findings.py fails on any digit outside a {{ }}. No
+    character, show or episode is named, and nothing here is behind a reveal
+    because nothing here is a spoiler for any one show. #}
+{% block head_extra %}
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="{{ site_name }}">
+<meta property="og:title" content="{{ title }}">
+<meta property="og:description" content="{{ description }}">
+<meta property="og:url" content="{{ canonical }}">
+<meta property="og:locale" content="en_US">
+<meta name="twitter:card" content="summary">
+{%- endblock %}
+{% block content %}
+<h1>{{ headline }}</h1>
+<p class="small">Data as of <time datetime="{{ v.as_of_iso }}">{{ v.as_of }}</time>. Analysis by {{ site_name }} of <a href="{{ lezwatch_url }}">LezWatch.TV</a>'s character data and <a href="{{ tvmaze_url }}">TVmaze</a>'s episode dates.</p>
+<p class="lede">When a queer character who is a regular on a TV show dies, it happens in a season finale {{ v.regular.share }} of the time ({{ v.regular.in_position }} of {{ v.regular.deaths }} deaths we could place in an episode). Only {{ v.regular.baseline }} of those shows' episodes are season finales, so that is about {{ v.regular.times }} times what chance would give. Guest characters die in a finale {{ v.guest.share }} of the time, close to the {{ v.guest.baseline }} chance would give.</p>
+<p>This page names no show, no character and no episode, so it spoils nothing. It counts deaths; it does not list them.</p>
+
+<h2 id="finales">Season finales, by role</h2>
+<p>The share of placed deaths that fall in a season finale, and the share you would expect if each death had landed on a random episode of its own show.</p>
+<div class="table-wrap">
+<table>
+<caption>Deaths in a season finale, by the character's role in the show</caption>
+<thead><tr><th scope="col">Role</th><th scope="col">Deaths placed</th><th scope="col">In a season finale</th><th scope="col">Share</th><th scope="col">Expected by chance</th></tr></thead>
+<tbody>
+{%- for r in v.roles %}
+<tr><th scope="row">{{ r.label }}</th><td>{{ r.deaths }}</td><td>{{ r.in_position }}</td><td>{{ r.share }}</td><td>{{ r.baseline }}</td></tr>
+{%- endfor %}
+</tbody>
+</table>
+</div>
+<p>For regulars, the {{ v.regular.ci_level }} confidence interval is {{ v.regular.ci_low }} to {{ v.regular.ci_high }}. No single show accounts for more than {{ v.most_one_show }} of the finale deaths.</p>
+
+<h3 id="holds">It holds across eras and release models</h3>
+<div class="table-wrap">
+<table>
+<caption>Regulars: deaths in a season finale, by when they died and how the show was released</caption>
+<thead><tr><th scope="col">Group</th><th scope="col">Deaths placed</th><th scope="col">In a season finale</th><th scope="col">Share</th><th scope="col">Expected by chance</th></tr></thead>
+<tbody>
+{%- for r in v.regular_splits %}
+<tr><th scope="row">{{ r.label }}</th><td>{{ r.deaths }}</td><td>{{ r.in_position }}</td><td>{{ r.share }}</td><td>{{ r.baseline }}</td></tr>
+{%- endfor %}
+</tbody>
+</table>
+</div>
+<p class="small">Streaming here means a show TVmaze lists on a streaming service and no TV network. The streaming row rests on few deaths. Many streaming deaths can't be placed, because a whole season came out on one day; see the caveats below.</p>
+
+<h2 id="seasons">Deaths are spread evenly across a show's seasons</h2>
+<p>Deaths are not bunched at the start or the end of a show's run. The first season holds {{ v.first_season.share }} of placed deaths and {{ v.first_season.episodes }} of the episodes. The pattern is within a season, not across the run.</p>
+<div class="table-wrap">
+<table>
+<caption>Placed deaths by season of the show, against that season's share of episodes</caption>
+<thead><tr><th scope="col">Season</th><th scope="col">Deaths placed</th><th scope="col">Share of deaths</th><th scope="col">Share of episodes</th></tr></thead>
+<tbody>
+{%- for r in v.order %}
+<tr><th scope="row">{{ r.label }}</th><td>{{ r.deaths }}</td><td>{{ r.share }}</td><td>{{ r.episodes }}</td></tr>
+{%- endfor %}
+</tbody>
+</table>
+</div>
+
+<h2 id="series-finales">Series finales, a smaller sample</h2>
+<p>In shows that have ended, {{ v.series.share }} of placed deaths ({{ v.series.in_position }} of {{ v.series.deaths }}) fall in the series finale, against {{ v.series.baseline }} expected by chance: about {{ v.series.times }} times as often. That rests on few deaths, so read it as a hint, not a finding.</p>
+
+<h2 id="method">How we counted</h2>
+<dl class="how">
+<dt>A death</dt>
+<dd>A date in LezWatch.TV's death-date field for a character, counted in the show whose years for that character include the year of the death. A character who later comes back still counts. The snapshot holds {{ v.death_events }} such deaths.</dd>
+<dt>Placed in an episode</dt>
+<dd>We matched each death date to TVmaze's episode air dates. A death is placed only when exactly one episode of that show aired on that date, or, failing that, exactly one within a day. When two or more aired the same day (a double bill, or a season released all at once), or none did, the death is left out. That leaves {{ v.placed }} deaths on {{ v.placed_shows }} shows. Specials are left out.</dd>
+<dt>A regular</dt>
+<dd>LezWatch.TV's role for the character in that show: regular, recurring or guest.</dd>
+<dt>A season finale</dt>
+<dd>The highest-numbered regular episode TVmaze lists for that season. A series finale is the last episode of the last season of a show TVmaze marks as ended.</dd>
+<dt>Expected by chance</dt>
+<dd>For each death, the chance that a random episode of its own show is a season finale (its number of seasons over its number of episodes), averaged over the deaths in the group. Long seasons make a finale rarer; short ones make it more common.</dd>
+<dt>Dates</dt>
+<dd>LezWatch.TV data from the {{ site_name }} snapshot of {{ v.as_of }}; TVmaze episode lists read on {{ v.episodes_on }}. These figures are fixed as of those dates and are not updated with each nightly build.</dd>
+</dl>
+
+<h2 id="caveats">Caveats</h2>
+<ul>
+<li>LezWatch.TV is a volunteer-run database. It covers more US shows than any other country, and it is more complete for the shows its community watched. Older shows were filled in unevenly.</li>
+<li>LezWatch.TV dates a death to the day the episode aired. It may record the episode where a death is revealed rather than the one where it happens, and an air date can now and then match the wrong episode by chance.</li>
+<li>Only deaths we could place are counted. Most deaths in seasons released all at once can't be placed, so streaming shows are under-represented.</li>
+<li>Guest deaths include victims of the week on crime and medical shows, which is why the figures are split by role.</li>
+<li>A season still airing may not have its finale listed yet, so its last listed episode is counted as its finale.</li>
+</ul>
+
+<h2 id="data">The data</h2>
+<p>The table behind this page, counts only, is a CSV file: <a href="{{ csv_url }}">finales.csv</a>. It names no show or character and dates no death. This page and that file are adapted from TVmaze data and published under <a href="{{ cc.url }}">{{ cc.name }}</a>; if you reuse them, credit LezWatch.TV, TVmaze and {{ site_name }}, and share your version under the same license.</p>
+<p>Want to know about one show without spoilers for the rest? <a href="{{ base_url }}/">Look it up on {{ site_name }}</a>; the answer stays closed until you open it.</p>
+{% endblock %}

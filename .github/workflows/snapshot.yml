@@ -203,7 +203,11 @@ jobs:
           # into the show pages; data/index.html describes the file. Both
           # carry its CC BY-SA 4.0 license and every source credit with
           # links (qtv_pipeline/site_index.py, DECISIONS 0026, tested).
-          uv run python -m qtv_pipeline.site_index out/snapshot.v1.json site/index.html
+          # It also writes the dated findings page, its CSV, and the press
+          # page with the app icon and screenshots (DECISIONS 0042); with
+          # the switch on, the press page links to the App Store.
+          uv run python -m qtv_pipeline.site_index out/snapshot.v1.json site/index.html \
+            "$APP_STORE_LIVE"
           # Off (the default): changes nothing. On: Safari's Smart App Banner
           # on every page and Apple's App Store badge in place of the home
           # page's "coming soon" line

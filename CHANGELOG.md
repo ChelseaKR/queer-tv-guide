@@ -13,6 +13,16 @@ consumer of the published snapshot, would notice.
 
 ### Added
 
+- A dated findings page, `/findings/finales/`: of queer regulars who die
+  and whose death can be placed in an episode, 35% die in a season finale,
+  against 8% of episodes; deaths are spread evenly across a show's seasons;
+  series finales are a smaller, supporting line (DECISIONS 0042). It names
+  no show or character, states its method and caveats, credits LezWatch.TV
+  and TVmaze, and offers a counts-only CSV under CC BY-SA 4.0.
+- A press page, `/press/`: what Queer Frame is, price, platform, that it
+  collects no data, its sources, the findings headline, the contact address,
+  and the app icon and screenshots. Both pages are linked from the footer
+  and listed in the sitemap.
 - The snapshot places each recorded death in a season and, where the air
   date allows, an episode (DECISIONS 0041): `placements` on each
   `death.dates[]` entry, `episode_counts` on each show, and

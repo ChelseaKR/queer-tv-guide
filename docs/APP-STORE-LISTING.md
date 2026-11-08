@@ -23,7 +23,7 @@ measured with Python's `len()` on the JSON on 2026-11-07.
 | Secondary category | | Reference | |
 | Price | | USD 4.99, paid up front. No in-app purchase, no subscription (DECISIONS 0003, 0011, confirmed in 0015). | |
 | Availability | | United States only (DECISIONS 0015), so no Digital Services Act trader declaration. | |
-| Version | | 1.0.0, build 1 (DECISIONS 0015). | |
+| Version | | 1.0.1, build 2 (1.0.0 was build 1, DECISIONS 0015; the release check needs a build number above every earlier tag's). | |
 | Support URL | | `https://chelseakr.github.io/queer-tv-guide/support.html` | |
 | Privacy Policy URL | | `https://chelseakr.github.io/queer-tv-guide/privacy.html` | |
 | Marketing URL | | Leave empty. | |

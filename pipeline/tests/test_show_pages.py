@@ -322,7 +322,9 @@ def test_negative_control_a_closed_answer_outside_details_is_caught(doc, tmp_pat
     assert htmlprobe.answer_leaks(page, answers) == []
     assert htmlprobe.answer_leaks(htmlprobe.parse(bad_raw), answers) == answers
     # Two ways to leave it open, and both are seen.
-    open_raw = raw.replace('<details class="answer">', '<details class="answer" open>')
+    open_raw = raw.replace(
+        '<details class="answer" id="answer">', '<details class="answer" id="answer" open>'
+    )
     assert open_raw != raw
     assert htmlprobe.details_problems(page) == []
     assert htmlprobe.details_problems(htmlprobe.parse(open_raw)) == ["a <details> is open on load"]
@@ -777,12 +779,17 @@ def test_a_few_hundred_pages_from_the_real_snapshot(tmp_path):
     assert len(pages) == len(want) + 1
     assert len({p.title for p in pages.values()}) == len(pages)
     # The home page, the index, the airing-now page (DECISIONS 0033), the
-    # findings and press pages (DECISIONS 0042) and the hand-picked pages only
-    # (DECISIONS 0028).
+    # findings and press pages (DECISIONS 0042), then the indexed show pages
+    # only: the hand-picked list (DECISIONS 0028) and the first widening
+    # batch, INDEX_EXTRA_IDS (DECISIONS 0046); 55 URLs before that batch, 105
+    # after it on the 2026-11-07 snapshot.
+    built = show_pages.select_shows(real, pinned=pins)
+    indexed = show_pages.indexed_show_ids(built, pins, listed)
+    assert pinned_built <= indexed and len(indexed) > len(pinned_built)
     locs = htmlprobe.sitemap(_raw(tmp_path, "sitemap.xml"))["loc"]
-    assert len(locs) == len(pinned_built) + 5 < len(pages)
+    assert len(locs) == len(indexed) + 5 < len(pages)
     held = [p for rel, p in pages.items() if rel != "shows/index.html" and p.canonical not in locs]
-    assert len(held) == len(pages) - 1 - len(pinned_built)
+    assert len(held) == len(pages) - 1 - len(indexed)
     for page in held:
         assert [m.get("content") for m in page.named("meta") if m.get("name") == "robots"] == [
             "noindex,follow"

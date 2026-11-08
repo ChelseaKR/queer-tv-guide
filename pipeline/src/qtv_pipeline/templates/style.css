@@ -57,6 +57,15 @@
     details[open].answer .answer-body { animation: qf-reveal 180ms ease-out; }
     @keyframes qf-reveal { from { opacity: 0; } to { opacity: 1; } }
   }
+  /* The character question blocks (DECISIONS 0051). The "Show all" control
+     is a plain closed details element; nothing here styles its content. */
+  .character-questions { margin: 0 0 1.25rem; }
+  .character-questions h3 { margin: 1rem 0 0.125rem; }
+  .character-questions p { margin: 0 0 0.5rem; }
+  details.more-characters { margin: 1rem 0 1.5rem; }
+  details.more-characters summary { cursor: pointer; min-height: 44px; box-sizing: border-box; padding: 0.625rem 1rem; border: 2px solid var(--line); border-radius: 0.25rem; font: 800 1.125rem/1.2 var(--display); }
+  details.more-characters summary:hover { background: var(--surface); }
+  .next-episode { margin: 1.5rem 0 0; }
   .cast { padding-left: 1.25rem; }
   .cast li { margin-bottom: 0.5rem; }
   .small { font-size: 0.9375rem; }
@@ -92,7 +101,7 @@
   /* Windows high contrast and other forced palettes: the system's colors
      win, the drawn frame keeps a visible border. */
   @media (forced-colors: active) {
-    details.answer, header, footer { border-color: CanvasText; }
+    details.answer, details.more-characters summary, header, footer { border-color: CanvasText; }
     details.answer summary { background: Canvas; color: CanvasText; }
     a:focus-visible, summary:focus-visible { outline-color: Highlight; }
     .go a, .app-soon { border-left-color: LinkText; }

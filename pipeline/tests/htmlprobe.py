@@ -20,7 +20,10 @@ class Page:
     ld_json: list[str] = field(default_factory=list)
     tags: list[tuple[str, dict[str, str | None]]] = field(default_factory=list)
     headings: list[int] = field(default_factory=list)
-    inside: list[str] = field(default_factory=list)  # text inside <details>
+    # Text inside the sealed answer, <details class="answer">. Any other
+    # details element (the "Show all N characters" control, DECISIONS 0051)
+    # hides nothing from a search engine, so its text counts as outside.
+    inside: list[str] = field(default_factory=list)
     outside: list[str] = field(default_factory=list)  # text anywhere else in <body>
     statuses: list[tuple[str, str]] = field(default_factory=list)  # (data-status, text)
     css: str = ""
@@ -42,7 +45,7 @@ class _Probe(HTMLParser):
         super().__init__(convert_charrefs=True)
         self.page = Page()
         self._stack: list[str] = []
-        self._details = 0
+        self._details: list[bool] = []  # one entry per open <details>: is it the answer?
         self._status_kind: str | None = None
         self._li_status: str | None = None
         self._script_ld = False
@@ -81,7 +84,7 @@ class _Probe(HTMLParser):
         if tag in {"dt", "dd"}:
             self._cell = tag
         if tag == "details":
-            self._details += 1
+            self._details.append(a.get("class") == "answer")
         if tag == "li" and "data-status" in a:
             self._li_status = a["data-status"]
         if tag == "span" and a.get("class") == "status":
@@ -93,8 +96,8 @@ class _Probe(HTMLParser):
     def handle_endtag(self, tag: str) -> None:
         if self._cast:
             self._cast -= 1
-        if tag == "details":
-            self._details -= 1
+        if tag == "details" and self._details:
+            self._details.pop()
         if tag in {"dt", "dd"}:
             self._cell = ""
         if tag == "li":
@@ -121,7 +124,7 @@ class _Probe(HTMLParser):
             if self._script_ld:
                 p.ld_json.append(data)
         elif "body" in self._stack:
-            (p.inside if self._details else p.outside).append(text)
+            (p.inside if any(self._details) else p.outside).append(text)
             self._cell_data(text)
 
     def _cell_data(self, text: str) -> None:
@@ -165,10 +168,14 @@ def ld_node(page: Page, kind: str) -> dict:
 
 
 def details_problems(page: Page) -> list[str]:
+    """Not exactly one sealed answer (``<details class="answer">``), or any
+    details element at all open on load: the "Show all N characters" control
+    (DECISIONS 0051) is allowed, closed, beside the one answer."""
     found = []
     details = page.named("details")
-    if len(details) != 1:
-        found.append(f"expected one <details>, found {len(details)}")
+    answers = [a for a in details if a.get("class") == "answer"]
+    if len(answers) != 1:
+        found.append(f'expected one <details class="answer">, found {len(answers)}')
     found += ["a <details> is open on load" for a in details if "open" in a]
     return found
 

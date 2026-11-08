@@ -1560,3 +1560,94 @@ which still compares with LezWatch.TV's start year. The apps. The airing page
 still selects by LezWatch.TV's on-air flag.
 
 **Reversible.** Yes: `shown_years` returns `show["years"]` unchanged.
+
+## 0051 — Show pages ask each character's question, and name the next episode above the app block (2026-11-07)
+
+**Status: proposed (agent, 2026-11-07, branch
+`feat/show-page-questions-next-episode`). It adds to a show page after the
+sealed answer and keeps the spoiler rule of 0019 to 0049, the title and
+description rules of 0045, the death display and placement rules of 0032 and
+0041, and the next-episode facts row of 0037 unchanged.**
+
+**Evidence.** Search Console for `sc-domain:queerframe.app` to 2026-11-06
+(`qf-search-console-2026-11-06.md`) and the 2026-11-07 fact-check
+(`qf-index50-factcheck-2026-11-07.md`): the queries Google reports are mostly
+about one character, in question form, "is julie gay in from" and three
+variants (11 impressions), "is asra gay the mentalist", "eda clawthorne
+sexuality", "is amanda wagner gay", "molly milkovich gender". Each character
+is on its show's page, but only as one item in the character list, under a
+show-level heading; the page's headings answer "do any queer characters die",
+not "is Julie gay". The pages also carried the next episode only as a facts
+row (0037), two screens below the app block that sells new-episode reminders.
+
+**Decision.**
+
+- Character questions (`show_pages.character_questions`). After the sealed
+  answer and before the app block (0047), a section "Questions about the
+  characters in <show>" gives one block per listed character, regulars first
+  (the character list's order, never one a death could set). Each block has
+  two real `<h3>` headings: "Is <name> <label> in <show>?" and "Does <name>
+  die in <show>?". The label is the one `identity` (0027) reads from
+  LezWatch.TV's own gender and sexuality terms, with its article: "a
+  lesbian", "bisexual", "pansexual", "queer", "a trans woman", "non-binary".
+  When neither term gives a label, the question asks "Is <name> LGBTQ in
+  <show>?", the word 0045 allows for LezWatch.TV's scope. No label is ever
+  invented, and "gay" is never used (0027). The identity answer names both
+  terms as LezWatch.TV records them, "Yes, per LezWatch.TV: sexuality
+  Bisexual, gender Cisgender.", links "LezWatch.TV" to the character's own
+  page, and ends with the role and "played by" from the character list. A
+  sexuality LezWatch.TV leaves empty or records as "Undefined" reads
+  "LezWatch.TV lists <name> without a stated orientation" (431 of 7,453
+  characters on the 2026-11-07 snapshot are "Undefined"). With no label and a
+  stated term the answer is "LezWatch.TV lists <name> with the sexuality Not
+  Straight and the gender Cisgender." The death block carries no status: it
+  says the answer is sealed above and links to the one `<details
+  class="answer">`, which now has the id `answer` (reserved from character
+  anchors). The answer stays behind the same reveal as before; nothing in a
+  block reads a death record.
+- Past 8 characters (`QUESTIONS_VISIBLE`) the rest sit in a second, closed
+  `<details>` whose summary reads "Show all <n> characters". It is a native
+  element, so it works with no script, and it hides nothing from a search
+  engine, so the test probe counts its text as outside the sealed answer and
+  the leak checks still see it. On the 2026-11-07 snapshot 111 of 363 pages
+  collapse; The L Word has 61 characters and 122 H3s.
+- The next-episode line (`show_pages.next_episode_line`). A page whose show
+  has a TVmaze next episode says, just above the app block, "Next episode:
+  <date>, per TVmaze." in a `<time>` element, and with the App Store switch
+  on adds "Get a reminder in the app.", which the block under it offers
+  (0047 names new-episode reminders as a 1.0.0 feature). The date is the
+  calendar day TVmaze gives (`airdate`), which is the network's own time
+  zone, never converted. An episode TVmaze lists with no date reads "date to
+  be announced": TVmaze's own statement, not a guess (0 such shows on the
+  2026-11-07 snapshot). On that snapshot 24 of 363 pages gain the line.
+- The 0045 title and description, the single H1, the structured data (the
+  TVSeries already names every character the blocks ask about) and the 0037
+  facts row do not change. No FAQPage is added: Google stopped showing FAQ
+  rich results on 2026-05-07, and its answer would be the spoiler.
+
+**Absence.** No next episode, no TVmaze schedule, an unreadable date or a
+date before the snapshot's day: no line at all, never "no upcoming
+episodes"; when TVmaze marks the show Ended, the Years row already says so
+(0049). A character with no actor or role gets no clause. A block never
+prints "Unknown", "Dies", a death year, a cliche or a trope.
+
+**Tests.** `pipeline/tests/test_show_pages_questions.py`: the label table from
+LezWatch.TV's terms; a show with labels; an empty and an "Undefined"
+orientation; a 30-character show showing 8 and collapsing 22 behind the
+control, both details elements closed, one H1 and no skipped heading level; a
+show with a next episode, an Ended show with none, a running show with none, a
+dated-but-undated ("to be announced") episode and a stale date; the line
+prints TVmaze's day even when the airstamp's UTC moment is the next day; a
+negative control plants a death status into a visible and into a collapsed
+block and asserts the leak checker catches each; swapping every death record
+leaves every block byte for byte. `tests/htmlprobe.details_problems` now
+requires exactly one `<details class="answer">` and no details open on load.
+`test_a_few_hundred_pages_from_the_real_snapshot` derives the sitemap count
+from `indexed_show_ids` (55 before 0046's batch, 105 after it).
+
+**Not changed.** The apps, the airing page, the shows index, the home page,
+the sitemap and robots tags, the pins and `INDEX_EXTRA_IDS`. The site still
+has no analytics, no affiliate link and no third-party script.
+
+**Reversible.** Yes: drop the question section and the line from
+`show.html.j2`, and `character_questions` and `next_episode_line` with them.

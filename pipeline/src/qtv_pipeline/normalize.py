@@ -261,7 +261,10 @@ def normalize_character(
             }
         )
 
-    death = _normalize_death(fields.acf(raw, "lezchars_death_year"))
+    cliches = _terms_from_ids(raw.get("cliche"), taxonomies["cliches"])
+    death = _normalize_death(
+        fields.acf(raw, "lezchars_death_year"), marked_dead=is_marked_dead(cliches)
+    )
 
     return {
         "id": f"lwtv:character:{lwtv_id}",
@@ -272,7 +275,7 @@ def normalize_character(
         "gender": gender,
         "sexuality": sexuality,
         "romantic": romantic,
-        "cliches": _terms_from_ids(raw.get("cliche"), taxonomies["cliches"]),
+        "cliches": cliches,
         "actors": actors,
         "shows": shows,  # filtered to real show ids by build.py
         "death": death,
@@ -280,7 +283,24 @@ def normalize_character(
     }
 
 
-def _normalize_death(raw_entries: Any) -> dict[str, Any]:
+# LezWatch.TV keeps death dates and, separately, a status it shows as "Status:
+# Dead" or "Status: Alive" and counts on its show pages. The status is the
+# "Dead Queers" cliche (taxonomy slug `dead`). A death date on a character
+# without it is not a death LezWatch.TV counts (DECISIONS 0052, 0053).
+DEAD_STATUS_CLICHES = frozenset({"dead"})
+
+
+def is_marked_dead(cliches: list[dict[str, Any]]) -> bool:
+    """Whether LezWatch.TV's own status for the character is Dead."""
+    return any((t or {}).get("slug") in DEAD_STATUS_CLICHES for t in cliches)
+
+
+def _normalize_death(raw_entries: Any, marked_dead: bool | None = None) -> dict[str, Any]:
+    """The snapshot's `death` record. `died` keeps meaning "LezWatch.TV records
+    a death date" and the dates stay for episode placement (0041). When
+    ``marked_dead`` is given and a death is recorded, `counted` says whether
+    LezWatch.TV also lists the character as dead (0053): the one decision the
+    apps and the site share. It is absent when no death is recorded."""
     if not isinstance(raw_entries, list) or not raw_entries:
         return {"died": None, "death_known": False, "dates": [], "years": []}
 
@@ -305,10 +325,13 @@ def _normalize_death(raw_entries: Any) -> dict[str, Any]:
 
     if not dates:
         # LezWatch recorded a death entry with no usable date; still a death.
-        return {"died": True, "death_known": True, "dates": [], "years": []}
-
-    years = sorted({d["year"] for d in dates if d["year"] is not None})
-    return {"died": True, "death_known": True, "dates": dates, "years": years}
+        out: dict[str, Any] = {"died": True, "death_known": True, "dates": [], "years": []}
+    else:
+        years = sorted({d["year"] for d in dates if d["year"] is not None})
+        out = {"died": True, "death_known": True, "dates": dates, "years": years}
+    if marked_dead is not None:
+        out["counted"] = marked_dead
+    return out
 
 
 def normalize_schedule(

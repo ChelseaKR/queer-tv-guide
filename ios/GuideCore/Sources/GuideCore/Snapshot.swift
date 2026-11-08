@@ -556,18 +556,29 @@ public struct Death: Decodable, Equatable, Sendable {
     /// Empty when `deathKnown == false`.
     public let dates: [DateEntry]
     public let years: [Int]
+    /// DECISIONS 0053. When a death is recorded: `true` if LezWatch.TV also
+    /// lists the character as dead, `false` if it records a date but lists the
+    /// character as alive (a death the show undid, a resurrection). `nil` is
+    /// "not computed" (a file from before 0053): read as before. Optional and
+    /// additive, so a 1.0.0 reader ignores it.
+    public let counted: Bool?
+
+    /// A date is recorded, but LezWatch.TV lists the character as alive: not
+    /// a death to count, and not a character to call alive.
+    public var isListedAlive: Bool { deathKnown && died == true && counted == false }
 
     private enum CodingKeys: String, CodingKey {
         case died
         case deathKnown = "death_known"
-        case dates, years
+        case dates, years, counted
     }
 
-    public init(died: Bool?, deathKnown: Bool, dates: [DateEntry], years: [Int]) {
+    public init(died: Bool?, deathKnown: Bool, dates: [DateEntry], years: [Int], counted: Bool? = nil) {
         self.died = died
         self.deathKnown = deathKnown
         self.dates = dates
         self.years = years
+        self.counted = counted
     }
 
     public init(from decoder: Decoder) throws {
@@ -584,6 +595,7 @@ public struct Death: Decodable, Equatable, Sendable {
         deathKnown = try c.decode(Bool.self, forKey: .deathKnown)
         dates = try c.decode([DateEntry].self, forKey: .dates)
         years = try c.decode([Int].self, forKey: .years)
+        counted = try c.decodeIfPresent(Bool.self, forKey: .counted)
     }
 }
 

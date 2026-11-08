@@ -54,6 +54,23 @@ network call.
 `died` is constrained by the schema to `true` or `null`; `false` is a schema
 violation and the build fails. LezWatch records deaths, not survival.
 
+### A death date is not always a counted death (`death.counted`, DECISIONS 0053)
+
+LezWatch keeps death dates and, separately, a status it shows as "Status:
+Dead" or "Status: Alive" (the `dead` cliche) and counts on its show pages. When
+`died` is true the pipeline also writes `counted`: true if the character
+carries the marker, false if LezWatch records a date but lists the character as
+alive (Holby City's Bernie Wolfe, Warrior Nun's Ava Silva, Sara Lance, Nora
+West-Allen). `died` and `dates` do not change; episode placement (0041) still
+uses the dates. The field is optional and additive; absent (older files, or no
+recorded death) means "not computed", and a reader keeps its old reading.
+
+| Situation | What the snapshot says | What the app must render |
+|---|---|---|
+| Date recorded, character marked dead | `died: true`, `counted: true` | "Dies (2019)" |
+| Date recorded, character listed as alive | `died: true`, `counted: false` | "LezWatch.TV records a death date (2019) for this character but lists the character as alive, so it is not counted here" |
+| Date recorded, field absent (old file) | `died: true`, no `counted` | as before: "Dies (2019)" |
+
 ### The LezWatch ↔ TVmaze join
 
 Documented by LezWatch itself: its "Next Episode" feature passes a TVmaze id (or

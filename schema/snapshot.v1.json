@@ -560,7 +560,11 @@
           },
           "description": "One entry per recorded death (a character can die more than once). Empty when death_known=false."
         },
-        "years": { "type": "array", "items": { "type": "integer" }, "description": "Distinct years from dates, ascending." }
+        "years": { "type": "array", "items": { "type": "integer" }, "description": "Distinct years from dates, ascending." },
+        "counted": {
+          "type": "boolean",
+          "description": "Present only when died is true (DECISIONS 0053). true when LezWatch.TV also lists the character as dead (the `dead` cliche, shown on its character pages as \"Status: Dead\"). false when it records a death date but lists the character as alive (a death the show undid, a resurrection). `died` still means a death date is recorded, and `dates` stay for episode placement (0041). Absent means not computed (files from before 0053): a reader keeps the old reading. false is rendered as a death date recorded for a character listed as alive: never as alive, never as dead."
+        }
       }
     },
     "character": {

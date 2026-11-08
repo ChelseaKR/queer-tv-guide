@@ -36,6 +36,7 @@ object Presentation {
 
     fun death(death: Death, name: String): String {
         if (!death.isRecorded) return "Not recorded. This snapshot does not record a death for $name."
+        if (death.isListedAlive) return "Not recorded. ${listedAliveSentence(death.years, name)}"
         if (death.years.isEmpty()) return "Yes. $name dies. The year is not recorded."
         val list = death.years.sorted().joinToString(", ")
         return if (death.years.size > 1) {
@@ -45,13 +46,35 @@ object Presentation {
         }
     }
 
-    fun deathShort(death: Death): String = if (death.isRecorded) "Dies" else "Death not recorded"
+    fun deathShort(death: Death): String = when {
+        death.isListedAlive -> "Death date recorded, listed as alive"
+        death.isRecorded -> "Dies"
+        else -> "Death not recorded"
+    }
+
+    /**
+     * What is recorded for a death date on a character LezWatch.TV lists as alive
+     * (DECISIONS 0052, 0053), in the site's words: never "alive", never "dead".
+     */
+    internal fun listedAliveSentence(years: List<Int>, name: String): String {
+        val sorted = years.sorted().map { it.toString() }
+        val dated = when (sorted.size) {
+            0 -> "a death but no date"
+            1 -> "a death date (${sorted[0]})"
+            else -> "death dates (${sorted.joinToString(", ")})"
+        }
+        return "LezWatch.TV records $dated for $name but lists the character as alive, so it is not counted here."
+    }
 
     /** Show-level summary. Counts only deaths placed in this show ([deathPlacement], DECISIONS 0030). */
     fun deathsSummary(cast: List<Character>, showId: String): String {
         if (cast.isEmpty()) return NO_LISTED_CAST
         val dead = cast.filter { deathPlacement(it, showId).counts }
         val noun = if (cast.size == 1) "character" else "characters"
+        if (dead.isEmpty() && cast.any { deathPlacement(it, showId) == DeathPlacement.ListedAlive }) {
+            val who = if (cast.size == 1) "the one listed character" else "any of the ${cast.size} listed characters"
+            return "Not recorded. LezWatch.TV does not list $who as dead."
+        }
         if (dead.isEmpty()) return "Not recorded for any of the ${cast.size} listed $noun."
         val verb = if (dead.size == 1) "dies" else "die"
         return "${dead.size} of ${cast.size} listed $noun $verb: ${dead.joinToString(", ") { it.name }}."
@@ -95,11 +118,14 @@ object Presentation {
         object NoShowYears : DeathPlacement()
         object OutsideShowYears : DeathPlacement()
 
+        /** A date is recorded but LezWatch.TV lists the character as alive (DECISIONS 0053): not counted. */
+        object ListedAlive : DeathPlacement()
+
         /** The death counts as happening in this show. */
         val counts: Boolean get() = this is OnlyShow || this is InShowYears
 
         /** Counted, or not placeable either way: the "no recorded deaths" filter reads this. */
-        val mayBeHere: Boolean get() = counts || this is NoDeathYear || this is NoShowYears
+        val mayBeHere: Boolean get() = counts || this is NoDeathYear || this is NoShowYears || this is ListedAlive
 
         /** A recorded death that this show's years do not place here. */
         val elsewhere: Boolean get() = this is NoDeathYear || this is NoShowYears || this is OutsideShowYears
@@ -108,6 +134,7 @@ object Presentation {
     fun deathPlacement(character: Character, showId: String): DeathPlacement {
         val death = character.death
         if (!death.isRecorded) return DeathPlacement.NotRecorded
+        if (death.counted == false) return DeathPlacement.ListedAlive
         val otherShows = character.shows.map { it.showId }.toSet() - showId
         if (otherShows.isEmpty()) return DeathPlacement.OnlyShow
         val here = character.shows.filter { it.showId == showId }.flatMap { it.years }.toSet()
@@ -134,6 +161,7 @@ object Presentation {
                 val verb = if (placement.matched.size == 1) "is" else "are"
                 "$name dies$whenText. The record belongs to the character, not to one show; it is counted here because $list $verb among $name\u2019s years in this show."
             }
+            DeathPlacement.ListedAlive -> "$name: not recorded. ${listedAliveSentence(character.death.years, name)}"
             DeathPlacement.NoDeathYear ->
                 "$name: not recorded in this show. LezWatch.TV records a death for $name but no year, so it cannot say whether it happens in this show."
             DeathPlacement.NoShowYears ->
@@ -153,6 +181,7 @@ object Presentation {
         val placed = cast.map { it to deathPlacement(it, show.id) }
         val counted = placed.filter { it.second.counts }
         val elsewhere = placed.filter { it.second.elsewhere }
+        val listedAlive = placed.filter { it.second == DeathPlacement.ListedAlive }
         val inThisShow = if (elsewhere.isEmpty()) "" else " in this show"
         val listed = "${cast.size} listed ${if (cast.size == 1) "character" else "characters"}"
         if (elsewhere.isNotEmpty()) {
@@ -162,14 +191,26 @@ object Presentation {
                 "${elsewhere.size} listed characters have a recorded death that LezWatch.TV does not place in this show, so they are not counted here."
             }
         }
+        if (listedAlive.isNotEmpty()) {
+            notes += if (listedAlive.size == 1) {
+                "One listed character has a recorded death date, but LezWatch.TV lists the character as alive, so it is not counted here."
+            } else {
+                "${listedAlive.size} listed characters have a recorded death date, but LezWatch.TV lists them as alive, so they are not counted here."
+            }
+        }
         val reported = show.counts.deathsSourceReported
         if (reported != null && reported != counted.size) {
             val records = if (elsewhere.isEmpty()) "list ${counted.size}" else "place ${counted.size} in this show"
             notes += "LezWatch.TV's own tally for this show is $reported ${if (reported == 1) "death" else "deaths"}; its character records $records."
         }
         notes += spoilerTags.map(::spoilerTagNote)
-        val lines = (counted + elsewhere).mapNotNull { deathLine(it.first, it.second) }
+        val lines = (counted + elsewhere + listedAlive).mapNotNull { deathLine(it.first, it.second) }
         if (counted.isEmpty()) {
+            // A date is on record for a character listed as alive, so "does not record a death" would be false.
+            if (listedAlive.isNotEmpty()) {
+                val who = if (cast.size == 1) "the one listed character" else "any of the $listed"
+                return ShowDeaths("Not recorded. LezWatch.TV does not list $who as dead.", lines, notes)
+            }
             val headline = if (cast.size == 1) {
                 "Not recorded. This snapshot does not record a death$inThisShow for the one listed character."
             } else {

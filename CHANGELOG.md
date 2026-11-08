@@ -191,6 +191,12 @@ consumer of the published snapshot, would notice.
 
 ### Changed
 
+- A death date for a character LezWatch.TV lists as alive is no longer counted
+  as a death in the apps, as on the website (DECISIONS 0052, 0053). The
+  snapshot carries a new optional `death.counted`; the apps say "LezWatch.TV
+  records a death date (2019) for <name> but lists the character as alive, so
+  it is not counted here." instead of "dies". Older snapshots and 1.0.0 apps
+  read as before.
 - Show page titles lead with what people search, "<n> LGBTQ characters in
   <show>", then ask "Do any die?" (DECISIONS 0045). Descriptions end with
   "Whether anyone dies stays hidden until you tap." Neither ever depends on

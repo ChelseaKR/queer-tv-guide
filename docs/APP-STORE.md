@@ -19,16 +19,16 @@ are in **`docs/app-store-listing.json`**, the one copy to paste from.
 with the build: name = display name, iPhone-only = device family, URLs on
 the snapshot host with pages that exist.
 
-Character counts, recounted 2026-09-18 after the search pass (§App Store
-search):
+Character counts, recounted 2026-11-07 after the second search pass (§App
+Store search, 2026-11-07):
 
 | Field | Value | Count / limit | Source |
 |---|---|---|---|
 | Name | **Queer Frame** | 11 / 30 | DECISIONS 0006 |
-| Subtitle | "Does she die? Lesbian TV guide" | 30 / 30 | §App Store search (was "Does she die? Is it worth it?", research §6 rank 1) |
-| Promotional text | see the JSON | 168 / 170 | §App Store search |
-| Keywords | see §App Store search | 98 / 100 | §App Store search |
-| Description | see the JSON | 1,329 / 4,000 | first paragraph rewritten, §App Store search |
+| Subtitle | "Does she die? Lesbian TV guide" | 30 / 30 | §App Store search 2026-09-18 (was "Does she die? Is it worth it?", research §6 rank 1); kept 2026-11-07 |
+| Promotional text | see the JSON | 169 / 170 | §App Store search 2026-11-07 |
+| Keywords | see §App Store search 2026-11-07 | 100 / 100 | §App Store search 2026-11-07 |
+| Description | see the JSON | 1,431 / 4,000 | first paragraph rewritten and the widget/reminders line added, §App Store search 2026-11-07 |
 | Category | Entertainment (primary), Reference (secondary) | — | §App Store search, Categories |
 | Price | **$4.99**, one-time. No IAP, no subscription. Apple Small Business Program (15%). | — | DECISIONS 0003, 0011 |
 | Devices | **iPhone only** (`TARGETED_DEVICE_FAMILY = 1`). Screenshots: iPhone only (6.9" set). iPads can still run it in iPhone compatibility mode, and App Review may test it there (2.4.1). | — | DECISIONS 0009 |
@@ -58,6 +58,102 @@ Copy rule: no "only", "first" or other uniqueness claims about the market
 (the space has TV Time — shut down 2026-07-15 — Does the Dog Die, Serializd,
 TVmaze and Sapphic Signal). Claims about the app's own behavior ("no
 account") are fine because they are checkable.
+
+### App Store search (ASO), 2026-11-07
+
+A second pass, one day after Apple approved 1.0.0, against three sources:
+the live product page (`https://apps.apple.com/us/app/id6818637465`, read
+once on 2026-11-07), the website's Search Console queries for 2026-10-09
+to 2026-11-06 (the only measured demand this product has), and the public
+App Store pages of eight comparable apps. The findings file with the
+evidence is in the portfolio's private notes
+(`_agent-tools/growth/qf-app-store-search-2026-11-08.md`).
+
+**What was live on 2026-11-07, and where it differed from this JSON.** The
+live subtitle, categories (Entertainment, Reference), price and age rating
+(13+) matched the JSON. Two fields did not: the live promotional text was
+"Thinking about starting a show? See if it's worth it and whether its
+queer characters die, hidden until you tap. Plus where to stream it and
+when it airs next." (159 characters, typed in App Store Connect, never in
+this file), and the live description was the `v1.0.0` text ("Tropes and
+content notes."), from before DECISIONS 0032. This file is the one copy
+to paste from, so from here on a change made in App Store Connect should
+be copied back here in the same sitting.
+
+**What changed, and why.**
+
+| Field | Value | Count / limit |
+|---|---|---|
+| Subtitle (unchanged) | `Does she die? Lesbian TV guide` | 30 / 30 |
+| Keywords | `lgbtq,lgbt,gay,sapphic,wlw,trans,bisexual,spoiler,trigger,warning,trope,bury,death,show,series,watch` | 100 / 100 |
+| Promotional text | `Does she die? You choose when to find out. 2,000+ TV shows with queer women, non-binary and trans characters: worth it or not, where to watch, next episodes. No account.` | 169 / 170 |
+
+- **Subtitle kept.** It is the website's hook ("Does she die?"), it is full
+  at 30 characters, and "lesbian" is the one audience word in the index
+  that is both high-volume and honest about the data (LezWatch.TV covers
+  queer female, non-binary and transgender characters, not gay men). The
+  roadmap's rule stands: keep the subtitle, rotate keywords from measured
+  queries. If a later Search Console read shows "LGBTQ" winning on the
+  website (DECISIONS 0045 put it at the front of every show-page title),
+  the alternative is `Does she die? LGBTQ TV guide` (28) with `lesbian`
+  moved into the keywords in place of `lgbtq`; that needs a new version.
+- **Keywords.** Search Console's top intents were "<show> LGBTQ/gay
+  characters" (23 of 50 query impressions), "is <character> gay/lesbian"
+  (12) and death (4). So `gay` and `lgbt` join `lgbtq`; `bisexual` and
+  `death` are new; `where`, `episode` and `next` are dropped. `next` and
+  `episode` together spell a comparable app's name (Next Episode), which
+  Apple's keyword guidance rules out ("Competing app names"); `where` was
+  a filler word. `bury your gays` becomes `bury` plus `gay`: Apple says it
+  treats plurals as duplicates, and `your` was filler. `watch` stays for
+  "what to watch" and the where-to-watch links; `series` is added because
+  the comparable apps' subtitles use it ("Movies, series & watchlist").
+  No keyword repeats a word of the name, the subtitle or either category
+  (Apple: "Don't repeat any words included in your app name, subtitle, or
+  category"), none is a competitor's name, and none is "free".
+- **Promotional text.** Not indexed (Apple: "promotional text doesn't
+  affect your app's search ranking"), and the one field App Store Connect
+  lets you change without a new version, so it is the one change that can
+  go live today. It leads with the question people arrive with, states the
+  coverage, and lists what 1.0.0 does: the worth-it verdict, where to
+  watch, next episodes, no account. Nothing about "so far" (#127, not
+  shipped), nothing about Android, no price (Apple: "avoid including
+  specific prices in your app description").
+- **Description, first paragraph.** Apple: "The first sentence of your
+  description is the most important — this is what users can read without
+  having to tap to read more." The new first sentence is the question and
+  the spoiler rule; the second is the three things you see before you
+  start a show. The widget and reminders line from `APP-STORE-LISTING.md`
+  ("Not in the description today") is now in, since both shipped in 1.0.0.
+  Everything after the first paragraph is unchanged.
+
+**What the comparable apps lead with** (name, subtitle, from their public
+US pages on 2026-11-07): Does the Dog Die? / "Emotional Trigger Database"
+(Entertainment, Reference); Next Episode - Track TV Shows / "Movies,
+series & watchlist" (Entertainment, Reference); Revry / "LGBTQ+ TV & Film"
+(Entertainment, Lifestyle); Lesflicks / "home of lesbian & bi films";
+Tello Films / "The best LGBTQ women's content"; SignalTV / "Know what to
+watch next"; ShowMe / "Track every show you watch"; Plot Twist / "Lean App
+to Track Your Shows". Every one puts its category noun in the subtitle
+(database, series, TV & Film, films, content, show); none asks a question.
+Queer Frame's subtitle does both. Sapphic Signal, listed in the 2026-09-18
+pass, was not found by web search on 2026-11-07 (unverified, not
+necessarily gone).
+
+**Rules this pass kept** (App Review Guideline 2.3.7, read 2026-11-07):
+"Metadata such as app names, subtitles, screenshots, and previews should
+not include prices"; subtitles "should not ... reference other apps, or
+make unverifiable product claims". 2.3.10: no "names, icons, or imagery
+of other mobile platforms" in metadata, so no Android anywhere in the
+listing even once the Play app is live. The repository's own rules
+(`AppStoreReadinessTests`): no "only", "first" or "best" in customer copy.
+
+**Which fields need a new version.** Per Apple's product-page guidance and
+the App Store Connect "Required, localizable, and editable properties"
+table: promotional text "can be updated at any time without having to
+submit a new version"; the subtitle, description, keywords and screenshots
+change "when submitting a new version", and name, subtitle and the two
+categories carry no "Editable" mark in Apple's table. So the promotional
+text can be pasted now, and the keywords and description go in with 1.0.1.
 
 ### App Store search (ASO), 2026-09-18
 

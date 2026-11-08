@@ -10,15 +10,15 @@ clauses) stays in [`APP-STORE.md`](APP-STORE.md).
 holds them to Apple's limits and keeps them in step with the build (the name
 is the display name, iPhone only, the URLs are the pages the app links, the
 price is DECISIONS 0011), so they are not copied here. Counts below were
-measured with Python's `len()` on the JSON on 2026-10-02.
+measured with Python's `len()` on the JSON on 2026-11-07.
 
 | Field | Limit | Value | Chars |
 |---|---|---|---|
 | Name | 30 | `Queer Frame` | 11 |
 | Subtitle | 30 | `Does she die? Lesbian TV guide` | 30 |
-| Promotional text | 170 | `promotional_text` in the JSON | 168 |
-| Keywords | 100 | `keywords` in the JSON | 98 |
-| Description | 4,000 | `description` in the JSON | 1,327 |
+| Promotional text | 170 | `promotional_text` in the JSON | 169 |
+| Keywords | 100 | `keywords` in the JSON | 100 |
+| Description | 4,000 | `description` in the JSON | 1,431 |
 | Primary category | | Entertainment | |
 | Secondary category | | Reference | |
 | Price | | USD 4.99, paid up front. No in-app purchase, no subscription (DECISIONS 0003, 0011, confirmed in 0015). | |
@@ -40,12 +40,18 @@ StoreKit is imported in one file, for the system rating prompt only
 (DECISIONS 0017, accepted). The description
 already ends "One-time purchase. No subscription, no in-app purchases."
 
-**Not in the description today** (your call, optional): the Up Next home
-screen widget and the opt-in new-episode reminders. Both ship. If you want
-them named, one line under "Look up a show and see:" would do, for example
-`• An Up Next widget and optional new-episode reminders, set on your iPhone.`
-(the description would then be 1,403 characters, well under the
-limit). Change it in the JSON so the tests see it.
+**The widget and reminders are in the description** since 2026-11-07, as
+one line under "Look up a show and see:" (`• An Up Next widget and
+optional new-episode reminders, set on your iPhone.`). Both shipped in
+1.0.0. Before that the description did not name them.
+
+**Which fields change without a new version.** Promotional text only
+(Apple: "You can update promotional text at any time without having to
+submit a new version of your app"). Subtitle, keywords, description and
+screenshots take effect with the next version you submit (1.0.1), so paste
+them into that version's page, not the live one. Reasoning and the
+2026-11-07 search pass: `APP-STORE.md`, "App Store search (ASO),
+2026-11-07".
 
 ## Content rights
 

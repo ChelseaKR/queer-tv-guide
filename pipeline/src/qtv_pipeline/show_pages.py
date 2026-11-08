@@ -341,6 +341,13 @@ SLUG = re.compile(r"[a-z0-9%]+(?:-[a-z0-9%]+)*")
 # LezWatch terms whose mere presence answers the question (the same slugs
 # GuideCore keeps out of its always-visible lists).
 DEATH_SPOILER_CLICHES = frozenset({"dead"})
+# LezWatch.TV's own status for a character (DECISIONS 0052). Its character
+# pages show "Status: Dead" and its show pages count a death only for a
+# character carrying the "Dead Queers" cliché; a death date alone leaves the
+# status "Alive" (a death the show undid, as Holby City's Bernie Wolfe, or a
+# resurrection, as Warrior Nun's Ava Silva). On the 2026-11-07 snapshot 654 of
+# the 683 dated deaths carry it.
+DEAD_STATUS_CLICHES = frozenset({"dead"})
 DEATH_SPOILER_TROPES = frozenset({"dead-queers"})
 UNKNOWN = "Unknown"
 NOT_RECORDED = "Not recorded"
@@ -385,6 +392,9 @@ class CharacterView:
     # A death LezWatch records for the character that this show's years do
     # not place in this show (DECISIONS 0030). Never a yes.
     elsewhere: bool = False
+    # A death date LezWatch records for a character it lists as alive
+    # (DECISIONS 0052). Never a yes.
+    listed_alive: bool = False
     # The page's link anchor for this character (``anchors``, DECISIONS 0035).
     anchor: str = ""
     # Actor names exactly as LezWatch.TV lists them; an actor id that did not
@@ -787,11 +797,42 @@ def _term_name(term: dict[str, Any] | None) -> str:
     return term["name"] if term else NOT_RECORDED
 
 
+def marked_dead(character: dict[str, Any]) -> bool:
+    """Whether LezWatch.TV's own status for the character is Dead: it carries
+    one of ``DEAD_STATUS_CLICHES`` (DECISIONS 0052). The marker is already in
+    the snapshot (``cliches``), so this costs no request."""
+    return any(t["slug"] in DEAD_STATUS_CLICHES for t in character["cliches"])
+
+
+def _listed_alive_sentence(years: list[int]) -> str:
+    """The line for a death date on a character LezWatch.TV lists as alive
+    (DECISIONS 0052): what is recorded, and that it is not counted."""
+    listed = ", ".join(map(str, years))
+    if not years:
+        dated = "a death but no date"
+    elif len(years) == 1:
+        dated = f"a death date ({listed})"
+    else:
+        dated = f"death dates ({listed})"
+    return (
+        f"{UNKNOWN}. LezWatch.TV records {dated} for this character but lists the"
+        " character as alive, so it is not counted here."
+    )
+
+
 def _death_status(
-    death: dict[str, Any], other_shows: int, show_years: Iterable[str] = ()
+    death: dict[str, Any],
+    other_shows: int,
+    show_years: Iterable[str] = (),
+    status_dead: bool = True,
 ) -> tuple[bool, str]:
     """(dies, sentence). Only a recorded death is a yes; everything else is
     Unknown, because LezWatch records deaths, not survival.
+
+    A death date LezWatch records for a character it lists as alive
+    (``status_dead`` False, DECISIONS 0052) is not a yes either: LezWatch's own
+    pages do not count it, so this page says what is recorded and counts
+    nothing.
 
     LezWatch records a death on the character, not on a show (DECISIONS
     0030). For a character linked to more than one show, the death counts for
@@ -803,6 +844,8 @@ def _death_status(
         return False, f"{UNKNOWN}. LezWatch.TV has not recorded a death."
     years = sorted(death["years"])
     listed = ", ".join(map(str, years))
+    if not status_dead:
+        return False, _listed_alive_sentence(years)
     if not years:
         text = "Dies (year not recorded)."
     elif len(years) > 1:
@@ -861,8 +904,11 @@ def _characters(
     for (c, link), anchor in zip(pairs, ids, strict=True):
         others = {lk["show_id"] for lk in c["shows"]} - {show["id"]}
         years_here = [y for lk in c["shows"] if lk["show_id"] == show["id"] for y in lk["years"]]
-        dies, status = _death_status(c["death"], len(others), years_here)
-        elsewhere = not dies and c["death"]["died"] is True and c["death"]["death_known"] is True
+        status_dead = marked_dead(c)
+        dies, status = _death_status(c["death"], len(others), years_here, status_dead)
+        recorded = c["death"]["died"] is True and c["death"]["death_known"] is True
+        listed_alive = recorded and not status_dead
+        elsewhere = not dies and recorded and status_dead
         views.append(
             CharacterView(
                 name=c["name"],
@@ -873,6 +919,7 @@ def _characters(
                 dies=dies,
                 status=status,
                 elsewhere=elsewhere,
+                listed_alive=listed_alive,
                 anchor=anchor,
                 actors=_actor_names(c),
                 years=_int_years(years_here),
@@ -1027,13 +1074,19 @@ def _answer(show: dict[str, Any], cast: list[CharacterView]) -> Answer:
     n = len(cast)
     listed = f"{n} listed {_plural(n, 'character', 'characters')}"
     elsewhere = sum(1 for c in cast if c.elsewhere)
+    alive = sum(1 for c in cast if c.listed_alive)
     if not dead:
-        headline = (
-            f"{UNKNOWN}. LezWatch.TV has no death on record "
-            f"{'in this show ' if elsewhere else ''}for "
-            f"{'the one listed character' if n == 1 else f'any of the {listed}'}. "
-            "It records deaths and nothing else, so this does not say anyone lives."
-        )
+        who = "the one listed character" if n == 1 else f"any of the {listed}"
+        tail = "It records deaths and nothing else, so this does not say anyone lives."
+        if alive:
+            # A date is on record, so "no death on record" would be false
+            # (DECISIONS 0052); the note below says what is recorded.
+            headline = f"{UNKNOWN}. LezWatch.TV does not list {who} as dead. {tail}"
+        else:
+            headline = (
+                f"{UNKNOWN}. LezWatch.TV has no death on record "
+                f"{'in this show ' if elsewhere else ''}for {who}. {tail}"
+            )
     else:
         headline = (
             f"Yes. {len(dead)} of {listed} {_plural(len(dead), 'dies', 'die')}: {', '.join(dead)}."
@@ -1046,6 +1099,12 @@ def _answer(show: dict[str, Any], cast: list[CharacterView]) -> Answer:
             f"{'One listed character has' if elsewhere == 1 else f'{elsewhere} listed characters have'}"
             " a recorded death that LezWatch.TV does not place in this show, so"
             f" {'it is' if elsewhere == 1 else 'they are'} not counted here."
+        )
+    if alive:
+        notes.append(
+            f"{'One listed character has' if alive == 1 else f'{alive} listed characters have'}"
+            f" a recorded death date, but LezWatch.TV lists {'the character' if alive == 1 else 'them'}"
+            f" as alive, so {'it is' if alive == 1 else 'they are'} not counted here."
         )
     return Answer(headline, notes)
 

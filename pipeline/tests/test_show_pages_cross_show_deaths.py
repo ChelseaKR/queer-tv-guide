@@ -121,6 +121,12 @@ def doc() -> dict:
                 if death_years is None
                 else {"died": True, "death_known": True, "dates": [], "years": death_years}
             ),
+            # Every death here carries LezWatch's Dead status marker, so this
+            # file tests the 0030 rule alone. On the real snapshot Sara Lance
+            # and Nora West-Allen lack it (LezWatch lists them as alive), and
+            # DECISIONS 0052 answers Unknown for them before 0030 is reached;
+            # test_show_pages_listed_alive.py covers that.
+            cliches=[{"name": "Dead", "slug": "dead"}] if death_years is not None else [],
         )
         chars.append(c)
     base["shows"], base["characters"] = shows, chars

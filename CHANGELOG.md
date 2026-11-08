@@ -13,6 +13,17 @@ consumer of the published snapshot, would notice.
 
 ### Added
 
+- Every show page asks each listed character's question after the sealed
+  answer: "Is <name> <label> in <show>?" with LezWatch.TV's own gender and
+  sexuality terms ("a lesbian", "bisexual", "a trans woman",
+  "non-binary"; "without a stated orientation" when LezWatch.TV records
+  none), and "Does <name> die in <show>?", whose answer stays behind the
+  same reveal as before. Past 8 characters the rest sit behind a "Show all
+  <n> characters" control that needs no script (DECISIONS 0051).
+- A show page whose show has a TVmaze next episode now says so in one line
+  above the app block, "Next episode: <date>, per TVmaze.", with "Get a
+  reminder in the app." when the App Store switch is on. A show with no
+  next episode gets no line (DECISIONS 0051).
 - Every show page, the shows index, the airing page and the 404 page now
   end with the same "Get the iPhone app" block as the home page: one
   sentence on what the app adds (favorites with next episodes, the Up Next

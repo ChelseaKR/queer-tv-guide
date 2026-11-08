@@ -1,12 +1,23 @@
 {% extends "base.html.j2" %}
 {% block head_extra %}{% if robots %}
 <meta name="robots" content="{{ robots }}">{% endif %}{% endblock %}
+{#- One character's two questions (DECISIONS 0051). The identity answer links
+    LezWatch.TV's page for the character; the death question only points at
+    the sealed answer and never carries a status. #}
+{% macro question_block(q) -%}
+<div class="character-questions">
+<h3>{{ q.question }}</h3>
+<p>{{ q.before }}<a href="{{ q.source_url }}">LezWatch.TV</a>{{ q.after }}{% if q.who %} {{ q.who }}{% endif %}</p>
+<h3>{{ q.death_question }}</h3>
+<p>The answer is sealed above: open <a href="#answer">Show the answer (spoilers)</a> and find {{ q.name }} in the list.</p>
+</div>
+{%- endmacro %}
 {% block content %}
 <h1>Do any queer characters die in {{ show.title }}?</h1>
 <p class="opening">{{ opening }}</p>
 <p>Does she die in {{ show.title }}? {{ site_name }} answers from LezWatch.TV's records, so you can check for the bury-your-gays trope before you start the show. LezWatch.TV covers queer women, non-binary and trans characters, so this page does not list cisgender gay and bisexual men. Nothing is revealed until you open the answer below.</p>
 <p class="spoiler-warning"><strong>Spoiler warning:</strong> the answer below says which listed characters LezWatch.TV records as dying, if any.</p>
-<details class="answer">
+<details class="answer" id="answer">
 <summary>Show the answer (spoilers)</summary>
 <div class="answer-body" data-nosnippet>
 <p data-answer="headline"><strong>{{ answer.headline }}</strong></p>
@@ -21,6 +32,22 @@
 <p class="small">LezWatch.TV records deaths, not survival. Unknown means no death is on record, which is not the same as the character living.</p>
 </div>
 </details>
+<h2>Questions about the characters in {{ show.title }}</h2>
+<p class="small">One block per listed character, regulars first, with the gender and sexuality terms LezWatch.TV records. Whether anyone dies stays in the sealed answer above.</p>
+{%- for q in questions[:questions_visible] %}
+{{ question_block(q) }}
+{%- endfor %}
+{%- if questions|length > questions_visible %}
+<details class="more-characters">
+<summary>Show all {{ questions|length }} characters</summary>
+{%- for q in questions[questions_visible:] %}
+{{ question_block(q) }}
+{%- endfor %}
+</details>
+{%- endif %}
+{%- if next_episode %}
+<p class="next-episode"><strong>Next episode:</strong> {% if next_episode[1] %}<time datetime="{{ next_episode[1] }}">{{ next_episode[0] }}</time>{% else %}{{ next_episode[0] }}{% endif %}, per TVmaze.{% if app_store_url %} Get a reminder in the app.{% endif %}</p>
+{%- endif %}
 {% if app_store_url %}
 {{ app_store_block|safe }}
 {% else %}

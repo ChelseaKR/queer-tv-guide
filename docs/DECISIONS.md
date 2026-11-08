@@ -1560,3 +1560,59 @@ which still compares with LezWatch.TV's start year. The apps. The airing page
 still selects by LezWatch.TV's on-air flag.
 
 **Reversible.** Yes: `shown_years` returns `show["years"]` unchanged.
+
+## 0052 — A death date for a character LezWatch.TV lists as alive is not a yes (2026-11-08)
+
+**Status: proposed (branch `fix/death-claims-rule`). Needs Chelsea.**
+
+**Evidence.** The 2026-11-08 cross-check of every death claim on the 100
+indexable show pages (growth/qf-death-crosscheck-2026-11-08.md) found four
+pages answering "Yes" on a death LezWatch.TV itself does not count. Holby
+City said "Bernie Wolfe: Dies (2019)"; LezWatch.TV's record says she "was
+believed to have died in an explosion" and was alive in Spain, and she is
+back on screen in 2021 and 2022. Warrior Nun said Ava Silva dies (2020); she
+is dead before the first scene and resurrected in it. Legends of Tomorrow
+and The Flash said Sara Lance dies; The Flash also Nora West-Allen, restored
+after Crisis. LezWatch.TV keeps two things on a character: death dates, and a
+status it shows as "Status: Dead" or "Status: Alive" and counts on its show
+pages. For all four shows its show page says "none are dead". The status is
+the "Dead Queers" cliché (slug `dead`): on the 2026-11-07 snapshot 654 of
+the 683 dated deaths carry it and 29 do not, and every one of those 29 shows
+"Status: Alive" on LezWatch.TV (checked on 8 of them, including Daenerys
+Targaryen and Rashida of Swarm, where the status itself looks wrong and the
+fix is LezWatch.TV's). The pipeline read a death date as a death, so the page
+contradicted its own source, and the page's note already showed the
+disagreement ("LezWatch.TV's own tally for this show is 0 deaths; its
+character records list 1").
+
+**Decision.** `show_pages.marked_dead` reads the marker from the snapshot's
+`cliches` (no new request). A character with a death date and no marker is
+never a yes: the character's line says "Unknown. LezWatch.TV records a death
+date (2019) for this character but lists the character as alive, so it is
+not counted here" (or "death dates (2014, 2016, 2021)", or "a death but no
+date"); it is not counted in the headline or in the comparison with
+LezWatch.TV's tally; a note under the headline says how many such characters
+there are; and when no counted death remains the headline says "LezWatch.TV
+does not list any of the N listed characters as dead" instead of "has no
+death on record", because a date is on record. The status rule is applied
+before 0030's cross-show rule, so a multi-show character LezWatch.TV lists as
+alive gets this sentence and not 0030's. A character carrying the marker is
+unchanged, whatever its other clichés ("Undead" with "Dead" stays a yes: The
+Countess). On the 2026-11-07 snapshot the rule touches 11 of the 363 built
+pages: 6 headlines go from "Yes" to "Unknown" (Holby City, Warrior Nun,
+Legends of Tomorrow, The Flash, Star Trek: Discovery, Harley Quinn), 3 stay
+"Yes" with one name fewer (Hinter Gittern, Charmed (2018), Game of Thrones),
+Supergirl's Unknown headline takes the new wording, and Batwoman's note
+changes (Sara Lance). No page moves toward "Yes". On the 100 pages open to
+search, 4 headlines change, all from "Yes" to "Unknown". A negative control
+test switches the marker check off and asserts all four flip back to "Yes"
+while a marked death does not move.
+
+**Not changed.** The snapshot (`death.died` still means "LezWatch.TV records
+a death date"), the apps (they follow in a later build, as 0032 followed
+0030), the findings page (0042, which counts dated deaths; its totals would
+move by at most 29 of 696 events), and the template. The 29 records are a
+list for LezWatch.TV's maintainer to sort into intended (Nora West-Allen's
+page says the date is kept on purpose) and missing markers.
+
+**Reversible.** Yes: `marked_dead` returns True.

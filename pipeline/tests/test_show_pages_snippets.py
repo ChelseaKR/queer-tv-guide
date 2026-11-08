@@ -92,6 +92,9 @@ def answer_problems(doc: dict, snippets: dict[str, tuple[str, str]]) -> list[str
 
 
 def _set_all_deaths(doc: dict, died: bool) -> dict:
+    """Every character dies, or none does. A death is a date plus LezWatch's
+    Dead status marker (DECISIONS 0052): a date alone is not counted, so the
+    "all die" build sets the marker too, or the sabotage would not apply."""
     out = copy.deepcopy(doc)
     for c in out["characters"]:
         years = sorted({int(y) for link in c.get("shows", []) for y in link.get("years", [])})
@@ -100,6 +103,10 @@ def _set_all_deaths(doc: dict, died: bool) -> dict:
             if died
             else {"death_known": False, "died": None, "years": [], "dates": []}
         )
+        cliches = [
+            t for t in c.get("cliches", []) if t["slug"] not in show_pages.DEAD_STATUS_CLICHES
+        ]
+        c["cliches"] = [*cliches, {"name": "Dead", "slug": "dead"}] if died else cliches
     return out
 
 

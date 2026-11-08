@@ -312,12 +312,16 @@ def test_the_collapsed_blocks_are_visible_to_the_leak_checker(doc, tmp_path):
 @pytest.mark.parametrize("where", ["visible", "collapsed"])
 def test_negative_control_a_death_answer_in_a_block_is_caught(doc, tmp_path, where):
     many = _with_many_characters(doc, 30)
-    _character(many, "extra-character-27")["death"] = {
+    victim_record = _character(many, "extra-character-27")
+    victim_record["death"] = {
         "died": True,
         "death_known": True,
         "dates": [{"date": "2025-05-05", "year": 2025, "raw": "20250505"}],
         "years": [2025],
     }
+    # DECISIONS 0052: a death date only counts when LezWatch.TV also marks the
+    # character dead, so the sabotage sets that marker too.
+    victim_record["cliches"] = [{"name": "Dead", "slug": "dead"}]
     pages, raws = _build(many, tmp_path)
     raw = raws[HARBOR]
     victim = "Inés Varga" if where == "visible" else "Extra Character 27"

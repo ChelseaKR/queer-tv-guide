@@ -132,12 +132,16 @@ def place(date: str, episodes: list[dict[str, Any]]) -> tuple[int, int] | None:
 
 
 def death_events(doc: dict[str, Any]) -> list[dict[str, Any]]:
-    """Every (character, death date, show) under DECISIONS 0030, without names."""
+    """Every (character, death date, show) under DECISIONS 0030, without names,
+    for a death LezWatch.TV counts (0053)."""
     shows = {s["id"]: s for s in doc["shows"]}
     events = []
     for c in doc["characters"]:
         death = c["death"]
         if not death.get("died"):
+            continue
+        if death.get("counted") is False:
+            # A date for a character LezWatch.TV lists as alive (0053).
             continue
         for entry in death["dates"]:
             for link in c["shows"]:

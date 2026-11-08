@@ -197,6 +197,7 @@ from qtv_pipeline.app_store import (
     get_app_block,
     live_or_false,
 )
+from qtv_pipeline.normalize import DEAD_STATUS_CLICHES
 
 # The site's own domain (DECISIONS 0020). Pages serves the project path with a
 # 301 to it, so every canonical URL, internal link, breadcrumb item and
@@ -347,7 +348,6 @@ DEATH_SPOILER_CLICHES = frozenset({"dead"})
 # status "Alive" (a death the show undid, as Holby City's Bernie Wolfe, or a
 # resurrection, as Warrior Nun's Ava Silva). On the 2026-11-07 snapshot 654 of
 # the 683 dated deaths carry it.
-DEAD_STATUS_CLICHES = frozenset({"dead"})
 DEATH_SPOILER_TROPES = frozenset({"dead-queers"})
 UNKNOWN = "Unknown"
 NOT_RECORDED = "Not recorded"

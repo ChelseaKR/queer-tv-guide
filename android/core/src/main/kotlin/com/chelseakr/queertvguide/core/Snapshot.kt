@@ -285,8 +285,17 @@ data class Death(
     /** One entry per recorded death (a character can die more than once). */
     val dates: List<DeathDate>,
     val years: List<Int>,
+    /**
+     * DECISIONS 0053. With a recorded death: true when LezWatch.TV also lists
+     * the character as dead, false when it records a date but lists the
+     * character as alive. Null is "not computed" (a file from before 0053).
+     */
+    val counted: Boolean? = null,
 ) {
     val isRecorded: Boolean get() = deathKnown && died == true
+
+    /** A date is recorded, but LezWatch.TV lists the character as alive. */
+    val isListedAlive: Boolean get() = isRecorded && counted == false
 }
 
 @Serializable

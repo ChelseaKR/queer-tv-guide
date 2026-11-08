@@ -50,6 +50,9 @@ public enum Presentation {
         guard death.deathKnown, death.died == true else {
             return "Not recorded. This snapshot does not record a death for \(name)."
         }
+        if death.isListedAlive {
+            return "Not recorded. \(listedAliveSentence(death.years, name: name))"
+        }
         if death.years.isEmpty {
             return "Yes. \(name) dies. The year is not recorded."
         }
@@ -60,7 +63,22 @@ public enum Presentation {
     }
 
     public static func deathShort(_ death: Death) -> String {
-        death.deathKnown && death.died == true ? "Dies" : "Death not recorded"
+        if death.isListedAlive { return "Death date recorded, listed as alive" }
+        return death.deathKnown && death.died == true ? "Dies" : "Death not recorded"
+    }
+
+    /// What is recorded for a death date on a character LezWatch.TV lists as
+    /// alive (DECISIONS 0052, 0053), in the site's words: it says what is
+    /// recorded and that it is not counted, and never "alive" or "dead".
+    static func listedAliveSentence(_ years: [Int], name: String) -> String {
+        let sorted = years.sorted().map(String.init)
+        let dated: String
+        switch sorted.count {
+        case 0: dated = "a death but no date"
+        case 1: dated = "a death date (\(sorted[0]))"
+        default: dated = "death dates (\(sorted.joined(separator: ", ")))"
+        }
+        return "LezWatch.TV records \(dated) for \(name) but lists the character as alive, so it is not counted here."
     }
 
     /// Show-level summary after the reveal. Counts only deaths placed in
@@ -68,6 +86,9 @@ public enum Presentation {
     public static func deathsSummary(cast: [Character], showID: Show.ID) -> String {
         guard !cast.isEmpty else { return noListedCast }
         let dead = cast.filter { deathPlacement($0, inShow: showID).counts }
+        if dead.isEmpty, cast.contains(where: { deathPlacement($0, inShow: showID) == .listedAlive }) {
+            return "Not recorded. LezWatch.TV does not list \(cast.count == 1 ? "the one listed character" : "any of the \(cast.count) listed characters") as dead."
+        }
         if dead.isEmpty {
             return "Not recorded for any of the \(cast.count) listed \(cast.count == 1 ? "character" : "characters")."
         }
@@ -162,12 +183,16 @@ public enum Presentation {
         /// Multi-show, and no death year is a year the character appears in
         /// this show: not counted.
         case outsideShowYears
+        /// A death date is recorded but LezWatch.TV lists the character as
+        /// alive (`Death.counted == false`, DECISIONS 0053): not counted, in
+        /// any show, and checked before the placement rules.
+        case listedAlive
 
         /// True when the death counts as happening in this show.
         public var counts: Bool {
             switch self {
             case .onlyShow, .inShowYears: return true
-            case .notRecorded, .noDeathYear, .noShowYears, .outsideShowYears: return false
+            case .notRecorded, .noDeathYear, .noShowYears, .outsideShowYears, .listedAlive: return false
             }
         }
 
@@ -176,7 +201,7 @@ public enum Presentation {
         /// this, so it never admits a show on a guess.
         public var mayBeHere: Bool {
             switch self {
-            case .onlyShow, .inShowYears, .noDeathYear, .noShowYears: return true
+            case .onlyShow, .inShowYears, .noDeathYear, .noShowYears, .listedAlive: return true
             case .notRecorded, .outsideShowYears: return false
             }
         }
@@ -185,7 +210,7 @@ public enum Presentation {
         public var elsewhere: Bool {
             switch self {
             case .noDeathYear, .noShowYears, .outsideShowYears: return true
-            case .notRecorded, .onlyShow, .inShowYears: return false
+            case .notRecorded, .onlyShow, .inShowYears, .listedAlive: return false
             }
         }
     }
@@ -193,6 +218,7 @@ public enum Presentation {
     public static func deathPlacement(_ character: Character, inShow showID: Show.ID) -> DeathPlacement {
         let death = character.death
         guard death.deathKnown, death.died == true else { return .notRecorded }
+        if death.counted == false { return .listedAlive }
         let otherShows = Set(character.shows.map(\.showID)).subtracting([showID])
         if otherShows.isEmpty { return .onlyShow }
         let here = Set(character.shows.filter { $0.showID == showID }.flatMap(\.years))
@@ -222,6 +248,8 @@ public enum Presentation {
         case .inShowYears(let matched):
             let list = andList(matched.map(String.init))
             return "\(name) dies\(when). The record belongs to the character, not to one show; it is counted here because \(list) \(matched.count == 1 ? "is" : "are") among \(name)\u{2019}s years in this show."
+        case .listedAlive:
+            return "\(name): not recorded. \(listedAliveSentence(character.death.years, name: name))"
         case .noDeathYear:
             return "\(name): not recorded in this show. LezWatch.TV records a death for \(name) but no year, so it cannot say whether it happens in this show."
         case .noShowYears:
@@ -241,6 +269,7 @@ public enum Presentation {
         let placed = cast.map { ($0, deathPlacement($0, inShow: show.id)) }
         let counted = placed.filter { $0.1.counts }
         let elsewhere = placed.filter { $0.1.elsewhere }
+        let listedAlive = placed.filter { $0.1 == .listedAlive }
         let inThisShow = elsewhere.isEmpty ? "" : " in this show"
         let listed = "\(cast.count) listed \(cast.count == 1 ? "character" : "characters")"
         if !elsewhere.isEmpty {
@@ -248,14 +277,29 @@ public enum Presentation {
                 ? "One listed character has a recorded death that LezWatch.TV does not place in this show, so it is not counted here."
                 : "\(elsewhere.count) listed characters have a recorded death that LezWatch.TV does not place in this show, so they are not counted here.")
         }
+        if !listedAlive.isEmpty {
+            notes.append(listedAlive.count == 1
+                ? "One listed character has a recorded death date, but LezWatch.TV lists the character as alive, so it is not counted here."
+                : "\(listedAlive.count) listed characters have a recorded death date, but LezWatch.TV lists them as alive, so they are not counted here.")
+        }
         if let reported = show.counts.deathsSourceReported, reported != counted.count {
             let records = elsewhere.isEmpty ? "list \(counted.count)" : "place \(counted.count) in this show"
             notes.append("LezWatch.TV's own tally for this show is \(reported) \(reported == 1 ? "death" : "deaths"); its character records \(records).")
         }
         notes += spoilerTags.map(spoilerTagNote)
         // Counted deaths first, then the ones this show's years do not place.
-        let lines = (counted + elsewhere).compactMap { deathLine($0.0, $0.1) }
+        let lines = (counted + elsewhere + listedAlive).compactMap { deathLine($0.0, $0.1) }
         guard !counted.isEmpty else {
+            // A date is on record for a character listed as alive, so "does not
+            // record a death" would be false (DECISIONS 0052, 0053).
+            if !listedAlive.isEmpty {
+                let who = cast.count == 1 ? "the one listed character" : "any of the \(listed)"
+                return ShowDeaths(
+                    headline: "Not recorded. LezWatch.TV does not list \(who) as dead.",
+                    lines: lines,
+                    notes: notes
+                )
+            }
             return ShowDeaths(
                 headline: cast.count == 1
                     ? "Not recorded. This snapshot does not record a death\(inThisShow) for the one listed character."

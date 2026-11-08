@@ -108,6 +108,14 @@ TVmaze's premiere year is within a year of LezWatch's start year (DECISIONS
 latest season fills it ("3 so far" for a show still running). A TVmaze season number of 1900 or more is a year (a
 show numbered by year), not a count, and is never used.
 
+Years (``shown_years``, DECISIONS 0049, proposed). TVmaze's premiere year
+replaces LezWatch's start year only on an id join, when no character is placed
+in the show before it, and when the gap is one year, or 2 to 10 years earlier
+with LezWatch's own character years already starting before its start year. A
+show TVmaze lists as Ended (on an id join, premiere within a year) never says
+"to present": it shows TVmaze's end year when known, else "ended" with no year.
+The row says "per TVmaze" when TVmaze supplied any of it.
+
 What a page never says. LezWatch records deaths, not survival
 (``schema/README.md``), so a character with no recorded death is "Unknown",
 never "No" and never "Lives". A season count, rating or year LezWatch left
@@ -307,6 +315,15 @@ TRIGGER_LEVELS = {"low": "Low", "medium": "Medium", "high": "High"}
 # A TVmaze season number this large is a year (soaps and anime numbered by
 # year, "2011"), not a season count (DECISIONS 0031).
 SEASON_IS_A_YEAR = 1900
+# The TVmaze joins made by an id (LezWatch's stored TVmaze id, its manual
+# override, or LezWatch's IMDb id looked up on TVmaze), never by title
+# (DECISIONS 0048, 0049).
+TVMAZE_ID_JOINS = frozenset({"lwtv_tvmaze_id", "lwtv_tvmaze_id_manual", "imdb_lookup"})
+# The largest gap (in years) by which TVmaze's earlier premiere may replace
+# LezWatch's start year, and only when LezWatch's own character records
+# already place a character in the show before its start year (DECISIONS
+# 0049). Home and Away's 10 (1988, not 1998) is the largest such gap on a page.
+YEARS_CORROBORATED_GAP = 10
 
 _ENV = jinja2.Environment(
     loader=jinja2.PackageLoader("qtv_pipeline", "templates"),
@@ -337,6 +354,10 @@ class CharacterView:
     # Actor names exactly as LezWatch.TV lists them; an actor id that did not
     # resolve to a name is left out, never printed as a placeholder.
     actors: tuple[str, ...] = ()
+    # The years LezWatch records for the character in this show. Never
+    # printed (a run's end can give a death away); only the earliest year
+    # across the cast is read, by ``shown_years`` (DECISIONS 0049).
+    years: tuple[int, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -818,6 +839,7 @@ def _characters(
                 elsewhere=elsewhere,
                 anchor=anchor,
                 actors=_actor_names(c),
+                years=_int_years(years_here),
             )
         )
     return views
@@ -905,12 +927,148 @@ def _answer(show: dict[str, Any], cast: list[CharacterView]) -> Answer:
 
 
 def _years(years: dict[str, Any]) -> str:
+    """The Years row's text for a years record (``shown_years``'s, or
+    LezWatch's own). "ended" is said only when a source says the show ended;
+    an end year is never invented."""
     start, end = years["start"], years["end"]
     if start is None:
         return NOT_RECORDED
     if end is not None:
         return str(start) if end == start else f"{start} to {end}"
-    return f"{start} to present" if years["on_air"] == "yes" else f"{start} (end year not recorded)"
+    if years["on_air"] == "yes":
+        return f"{start} to present"
+    if years["on_air"] == "no":
+        return f"{start}, ended (end year not recorded)"
+    return f"{start} (end year not recorded)"
+
+
+def _int_years(values: Iterable[Any]) -> tuple[int, ...]:
+    """The plain years among ``values`` (ints or digit strings), sorted."""
+    out = set()
+    for v in values:
+        if isinstance(v, bool):
+            continue
+        if isinstance(v, int):
+            out.add(v)
+        elif isinstance(v, str) and v.isdigit():
+            out.add(int(v))
+    return tuple(sorted(out))
+
+
+def _date_year(value: Any) -> int | None:
+    """The year of a TVmaze "YYYY-MM-DD" date, or None."""
+    if not isinstance(value, str) or len(value) < 4 or not value[:4].isdigit():
+        return None
+    return int(value[:4])
+
+
+def _joined_by_id(show: dict[str, Any]) -> bool:
+    """True when TVmaze's record for this show came from an id join
+    (``TVMAZE_ID_JOINS``) that no other LezWatch show shares."""
+    sched = show["schedule"]
+    join = sched.get("join") or {}
+    return (
+        sched["schedule_known"] is True
+        and join.get("matched") is True
+        and join.get("method") in TVMAZE_ID_JOINS
+    )
+
+
+def _tvmaze_start(show: dict[str, Any], earliest: int | None) -> int | None:
+    """TVmaze's premiere year when DECISIONS 0049 lets it replace LezWatch's
+    start year, else None. ``earliest`` is the earliest year LezWatch records
+    for any character in this show (``earliest_character_year``).
+
+    The join must be by id and both years known. No character may be placed in
+    the show before TVmaze's premiere year (a character cannot appear before a
+    show begins). Then TVmaze's year is used when it is one year earlier or
+    later (the usual production-year or airdate gap), or when it is 2 to
+    ``YEARS_CORROBORATED_GAP`` years earlier and LezWatch's own character
+    records already place a character in the show before LezWatch's start
+    year. Anything else keeps LezWatch's year."""
+    years = show["years"]
+    start, end = years["start"], years["end"]
+    premiered = _date_year(show["schedule"]["premiered"])
+    if (
+        not _joined_by_id(show)
+        or isinstance(start, bool)
+        or not isinstance(start, int)
+        or premiered is None
+        or premiered == start
+    ):
+        return None
+    if earliest is not None and earliest < premiered:
+        return None
+    if isinstance(end, int) and premiered > end:
+        return None
+    gap = start - premiered
+    if abs(gap) == 1:
+        return premiered
+    if 2 <= gap <= YEARS_CORROBORATED_GAP and earliest is not None and earliest < start:
+        return premiered
+    return None
+
+
+def earliest_character_year(cast: Iterable[CharacterView]) -> int | None:
+    """The earliest year LezWatch records for any listed character in the
+    show, or None. Only this one year is read: it says when someone was first
+    in the show, never when anyone left or died."""
+    return min((y for c in cast for y in c.years), default=None)
+
+
+def first_character_years(doc: dict[str, Any]) -> dict[str, int]:
+    """``earliest_character_year`` for every show at once, by show id (for the
+    index, which has no cast lists)."""
+    first: dict[str, int] = {}
+    for c in doc["characters"]:
+        for link in c["shows"]:
+            for y in _int_years(link["years"]):
+                sid = link["show_id"]
+                first[sid] = min(first.get(sid, y), y)
+    return first
+
+
+def shown_years(show: dict[str, Any], earliest: int | None = None) -> tuple[dict[str, Any], bool]:
+    """(the years record the page shows, whether TVmaze supplied any of it),
+    DECISIONS 0049 (proposed). The record has LezWatch's shape: ``start``,
+    ``end`` and ``on_air``.
+
+    - Start: TVmaze's premiere year when ``_tvmaze_start`` allows it,
+      otherwise LezWatch's.
+    - End: LezWatch's end year when it has one. Otherwise, when TVmaze lists
+      the show as Ended and its premiere year is within a year of the start
+      year shown, the show is ended: TVmaze's end year when it has one (and it
+      is not before the start), else no year. When TVmaze says Ended but its
+      premiere year is further off, the two sources disagree, so the page says
+      neither "present" nor "ended". Nothing else changes LezWatch's record."""
+    years = show["years"]
+    start, end, on_air = years["start"], years["end"], years["on_air"]
+    tvmaze_start = _tvmaze_start(show, earliest)
+    from_tvmaze = tvmaze_start is not None
+    if tvmaze_start is not None:
+        start = tvmaze_start
+    sched = show["schedule"]
+    if end is None and sched["schedule_known"] is True and sched["status"] == "Ended":
+        premiered = _date_year(sched["premiered"])
+        if (
+            _joined_by_id(show)
+            and isinstance(start, int)
+            and premiered is not None
+            and abs(premiered - start) <= 1
+        ):
+            on_air, from_tvmaze = "no", True
+            ended = _date_year(sched["ended"])
+            if ended is not None and ended >= start:
+                end = ended
+        else:
+            on_air = "unknown"
+    return {"start": start, "end": end, "on_air": on_air}, from_tvmaze
+
+
+def years_fact(show: dict[str, Any], earliest: int | None = None) -> tuple[str, str]:
+    """(label, value) for the Years row (DECISIONS 0049, proposed)."""
+    years, from_tvmaze = shown_years(show, earliest)
+    return ("Years, per TVmaze" if from_tvmaze else "Years"), _years(years)
 
 
 def _tvmaze_last_season(show: dict[str, Any]) -> int | None:
@@ -1003,14 +1161,19 @@ def trigger_level(show: dict[str, Any]) -> str:
     return "See LezWatch.TV"
 
 
-def _facts(show: dict[str, Any], today: dt.date | None = None) -> list[tuple[str, str]]:
+def _facts(
+    show: dict[str, Any],
+    today: dt.date | None = None,
+    cast: Iterable[CharacterView] = (),
+) -> list[tuple[str, str]]:
     """The facts rows. With ``today`` (the snapshot's day), a next-episode row
-    follows the run status when TVmaze lists one (``next_episode_fact``)."""
+    follows the run status when TVmaze lists one (``next_episode_fact``).
+    ``cast`` is read only for the earliest character year (``shown_years``)."""
     sched = show["schedule"]
     seasons_label, seasons, _ = seasons_fact(show)
     upcoming = next_episode_fact(show, today) if today is not None else None
     return [
-        ("Years", _years(show["years"])),
+        years_fact(show, earliest_character_year(cast)),
         (seasons_label, seasons),
         ("Format", _term_name(show["format"])),
         network_fact(show),
@@ -1204,7 +1367,8 @@ def opening(show: dict[str, Any], cast: list[CharacterView]) -> str:
     "Unknown" or "Not recorded" (the facts list says that)."""
     n = len(cast)
     who = "one queer character" if n == 1 else f"{n} queer characters"
-    context = [part for part in (_opening_network(show), _opening_years(show["years"])) if part]
+    shown = shown_years(show, earliest_character_year(cast))[0]
+    context = [part for part in (_opening_network(show), _opening_years(shown)) if part]
     # A semicolon keeps a list of networks apart from the years.
     joiner = "; " if any("," in part for part in context) else ", "
     where = show["title"] + (f" ({joiner.join(context)})" if context else "")
@@ -1227,7 +1391,7 @@ def _series(show: dict[str, Any], canonical: str, cast: list[CharacterView]) -> 
         "url": canonical,
         "sameAs": [u for u in (show["source_url"], show["schedule"]["tvmaze_url"]) if u],
     }
-    years = show["years"]
+    years = shown_years(show, earliest_character_year(cast))[0]
     if years["start"] is not None:
         series["startDate"] = str(years["start"])
     if years["end"] is not None:
@@ -1331,7 +1495,7 @@ def render_show(
         show=show,
         crumbs=crumbs,
         breadcrumb=_structured(_breadcrumb(crumbs), _series(show, canonical, cast)),
-        facts=_facts(show, dt.date.fromisoformat(doc["generated_at"][:10])),
+        facts=_facts(show, dt.date.fromisoformat(doc["generated_at"][:10]), cast),
         cast=cast,
         listed=[(c, played_by(c)) for c in _ranked(cast)],
         answer=_answer(show, cast),
@@ -1382,8 +1546,9 @@ def letter_groups(shows: list[dict[str, Any]]) -> list[dict[str, Any]]:
     ]
 
 
-def _index_entry(s: dict[str, Any]) -> dict[str, str]:
-    return {"slug": s["slug"], "title": s["title"], "years": _years(s["years"])}
+def _index_entry(s: dict[str, Any], first: dict[str, int] | None = None) -> dict[str, str]:
+    years = shown_years(s, (first or {}).get(s["id"]))[0]
+    return {"slug": s["slug"], "title": s["title"], "years": _years(years)}
 
 
 def render_index(
@@ -1401,6 +1566,7 @@ def render_index(
     adds the link to the airing-now page (DECISIONS 0033)."""
     canonical = f"{base_url}/shows/"
     crumbs = [(SITE_NAME, f"{base_url}/"), ("Shows", canonical)]
+    first = first_character_years(doc)
     return _ENV.get_template("index.html.j2").render(
         **_common(doc, base_url, app_store_live),
         title=fit(
@@ -1437,9 +1603,10 @@ def render_index(
         ),
         total=len(shows),
         airing_url=f"{base_url}/airing/" if airing else None,
-        featured=[_index_entry(s) for s in featured or []],
+        featured=[_index_entry(s, first) for s in featured or []],
         groups=[
-            {**g, "shows": [_index_entry(s) for s in g["shows"]]} for g in letter_groups(shows)
+            {**g, "shows": [_index_entry(s, first) for s in g["shows"]]}
+            for g in letter_groups(shows)
         ],
     )
 

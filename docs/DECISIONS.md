@@ -1478,3 +1478,85 @@ alone; using TVmaze's dates there is a separate rule. Rookie Blue's network
 and Holby City's undone death are LezWatch.TV corrections.
 
 **Reversible.** Yes: `_running_count_lags` returns False.
+
+## 0049 — The Years row takes TVmaze's dates when the join is safe, and never says "present" for an ended show (2026-11-07)
+
+**Status: proposed (agent, 2026-11-07). Not chosen by Chelsea yet; it extends
+0048 and leaves 0031 and 0048 unchanged.**
+
+**Evidence.** The 2026-11-07 fact-check
+(`_agent-tools/growth/qf-index50-factcheck-2026-11-07.md`) found three Years
+rows copied from LezWatch.TV that are wrong: Chicago Med "2020 to present"
+(it premiered November 17, 2015; the page's own death answer is from 2016),
+9-1-1 "2017 to present" (premiered January 3, 2018), and All American "2018
+to present" two rows above "Run status, per TVmaze: Ended" (its final season
+ended September 28, 2026). On the bundled snapshot of 2026-09-18, TVmaze's
+premiere year and LezWatch's start year differ on 65 of the 1,802 shows
+TVmaze knows (1,735 agree, 2 lack a year): 42 by one year, 12 by two or
+three, 11 by four to 21. On the 361 show pages they differ on 13. Wikipedia's
+article pages (/wiki/ only, 6 seconds apart) for 11 of those 13 shows found
+TVmaze right on 8 (Chicago Med, 9-1-1, NCIS, Coronation Street, Home and
+Away, Degrassi: Next Class, Harlots, Orphan Black: Echoes) and LezWatch.TV
+right on 3: Amar es para siempre (TVmaze's 2005 is the show it continued),
+Servir y proteger (2017) and Midsomer Murders (1997; TVmaze lists 1998).
+Spanish Wikipedia confirms Chica busca chica began in 2007, as TVmaze says.
+The only two gaps of 2 or more years on a page that LezWatch.TV's own
+character years do not back are wrong matches on TVmaze's side: Amar es para
+siempre (above) and Club Friday The Series (TVmaze's record premiered in
+2022, after LezWatch.TV's characters from 2015, so it is one later season).
+
+**Decision.** One function, `shown_years`, gives the years every part of a
+page uses: the facts row, the opening sentence, the schema.org `startDate`
+and `endDate`, and the shows index.
+
+- Start year. TVmaze's premiere year replaces LezWatch.TV's only when all of
+  these hold: the TVmaze join is by id (LezWatch's TVmaze id, its manual
+  override, or LezWatch's IMDb id), never by title, and no other LezWatch show
+  shares it; both years are known; no year LezWatch.TV records for a
+  character in this show is earlier than TVmaze's premiere year (a character
+  cannot appear before a show begins); TVmaze's year is not after
+  LezWatch's end year; and either the gap is one year, earlier or later (the
+  usual production-year or airdate gap), or TVmaze's year is 2 to 10 years
+  earlier and LezWatch.TV's own character records already place a character
+  in the show before LezWatch's start year. N is 1 for an uncorroborated gap
+  because both uncorroborated gaps of 2 or more years on a page are wrong
+  TVmaze matches; the corroborated limit of 10 is the largest corroborated gap
+  on a page (Home and Away, 1988 not 1998). Only the earliest character year
+  is read: it says when someone was first in the show, never when anyone
+  left or died, so the row still cannot answer the question.
+- End. LezWatch.TV's end year stays when it has one. When it has none and
+  TVmaze lists the show as Ended, with an id join and a premiere year within
+  one year of the start year shown, the show is ended: the row shows
+  TVmaze's end year when TVmaze has one and it is not before the start
+  ("2018 to 2026"), else "2018, ended (end year not recorded)". When TVmaze
+  says Ended but its premiere year is further off, the two sources disagree,
+  so the row says "2012 (end year not recorded)": neither "present" nor
+  "ended". A show LezWatch.TV marks not on air with no end year also reads
+  "ended (end year not recorded)". An end year is never invented.
+- The row is labeled "Years, per TVmaze" whenever TVmaze supplied any part of
+  it, as 0031 does for Seasons. No new request to TVmaze: the premiere date,
+  status and end date are already in the snapshot. No hand-kept overrides.
+
+On the bundled snapshot of 2026-09-18 the rule changes the Years row on 9 of
+361 show pages, and the shows index: 9-1-1, Chica busca chica, Chicago Med,
+Coronation Street, Degrassi: Next Class, Harlots, Home and Away, Midsomer
+Murders and NCIS. Eight are confirmed right; Midsomer Murders becomes wrong
+(1998), because TVmaze's own premiere date is a year late; its row says
+"per TVmaze", and the fix is a TVmaze edit, not an override here. On the
+snapshot published 2026-11-07 it changes 12 of 363 pages: the same 9, plus All
+American ("2018 to 2026"), BIFL ("2019 to 2020") and Club Friday The
+Series ("2012 (end year not recorded)", not "2012 to present"). It holds back
+Amar es para siempre and Servir y proteger, where LezWatch.TV is right, and
+Orphan Black: Echoes, where TVmaze is right (2024) but LezWatch.TV's own
+character years start in 2023.
+
+**Choices for Chelsea.** A (this branch): both directions, as above. B:
+only TVmaze's earlier year, which avoids Midsomer Murders but leaves 9-1-1,
+Degrassi: Next Class and Harlots wrong. C: the end rule only, leaving every
+start year as LezWatch.TV records it.
+
+**Not changed.** The Seasons rule (0031, 0048), including 0048's year check,
+which still compares with LezWatch.TV's start year. The apps. The airing page
+still selects by LezWatch.TV's on-air flag.
+
+**Reversible.** Yes: `shown_years` returns `show["years"]` unchanged.

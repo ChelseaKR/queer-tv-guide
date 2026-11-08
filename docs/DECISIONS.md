@@ -1721,3 +1721,17 @@ page says the date is kept on purpose) and missing markers.
 **Not changed.** The 0052 website rule, `died`, `dates`, `years`, the placements, and the 0030 rule.
 
 **Reversible.** Yes: stop writing `counted` (readers fall back to the old reading) or have `is_marked_dead` return True.
+
+## 0054 — One later retry for a failed LezWatch.TV request, and Retry-After is honored (2026-11-08)
+
+**Status: proposed (branch `fix/snapshot-timeout-resilience`). Changes the declared crawl budget.**
+
+**Evidence.** Run 42466572132 lost the night to three 60-second read timeouts on `wp/v2/trope` inside about three and a half minutes. That endpoint is small (37 terms, 3.3 KB in the mirror) and was the run's first JSON request after the license gate, so nothing points at the endpoint itself. Three tries in one slow stretch all land in that stretch, and a longer timeout would only hold a volunteer site's worker longer.
+
+**Decision.** After its quick retries, a failed LezWatch.TV request (5xx or network error) waits 15 minutes and is tried once more, at most once a run. A second failure in the same run fails the run. The timeout stays 60 seconds, the 10-second pace stays, the connection stays single, and the User-Agent is unchanged. Retry-After is now honored on 429 and 5xx for both sources; asked to wait more than 15 minutes, the client stops instead of retrying sooner.
+
+**Cost.** A healthy night is unchanged. A night that recovers makes the failed tries plus one, and only the failed request is repeated. A full outage makes 4 tries instead of 3 and fails after about 19 minutes instead of about 3.5. A full mirror plus this wait fits the 90-minute job timeout.
+
+**Not changed.** A failed run publishes nothing and the previous snapshot stays. TVmaze has no later retry.
+
+**Reversible.** Yes: set `later_retry_wait` back to 0 on `LEZWATCH_POLICY`.

@@ -99,6 +99,30 @@ character's years in the show (a run that ends before the show does gives a
 death away), a death date or year, or any cliche or trope. There are no
 actor pages.
 
+Character questions (``character_questions``, DECISIONS 0051). After the
+sealed answer, one block per listed character, regulars first, asks the
+question people type: "Is <character> <label> in <show>?" as a real ``<h3>``,
+where the label is the one ``identity`` reads from LezWatch.TV's own gender
+and sexuality terms ("a lesbian", "bisexual", "a trans woman", "non-binary"),
+or "LGBTQ" when neither term gives one. The answer names both terms as
+LezWatch.TV records them, says "LezWatch.TV lists <name> without a stated
+orientation" when the sexuality is empty or "Undefined", and never invents a
+label. A second ``<h3>``, "Does <character> die in <show>?", points at the
+one sealed answer and carries no death status: the answer stays behind the
+same reveal as before. Past ``QUESTIONS_VISIBLE`` (8) blocks the rest sit in
+a closed ``<details>`` whose summary reads "Show all <n> characters", so the
+control works with no script. No FAQPage is added. Nothing in a block reads
+a death record.
+
+The next-episode line (``next_episode_line``, DECISIONS 0051). A page whose
+show has a TVmaze next episode says, just above the app block, "Next
+episode: <date>, per TVmaze", with the calendar day TVmaze gives in the
+network's own time zone, or "date to be announced" when TVmaze lists the
+episode with no date; with the App Store switch on it adds "Get a reminder
+in the app.", which the block under it offers. No next episode, no
+schedule, or a date before the snapshot's day: no line at all, never "no
+upcoming episodes".
+
 Seasons (``seasons_fact``, DECISIONS 0031). For a show TVmaze lists as Ended, when TVmaze's last season number differs from
 LezWatch's season count, the page shows TVmaze's, labeled "per TVmaze".
 For a show LezWatch marks on air and TVmaze does not list as Ended, TVmaze's
@@ -286,6 +310,18 @@ SEXUALITY_LABELS = frozenset(
     }
 )
 NO_GENDER_LABEL = frozenset({"Unknown", "Not recorded"})
+# A sexuality LezWatch.TV leaves empty or marks "Undefined" is not stated; the
+# character block says so instead of a label (DECISIONS 0051).
+UNSTATED_SEXUALITIES = frozenset({"Undefined", "Not recorded"})
+# Identity labels that are nouns, so the question takes an article ("Is she a
+# lesbian"); every other label is an adjective ("Is she bisexual"). A label
+# ending in "woman" or "man" is a noun too.
+LABEL_NOUNS = frozenset({"lesbian", "hijra", "hermaphrodite", "cogenitor", "fa'afafine"})
+# The word for a listed character with no label of its own, the one LezWatch.TV's
+# scope allows (DECISIONS 0045).
+NO_LABEL_WORD = "LGBTQ"
+# Character question blocks shown before the "Show all" control (DECISIONS 0051).
+QUESTIONS_VISIBLE = 8
 # The hand-picked list (DECISIONS 0021). Resolved from the source tree, so it
 # is used by `python -m qtv_pipeline.show_pages` and `make site`; deleting the
 # file restores the character-count rule.
@@ -892,8 +928,9 @@ def _characters(
     return views
 
 
-# Ids the page's own markup uses; a character anchor never takes one.
-RESERVED_IDS = frozenset({"main"})
+# Ids the page's own markup uses; a character anchor never takes one. "answer"
+# is the sealed answer, which each "Does <character> die" block links to.
+RESERVED_IDS = frozenset({"main", "answer"})
 
 
 def anchors(characters: list[dict[str, Any]]) -> list[str]:
@@ -931,6 +968,93 @@ def played_by(c: CharacterView) -> str | None:
     """ "played by <actor>" from LezWatch.TV's actor names, or None when it
     names no actor (the clause is then left out)."""
     return f"played by {_and_list(list(c.actors))}" if c.actors else None
+
+
+@dataclass(frozen=True)
+class CharacterQuestions:
+    """One character's block on a show page (DECISIONS 0051). ``before`` and
+    ``after`` are the identity answer around the words "LezWatch.TV", which
+    the template links to the character's LezWatch.TV page. Nothing here
+    reads a death record; ``death_question`` is only the question."""
+
+    name: str
+    source_url: str
+    question: str
+    before: str
+    after: str
+    who: str
+    death_question: str
+
+
+def question_label(gender: str, sexuality: str) -> str | None:
+    """The label the question asks about, with its article: "a lesbian",
+    "bisexual", "a trans woman", "non-binary", from LezWatch.TV's own terms
+    through ``identity`` (DECISIONS 0027), so no label is ever invented. A
+    parenthetical qualifier ("Non-Binary (Intersex)") is left to the answer,
+    which gives the full term. None when neither term gives a label."""
+    label = identity(gender, sexuality)
+    if label is None:
+        return None
+    label = " ".join(re.sub(r"\s*\([^)]*\)", "", label).split())
+    if not label:
+        return None
+    if label in LABEL_NOUNS or label.endswith(("woman", "man")):
+        return f"a {label}"
+    return label
+
+
+def character_questions(
+    show: dict[str, Any], cast: list[CharacterView]
+) -> list[CharacterQuestions]:
+    """The question blocks, regulars first (``_ranked``, never an order a
+    death could affect). The identity answer is "Yes, per LezWatch.TV:
+    sexuality <S>, gender <G>." when the question carries a label, or
+    "LezWatch.TV lists <name> with the sexuality <S> and the gender <G>."
+    when it does not; a sexuality LezWatch.TV leaves empty or "Undefined"
+    is said as "without a stated orientation". The role and actors follow,
+    as the character list gives them, and a missing one is left out."""
+    title = show["title"]
+    blocks = []
+    for c in _ranked(cast):
+        label = question_label(c.gender, c.sexuality)
+        before, after = _identity_answer(c, label)
+        blocks.append(
+            CharacterQuestions(
+                name=c.name,
+                source_url=c.source_url,
+                question=f"Is {c.name} {label or NO_LABEL_WORD} in {title}?",
+                before=before,
+                after=after,
+                who=_who(c),
+                death_question=f"Does {c.name} die in {title}?",
+            )
+        )
+    return blocks
+
+
+def _identity_answer(c: CharacterView, label: str | None) -> tuple[str, str]:
+    """The identity answer around the words "LezWatch.TV" (see
+    ``character_questions``)."""
+    unstated = c.sexuality in UNSTATED_SEXUALITIES
+    if label is not None:
+        terms = f"gender {c.gender}" if unstated else f"sexuality {c.sexuality}, gender {c.gender}"
+        after = f": {terms}."
+        if unstated:
+            after += f" LezWatch.TV lists {c.name} without a stated orientation."
+        return "Yes, per ", after
+    if unstated:
+        return "", f" lists {c.name} without a stated orientation; gender {c.gender}."
+    return "", f" lists {c.name} with the sexuality {c.sexuality} and the gender {c.gender}."
+
+
+def _who(c: CharacterView) -> str:
+    """ "Regular, played by <actor>." from the role and actors the character
+    list shows; a missing part is left out, and nothing is a placeholder."""
+    parts = [p for p in (c.role if c.role != NOT_RECORDED else None, played_by(c)) if p]
+    if not parts:
+        return ""
+    who = ", ".join(parts)
+    return who[0].upper() + who[1:] + "."
 
 
 def _answer(show: dict[str, Any], cast: list[CharacterView]) -> Answer:
@@ -1373,6 +1497,35 @@ def next_episode_fact(show: dict[str, Any], today: dt.date) -> tuple[str, str] |
     return NEXT_EPISODE_LABEL, when
 
 
+TO_BE_ANNOUNCED = "date to be announced"
+
+
+def next_episode_line(show: dict[str, Any], today: dt.date) -> tuple[str, str | None] | None:
+    """(what the next-episode line says, the ISO date for its ``<time>`` or
+    None), or None for no line (DECISIONS 0051).
+
+    TVmaze's ``airdate`` is the calendar day in the network's own time zone
+    (its ``airstamp`` carries the offset), so that day is printed as TVmaze
+    gives it, never converted. An episode TVmaze lists with no date reads
+    ``TO_BE_ANNOUNCED``: that is TVmaze's own statement, not a guess. No line
+    when TVmaze has no schedule or lists no next episode (the Years row says
+    when a show has ended, DECISIONS 0049), when the date is unreadable, or
+    when it is before the snapshot's day (a stale listing). Never the episode
+    name, and never "no upcoming episodes"."""
+    sched = show["schedule"]
+    if sched["schedule_known"] is not True or not sched["next_episode"]:
+        return None
+    raw = sched["next_episode"].get("airdate")
+    if raw is None or raw == "":
+        return TO_BE_ANNOUNCED, None
+    if not isinstance(raw, str) or _long_date(raw) is None:
+        return None
+    day = dt.date.fromisoformat(raw)
+    if day < today:
+        return None
+    return us_date(day), day.isoformat()
+
+
 def _opening_years(years: dict[str, Any]) -> str | None:
     start, end = years["start"], years["end"]
     if start is None:
@@ -1545,6 +1698,7 @@ def render_show(
         ("Shows", f"{base_url}/shows/"),
         (show["title"], canonical),
     ]
+    today = dt.date.fromisoformat(doc["generated_at"][:10])
     return _ENV.get_template("show.html.j2").render(
         **_common(doc, base_url, app_store_live),
         title=show_title(show["title"], len(cast)),
@@ -1554,9 +1708,12 @@ def render_show(
         show=show,
         crumbs=crumbs,
         breadcrumb=_structured(_breadcrumb(crumbs), _series(show, canonical, cast)),
-        facts=_facts(show, dt.date.fromisoformat(doc["generated_at"][:10]), cast),
+        facts=_facts(show, today, cast),
         cast=cast,
         listed=[(c, played_by(c)) for c in _ranked(cast)],
+        questions=character_questions(show, cast),
+        questions_visible=QUESTIONS_VISIBLE,
+        next_episode=next_episode_line(show, today),
         answer=_answer(show, cast),
         tvmaze_url=show["schedule"]["tvmaze_url"],
         others=[

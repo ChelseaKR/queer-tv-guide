@@ -1738,7 +1738,7 @@ page says the date is kept on purpose) and missing markers.
 
 ## 0055 — Other titles and unknown season counts from Wikidata, where two ids agree (2026-11-08)
 
-**Status: accepted in principle (Chelsea, 2026-11-08, option A of `_agent-tools/growth/qf-data-sources-2026-11-08.md`: "Yes, both, only where two IDs agree"). One choice below needs her eye.**
+**Status: accepted (Chelsea, 2026-11-08: option A of `_agent-tools/growth/qf-data-sources-2026-11-08.md`, "Yes, both, only where two IDs agree", and option A below for the 241 shows where Wikidata and TVmaze agree).**
 
 **Evidence.** `alternate_names` was empty on all 2,290 shows while search on both apps reads it. Someone who knows *Call My Agent!* had to type *Dix pour cent*. `seasons` was null on 424 shows.
 
@@ -1759,7 +1759,7 @@ page says the date is kept on purpose) and missing markers.
 
 **1.0.0.** `SearchIndex` and `Snapshot` at tag v1.0.0, run against a real build: the file decodes, "Call My Agent" finds Dix pour cent as the first hit, EastEnders reads "42 seasons", and the About notice names Wikidata. Unknown keys are ignored. No app release is needed.
 
-**Choice for Chelsea.** The 241 shows where Wikidata and TVmaze agree only help the apps; the website is unchanged. A (this branch): fill them, since nothing is overwritten and both sources give that number. B: fill only the 20 with no TVmaze count, reading "don't overwrite" more strictly, leaving the apps at "Seasons not recorded" on those 241.
+**Chelsea's choice on the 241 shows.** Where Wikidata and TVmaze agree, the fill only helps the apps; the website is unchanged. She chose A: fill them, since nothing is overwritten and both sources give that number. B, not chosen, would have filled only the 20 with no TVmaze count and left the apps at "Seasons not recorded" on those 241.
 
 **Not changed.** Requests to LezWatch.TV and TVmaze, the later retry (0054), the apps' code, App Store copy, `death.*`. No Wikidata death field is read.
 

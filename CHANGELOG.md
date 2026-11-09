@@ -13,6 +13,10 @@ consumer of the published snapshot, would notice.
 
 ### Added
 
+- Search finds a show by its other titles: "Call My Agent!" finds Dix pour cent.
+  The snapshot now fills `alternate_names` and some unknown season counts from
+  Wikidata, only where two ids agree, without replacing a LezWatch.TV or TVmaze
+  count. A Wikidata outage changes nothing (DECISIONS 0055).
 - Every show page asks each listed character's question after the sealed
   answer: "Is <name> <label> in <show>?" with LezWatch.TV's own gender and
   sexuality terms ("a lesbian", "bisexual", "a trans woman",

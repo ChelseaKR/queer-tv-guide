@@ -1735,3 +1735,32 @@ page says the date is kept on purpose) and missing markers.
 **Not changed.** A failed run publishes nothing and the previous snapshot stays. TVmaze has no later retry.
 
 **Reversible.** Yes: set `later_retry_wait` back to 0 on `LEZWATCH_POLICY`.
+
+## 0055 — Other titles and unknown season counts from Wikidata, where two ids agree (2026-11-08)
+
+**Status: accepted in principle (Chelsea, 2026-11-08, option A of `_agent-tools/growth/qf-data-sources-2026-11-08.md`: "Yes, both, only where two IDs agree"). One choice below needs her eye.**
+
+**Evidence.** `alternate_names` was empty on all 2,290 shows while search on both apps reads it. Someone who knows *Call My Agent!* had to type *Dix pour cent*. `seasons` was null on 424 shows.
+
+**The 329 and 237 in the report measure something else.** The report counted `seasons` null and no `episode_counts`: 329, of which Wikidata had 216 under the two-id rule. `episode_counts` exists only for shows with a recorded death. TVmaze's `previous_episode.season` already gives the website a count for most of them (0031), so on the website only 83 are truly unknown, and Wikidata can fill 22 of those. The apps read `seasons` alone, so they say "Seasons not recorded" on all 424.
+
+**Decision.**
+
+- Which item. Only when the item's P7107 names the show and the show's TVmaze id or IMDb id leads to that item and no other: 1,910 shows on the 2026-11-07 snapshot, with 3 conflicts refused.
+- `seasons`. Null from LezWatch.TV is the only slot it can fill, so 0031, 0048 and 0049 are untouched. With no TVmaze count, Wikidata's fills it if it fits in the years LezWatch.TV records, plus one: 20 shows. With the same TVmaze count it fills it too: 241 shows. A different TVmaze count leaves it null: 34 shows. The count is unusable if two values disagree, if it is not whole, or if it is a year, and for an item that is one season, an episode, a film or a franchise.
+- The Seasons row. `seasons_fact` treats a Wikidata count as no LezWatch.TV count, so a show TVmaze has a number for reads exactly as before. A website row changes only when TVmaze has none: "Seasons, per Wikidata", with "N so far" for a running show. That is 6 of 367 pages (EastEnders, General Hospital, Gute Zeiten schlechte Zeiten, One Piece, Tatort, The Bold and the Beautiful). The Years row reads no season value.
+- `alternate_names`. The English and `mul` label and aliases and, for a show in one language other than English, its label and title in that language. Labels in other languages are how other markets translate a title, and they are not names this app's users know. Rejected, by rules set from reading every candidate: the same as the title once folded as search folds it, no word the title lacks, a trailing parenthesis, "TV series" and the like, a bare qualifier ("reboot", "live action"), an abbreviation of six characters or fewer, season or episode words, spoiler words the title lacks (die, death, finale, muerte and the like), another show's exact title, and a name two shows claim. English aliases are the dirtiest field: *Star Trek* carries "Those Old Scientists" (an episode of another show), *Call the Midwife* a stray Arabic word, *BoJack Horseman* "nepe", *Goliath* "Trial", so on an English-language show a name with no word in common with the title goes, and one bare word goes; on a show in another language a one-word alias under 8 letters goes. That loses some real ones (*Murdoch Mysteries*' "The Artful Detective", *Coronation Street*'s "Corrie"): a missing title costs a search, and a wrong one sends someone to the wrong show.
+- Rejected by hand. All 587 names that passed the rules were read, and 14 were wrong or could not be confirmed. They are in `data/wikidata_title_rejects.json`. An example is *La Reina del Sur*'s "Queen of the South", which is also a different show LezWatch.TV does not list.
+- Result: 573 names on 371 shows, 205 of them in the show's own language, from 3,461 candidates. Search-only: no screen or page shows them, which also limits what a spoiler could do.
+- Delivery. `qtv wikidata` is its own workflow step after `qtv fetch`, reads QLever at most weekly, always exits 0, and replaces its cached file only after a whole read. `qtv build` reads the cached file, or the committed `data/wikidata_items.json`. `qtv fetch` and its requests do not change. Nothing is added to the app: it still makes one GET, and "Data Not Collected" stays true.
+- Credit. `licence.notice` names Wikidata. No `attribution[]` entry, because `schema/README.md` makes an enum change a major version. The schema version stays "1".
+
+**Spot checks.** A random 40 of the names (seed 20261108), read against the show: 37 right, 1 wrong-show risk ("Queen of the South", now rejected), 1 unconfirmed and rejected ("Al Badeel"), 1 unconfirmed and left ("Living Passion", *Paixão*). Checked by knowledge of the show and, for the doubtful ones, Wikipedia; not each against a source. The report's kill line was 2 wrong in 30; this is 1 in 40. For seasons, all 22 counts with no TVmaze number and 15 random of the 241: 2 wrong for the show as LezWatch.TV lists it (*Guiding Light* 72 counts its radio years, per Wikipedia; *Tales of the City* 3 counts later miniseries), and the years check now refuses both. That rule was written after seeing them.
+
+**1.0.0.** `SearchIndex` and `Snapshot` at tag v1.0.0, run against a real build: the file decodes, "Call My Agent" finds Dix pour cent as the first hit, EastEnders reads "42 seasons", and the About notice names Wikidata. Unknown keys are ignored. No app release is needed.
+
+**Choice for Chelsea.** The 241 shows where Wikidata and TVmaze agree only help the apps; the website is unchanged. A (this branch): fill them, since nothing is overwritten and both sources give that number. B: fill only the 20 with no TVmaze count, reading "don't overwrite" more strictly, leaving the apps at "Seasons not recorded" on those 241.
+
+**Not changed.** Requests to LezWatch.TV and TVmaze, the later retry (0054), the apps' code, App Store copy, `death.*`. No Wikidata death field is read.
+
+**Reversible.** Yes: delete the workflow step and have `load_mirror` return None. Every value is then absent on the next build.

@@ -1,0 +1,4 @@
+Read 2026-11-08 with the pipeline User-Agent.
+https://qlever.dev/robots.txt answered 404: no robots.txt.
+https://qlever.cs.uni-freiburg.de/robots.txt answered 404: no robots.txt.
+https://qlever.dev/ states no terms of use and no rate limit in the page text read.

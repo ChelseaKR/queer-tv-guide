@@ -1,8 +1,9 @@
 # pipeline
 
 Mirrors LezWatch.TV and TVmaze into `snapshot.v1.json` (contract:
-`../schema/`). Python 3.12, `uv`. There are no users here: nothing in this
-directory ever sees a person, and the only network calls are to the two
+`../schema/`), with other titles and some season counts from a weekly Wikidata
+read (DECISIONS 0055). Python 3.12, `uv`. There are no users here: nothing in
+this directory ever sees a person, and the only network calls are to these
 sources.
 
 ```
@@ -10,6 +11,7 @@ cd pipeline
 uv sync --all-groups
 uv run qtv terms-check                      # 1 request: the LezWatch ToS still grants reuse
 uv run qtv fetch --cache .cache             # incremental mirror (full on first run)
+uv run qtv wikidata --cache .cache          # at most weekly; never fails the run
 uv run qtv build --cache .cache --out out   # normalize, validate, digest, coverage report
 #   add --previous <snapshot> to refuse a snapshot that shrank; --allow-shrink to override
 uv run qtv validate out/snapshot.v1.json
@@ -51,6 +53,41 @@ What is fetched, and only this:
   about 400 requests on a full run, the running shows with a death on a
   nightly one). Only each episode's season, number, air date and type are
   kept. No images, no summaries, no cast.
+
+## Wikidata (DECISIONS 0055)
+
+Other titles and unknown season counts. It is not part of `qtv fetch`, which is
+unchanged, and it makes no request to LezWatch.TV or TVmaze.
+
+| | Wikidata, through QLever |
+|---|---|
+| Host | `qlever.dev/api/wikidata`. Never `query.wikidata.org/sparql` or `www.wikidata.org/w/api.php`, which Wikimedia's robots.txt disallows |
+| robots.txt and terms | `qlever.dev/robots.txt` is a 404; no terms or rate limit found on its pages (`docs/terms-snapshots/2026-11-08/`) |
+| Pace | 1 request / 10 s, one connection |
+| On 429 | wait 60 s, then 120 s, then give up for the night; Retry-After is waited out up to 120 s, and asked for more, it stops |
+| On 5xx / network error | one retry after 15 s, then give up for the night. No later retry |
+| User-Agent | the same honest one as above |
+| Reads | 3 queries, about 2 MB, about 25 seconds, at most once a week. The other nights make no request |
+
+`qtv wikidata` always exits 0. It writes `cache/wikidata/items.json` in one step,
+and only after all three queries worked and the read holds at least 90 % of the
+items last known, so an outage, a 429 or a short answer leaves the file byte for
+byte. The file travels in `mirror-cache.tar.gz` with the rest of the mirror.
+`qtv build` reads it, or `data/wikidata_items.json` (committed, read 2026-11-08)
+when the cache has none, and contacts nothing. With neither, every value is
+absent and the build goes on. To refresh the committed copy, run `qtv wikidata
+--cache <dir> --force`, copy the file over and read the diff.
+
+A value is used only when the item's LezWatch.TV id (P7107) names this show and
+the show's TVmaze id (P8600) or IMDb id (P345) leads to that same item and no
+other. `alternate_names` takes the English label and aliases and, for a show in
+one language other than English, its title in that language, after the rules in
+`wikidata.py` and the names read by hand and rejected in
+`data/wikidata_title_rejects.json`. `seasons` is filled only when LezWatch.TV has
+no count and TVmaze has none or the same one; a different TVmaze count leaves it
+null. `show.wikidata` records the item, the ids that matched, the read date and
+each name's source. `coverage.wikidata` counts what was taken and what was
+rejected, by reason. No death field is read from Wikidata, ever.
 
 ## Incremental fetch and the cursor
 
@@ -194,6 +231,7 @@ src/qtv_pipeline/
   terms.py      the LezWatch ToS gate
   lezwatch.py   mirror LezWatch into the cache (incremental, cursor, deletions)
   tvmaze.py     join and mirror TVmaze into the cache
+  wikidata.py   the weekly Wikidata read, and the rule for which values are used
   normalize.py  cache records -> snapshot records (all the absence rules)
   build.py      assemble, digest, validate, write
   coverage.py   two numbers everywhere, printed on every build

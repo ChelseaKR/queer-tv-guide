@@ -130,7 +130,9 @@ latest season replaces a lower LezWatch count, as "5 so far, per TVmaze", when
 TVmaze's premiere year is within a year of LezWatch's start year (DECISIONS
 0048); otherwise LezWatch's count stays. When LezWatch has no count, TVmaze's
 latest season fills it ("3 so far" for a show still running). A TVmaze season number of 1900 or more is a year (a
-show numbered by year), not a count, and is never used.
+show numbered by year), not a count, and is never used. Only when TVmaze has no
+count either does a Wikidata count fill the row, as "Seasons, per Wikidata"
+(DECISIONS 0055).
 
 Years (``shown_years``, DECISIONS 0049, proposed). TVmaze's premiere year
 replaces LezWatch's start year only on an id join, when no character is placed
@@ -197,7 +199,7 @@ from qtv_pipeline.app_store import (
     get_app_block,
     live_or_false,
 )
-from qtv_pipeline.normalize import DEAD_STATUS_CLICHES
+from qtv_pipeline.normalize import DEAD_STATUS_CLICHES, SEASON_IS_A_YEAR, tvmaze_last_season
 
 # The site's own domain (DECISIONS 0020). Pages serves the project path with a
 # 301 to it, so every canonical URL, internal link, breadcrumb item and
@@ -355,9 +357,6 @@ NOT_RECORDED = "Not recorded"
 # a show is and name no event, so the level is a facts row. Any other
 # trigger term is never printed outside the answer.
 TRIGGER_LEVELS = {"low": "Low", "medium": "Medium", "high": "High"}
-# A TVmaze season number this large is a year (soaps and anime numbered by
-# year, "2011"), not a season count (DECISIONS 0031).
-SEASON_IS_A_YEAR = 1900
 # The TVmaze joins made by an id (LezWatch's stored TVmaze id, its manual
 # override, or LezWatch's IMDb id looked up on TVmaze), never by title
 # (DECISIONS 0048, 0049).
@@ -1254,18 +1253,6 @@ def years_fact(show: dict[str, Any], earliest: int | None = None) -> tuple[str, 
     return ("Years, per TVmaze" if from_tvmaze else "Years"), _years(years)
 
 
-def _tvmaze_last_season(show: dict[str, Any]) -> int | None:
-    """TVmaze's latest aired season number, or None when TVmaze has none or
-    numbers this show's seasons by year."""
-    sched = show["schedule"]
-    if sched["schedule_known"] is not True:
-        return None
-    season = (sched["previous_episode"] or {}).get("season")
-    if isinstance(season, bool) or not isinstance(season, int):
-        return None
-    return season if 1 <= season < SEASON_IS_A_YEAR else None
-
-
 def _same_show_by_year(show: dict[str, Any]) -> bool:
     """True when TVmaze's premiere year is within a year of LezWatch's start
     year (DECISIONS 0048). The join is by id, never by title; this is a second
@@ -1294,13 +1281,14 @@ def _running_count_lags(show: dict[str, Any], recorded: int | None, tvmaze: int 
 
 def seasons_fact(show: dict[str, Any]) -> tuple[str, str, int | None]:
     """(label, value, count for structured data) for the Seasons row
-    (DECISIONS 0031, 0048). For an ended show TVmaze's last season wins when
-    the two disagree; for a running show TVmaze's latest season wins only when
-    it is higher and the premiere years agree; when LezWatch has no count,
-    TVmaze's latest season fills it. Absence stays "Not recorded", never a
-    number."""
-    recorded = show["seasons"]
-    tvmaze = _tvmaze_last_season(show)
+    (DECISIONS 0031, 0048, 0055). For an ended show TVmaze's last season wins
+    when the two disagree; for a running show TVmaze's latest season wins only
+    when it is higher and the premiere years agree; when LezWatch has no count,
+    TVmaze's latest season fills it, and Wikidata's only when TVmaze has none.
+    Absence stays "Not recorded", never a number."""
+    wikidata = (show.get("wikidata") or {}).get("seasons")
+    recorded = None if wikidata is not None else show["seasons"]
+    tvmaze = tvmaze_last_season(show)
     ended = show["schedule"]["status"] == "Ended"
     if tvmaze is not None and (
         recorded is None
@@ -1308,6 +1296,9 @@ def seasons_fact(show: dict[str, Any]) -> tuple[str, str, int | None]:
         or _running_count_lags(show, recorded, tvmaze)
     ):
         return "Seasons, per TVmaze", str(tvmaze) if ended else f"{tvmaze} so far", tvmaze
+    if wikidata is not None:
+        running = show["years"]["on_air"] == "yes" and not ended
+        return "Seasons, per Wikidata", f"{wikidata} so far" if running else str(wikidata), wikidata
     if recorded is None:
         return "Seasons", NOT_RECORDED, None
     return "Seasons", str(recorded), recorded

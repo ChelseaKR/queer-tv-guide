@@ -225,6 +225,11 @@ consumer of the published snapshot, would notice.
 
 ### Fixed
 
+- One slow LezWatch.TV response no longer costs the night's snapshot: a request
+  that fails its three quick tries gets one more try 15 minutes later, once a
+  run. If LezWatch.TV stays unavailable the run still fails and yesterday's
+  snapshot stays (DECISIONS 0054).
+
 - The Years row, the opening sentence, the structured data and the shows
   index take TVmaze's premiere year when the TVmaze join is by id and the
   gap is one year, or up to 10 years earlier when LezWatch.TV's own

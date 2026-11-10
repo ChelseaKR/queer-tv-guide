@@ -31,8 +31,8 @@ make -C ios package-test
 make -C ios test
 ```
 
-Building a real snapshot contacts LezWatch.TV and TVmaze, at the pace their
-terms allow; see `pipeline/README.md` before running `qtv fetch`.
+Building a real snapshot contacts LezWatch.TV and TVmaze at the pace their
+terms allow, and QLever for Wikidata at most once a week; see `pipeline/README.md` before running `qtv fetch`.
 
 ## Standards Conformance
 

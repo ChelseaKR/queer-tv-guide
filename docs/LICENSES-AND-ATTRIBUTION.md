@@ -21,6 +21,7 @@ sent.)
 |---|---|---|---|---|---|
 | LezWatch.TV REST API | shows, characters, deaths, worth-it/quality/realness/screentime, tropes/clichés, gender/sexuality/romantic terms, where-to-watch URLs, actor names. **No images.** | Terms of Use, "Last Updated: 16 August 2018", https://lezwatchtv.com/tos/, read 2026-09-13: *"You are welcome to use, reuse, and extend the data here for no fees. … We do ask you link back to us, or note us by name, as a thank you in your final works."* API docs, https://docs.lezwatchtv.com/api/, read 2026-09-13: *"The public API at LezWatchTV is available for anyone anywhere to consume and reproduce the data found on this site."* | **Yes, on the published terms, with full attribution** (DECISIONS 0013). "For no fees" has no non-commercial limit, and the API docs say "anyone anywhere". The same page scopes the service to displaying data "on your own site"; the owner considered asking and chose not to (0008, superseded; the request was not sent). Data only: the ToS disclaims copyright in images ("believe them to fall under the fair-use clause"), which does not transfer to us, so the pipeline takes no image and the snapshot has no image field. | Yes, as a request, not a license condition: *"link back to us, or note us by name"*. The app names LezWatch.TV with a link on the attribution screen and links every show and character to its LezWatch page (`source_url`). | **None imposed.** LezWatch attaches no license to derived works. Its data may sit inside the BY-SA snapshot. |
 | TVmaze API | per show: TVmaze id/URL, status, premiered/ended, network/web channel, next and previous episode (season, number, name, air date/time, runtime, URL). **No images, no summaries.** | https://www.tvmaze.com/api §Licensing, read 2026-09-13: *"Use of the TVmaze API is licensed by CC BY-SA. This means the data can freely be used for any purpose, as long as TVmaze is properly credited as source and your usage complies with the ShareAlike provision. You can satisfy the attribution requirement by linking back to TVmaze from within your application or website, for example using the URLs available in the API."* The "CC BY-SA" link targets `http://creativecommons.org/licenses/by-sa/4.0/`. License text: https://creativecommons.org/licenses/by-sa/4.0/legalcode.txt, read 2026-09-13. | **Yes.** CC BY-SA 4.0 has no NonCommercial element; s.2(a)(1) grants *"a worldwide, royalty-free, non-sublicensable, non-exclusive, irrevocable license"* to *"reproduce and Share the Licensed Material, in whole or in part"* and *"produce, reproduce, and Share Adapted Material"*. TVmaze's own gloss: "for any purpose". | Yes, a license condition (s.3(a)). Satisfied per TVmaze's own instruction by linking to TVmaze URLs from within the app: `schedule.tvmaze_url` on every joined show and `url` on every episode. The attribution screen additionally names TVmaze, states "CC BY-SA 4.0", links the license (s.3(a)(1)(c)) and says the data was reformatted (s.3(a)(1)(b)). | **Yes, on the snapshot file.** See below. The app code is not Adapted Material. |
+| Wikidata, read through QLever | per show with two ids agreeing: other titles (English label and aliases; the title in the show's one language, if not English), the season count (P2437). **No death field, no images, no people.** | https://www.wikidata.org/wiki/Wikidata:Licensing, read 2026-11-08: *"All structured data (i.e. the main, Property, Lexeme, and EntitySchema namespaces) is released into the public domain under Creative Commons Zero."* | **Yes.** | None required; named anyway in `licence.notice` and `docs/data/wikidata.md`. | No. |
 | TheTVDB | nothing | Not read this session; not needed (TVmaze covers schedule). | **UNKNOWN — not used.** | — | — |
 
 ## LezWatch.TV, in full
@@ -142,6 +143,34 @@ of which the pipeline touches.
 **Not taken.** Images (`image` fields point at files whose rights TVmaze does
 not license to us), episode summaries (prose, often third-party), cast, ratings.
 
+## Wikidata, in full
+
+**Grant.** CC0, in Wikidata's words in the table
+(`docs/terms-snapshots/2026-11-08/wikidata-licensing.txt`). CC0 asks for no credit
+and adds no condition, so the values sit inside the CC BY-SA 4.0 snapshot without
+changing anything for the app or for anyone reusing the file.
+
+**Where the credit goes.** Sources are credited here, in a data card, and in the
+snapshot's credits, so Wikidata is named in all three. `attribution[]` cannot take
+it without a new schema version (the `source` field is an enum, and
+`schema/README.md` says changing an enum is a major version), and a new version
+would orphan the installed app. `licence.notice` is plain text the app already
+shows verbatim on its About screen, so it carries the name. A show page whose
+Seasons row is Wikidata's says "Seasons, per Wikidata". No App Store copy changes.
+
+**The route.** Wikimedia's robots.txt disallows `/sparql` on `query.wikidata.org`
+and `/w/` on `www.wikidata.org` (`docs/terms-snapshots/2026-11-08/`), so neither is
+used. The pipeline reads QLever, a public Wikidata endpoint run by the University
+of Freiburg. It has no robots.txt and no terms or rate limit that could be found on
+its pages, so the only rule that applies is a small, paced, identified read. This
+is the one thing here resting on an absence rather than on a statement. If QLever
+publishes terms that forbid this, the step comes out and the committed copy stays.
+Chelsea chose this route on 2026-11-08 (QLever or per-item `Special:EntityData`).
+
+**Not taken.** Wikidata's death properties (P570, P1196, P509, P157), which cover
+under 2% of recorded deaths, partly copy LezWatch.TV and mix real and in-story
+dates. Cast, creators, awards, and anything about real people.
+
 ## TheTVDB
 
 Not needed: TVmaze supplies the schedule. Its terms were not read this session.
@@ -154,8 +183,9 @@ https://thetvdb.com/api-information first and fill the row.
 
 > This dataset is published under the Creative Commons Attribution-ShareAlike
 > 4.0 International license. Show and character data: LezWatch.TV. Episode and
-> schedule data: TVmaze (CC BY-SA 4.0). If you redistribute this file, keep
-> this notice and these credits.
+> schedule data: TVmaze (CC BY-SA 4.0). Other titles and some season counts:
+> Wikidata (CC0). If you redistribute this file, keep this notice and these
+> credits.
 
 `attribution[]`: the two source entries above, each with `url`, `licence_name`,
 `licence_url`, `terms_url`, `terms_read_on`.

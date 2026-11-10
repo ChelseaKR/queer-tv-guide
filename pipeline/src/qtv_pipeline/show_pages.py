@@ -130,7 +130,9 @@ latest season replaces a lower LezWatch count, as "5 so far, per TVmaze", when
 TVmaze's premiere year is within a year of LezWatch's start year (DECISIONS
 0048); otherwise LezWatch's count stays. When LezWatch has no count, TVmaze's
 latest season fills it ("3 so far" for a show still running). A TVmaze season number of 1900 or more is a year (a
-show numbered by year), not a count, and is never used.
+show numbered by year), not a count, and is never used. Only when TVmaze has no
+count either does a Wikidata count fill the row, as "Seasons, per Wikidata"
+(DECISIONS 0055).
 
 Years (``shown_years``, DECISIONS 0049, proposed). TVmaze's premiere year
 replaces LezWatch's start year only on an id join, when no character is placed
@@ -188,16 +190,17 @@ from typing import Any
 import jinja2
 
 from qtv_pipeline.app_store import (
-    APP_STORE_URL,
     BADGE_FILE,
     BADGE_STYLE,
     BANNER,
     PRICE_COPY,
     SwitchError,
+    app_store_link,
     get_app_block,
+    get_app_line,
     live_or_false,
 )
-from qtv_pipeline.normalize import DEAD_STATUS_CLICHES
+from qtv_pipeline.normalize import DEAD_STATUS_CLICHES, SEASON_IS_A_YEAR, tvmaze_last_season
 
 # The site's own domain (DECISIONS 0020). Pages serves the project path with a
 # 301 to it, so every canonical URL, internal link, breadcrumb item and
@@ -408,9 +411,6 @@ NOT_RECORDED = "Not recorded"
 # a show is and name no event, so the level is a facts row. Any other
 # trigger term is never printed outside the answer.
 TRIGGER_LEVELS = {"low": "Low", "medium": "Medium", "high": "High"}
-# A TVmaze season number this large is a year (soaps and anime numbered by
-# year, "2011"), not a season count (DECISIONS 0031).
-SEASON_IS_A_YEAR = 1900
 # The TVmaze joins made by an id (LezWatch's stored TVmaze id, its manual
 # override, or LezWatch's IMDb id looked up on TVmaze), never by title
 # (DECISIONS 0048, 0049).
@@ -1307,18 +1307,6 @@ def years_fact(show: dict[str, Any], earliest: int | None = None) -> tuple[str, 
     return ("Years, per TVmaze" if from_tvmaze else "Years"), _years(years)
 
 
-def _tvmaze_last_season(show: dict[str, Any]) -> int | None:
-    """TVmaze's latest aired season number, or None when TVmaze has none or
-    numbers this show's seasons by year."""
-    sched = show["schedule"]
-    if sched["schedule_known"] is not True:
-        return None
-    season = (sched["previous_episode"] or {}).get("season")
-    if isinstance(season, bool) or not isinstance(season, int):
-        return None
-    return season if 1 <= season < SEASON_IS_A_YEAR else None
-
-
 def _same_show_by_year(show: dict[str, Any]) -> bool:
     """True when TVmaze's premiere year is within a year of LezWatch's start
     year (DECISIONS 0048). The join is by id, never by title; this is a second
@@ -1347,13 +1335,14 @@ def _running_count_lags(show: dict[str, Any], recorded: int | None, tvmaze: int 
 
 def seasons_fact(show: dict[str, Any]) -> tuple[str, str, int | None]:
     """(label, value, count for structured data) for the Seasons row
-    (DECISIONS 0031, 0048). For an ended show TVmaze's last season wins when
-    the two disagree; for a running show TVmaze's latest season wins only when
-    it is higher and the premiere years agree; when LezWatch has no count,
-    TVmaze's latest season fills it. Absence stays "Not recorded", never a
-    number."""
-    recorded = show["seasons"]
-    tvmaze = _tvmaze_last_season(show)
+    (DECISIONS 0031, 0048, 0055). For an ended show TVmaze's last season wins
+    when the two disagree; for a running show TVmaze's latest season wins only
+    when it is higher and the premiere years agree; when LezWatch has no count,
+    TVmaze's latest season fills it, and Wikidata's only when TVmaze has none.
+    Absence stays "Not recorded", never a number."""
+    wikidata = (show.get("wikidata") or {}).get("seasons")
+    recorded = None if wikidata is not None else show["seasons"]
+    tvmaze = tvmaze_last_season(show)
     ended = show["schedule"]["status"] == "Ended"
     if tvmaze is not None and (
         recorded is None
@@ -1361,6 +1350,9 @@ def seasons_fact(show: dict[str, Any]) -> tuple[str, str, int | None]:
         or _running_count_lags(show, recorded, tvmaze)
     ):
         return "Seasons, per TVmaze", str(tvmaze) if ended else f"{tvmaze} so far", tvmaze
+    if wikidata is not None:
+        running = show["years"]["on_air"] == "yes" and not ended
+        return "Seasons, per Wikidata", f"{wikidata} so far" if running else str(wikidata), wikidata
     if recorded is None:
         return "Seasons", NOT_RECORDED, None
     return "Seasons", str(recorded), recorded
@@ -1681,19 +1673,28 @@ def _structured(crumbs: dict[str, Any], *more: dict[str, Any]) -> dict[str, Any]
     return {"@context": "https://schema.org", "@graph": graph}
 
 
-def _common(doc: dict[str, Any], base_url: str, app_store_live: bool) -> dict[str, Any]:
+def _common(
+    doc: dict[str, Any], base_url: str, app_store_live: bool, *, campaign: str | None
+) -> dict[str, Any]:
+    """What every page's template shares. ``campaign`` is the page type's
+    App Store campaign token (DECISIONS 0056), so every App Store link a page
+    carries says which kind of page sent the visitor; None for a page that
+    carries no App Store link."""
+    linked = campaign if app_store_live else None
     return {
         "site_name": SITE_NAME,
         "base_url": base_url,
         "licence": doc["licence"],
         "attribution": doc["attribution"],
         "generated_on": doc["generated_at"][:10],
-        "app_store_url": APP_STORE_URL if app_store_live else None,
+        "app_store_url": app_store_link(linked) if linked is not None else None,
         "app_store_banner": BANNER if app_store_live else None,
         "app_store_copy": PRICE_COPY,
         # The one "Get the app" block (DECISIONS 0047), badge by absolute
         # URL: app_store.apply publishes the file at the site root.
-        "app_store_block": get_app_block(f"{base_url}/{BADGE_FILE}") if app_store_live else None,
+        "app_store_block": (
+            get_app_block(f"{base_url}/{BADGE_FILE}", linked) if linked is not None else None
+        ),
         "app_store_style": BADGE_STYLE,
     }
 
@@ -1753,7 +1754,8 @@ def render_show(
     ]
     today = dt.date.fromisoformat(doc["generated_at"][:10])
     return _ENV.get_template("show.html.j2").render(
-        **_common(doc, base_url, app_store_live),
+        **_common(doc, base_url, app_store_live, campaign="show"),
+        app_store_line=get_app_line("show-top") if app_store_live else None,
         title=show_title(show["title"], len(cast)),
         description=_description(show["title"], cast),
         opening=opening(show, cast),
@@ -1837,7 +1839,7 @@ def render_index(
     crumbs = [(SITE_NAME, f"{base_url}/"), ("Shows", canonical)]
     first = first_character_years(doc)
     return _ENV.get_template("index.html.j2").render(
-        **_common(doc, base_url, app_store_live),
+        **_common(doc, base_url, app_store_live, campaign="shows"),
         title=fit(
             [
                 f"Do queer characters die? {len(shows)} TV shows, spoiler-free",

@@ -85,7 +85,8 @@
       "required": ["lezwatch", "tvmaze"],
       "properties": {
         "lezwatch": { "$ref": "#/$defs/source_run" },
-        "tvmaze": { "$ref": "#/$defs/source_run" }
+        "tvmaze": { "$ref": "#/$defs/source_run" },
+        "wikidata": { "$ref": "#/$defs/source_run", "description": "The last good read of Wikidata through QLever, which may be up to a week old or older: its counts describe that read, not this run. Added after the first v1 files; absent means none was available." }
       }
     },
     "coverage": {
@@ -138,6 +139,11 @@
               }
             }
           }
+        },
+        "wikidata": {
+          "type": "object",
+          "description": "What the build took from the last good Wikidata read and what it left out, by reason (DECISIONS 0055). Added after the first v1 files; absent means none was available.",
+          "additionalProperties": { "type": ["integer", "string", "object"] }
         },
         "fields": {
           "type": "object",
@@ -448,11 +454,37 @@
         "lwtv_id": { "type": "integer" },
         "slug": { "type": "string", "minLength": 1 },
         "title": { "type": "string", "minLength": 1, "description": "HTML entities decoded." },
-        "alternate_names": { "type": "array", "items": { "type": "string" } },
+        "alternate_names": { "type": "array", "items": { "type": "string" }, "description": "Other titles a show is known by, for search only. Empty when none is known. show.wikidata.alternate_names says where each Wikidata one came from." },
+        "wikidata": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["item", "matched_by", "read_on"],
+          "description": "Provenance for values taken from Wikidata. Present only when this show has one. Added after the first v1 files; a reader may ignore it.",
+          "properties": {
+            "item": { "type": "string", "pattern": "^Q[0-9]+$" },
+            "matched_by": { "type": "array", "minItems": 2, "items": { "enum": ["lezwatch", "tvmaze", "imdb"] }, "description": "The ids that all named this item. Always lezwatch and at least one other." },
+            "read_on": { "$ref": "#/$defs/date" },
+            "alternate_names": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["name", "source", "language"],
+                "properties": {
+                  "name": { "type": "string", "minLength": 1 },
+                  "source": { "enum": ["label", "alias", "title"] },
+                  "language": { "type": "string" }
+                }
+              }
+            },
+            "seasons": { "type": "integer", "minimum": 1, "description": "Set when show.seasons came from Wikidata." }
+          }
+        },
         "source_url": { "$ref": "#/$defs/url", "description": "The LezWatch.TV page. Link it: LezWatch asks for a link back." },
         "summary": { "type": ["string", "null"], "description": "LezWatch's excerpt, HTML stripped to plain text (entities decoded)." },
         "years": { "$ref": "#/$defs/years" },
-        "seasons": { "type": ["integer", "null"], "description": "Season count as LezWatch records it. null when not recorded: LezWatch stores 0 for a count never filled in, and the pipeline maps 0 to null, never \"0 seasons\"." },
+        "seasons": { "type": ["integer", "null"], "description": "Season count as LezWatch records it. null when not recorded: LezWatch stores 0 for a count never filled in, and the pipeline maps 0 to null, never \"0 seasons\". When LezWatch has none, Wikidata's count, if its ids agree and TVmaze has no count or the same one; show.wikidata.seasons then says so." },
         "format": { "oneOf": [ { "$ref": "#/$defs/term" }, { "type": "null" } ], "description": "LezWatch lez_formats term, e.g. \"TV Show\", \"Web Series\"." },
         "networks": { "type": "array", "items": { "$ref": "#/$defs/term" }, "description": "LezWatch stations. Empty when none recorded." },
         "countries": { "type": "array", "items": { "$ref": "#/$defs/term" } },

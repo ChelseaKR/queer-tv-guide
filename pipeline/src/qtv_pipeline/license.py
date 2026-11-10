@@ -17,7 +17,8 @@ SNAPSHOT_LICENSE = {
 LICENSE_NOTICE = (
     "This dataset is published under the Creative Commons Attribution-ShareAlike "
     "4.0 International license. Show and character data: LezWatch.TV. Episode "
-    "and schedule data: TVmaze (CC BY-SA 4.0). If you redistribute this file, "
+    "and schedule data: TVmaze (CC BY-SA 4.0). Other titles and some season "
+    "counts: Wikidata (CC0). If you redistribute this file, "
     "keep this notice and these credits."
 )
 

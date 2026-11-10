@@ -1,8 +1,9 @@
 name: snapshot
 
-# Mirrors LezWatch.TV + TVmaze, builds snapshot.v1.json, and publishes it to
-# one static URL the app fetches. No users, no telemetry: this workflow's own
-# logs contain request/byte counts against the two sources and nothing else.
+# Mirrors LezWatch.TV + TVmaze, keeps a weekly read of Wikidata, builds
+# snapshot.v1.json, and publishes it to one static URL the app fetches. No users,
+# no telemetry: this workflow's own logs contain request/byte counts against the
+# sources and nothing else.
 #
 # Publishing target: GitHub Pages (source: this workflow): one stable, plain
 # static URL with an ETag, which is what a no-account app fetching one URL
@@ -120,6 +121,15 @@ jobs:
           uv run qtv fetch "${args[@]}"
         env:
           FULL_MIRROR: ${{ inputs.full }}
+
+      - name: refresh the Wikidata titles and seasons (weekly; cannot fail the run)
+        # Other titles and unknown season counts (DECISIONS 0055). Reads QLever at
+        # most once a week and keeps the result in the mirror cache. The command
+        # itself exits 0 on any problem and prints a ::notice::, the same rule the
+        # show pages carry (continue-on-error is not allowed here). A failed read
+        # changes nothing on disk, so the build below uses the last known values.
+        working-directory: pipeline
+        run: uv run qtv wikidata --cache .cache
 
       - name: fetch the snapshot this run would replace (baseline for the shrink gate)
         working-directory: pipeline

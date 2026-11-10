@@ -48,7 +48,8 @@ network call.
 | LezWatch has no watch link | `watch_links: []` | Nothing; never a guessed service |
 | Rating not given | `ratings.quality: null` (LezWatch stores 0 for unrated; the pipeline maps 0 → null) | "Unrated" |
 | Gender/sexuality not recorded | `gender: null` | "Not recorded" |
-| Season count not filled in | `seasons: null` (LezWatch stores 0; the pipeline maps 0 → null) | "Seasons not recorded" — never "0 seasons" |
+| Season count not filled in by LezWatch, and Wikidata has no usable one | `seasons: null` (LezWatch stores 0; the pipeline maps 0 → null) | "Seasons not recorded" — never "0 seasons" |
+| No other title known | `alternate_names: []` | Nothing. It only feeds search |
 | Finish year blank | `years.end: null`; read `years.on_air` (`yes`/`no`/`unknown`) | Don't infer "ongoing" from a blank |
 
 `died` is constrained by the schema to `true` or `null`; `false` is a schema
@@ -121,6 +122,22 @@ death events by precision and reason, and carries the placebo control the
 build gates on.
 
 A reader treats any of these fields' absence as "not computed".
+
+### What came from Wikidata (added after the first v1 files)
+
+DECISIONS 0055. `show.alternate_names` and, when LezWatch.TV has no count,
+`show.seasons` may hold values from Wikidata. Their types do not change. The
+optional `show.wikidata` says so: `item` (the Q id), `matched_by` (the ids that
+all named it, always `lezwatch` and at least one more), `read_on`,
+`alternate_names[]` (`name`, `source` of `label`, `alias` or `title`, and
+`language`) and `seasons`, present when `show.seasons` is Wikidata's. A count is
+used only when TVmaze has none or the same one. `sources.wikidata` describes the
+last good read, which can be a week old or more, and `coverage.wikidata` counts
+what was taken and rejected. A reader treats any of these fields' absence as "not
+computed". They are additive, so the version stays "1". `attribution[].source`
+stays `lezwatch` or `tvmaze`: a third value would change an enum, which needs a
+new major version, so Wikidata (CC0, no credit required) is named in
+`licence.notice` instead.
 
 ### Attribution and license
 

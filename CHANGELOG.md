@@ -17,6 +17,15 @@ consumer of the published snapshot, would notice.
   The snapshot now fills `alternate_names` and some unknown season counts from
   Wikidata, only where two ids agree, without replacing a LezWatch.TV or TVmaze
   count. A Wikidata outage changes nothing (DECISIONS 0055).
+- Every App Store link on the website can now carry Apple's App Store
+  Connect campaign tokens, one per page type (home, shows, show,
+  show-top, airing, notfound, press), so App Store Connect can count which
+  kind of page sends people to the listing. The links stay plain until the
+  owner adds the account's provider token. The website still has no
+  analytics, no cookies and no requests to other sites (DECISIONS 0056).
+- Show pages now say near the top, before the spoiler warning, that Queer
+  Frame is also an iPhone app for $4.99 once, with a link to the App Store
+  (DECISIONS 0056).
 - Every show page asks each listed character's question after the sealed
   answer: "Is <name> <label> in <show>?" with LezWatch.TV's own gender and
   sexuality terms ("a lesbian", "bisexual", "a trans woman",
@@ -182,16 +191,6 @@ consumer of the published snapshot, would notice.
   build on every change, and `docs/play-store/OWNER-STEPS.md` lists the
   steps only the owner can take, including the closed test a new personal
   Play account must run first.
-- About has a "Rate Queer Frame" row, under the version, that opens the
-  App Store's review sheet for the app. It is the same for everyone and
-  offers nothing in return. The app does not fetch the page; iOS opens the
-  App Store app.
-- Queer Frame may ask iOS for its rating prompt, at most once per version
-  and 120 days apart, and only after a good moment: coming back from a
-  show opened from Favorites, or a third launch with a favorite saved.
-  Never on the first launch. iOS decides whether the prompt appears. This
-  is the app's first use of StoreKit, for that prompt alone; there is
-  still no in-app purchase (DECISIONS 0017, accepted).
 
 ### Changed
 
@@ -290,6 +289,62 @@ consumer of the published snapshot, would notice.
   macOS runner's bash 3.2 treated that empty list as an unbound variable
   under `set -u`. The workflow checks now reject that pattern in any
   `run:` step.
+
+## [1.0.1] - TBD
+
+The first update to Queer Frame for iPhone: version 1.0.1, build 2. The
+date is filled in when the release is cut (docs/app-store/OWNER-STEPS.md,
+step 9). It changes the app's look and what it says about deaths and
+trigger warnings, and adds two rows to About. The app still collects no
+data, and the price and the store listing's promises are unchanged.
+
+### Added
+
+- About has a "Rate Queer Frame" row, under the version, that opens the
+  App Store's review sheet for the app. It is the same for everyone and
+  offers nothing in return. The app does not fetch the page; iOS opens the
+  App Store app.
+- About has an "Email support" row that opens a new message in the
+  person's own mail app to the support page's address, with the app and
+  version in the subject (DECISIONS 0039). The app sends nothing itself;
+  with no mail app, the row opens the support page.
+- Queer Frame may ask iOS for its rating prompt, at most once per version
+  and 120 days apart, and only after a good moment: coming back from a
+  show opened from Favorites, or a third launch with a favorite saved.
+  Never on the first launch. iOS decides whether the prompt appears. This
+  is the app's first use of StoreKit, for that prompt alone; there is
+  still no in-app purchase (DECISIONS 0017, accepted).
+
+### Changed
+
+- The app and its Up Next widget use queerframe.app's aubergine in place of
+  blue for links, buttons and the selected tab (#6A2C9C in light, #D9B8FF
+  in dark), and the closed Reveal button has a coral edge (DECISIONS 0040).
+  Every text use still clears 4.5:1 in both schemes, and labels on a filled
+  button are dark in dark mode.
+- The show screen labels the trigger warning as LezWatch.TV's
+  trigger-warning level, quotes what LezWatch.TV says the level means, and
+  says "Not rated" when there is none, instead of a bare "High" under
+  "Trigger warnings".
+
+### Fixed
+
+- The app counts a death on a show only when it falls in that show
+  (DECISIONS 0030 and 0032), as the show pages do. The L Word: Generation
+  Q's reveal no longer counts Dana Fairbanks, whose recorded death is in
+  The L Word; it says the death is not recorded in this show and that one
+  death is not counted. The show summary and the "no recorded deaths"
+  filter use the same rule. On the 2026-11-05 snapshot this changes 21 of
+  2,289 shows.
+- The app counts a death only when LezWatch.TV also lists the character
+  as dead (DECISIONS 0053), as the show pages do. A character with a
+  recorded death date whom LezWatch.TV lists as alive now reads "Not
+  recorded" and says why, and the show's reveal does not count them. On
+  the 2026-11-09 snapshot, 29 of 683 recorded death dates are not counted
+  and 23 shows no longer show a counted death.
+- "Happiness then Tragedy" and "None!" tropes, which can give away a
+  death, are kept behind the reveal with the other death-revealing tropes
+  (#112).
 
 ## [1.0.0] - 2026-10-02
 

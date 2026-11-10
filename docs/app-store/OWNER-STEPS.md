@@ -26,7 +26,7 @@ against the code) is in [`docs/APP-STORE.md`](../APP-STORE.md).
 | SKU | `queer-frame-ios` (suggested) | Any unique string; it can't be changed later. |
 | Price | USD 4.99, paid up front | DECISIONS 0003, 0011, confirmed in 0015. No in-app purchase, no subscription. |
 | Storefronts | United States only | DECISIONS 0015. No Digital Services Act trader declaration. |
-| Version, build | `1.0.0`, build `1` | `MARKETING_VERSION`, `CURRENT_PROJECT_VERSION` in `ios/Config/Shared.xcconfig`; DECISIONS 0015 |
+| Version, build | `1.0.1`, build `2` (1.0.0 shipped as build `1`) | `MARKETING_VERSION`, `CURRENT_PROJECT_VERSION` in `ios/Config/Shared.xcconfig`; DECISIONS 0015 |
 | Support URL | `https://chelseakr.github.io/queer-tv-guide/support.html` | DECISIONS 0010; 200 on 2026-10-02 |
 | Privacy Policy URL | `https://chelseakr.github.io/queer-tv-guide/privacy.html` | DECISIONS 0007; 200 on 2026-10-02 |
 

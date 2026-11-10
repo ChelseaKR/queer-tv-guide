@@ -588,14 +588,24 @@ def test_no_app_link_while_the_switch_is_off(doc, tmp_path):
 def test_app_link_uses_the_existing_constant_when_on(doc, tmp_path):
     pages = _build(doc, tmp_path, app_store_live=True)
     for rel, page in pages.items():
-        assert page.hrefs().count(app_store.APP_STORE_URL) == 1, rel
+        # A show page also has the one line near the top (DECISIONS 0056).
+        if rel == "shows/index.html":
+            expected = [app_store.app_store_link("shows")]
+        else:
+            expected = [app_store.app_store_link("show-top"), app_store.app_store_link("show")]
+        assert [h for h in page.hrefs() if "apps.apple.com" in h] == expected, rel
         assert page.outside.count(app_store.APP_PITCH_LEAD) == 1, rel
         # The link says where it goes and what it costs, from app_store.py.
         assert app_store.PRICE_COPY in page.outside, rel
         # What the app adds over the website, one sentence, from app_store.py.
         assert any(app_store.APP_PITCH in t for t in page.outside), rel
         assert (
-            _raw(tmp_path, rel).count(app_store.get_app_block(f"{BASE}/app-store-badge.svg")) == 1
+            _raw(tmp_path, rel).count(
+                app_store.get_app_block(
+                    f"{BASE}/app-store-badge.svg", "shows" if rel == "shows/index.html" else "show"
+                )
+            )
+            == 1
         )
     # Not inside the spoiler: opening the answer is not a sales pitch.
     inside = pages["shows/the-cartographers/index.html"].inside

@@ -48,12 +48,13 @@ APP_STORE_URL = f"https://apps.apple.com/us/app/id{APP_STORE_ID}"
 # site has: Apple counts what happens on its own pages, and the site still
 # runs no script, sets no cookie and requests nothing from another host.
 #
-# OWNER STEP: the provider token is account-level and shown only in App Store
-# Connect's campaign link generator (Apple: "You can't create one manually").
-# Until it is filled in, every link stays the plain APP_STORE_URL; a link with
-# a campaign token and no provider token, or an invented one, is never
-# published. Paste the digits after "pt=" from a generated link here.
-APP_STORE_PROVIDER_TOKEN: str | None = None
+# The provider token is account-level and shown only in App Store Connect's
+# campaign link generator (Apple: "You can't create one manually"). It was
+# copied from a generated link on 2026-11-10. It is not a credential: it
+# appears in every campaign link. With no token (None) every link stays the
+# plain APP_STORE_URL; a link with a campaign token and no provider token, or
+# an invented one, is never published.
+APP_STORE_PROVIDER_TOKEN: str | None = "129452704"  # noqa: S105 - public in every campaign link, not a credential
 # Apple: "Media type token (identified by the mt= parameter)"; its own
 # example campaign link carries mt=8.
 APP_STORE_MEDIA_TYPE = "8"

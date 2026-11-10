@@ -26,6 +26,10 @@ consumer of the published snapshot, would notice.
 - Show pages now say near the top, before the spoiler warning, that Queer
   Frame is also an iPhone app for $4.99 once, with a link to the App Store
   (DECISIONS 0056).
+- 44 more show pages are open to search engines: the held-back pages that
+  Google showed at least 5 times in the 28 days to 2026-11-08, or for a query
+  it reported, or that earned a click. The sitemap goes from 105 to 149
+  URLs; the pages themselves do not change (DECISIONS 0057).
 - Every show page asks each listed character's question after the sealed
   answer: "Is <name> <label> in <show>?" with LezWatch.TV's own gender and
   sexuality terms ("a lesbian", "bisexual", "a trans woman",

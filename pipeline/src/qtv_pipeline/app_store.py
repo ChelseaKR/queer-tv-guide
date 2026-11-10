@@ -54,7 +54,7 @@ APP_STORE_URL = f"https://apps.apple.com/us/app/id{APP_STORE_ID}"
 # appears in every campaign link. With no token (None) every link stays the
 # plain APP_STORE_URL; a link with a campaign token and no provider token, or
 # an invented one, is never published.
-APP_STORE_PROVIDER_TOKEN: str | None = "129452704"  # noqa: S105 - public in every campaign link, not a credential
+APP_STORE_PROVIDER_TOKEN: str | None = "129452704"  # noqa: S105 public in every campaign link, not a credential (#143)
 # Apple: "Media type token (identified by the mt= parameter)"; its own
 # example campaign link carries mt=8.
 APP_STORE_MEDIA_TYPE = "8"

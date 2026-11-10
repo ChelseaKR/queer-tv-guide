@@ -323,6 +323,12 @@ data, and the price and the store listing's promises are unchanged.
   death is not counted. The show summary and the "no recorded deaths"
   filter use the same rule. On the 2026-11-05 snapshot this changes 21 of
   2,289 shows.
+- The app counts a death only when LezWatch.TV also lists the character
+  as dead (DECISIONS 0053), as the show pages do. A character with a
+  recorded death date whom LezWatch.TV lists as alive now reads "Not
+  recorded" and says why, and the show's reveal does not count them. On
+  the 2026-11-09 snapshot, 29 of 683 recorded death dates are not counted
+  and 23 shows no longer show a counted death.
 - "Happiness then Tragedy" and "None!" tropes, which can give away a
   death, are kept behind the reveal with the other death-revealing tropes
   (#112).

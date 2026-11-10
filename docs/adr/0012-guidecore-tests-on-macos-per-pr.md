@@ -51,6 +51,17 @@ A nightly-only run would let a change to the app's logic merge untested.
   dropping that one step and the `a11y` verify target, and moving the audit
   to a nightly schedule. A regression would then merge and fail a day
   later.
+- Amended 2026-11-10: the scope rule now applies to a push to `main` as
+  well, so "every push to `main` runs it" above no longer holds. `changes`
+  compares the pushed commit with the one it replaced (`github.event.before`),
+  and a squash merge that touched none of `ios/`, `schema/`, the root
+  `Makefile` or `ci.yml` skips `guidecore` on `main` exactly as its pull
+  request did. A manual dispatch, a push whose `before` is all zeros (a new
+  branch, or a force-push, which main's ruleset forbids), and a failed
+  `changes` job still run everything. Measured 2026-11-01 to 11-10: 34
+  merges to `main`, 26 touching none of those paths, each spending 11.7 to
+  12.8 macOS minutes on a job the pull request had already run or scoped
+  out.
 - Numbered 0012 in the one sequence shared with `docs/DECISIONS.md`
   (`docs/adr/0000`): 0005 is `docs/adr/0005`, and 0006–0011 are the launch
   decisions proposed in #33.

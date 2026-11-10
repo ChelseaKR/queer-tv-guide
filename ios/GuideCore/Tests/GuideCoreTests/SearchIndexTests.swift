@@ -59,6 +59,25 @@ final class SearchIndexTests: XCTestCase {
         XCTAssertTrue(titles(try index().search("Cartographers")).contains("show:The Cartographers"))
     }
 
+    /// DECISIONS 0055. The name is in no title, actor or network of the
+    /// fixture, so only `alternate_names` can find it, and the control with
+    /// the field left empty shows that. `testFindsCharacterByAlternateShowName`
+    /// cannot show this: its query is also in the show's title.
+    func testFindsAShowByANameOnlyInAlternateNames() throws {
+        let name = "Le Bureau des Cartes"
+        let query = "bureau des cartes"
+        XCTAssertEqual(titles(try index().search(query)), [], "control: nothing finds it yet")
+
+        let data = try JSONEdit.editShow(try Repo.fixtureData(), index: 1) { show in
+            show["alternate_names"] = [name]
+            show["wikidata"] = ["item": "Q1", "matched_by": ["lezwatch", "imdb"], "read_on": "2026-11-08"]
+        }
+        let edited = SearchIndex(snapshot: try SnapshotDecoder().decode(data))
+        let hits = titles(edited.search(query))
+        XCTAssertEqual(hits.count, 1)
+        XCTAssertTrue(hits[0].hasPrefix("show:"), "\(hits)")
+    }
+
     // MARK: Filters
 
     func testNoRecordedDeathsFilterExcludesCastlessShows() throws {

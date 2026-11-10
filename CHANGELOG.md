@@ -13,6 +13,10 @@ consumer of the published snapshot, would notice.
 
 ### Added
 
+- Search finds a show by its other titles: "Call My Agent!" finds Dix pour cent.
+  The snapshot now fills `alternate_names` and some unknown season counts from
+  Wikidata, only where two ids agree, without replacing a LezWatch.TV or TVmaze
+  count. A Wikidata outage changes nothing (DECISIONS 0055).
 - Every App Store link on the website can now carry Apple's App Store
   Connect campaign tokens, one per page type (home, shows, show,
   show-top, airing, notfound, press), so App Store Connect can count which

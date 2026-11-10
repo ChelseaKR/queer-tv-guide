@@ -15,7 +15,7 @@ from typing import Any
 
 import jsonschema
 
-from . import __version__, episodes, fields, lezwatch, normalize, terms, tvmaze
+from . import __version__, episodes, fields, lezwatch, normalize, terms, tvmaze, wikidata
 from . import coverage as coverage_mod
 from . import digest as digest_mod
 from . import license as license_mod
@@ -207,6 +207,8 @@ def run_build(
     show_ids = _drop_dangling_references(shows, characters)
     _count_characters_per_show(shows, characters)
     placements_cov = _place_deaths(shows, characters, cache_dir)
+    wikidata_mirror = wikidata.load_mirror(cache_dir)
+    wikidata_cov = wikidata.attach(shows, wikidata_mirror)
 
     tvmaze_cov = coverage_mod.tvmaze_coverage(shows)
     clean_shows = [normalize.strip_internal(s) for s in shows]
@@ -223,6 +225,8 @@ def run_build(
         "fields": field_cov,
         "placements": placements_cov,
     }
+    if wikidata_cov:
+        coverage["wikidata"] = wikidata_cov
 
     taxonomies_block = {
         key: [
@@ -271,6 +275,9 @@ def run_build(
         "shows": sorted(clean_shows, key=lambda s: s["lwtv_id"]),
         "characters": sorted(characters, key=lambda c: c["lwtv_id"]),
     }
+    wikidata_run = wikidata.source_run(wikidata_mirror)
+    if wikidata_run:
+        doc["sources"]["wikidata"] = wikidata_run
     doc["content_digest"] = digest_mod.content_digest(doc)
 
     _validate(doc, schema_path or _find_schema_path(), show_ids)

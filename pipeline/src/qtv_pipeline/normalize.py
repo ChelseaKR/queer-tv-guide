@@ -114,6 +114,23 @@ def _watch_links(waystowatch: Any) -> list[dict[str, str]]:
     return out
 
 
+SEASON_IS_A_YEAR = 1900
+"""A TVmaze season number of this or more is a year (a show numbered by year), not a
+count (DECISIONS 0031)."""
+
+
+def tvmaze_last_season(show: dict[str, Any]) -> int | None:
+    """TVmaze's latest aired season number, or None when TVmaze has none or
+    numbers this show's seasons by year."""
+    sched = show["schedule"]
+    if sched["schedule_known"] is not True:
+        return None
+    season = (sched["previous_episode"] or {}).get("season")
+    if isinstance(season, bool) or not isinstance(season, int):
+        return None
+    return season if 1 <= season < SEASON_IS_A_YEAR else None
+
+
 def _alternate_names(raw: Any) -> list[str]:
     if not raw:
         return []

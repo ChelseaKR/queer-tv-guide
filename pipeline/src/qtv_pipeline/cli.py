@@ -28,6 +28,18 @@ def _cmd_fetch(args: argparse.Namespace) -> int:
     return 0
 
 
+def _cmd_wikidata(args: argparse.Namespace) -> int:
+    """Always exits 0: Wikidata is an extra, and the workflow policy forbids silencing
+    a step from outside. A failed read keeps the last known file (DECISIONS 0055)."""
+    from . import wikidata
+
+    try:
+        wikidata.refresh(Path(args.cache), force=args.force, log=print)
+    except Exception as exc:
+        print(f"::notice::Wikidata not refreshed, last known values stay ({exc!r})")
+    return 0
+
+
 def _cmd_build(args: argparse.Namespace) -> int:
     try:
         build_mod.run_build(
@@ -73,6 +85,13 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--cache", required=True, help="cache directory")
     p.add_argument("--full", action="store_true", help="ignore the incremental cursor")
     p.set_defaults(func=_cmd_fetch)
+
+    p = sub.add_parser(
+        "wikidata", help="refresh the cached Wikidata titles and seasons; never fails the run"
+    )
+    p.add_argument("--cache", required=True, help="cache directory")
+    p.add_argument("--force", action="store_true", help="read even if read within the last week")
+    p.set_defaults(func=_cmd_wikidata)
 
     p = sub.add_parser("build", help="normalize the cache into snapshot.v1.json")
     p.add_argument("--cache", required=True)

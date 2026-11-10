@@ -188,13 +188,14 @@ from typing import Any
 import jinja2
 
 from qtv_pipeline.app_store import (
-    APP_STORE_URL,
     BADGE_FILE,
     BADGE_STYLE,
     BANNER,
     PRICE_COPY,
     SwitchError,
+    app_store_link,
     get_app_block,
+    get_app_line,
     live_or_false,
 )
 from qtv_pipeline.normalize import DEAD_STATUS_CLICHES
@@ -1628,19 +1629,28 @@ def _structured(crumbs: dict[str, Any], *more: dict[str, Any]) -> dict[str, Any]
     return {"@context": "https://schema.org", "@graph": graph}
 
 
-def _common(doc: dict[str, Any], base_url: str, app_store_live: bool) -> dict[str, Any]:
+def _common(
+    doc: dict[str, Any], base_url: str, app_store_live: bool, *, campaign: str | None
+) -> dict[str, Any]:
+    """What every page's template shares. ``campaign`` is the page type's
+    App Store campaign token (DECISIONS 0056), so every App Store link a page
+    carries says which kind of page sent the visitor; None for a page that
+    carries no App Store link."""
+    linked = campaign if app_store_live else None
     return {
         "site_name": SITE_NAME,
         "base_url": base_url,
         "licence": doc["licence"],
         "attribution": doc["attribution"],
         "generated_on": doc["generated_at"][:10],
-        "app_store_url": APP_STORE_URL if app_store_live else None,
+        "app_store_url": app_store_link(linked) if linked is not None else None,
         "app_store_banner": BANNER if app_store_live else None,
         "app_store_copy": PRICE_COPY,
         # The one "Get the app" block (DECISIONS 0047), badge by absolute
         # URL: app_store.apply publishes the file at the site root.
-        "app_store_block": get_app_block(f"{base_url}/{BADGE_FILE}") if app_store_live else None,
+        "app_store_block": (
+            get_app_block(f"{base_url}/{BADGE_FILE}", linked) if linked is not None else None
+        ),
         "app_store_style": BADGE_STYLE,
     }
 
@@ -1700,7 +1710,8 @@ def render_show(
     ]
     today = dt.date.fromisoformat(doc["generated_at"][:10])
     return _ENV.get_template("show.html.j2").render(
-        **_common(doc, base_url, app_store_live),
+        **_common(doc, base_url, app_store_live, campaign="show"),
+        app_store_line=get_app_line("show-top") if app_store_live else None,
         title=show_title(show["title"], len(cast)),
         description=_description(show["title"], cast),
         opening=opening(show, cast),
@@ -1784,7 +1795,7 @@ def render_index(
     crumbs = [(SITE_NAME, f"{base_url}/"), ("Shows", canonical)]
     first = first_character_years(doc)
     return _ENV.get_template("index.html.j2").render(
-        **_common(doc, base_url, app_store_live),
+        **_common(doc, base_url, app_store_live, campaign="shows"),
         title=fit(
             [
                 f"Do queer characters die? {len(shows)} TV shows, spoiler-free",

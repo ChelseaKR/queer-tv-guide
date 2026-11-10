@@ -465,7 +465,7 @@ def render_findings(
         "isBasedOn": [a["url"] for a in doc["attribution"]],
     }
     return show_pages._ENV.get_template("findings.html.j2").render(
-        **show_pages._common(doc, base, app_store_live),
+        **show_pages._common(doc, base, app_store_live, campaign=None),
         title=FINDINGS_TITLE,
         description=findings_description(v),
         canonical=canonical,
@@ -503,7 +503,7 @@ def render_press(
     canonical = f"{base}/press/"
     crumbs = [(show_pages.SITE_NAME, f"{base}/"), ("Press", canonical)]
     return show_pages._ENV.get_template("press.html.j2").render(
-        **show_pages._common(doc, base, app_store_live),
+        **show_pages._common(doc, base, app_store_live, campaign="press"),
         title=PRESS_TITLE,
         description=PRESS_DESCRIPTION,
         canonical=canonical,

@@ -111,7 +111,7 @@ def render_index(
     base = _clean_base_url(base_url)
     linked = shows_link and shows_total > 0
     return _ENV.get_template("home.html.j2").render(
-        **_common(doc, base, False),
+        **_common(doc, base, False, campaign=None),
         title=HOME_TITLE,
         og_title=HOME_OG_TITLE,
         description=HOME_DESCRIPTION,
@@ -136,7 +136,7 @@ def render_data_page(doc: dict[str, Any], *, base_url: str = DEFAULT_BASE_URL) -
     canonical = f"{base}/data/"
     crumbs = [(SITE_NAME, f"{base}/"), ("Data", canonical)]
     return _ENV.get_template("data.html.j2").render(
-        **_common(doc, base, False),
+        **_common(doc, base, False, campaign=None),
         title=DATA_TITLE,
         description=DATA_DESCRIPTION,
         canonical=canonical,
@@ -168,7 +168,7 @@ def render_not_found(
     the Smart App Banner tag is left to ``app_store.apply``, which adds it to
     every top-level page."""
     base = _clean_base_url(base_url)
-    common = _common(doc, base, app_store_live)
+    common = _common(doc, base, app_store_live, campaign="notfound")
     common["app_store_banner"] = None
     return _ENV.get_template("404.html.j2").render(
         **common,

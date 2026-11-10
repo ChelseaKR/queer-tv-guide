@@ -1707,3 +1707,31 @@ list for LezWatch.TV's maintainer to sort into intended (Nora West-Allen's
 page says the date is kept on purpose) and missing markers.
 
 **Reversible.** Yes: `marked_dead` returns True.
+
+## 0053 — The snapshot says whether a death is counted, and the apps follow 0052 (2026-11-08)
+
+**Status: proposed (branch `fix/death-marker-apps`). Needs Chelsea. Follows 0052 as 0032 followed 0030.**
+
+**Evidence.** 0052 made the website stop counting a LezWatch.TV death date unless LezWatch.TV also lists the character as dead (the `dead` cliché). Four indexed pages went from "Yes" to "Unknown" (Holby City, Warrior Nun, Legends of Tomorrow, The Flash). The iOS and Android apps, and the findings page, still read a date as a death: Holby City's reveal said "1 of N listed characters has a recorded death" for Bernie Wolfe, so the app and the site disagreed for the same show.
+
+**Decision.** The pipeline writes the decision into the snapshot instead of each app deriving it. `death.counted` (boolean, optional, additive; schema version stays "1") is present when `died` is true: true when the character carries the marker, false when LezWatch.TV records a date but lists the character as alive. `died` still means "a date is recorded" and `dates` are untouched, so episode placement (0041) and the recorded date still work. The marker list (`DEAD_STATUS_CLICHES`) now lives in `normalize.py` and the site imports it, so site and snapshot cannot drift. No show-level count was added: a count is per show under 0030, which both apps already compute from the characters. GuideCore and the Android core read `counted`: a character with a date and `counted == false` gets its own placement (`listedAlive`), checked before 0030's rules as on the site. The character screen says "Not recorded. LezWatch.TV records a death date (2019) for Bernie Wolfe but lists the character as alive, so it is not counted here." (the site's sentence, opened with the apps' "Not recorded."). The show reveal's headline, when no counted death remains, is "Not recorded. LezWatch.TV does not list any of the N listed characters as dead." with one note counting such characters. The "no recorded deaths" filter keeps such a show out, since a date is on record. The findings page leaves these dates out of its death events (at most 29 of 696 events on the 2026-11-07 snapshot).
+
+**Compatibility.** A 1.0.0 app ignores the field and reads the file as before (the Android decoder ignores unknown keys; GuideCore's `Death` decoder ignores unlisted keys). An app that finds no `counted` (an older file) keeps the old reading. Old snapshots validate unchanged.
+
+**Not changed.** The 0052 website rule, `died`, `dates`, `years`, the placements, and the 0030 rule.
+
+**Reversible.** Yes: stop writing `counted` (readers fall back to the old reading) or have `is_marked_dead` return True.
+
+## 0054 — One later retry for a failed LezWatch.TV request, and Retry-After is honored (2026-11-08)
+
+**Status: proposed (branch `fix/snapshot-timeout-resilience`). Changes the declared crawl budget.**
+
+**Evidence.** Run 42466572132 lost the night to three 60-second read timeouts on `wp/v2/trope` inside about three and a half minutes. That endpoint is small (37 terms, 3.3 KB in the mirror) and was the run's first JSON request after the license gate, so nothing points at the endpoint itself. Three tries in one slow stretch all land in that stretch, and a longer timeout would only hold a volunteer site's worker longer.
+
+**Decision.** After its quick retries, a failed LezWatch.TV request (5xx or network error) waits 15 minutes and is tried once more, at most once a run. A second failure in the same run fails the run. The timeout stays 60 seconds, the 10-second pace stays, the connection stays single, and the User-Agent is unchanged. Retry-After is now honored on 429 and 5xx for both sources; asked to wait more than 15 minutes, the client stops instead of retrying sooner.
+
+**Cost.** A healthy night is unchanged. A night that recovers makes the failed tries plus one, and only the failed request is repeated. A full outage makes 4 tries instead of 3 and fails after about 19 minutes instead of about 3.5. A full mirror plus this wait fits the 90-minute job timeout.
+
+**Not changed.** A failed run publishes nothing and the previous snapshot stays. TVmaze has no later retry.
+
+**Reversible.** Yes: set `later_retry_wait` back to 0 on `LEZWATCH_POLICY`.

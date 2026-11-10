@@ -181,6 +181,12 @@ consumer of the published snapshot, would notice.
 
 ### Changed
 
+- A death date for a character LezWatch.TV lists as alive is no longer counted
+  as a death in the apps, as on the website (DECISIONS 0052, 0053). The
+  snapshot carries a new optional `death.counted`; the apps say "LezWatch.TV
+  records a death date (2019) for <name> but lists the character as alive, so
+  it is not counted here." instead of "dies". Older snapshots and 1.0.0 apps
+  read as before.
 - Show page titles lead with what people search, "<n> LGBTQ characters in
   <show>", then ask "Do any die?" (DECISIONS 0045). Descriptions end with
   "Whether anyone dies stays hidden until you tap." Neither ever depends on
@@ -208,6 +214,11 @@ consumer of the published snapshot, would notice.
   rule in `show_pages.py` widens the set, and the decision says when.
 
 ### Fixed
+
+- One slow LezWatch.TV response no longer costs the night's snapshot: a request
+  that fails its three quick tries gets one more try 15 minutes later, once a
+  run. If LezWatch.TV stays unavailable the run still fails and yesterday's
+  snapshot stays (DECISIONS 0054).
 
 - The Years row, the opening sentence, the structured data and the shows
   index take TVmaze's premiere year when the TVmaze join is by id and the

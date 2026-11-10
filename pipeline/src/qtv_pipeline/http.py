@@ -10,6 +10,7 @@ from __future__ import annotations
 import time
 from collections.abc import Callable
 from dataclasses import dataclass, field
+from email.utils import parsedate_to_datetime
 from typing import Any, Literal, overload
 from urllib.parse import urlsplit
 
@@ -31,6 +32,20 @@ class UpstreamUnavailable(FetchError):
     plain FetchError (a 403 or a 400 means the request or the policy is wrong)."""
 
 
+def _retry_after_seconds(value: str | None) -> float | None:
+    """A Retry-After header (delta-seconds or an HTTP date) as seconds from now, or
+    None when it is absent or unreadable. A date in the past is 0."""
+    if value is None:
+        return None
+    value = value.strip()
+    if value.isdecimal():
+        return float(value)
+    try:
+        return max(0.0, parsedate_to_datetime(value).timestamp() - time.time())
+    except ValueError:
+        return None
+
+
 @dataclass(frozen=True)
 class HostPolicy:
     min_interval: float
@@ -42,11 +57,21 @@ class HostPolicy:
     max_429: int = 3
     wait_5xx: float = 5.0
     max_5xx: int = 2
+    later_retry_wait: float = 0.0
+    """Seconds to wait before one more try of a request that used up max_5xx, at most
+    once per run per host. 0 means never: the failure goes straight to the caller."""
+    max_retry_after: float = 900.0
+    """The longest Retry-After this client waits out. Asked to wait longer, it stops
+    instead of retrying early."""
 
 
-LEZWATCH_POLICY = HostPolicy(min_interval=10.0, wait_429=600.0, backoff_429=1.0, max_429=3)
+LEZWATCH_POLICY = HostPolicy(
+    min_interval=10.0, wait_429=600.0, backoff_429=1.0, max_429=3, later_retry_wait=900.0
+)
 """lezwatchtv.com robots.txt: Crawl-delay: 10. API: 100 requests / 10 min. A 429 means
-the 10-minute window is exhausted, so wait a whole window."""
+the 10-minute window is exhausted, so wait a whole window. Three tries inside four
+minutes all fail if the site is slow for those minutes (2026-11-08), so one failed
+request gets one more try 15 minutes later, once a run (DECISIONS 0054)."""
 
 TVMAZE_POLICY = HostPolicy(min_interval=1.0, wait_429=5.0, backoff_429=2.0, max_429=5)
 """api.tvmaze.com: at least 20 calls / 10 s; 'let your client back off for a few seconds
@@ -64,6 +89,7 @@ class HostCounters:
     requests: int = 0
     bytes: int = 0
     last_started: float | None = None
+    later_retry_used: bool = False
 
     def as_dict(self) -> dict[str, int]:
         return {"requests": self.requests, "bytes": self.bytes}
@@ -138,6 +164,55 @@ class PacedClient:
         c.requests += 1
         c.bytes += len(content)
 
+    # -- retries ------------------------------------------------------------
+
+    def _wait_429(
+        self, host: str, policy: HostPolicy, url: str, n429: int, ra: float | None
+    ) -> None:
+        """Wait out a 429 before the next try, or raise when the policy is spent."""
+        if n429 >= policy.max_429:
+            raise UpstreamUnavailable(f"{host} kept answering 429 after {n429} retries: {url}")
+        self._refuse_long_retry_after(url, policy, ra)
+        wait = max(policy.wait_429 * (policy.backoff_429**n429), ra or 0.0)
+        self.log(f"  429 from {host}; waiting {wait:.0f}s; retry {n429 + 1}/{policy.max_429}")
+        self.sleep(wait)
+
+    def _refuse_long_retry_after(self, url: str, policy: HostPolicy, ra: float | None) -> None:
+        if ra is not None and ra > policy.max_retry_after:
+            raise UpstreamUnavailable(
+                f"{url} asked for Retry-After {ra:.0f}s, over the "
+                f"{policy.max_retry_after:.0f}s this run waits; not retrying sooner"
+            )
+
+    def _wait_transient(
+        self,
+        host: str,
+        policy: HostPolicy,
+        n5xx: int,
+        *,
+        url: str,
+        label: str,
+        detail: str = "",
+        ra: float | None = None,
+    ) -> int:
+        """Wait out a 5xx or network error before the next try and return the new
+        retry count, or raise when the policy is spent."""
+        self._refuse_long_retry_after(url, policy, ra)
+        if n5xx < policy.max_5xx:
+            n5xx += 1
+            self.log(f"  {label}{detail}; retry {n5xx}/{policy.max_5xx}")
+            self.sleep(max(policy.wait_5xx * n5xx, ra or 0.0))
+            return n5xx
+        counters = self.counters.setdefault(host, HostCounters())
+        if policy.later_retry_wait > 0 and not counters.later_retry_used:
+            counters.later_retry_used = True
+            wait = max(policy.later_retry_wait, ra or 0.0)
+            self.log(f"  {label}{detail}; one later retry for this run in {wait:.0f}s")
+            self.sleep(wait)
+            return n5xx
+        later = " and a later retry" if policy.later_retry_wait > 0 else ""
+        raise UpstreamUnavailable(f"{label} after {n5xx} retries{later}{detail}")
+
     # -- requests -----------------------------------------------------------
 
     @overload
@@ -175,36 +250,38 @@ class PacedClient:
                 resp = self._client.get(url, params=params)
             except httpx.HTTPError as exc:
                 self._record(host, b"")
-                if n5xx < policy.max_5xx:
-                    n5xx += 1
-                    self.log(f"  network error on {url}: {exc!r}; retry {n5xx}/{policy.max_5xx}")
-                    self.sleep(policy.wait_5xx * n5xx)
-                    continue
-                raise UpstreamUnavailable(
-                    f"network error on {url} after {n5xx} retries: {exc!r}"
-                ) from exc
+                try:
+                    n5xx = self._wait_transient(
+                        host,
+                        policy,
+                        n5xx,
+                        url=url,
+                        label=f"network error on {url}",
+                        detail=f": {exc!r}",
+                    )
+                except UpstreamUnavailable as spent:
+                    raise spent from exc
+                continue
             self._record(host, resp.content)
             if 200 <= resp.status_code < 300:
                 return Fetched(resp.status_code, resp.headers, resp.content, str(resp.url))
             if resp.status_code == 404 and ok_404:
                 return None
+            retry_after = _retry_after_seconds(resp.headers.get("Retry-After"))
             if resp.status_code == 429:
-                if n429 < policy.max_429:
-                    wait = policy.wait_429 * (policy.backoff_429**n429)
-                    n429 += 1
-                    self.log(
-                        f"  429 from {host}; waiting {wait:.0f}s; retry {n429}/{policy.max_429}"
-                    )
-                    self.sleep(wait)
-                    continue
-                raise UpstreamUnavailable(f"{host} kept answering 429 after {n429} retries: {url}")
+                self._wait_429(host, policy, url, n429, retry_after)
+                n429 += 1
+                continue
             if 500 <= resp.status_code < 600:
-                if n5xx < policy.max_5xx:
-                    n5xx += 1
-                    self.log(f"  {resp.status_code} from {url}; retry {n5xx}/{policy.max_5xx}")
-                    self.sleep(policy.wait_5xx * n5xx)
-                    continue
-                raise UpstreamUnavailable(f"{resp.status_code} from {url} after {n5xx} retries")
+                n5xx = self._wait_transient(
+                    host,
+                    policy,
+                    n5xx,
+                    url=url,
+                    label=f"{resp.status_code} from {url}",
+                    ra=retry_after,
+                )
+                continue
             raise FetchError(f"{resp.status_code} from {url}: {resp.text[:200]!r}")
 
     def get_json(self, url: str, *, params: dict[str, Any] | None = None) -> Any:

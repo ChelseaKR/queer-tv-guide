@@ -294,13 +294,12 @@ consumer of the published snapshot, would notice.
   under `set -u`. The workflow checks now reject that pattern in any
   `run:` step.
 
-## [1.0.1] - TBD
+## [1.0.1] - 2026-11-11
 
-The first update to Queer Frame for iPhone: version 1.0.1, build 2. The
-date is filled in when the release is cut (docs/app-store/OWNER-STEPS.md,
-step 9). It changes the app's look and what it says about deaths and
-trigger warnings, and adds two rows to About. The app still collects no
-data, and the price and the store listing's promises are unchanged.
+The first update to Queer Frame for iPhone: version 1.0.1, build 2. It
+changes the app's look and what it says about deaths and trigger warnings,
+and adds two rows to About. The app still collects no data, and the price
+and the store listing's promises are unchanged.
 
 ### Added
 

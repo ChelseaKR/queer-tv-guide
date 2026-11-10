@@ -225,7 +225,7 @@ PAGE_FLOOR = 50
 # Search Console's 28 days to 2026-11-07, Google showed at least 5 times, or
 # for at least one query it reported, or that earned a click. The counts are
 # for that window.
-INDEX_EXTRA_IDS: frozenset[int] = frozenset(
+INDEX_FIRST_BATCH: frozenset[int] = frozenset(
     {
         84706,  # will-trent: 63 impressions, 1 click
         98062,  # from: 61 impressions, 1 click
@@ -279,6 +279,59 @@ INDEX_EXTRA_IDS: frozenset[int] = frozenset(
         727,  # two-and-a-half-men: 1 impression, 1 click
     }
 )
+# The second batch (DECISIONS 0057): the same rule, read on Search Console's
+# 28 days to 2026-11-08 over the pages still held back: at least 5
+# impressions, or a query Google reported, or a click. The counts are for
+# that window.
+INDEX_SECOND_BATCH: frozenset[int] = frozenset(
+    {
+        32399,  # charmed-2018: 15 impressions
+        8302,  # bojack-horseman: 15 impressions
+        1134,  # shortland-street: 12 impressions
+        18428,  # the-chi: 11 impressions
+        403,  # true-blood: 10 impressions
+        56477,  # elite: 10 impressions
+        76674,  # amphibia: 10 impressions
+        94963,  # the-mighty-nein: 9 impressions
+        6149,  # van-helsing: 8 impressions
+        87795,  # the-fall-of-the-house-of-usher: 8 impressions
+        1543,  # code-black: 8 impressions
+        24362,  # ackley-bridge: 8 impressions
+        24603,  # siren: 8 impressions
+        58874,  # control-z: 8 impressions
+        76667,  # doom-patrol: 7 impressions, 1 click
+        54482,  # midsomer-murders: 7 impressions
+        2213,  # coronation-street: 7 impressions
+        73228,  # hacks: 7 impressions
+        86630,  # deadloch: 7 impressions
+        50582,  # tuca-bertie: 7 impressions
+        19086,  # grown-ish: 7 impressions
+        892,  # queer-folk-us: 7 impressions
+        1743,  # call-the-midwife: 7 impressions
+        9144,  # 13-reasons-why: 7 impressions
+        2279,  # murdoch-mysteries: 6 impressions
+        77498,  # harlem: 6 impressions
+        20538,  # vis-a-vis: 6 impressions
+        74113,  # icarly: 6 impressions
+        12367,  # the-deuce: 6 impressions
+        76736,  # chucky: 6 impressions
+        3702,  # the-mindy-project: 6 impressions
+        87508,  # adventure-time-fionna-cake: 6 impressions
+        91785,  # my-adventures-with-superman: 6 impressions
+        2316,  # emmerdale: 5 impressions
+        5712,  # the-girlfriend-experience: 5 impressions
+        3134,  # miss-fishers-murder-mysteries: 4 impressions, 1 click
+        3187,  # new-girl: 4 impressions
+        75994,  # only-murders-in-the-building: 4 impressions
+        58452,  # harley-quinn: 4 impressions
+        225,  # glee: 3 impressions
+        345,  # the-wire: 3 impressions
+        44503,  # 3: 3 impressions
+        4737,  # neighbours: 2 impressions
+        40427,  # flack: 2 impressions
+    }
+)
+INDEX_EXTRA_IDS: frozenset[int] = INDEX_FIRST_BATCH | INDEX_SECOND_BATCH
 INDEX_MIN_LISTED: int | None = None
 ROBOTS_HOLD = "noindex,follow"
 # The airing-now page (airing_page.py, DECISIONS 0033), built with the show pages.

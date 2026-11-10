@@ -1735,3 +1735,50 @@ page says the date is kept on purpose) and missing markers.
 **Not changed.** A failed run publishes nothing and the previous snapshot stays. TVmaze has no later retry.
 
 **Reversible.** Yes: set `later_retry_wait` back to 0 on `LEZWATCH_POLICY`.
+
+## 0057 — Open the next 44 held-back show pages that Google already shows (2026-11-09)
+
+**Status: proposed (branch `seo/qf-more-show-pages`). Needs Chelsea: it opens
+the second widening batch of 0028 before 0046's two-week check (about
+11-21). Merging it is the decision; holding it until that check passes is the
+other choice.**
+
+**What decides a page.** Two rules, and this changes only the second. A show
+gets a page when it has at least 5 characters listed in the snapshot and a
+TVmaze match, or is hand-picked (0021, 0025). That is the quality bar, and it
+stays: on the 2026-11-09 snapshot it builds 364 pages. A built page is open to
+search only when it is hand-picked or in `INDEX_EXTRA_IDS` (0028, 0046); every
+other page carries `noindex,follow` and is left out of the sitemap. Before
+this, 100 show pages were open (the live sitemap has 105 URLs) and 264 were
+held back.
+
+**Evidence.** Search Console for `sc-domain:queerframe.app`, 2026-10-12 to
+2026-11-08 (`dataState: all`), read with the read-only scope: 1,898
+impressions and 16 clicks. Daily impressions were 176, 417, 570 and 615 from
+11-05 to 11-08. The 100 open show pages had 1,459 impressions; 103 of the
+held-back pages still had 425, and 2 clicks. Google reported a query for 316
+impressions. Every one landed on a show page that is built, except three
+searches for LezWatch.TV itself, which landed on the home page. No query named
+a show without a page, so the gap is again held-back pages, not missing ones.
+The 90 shows with 5 or more listed characters and no TVmaze match have no page
+and drew no impression; they stay below the bar.
+
+**Decision.** `show_pages.INDEX_SECOND_BATCH` lists 44 LezWatch ids, by the
+same rule as 0046, applied to the pages still held back: Google showed the
+page at least 5 times (35), or for a query it reported (18), or it earned a
+click (2). Together they had 303 of the 425 held-back impressions and both
+clicks, led by Charmed (2018) and BoJack Horseman (15 each), Shortland Street
+(12), The Chi (11), True Blood, Élite and Amphibia (10 each). `INDEX_EXTRA_IDS`
+is now `INDEX_FIRST_BATCH | INDEX_SECOND_BATCH` (94 ids). On the 2026-11-09
+snapshot the sitemap goes from 105 to 149 URLs (144 show pages); 220 pages
+stay held back. Every sitemap entry keeps the snapshot date as its lastmod,
+which is the date each page states. Page content, titles and descriptions do
+not change. `index_problems` keeps the sitemap and the tags in step, and the
+IndexNow step (0034) announces the 44 pages because they are new to the
+sitemap.
+
+**The check.** Same as 0046, at 2 weeks after this goes live: if the pages
+open before it lose weekly impressions, or the site's weekly impressions fall
+below the week to 11-08, revert this batch (empty `INDEX_SECOND_BATCH`).
+
+**Reversible.** Yes: empty `INDEX_SECOND_BATCH`.

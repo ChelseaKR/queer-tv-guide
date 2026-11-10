@@ -240,8 +240,8 @@ def test_the_first_batch_adds_50_shows_none_of_them_pinned():
     pins = show_pages.load_pinned(show_pages.DEFAULT_PINNED_PATH)
     assert pins is not None
     pinned_ids = {p.lezwatch_id for p in pins}
-    assert len(show_pages.INDEX_EXTRA_IDS) == 50
-    assert not show_pages.INDEX_EXTRA_IDS & pinned_ids
+    assert len(show_pages.INDEX_FIRST_BATCH) == 50
+    assert not show_pages.INDEX_FIRST_BATCH & pinned_ids
     assert show_pages.INDEX_MIN_LISTED is None  # the batch is a list, not a rule
 
 

@@ -15,6 +15,7 @@ from __future__ import annotations
 import hashlib
 import re
 import shutil
+from html import escape
 from pathlib import Path
 
 import pytest
@@ -73,7 +74,9 @@ def _page_problems(page: Path) -> list[str]:
         if links:
             problems.append(f"{page.name}: badge on a page it does not belong on")
         return problems
-    if links != [APP_URL]:
+    # The home page's campaign link (DECISIONS 0056): the plain listing
+    # until the owner fills in the provider token.
+    if links != [escape(app_store.app_store_link("home"))]:
         problems.append(f"index.html: badge links {links!r}")
     if PRICE_COPY not in html:
         problems.append("index.html: price copy missing")

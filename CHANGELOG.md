@@ -13,6 +13,15 @@ consumer of the published snapshot, would notice.
 
 ### Added
 
+- Every App Store link on the website can now carry Apple's App Store
+  Connect campaign tokens, one per page type (home, shows, show,
+  show-top, airing, notfound, press), so App Store Connect can count which
+  kind of page sends people to the listing. The links stay plain until the
+  owner adds the account's provider token. The website still has no
+  analytics, no cookies and no requests to other sites (DECISIONS 0056).
+- Show pages now say near the top, before the spoiler warning, that Queer
+  Frame is also an iPhone app for $4.99 once, with a link to the App Store
+  (DECISIONS 0056).
 - Every show page asks each listed character's question after the sealed
   answer: "Is <name> <label> in <show>?" with LezWatch.TV's own gender and
   sexuality terms ("a lesbian", "bisexual", "a trans woman",

@@ -19,7 +19,7 @@ from pathlib import Path
 import pytest
 
 from qtv_pipeline import airing_page, show_pages, site_index
-from qtv_pipeline.app_store import APP_STORE_URL
+from qtv_pipeline.app_store import APP_STORE_URL, app_store_link
 from tests import htmlprobe
 
 REPO = Path(__file__).resolve().parents[2]
@@ -381,11 +381,13 @@ def test_switch_off_no_app_store_link_and_the_app_is_described(doc):
     assert "new-episode" in text and "Up Next widget" in text
 
 
-def test_switch_on_links_the_plain_app_store_url_with_no_tracking(doc):
+def test_switch_on_links_the_app_store_with_the_airing_campaign_only(doc):
+    # DECISIONS 0056: Apple's own campaign token, nothing else; plain until
+    # the owner fills in the provider token.
     text = _airing(doc, app_store_live=True)
     links = [h for h in htmlprobe.parse(text).hrefs() if "apple.com" in h]
-    assert links == [APP_STORE_URL]
-    assert "?" not in APP_STORE_URL and "ct=" not in text and "pt=" not in text
+    assert links == [app_store_link("airing")]
+    assert links[0].startswith(APP_STORE_URL)
     assert text.count("apple-itunes-app") == 1
 
 

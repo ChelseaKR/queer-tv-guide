@@ -43,8 +43,9 @@ all says the schedules are missing from this build, never "nothing airs".
 The app. While the App Store switch is off, one sentence says the iPhone app
 (new-episode reminders, the Up Next widget) is not on the App Store yet,
 with no link. On, the shared "Get the iPhone app" block
-(``app_store.get_app_block``, DECISIONS 0047) links to the plain App Store
-URL in ``app_store.py``, with no campaign or tracking parameter. The page has no analytics and no
+(``app_store.get_app_block``, DECISIONS 0047) links to the App Store URL in
+``app_store.py`` with Apple's "airing" campaign token (DECISIONS 0056), which
+App Store Connect counts on Apple's side. The page has no analytics and no
 script, like every other page.
 """
 
@@ -273,7 +274,7 @@ def render_airing(
     }
     tvmaze = next(a for a in doc["attribution"] if a["source"] == "tvmaze")
     return _ENV.get_template("airing.html.j2").render(
-        **_common(doc, base_url, app_store_live),
+        **_common(doc, base_url, app_store_live, campaign="airing"),
         title=airing_title(plan.end),
         description=airing_description(plan),
         canonical=canonical,

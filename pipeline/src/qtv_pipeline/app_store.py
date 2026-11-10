@@ -32,11 +32,74 @@ of clear space, and never edited.
 
 from __future__ import annotations
 
+import html
+import re
 import sys
 from pathlib import Path
+from urllib.parse import urlencode
 
 APP_STORE_ID = "6818637465"
 APP_STORE_URL = f"https://apps.apple.com/us/app/id{APP_STORE_ID}"
+
+# App Store Connect campaign links (DECISIONS 0056). Apple counts App Store
+# impressions, product page views and downloads per campaign token (ct) in
+# App Store Connect > Analytics > Acquisition > Campaigns, for links that also
+# carry the account's provider token (pt). This is the only measurement the
+# site has: Apple counts what happens on its own pages, and the site still
+# runs no script, sets no cookie and requests nothing from another host.
+#
+# OWNER STEP: the provider token is account-level and shown only in App Store
+# Connect's campaign link generator (Apple: "You can't create one manually").
+# Until it is filled in, every link stays the plain APP_STORE_URL; a link with
+# a campaign token and no provider token, or an invented one, is never
+# published. Paste the digits after "pt=" from a generated link here.
+APP_STORE_PROVIDER_TOKEN: str | None = None
+# Apple: "Media type token (identified by the mt= parameter)"; its own
+# example campaign link carries mt=8.
+APP_STORE_MEDIA_TYPE = "8"
+# One campaign token per page type, never per page, so App Store Connect's
+# Campaigns list stays short and each row clears Apple's five-download floor
+# sooner. Apple allows up to 30 characters; these are plain lowercase.
+CAMPAIGNS = frozenset(
+    {
+        "home",  # the home page's badge
+        "show-top",  # the one line under a show page's opening (placement test)
+        "show",  # a show page's badge, below the character questions
+        "shows",  # the shows index
+        "airing",  # the airing-now page
+        "notfound",  # the 404 page
+        "press",  # the press page's "On the App Store" link
+    }
+)
+CAMPAIGN_MAX = 30  # Apple: "up to 30 alphanumeric characters and spaces"
+_CAMPAIGN_SHAPE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
+_PROVIDER_SHAPE = re.compile(r"^[0-9]+$")
+
+
+class CampaignError(ValueError):
+    """A campaign token or provider token Apple would not accept, or one this
+    site has not declared."""
+
+
+def app_store_link(campaign: str, provider_token: str | None = None) -> str:
+    """The App Store listing URL for one page type. With a provider token
+    (``APP_STORE_PROVIDER_TOKEN`` unless one is passed) it carries Apple's
+    pt, ct and mt parameters; without one it is the plain listing URL.
+    ``campaign`` must be one of ``CAMPAIGNS`` either way, so a page type cannot
+    quietly go unmeasured once the token is in."""
+    if campaign not in CAMPAIGNS:
+        raise CampaignError(f"{campaign!r} is not a declared campaign token")
+    if len(campaign) > CAMPAIGN_MAX or not _CAMPAIGN_SHAPE.fullmatch(campaign):
+        raise CampaignError(f"{campaign!r} is not a plain lowercase token of at most 30")
+    token = APP_STORE_PROVIDER_TOKEN if provider_token is None else provider_token
+    if token is None:
+        return APP_STORE_URL
+    if not _PROVIDER_SHAPE.fullmatch(token):
+        raise CampaignError("the provider token is not all digits")
+    query = urlencode({"pt": token, "ct": campaign, "mt": APP_STORE_MEDIA_TYPE})
+    return f"{APP_STORE_URL}?{query}"
+
+
 BADGE_FILE = "app-store-badge.svg"
 BADGE_SOURCE = Path(__file__).parent / "assets" / BADGE_FILE
 BADGE_SHA256 = "a26fc5b38380272c92e9019a2eb8b45542a66814b3e2b203772db8904b9fb99f"
@@ -53,6 +116,7 @@ INDEX_SLOT = (
 )
 # The one-time price (docs/app-store-listing.json price_usd), also on /press/.
 PRICE = "$4.99"
+SITE_NAME_FOR_LINE = "Queer Frame"
 PRICE_COPY = f"Queer Frame for iPhone. {PRICE} on the App Store."
 
 # What the app adds over the website, in one sentence. Every claim is a
@@ -68,25 +132,46 @@ APP_PITCH = (
 APP_PITCH_LEAD = "Get the iPhone app."
 
 
-def get_app_block(badge_src: str) -> str:
+def get_app_block(badge_src: str, campaign: str) -> str:
     """The one "Get the app" block a page carries: the pitch, then Apple's
     unedited badge as the link, with the price. ``badge_src`` is where the
     page finds the badge file (the home page uses the bare file name, pages
-    in subdirectories the absolute URL). The badge's look comes from the
+    in subdirectories the absolute URL); ``campaign`` is the page type's
+    campaign token (``app_store_link``). The badge's look comes from the
     block's own stylesheet, BADGE_STYLE: the img width and height attributes
     reserve its box before the SVG loads, so nothing shifts."""
+    href = html.escape(app_store_link(campaign))
     return (
         '<div class="get-app">'
         f"<p><strong>{APP_PITCH_LEAD}</strong> {APP_PITCH}</p>"
         '<p class="app-store-cta">'
-        f'<a class="app-store-badge" href="{APP_STORE_URL}">'
+        f'<a class="app-store-badge" href="{href}">'
         f'<img src="{badge_src}" width="120" height="40" alt="Download on the App Store"></a>'
         f" <span>{PRICE_COPY}</span></p>"
         "</div>"
     )
 
 
-BADGE_BLOCK = get_app_block(BADGE_FILE)
+BADGE_BLOCK = get_app_block(BADGE_FILE, "home")
+
+# A show page's one line near the top (DECISIONS 0056). The badge sits below
+# the character questions, out of sight on a phone for a visitor who came
+# from search; this line says the app exists and what it costs, once, before
+# the spoiler warning and never inside the answer. Its own campaign token
+# (show-top) shows in App Store Connect whether the top line or the badge
+# sends people.
+APP_LINE_TEXT = (
+    f"{SITE_NAME_FOR_LINE} is also an iPhone app: {PRICE} once, "
+    "no subscription, no in-app purchases."
+)
+APP_LINE_LINK_TEXT = "See it on the App Store"
+
+
+def get_app_line(campaign: str = "show-top") -> str:
+    """The one-line App Store mention near the top of a show page."""
+    href = html.escape(app_store_link(campaign))
+    return f'<p class="app-line">{APP_LINE_TEXT} <a href="{href}">{APP_LINE_LINK_TEXT}</a>.</p>'
+
 
 # The block brings its own rules rather than relying on the page's
 # stylesheet, so a page with the switch off carries no trace of the app. The
@@ -148,7 +233,7 @@ def apply(site_dir: Path) -> list[Path]:
         if page.name == "index.html":
             if text.count(INDEX_SLOT) != 1:
                 raise PageShapeError(f"{page.name}: expected exactly one {INDEX_SLOT!r}")
-            text = text.replace(INDEX_SLOT, BADGE_BLOCK, 1)
+            text = text.replace(INDEX_SLOT, get_app_block(BADGE_FILE, "home"), 1)
         rendered[page] = text
     for page, text in rendered.items():
         page.write_text(text, encoding="utf-8")

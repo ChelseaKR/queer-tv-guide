@@ -22,6 +22,7 @@ asserts that the check caught it.
 from __future__ import annotations
 
 import copy
+import html
 import json
 import re
 from importlib import resources
@@ -31,7 +32,7 @@ from pathlib import Path
 import pytest
 
 from qtv_pipeline import findings, show_pages, site_index
-from qtv_pipeline.app_store import APP_STORE_URL, PRICE
+from qtv_pipeline.app_store import APP_STORE_URL, PRICE, app_store_link
 from tests import htmlprobe
 
 REPO = Path(__file__).resolve().parents[2]
@@ -363,7 +364,8 @@ def test_press_page_facts(doc, data):
 
 def test_press_page_links_the_app_store_when_the_switch_is_on(doc, data):
     text = _press(doc, data, app_store_live=True)
-    assert f'href="{APP_STORE_URL}"' in _main(text) and "Coming soon" not in text
+    press = html.escape(app_store_link("press"))
+    assert f'href="{press}"' in _main(text) and "Coming soon" not in text
 
 
 def test_press_images_are_the_repository_icon_and_screenshots(tmp_path):

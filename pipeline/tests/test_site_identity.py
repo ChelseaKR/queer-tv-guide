@@ -218,11 +218,12 @@ def test_the_not_found_page_offers_the_app_only_when_the_switch_is_on(doc):
     off = site_index.render_not_found(doc, shows_link=True, base_url=BASE)
     assert not any(m in off for m in ("apps.apple.com", "app-store-badge", "apple-itunes-app"))
     on = site_index.render_not_found(doc, shows_link=True, base_url=BASE, app_store_live=True)
-    assert on.count(app_store.get_app_block(f"{BASE}/{app_store.BADGE_FILE}")) == 1
+    assert on.count(app_store.get_app_block(f"{BASE}/{app_store.BADGE_FILE}", "notfound")) == 1
     assert on.count(app_store.BADGE_STYLE) == 1
     assert "apple-itunes-app" not in on
     page = htmlprobe.parse(on)
-    assert [a.get("href") for a in page.named("a")].count(app_store.APP_STORE_URL) == 1
+    hrefs = [a.get("href") for a in page.named("a")]
+    assert hrefs.count(app_store.app_store_link("notfound")) == 1
     assert [a["src"] for a in page.named("img")] == [f"{BASE}/{app_store.BADGE_FILE}"]
 
 

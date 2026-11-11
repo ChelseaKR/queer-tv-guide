@@ -44,8 +44,9 @@ name: ci
 # guidecore needs macOS (GuideCore uses Apple's Foundation networking types,
 # which do not build on Linux), and CI-CD §11b keeps macOS off per-PR CI for
 # cost. docs/adr/0012 records the exception: the `changes` job skips
-# guidecore on a pull request that touches nothing it tests, and runs it in
-# every other case, including when `changes` itself fails.
+# guidecore on a pull request, or on a push to main, that touches nothing it
+# tests, and runs it in every other case: a manual dispatch, a push with no
+# earlier commit to compare against, or when `changes` itself fails.
 
 on:
   pull_request:
@@ -176,16 +177,34 @@ jobs:
           EVENT: ${{ github.event_name }}
           BASE: ${{ github.event.pull_request.base.sha }}
           HEAD: ${{ github.event.pull_request.head.sha }}
+          BEFORE: ${{ github.event.before }}
+          SHA: ${{ github.sha }}
         run: |
           set -euo pipefail
-          if [ "$EVENT" != "pull_request" ]; then
-            echo "guidecore=true" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
+          # One path rule for a pull request and for a push to main, so a
+          # squash merge that touched nothing guidecore tests skips it on
+          # main exactly as its pull request did. A push compares the pushed
+          # commit with the one it replaced; main takes fast-forward pushes
+          # only (.github/rulesets/main.json), so that commit is an ancestor
+          # and is in the full clone above. An all-zeros `before` is a new
+          # branch or a force-push, with nothing to compare against, and runs
+          # everything; so does a manual dispatch.
           # A failed diff fails this step, and guidecore then runs anyway.
           # No `grep -q` in a pipe: under pipefail its early exit can turn a
           # match into a failure, which would read as "nothing changed".
-          changed="$(git diff --name-only "$BASE...$HEAD")"
+          case "$EVENT" in
+            pull_request)
+              changed="$(git diff --name-only "$BASE...$HEAD")" ;;
+            push)
+              if [ -z "$BEFORE" ] || [ "$BEFORE" = "0000000000000000000000000000000000000000" ]; then
+                echo "guidecore=true" >> "$GITHUB_OUTPUT"
+                exit 0
+              fi
+              changed="$(git diff --name-only "$BEFORE" "$SHA")" ;;
+            *)
+              echo "guidecore=true" >> "$GITHUB_OUTPUT"
+              exit 0 ;;
+          esac
           run=false
           while IFS= read -r path; do
             case "$path" in

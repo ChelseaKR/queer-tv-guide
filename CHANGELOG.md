@@ -13,6 +13,10 @@ consumer of the published snapshot, would notice.
 
 ### Added
 
+- The website's App Store links now carry the account's provider token, so
+  App Store Connect's Campaigns view starts counting which kind of page sends
+  people to the listing. The token is in every campaign link and is not a
+  credential (DECISIONS 0056).
 - Search finds a show by its other titles: "Call My Agent!" finds Dix pour cent.
   The snapshot now fills `alternate_names` and some unknown season counts from
   Wikidata, only where two ids agree, without replacing a LezWatch.TV or TVmaze

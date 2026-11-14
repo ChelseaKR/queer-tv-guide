@@ -26,7 +26,7 @@ Store search, 2026-11-07):
 |---|---|---|---|
 | Name | **Queer Frame** | 11 / 30 | DECISIONS 0006 |
 | Subtitle | "Does she die? Lesbian TV guide" | 30 / 30 | §App Store search 2026-09-18 (was "Does she die? Is it worth it?", research §6 rank 1); kept 2026-11-07 |
-| Promotional text | see the JSON | 169 / 170 | §App Store search 2026-11-07 |
+| Promotional text | see the JSON | 169 / 170 | §Promotional text, 2026-11-14 (was §App Store search 2026-11-07) |
 | Keywords | see §App Store search 2026-11-07 | 100 / 100 | §App Store search 2026-11-07 |
 | Description | see the JSON | 1,431 / 4,000 | first paragraph rewritten and the widget/reminders line added, §App Store search 2026-11-07 |
 | Category | Entertainment (primary), Reference (secondary) | — | §App Store search, Categories |
@@ -58,6 +58,25 @@ Copy rule: no "only", "first" or other uniqueness claims about the market
 (the space has TV Time — shut down 2026-07-15 — Does the Dog Die, Serializd,
 TVmaze and Sapphic Signal). Claims about the app's own behavior ("no
 account") are fine because they are checkable.
+
+### Promotional text, 2026-11-14
+
+Chelsea approved a new ending for the promotional text on 2026-11-14 and
+it went live on the 1.0.0 page in App Store Connect the same day. It is
+copied back here in the same sitting, as the rule below asks.
+
+| | Value | Count / limit |
+|---|---|---|
+| Before (approved 2026-11-13, the 1.0.1 version page) | `Does she die? You choose when to find out. 2,200+ TV shows with queer women, non-binary and trans characters: worth it or not, where to watch, next episodes. No account.` | 169 / 170 |
+| Now (live on 1.0.0) | `Does she die? You choose when to find out. 2,200+ TV shows with queer women, non-binary and trans characters: worth it or not, where to watch. Pay once, no subscription.` | 169 / 170 |
+
+The opening and the coverage are unchanged. The ending trades "next
+episodes" and "no account", which the description and the "Data Not
+Collected" label already say, for the purchase terms: one-time, no
+in-app purchase (DECISIONS 0003, 0011). It names no price (Apple: "avoid
+including specific prices in your app description"). The 1.0.1 version
+page still carries the 2026-11-13 text while it waits for review; paste
+this one there once 1.0.1 is released.
 
 ### App Store search (ASO), 2026-11-07
 

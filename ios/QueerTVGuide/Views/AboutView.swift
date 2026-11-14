@@ -82,7 +82,7 @@ struct AboutView: View {
                 // Its own section below the data sources, so the Privacy
                 // section's first screen is unchanged.
                 Section(subdued: "Age range") {
-                    Text("Where Apple says a state law requires it, the app asks Apple for your age range when it opens. The answer stays in memory on this device, is never saved or sent anywhere, and changes nothing in the app.")
+                    Text("Where a state law may require it, the app asks Apple for your age range when it opens. The answer stays in memory on this device, is never saved or sent anywhere, and changes nothing in the app.")
                 }
 
                 Section(subdued: "Version") {

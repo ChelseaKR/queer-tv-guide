@@ -236,7 +236,7 @@ final class AccessibilityAuditTests: XCTestCase {
     static let aboutRowsThatScale: [(type: XCUIElement.ElementType, label: String)] = [
         (.staticText, "That file is served by GitHub Pages, which, like any web server, sees your IP address and logs it for security. The developer never sees that log."),
         (.staticText, "Favorites are stored only on this device and are never sent anywhere."),
-        (.staticText, "Where Apple says a state law requires it, the app asks Apple for your age range when it opens. The answer stays in memory on this device, is never saved or sent anywhere, and changes nothing in the app."),
+        (.staticText, "Where a state law may require it, the app asks Apple for your age range when it opens. The answer stays in memory on this device, is never saved or sent anywhere, and changes nothing in the app."),
         (.button, "Privacy policy"),
         (.button, "Support"),
     ]

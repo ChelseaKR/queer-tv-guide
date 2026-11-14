@@ -92,7 +92,7 @@ fun OnboardingScreen(isFirstRun: Boolean, finish: () -> Unit) {
             "onboarding-point-privacy",
             Icons.Filled.Lock,
             "Nothing about you leaves this device",
-            "No account, no analytics, no tracking. Favorites stay on this device. The app downloads one data file, the same file for everyone.",
+            "No account, no analytics, no ads. Favorites stay on this device. The app downloads one data file, the same file for everyone.",
         ),
     )
     val pager = rememberPagerState { pages.size }

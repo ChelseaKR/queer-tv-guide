@@ -43,7 +43,7 @@ from pathlib import Path
 from typing import Any
 
 from qtv_pipeline import findings
-from qtv_pipeline.app_store import INDEX_SLOT, PRICE, live_or_false
+from qtv_pipeline.app_store import INDEX_SLOT, PRICE_US, live_or_false
 from qtv_pipeline.show_pages import (
     _ENV,
     AIRING_PATH,
@@ -382,7 +382,7 @@ def write_findings_and_press(
             data,
             base_url=base_url,
             app_store_live=app_store_live,
-            price=PRICE,
+            price=PRICE_US,
             platform="iPhone",
             images=images,
         ),

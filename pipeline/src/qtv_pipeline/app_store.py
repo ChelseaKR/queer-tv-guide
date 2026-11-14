@@ -12,7 +12,9 @@ file is added. On ("true") every page gets Safari's Smart App Banner tag,
 and the home page's "coming soon" line (INDEX_SLOT) is replaced by the
 "Get the iPhone app" block (``get_app_block``): one sentence on what the app
 adds over the website, then Apple's "Download on the App Store" badge linking
-to the app's US listing, with its price. The show pages, the shows index,
+to the app's App Store listing, with its US price named as the US price. The
+link names no country (DECISIONS 0058), so Apple opens the listing in the
+visitor's own storefront. The show pages, the shows index,
 the airing page and the 404 page render the same block themselves
 (DECISIONS 0047), with the badge's address absolute so it resolves from any
 directory. Any other value is refused (exit 1), so a
@@ -39,7 +41,12 @@ from pathlib import Path
 from urllib.parse import urlencode
 
 APP_STORE_ID = "6818637465"
-APP_STORE_URL = f"https://apps.apple.com/us/app/id{APP_STORE_ID}"
+# The listing with no country in its path (DECISIONS 0058). The app is sold in
+# more storefronts than the United States since 2026-11-12, and a link with
+# /us/ in it shows the US page and the US price to a desktop or Android
+# visitor anywhere. Apple resolves this form in the visitor's own storefront.
+# It does not promise the app is sold there: where it is not, Apple says so.
+APP_STORE_URL = f"https://apps.apple.com/app/id{APP_STORE_ID}"
 
 # App Store Connect campaign links (DECISIONS 0056). Apple counts App Store
 # impressions, product page views and downloads per campaign token (ct) in
@@ -115,10 +122,22 @@ INDEX_SLOT = (
     '<p class="app-soon">The Queer Frame iPhone app is coming soon. '
     "It is not on the App Store yet.</p>"
 )
-# The one-time price (docs/app-store-listing.json price_usd), also on /press/.
+# The one-time price in the United States (docs/app-store-listing.json
+# price_usd). Apple sets every other storefront's price from it, in that
+# storefront's currency and with its tax, so the site never prints the figure
+# without its country (DECISIONS 0058): "$4.99" alone reads as a lower price
+# than the App Store then shows in Canada, Australia or New Zealand.
 PRICE = "$4.99"
+PRICE_US = f"{PRICE} in the US"
 SITE_NAME_FOR_LINE = "Queer Frame"
-PRICE_COPY = f"Queer Frame for iPhone. {PRICE} on the App Store."
+# Under the badge on every page that carries it, and on /press/ (PRICE_US).
+# True in every storefront: it names the one price the site knows, and says
+# Apple shows the local one only where the app is sold, never that it is sold
+# everywhere.
+PRICE_COPY = (
+    f"Queer Frame for iPhone. {PRICE_US}; "
+    "the App Store shows the local price where the app is sold."
+)
 
 # What the app adds over the website, in one sentence. Every claim is a
 # feature of the approved 1.0.0 build (docs/app-store-listing.json, the
@@ -155,23 +174,72 @@ def get_app_block(badge_src: str, campaign: str) -> str:
 
 BADGE_BLOCK = get_app_block(BADGE_FILE, "home")
 
-# A show page's one line near the top (DECISIONS 0056). The badge sits below
-# the character questions, out of sight on a phone for a visitor who came
-# from search; this line says the app exists and what it costs, once, before
-# the spoiler warning and never inside the answer. Its own campaign token
-# (show-top) shows in App Store Connect whether the top line or the badge
-# sends people.
-APP_LINE_TEXT = (
-    f"{SITE_NAME_FOR_LINE} is also an iPhone app: {PRICE} once, "
-    "no subscription, no in-app purchases."
-)
+# A show page's one line near the top (DECISIONS 0056 added it, 0059 says
+# what the app does for this visitor and moves it above the "Does she die"
+# paragraph, onto a phone's first screen). The badge sits below the character
+# questions, out of sight on a phone for a visitor who came from search; this
+# line says what the app does for this visitor and what it costs in the US
+# (PRICE_US, DECISIONS 0058), once, before the spoiler warning and never
+# inside the answer. Its own campaign token (show-top) shows in App Store
+# Connect whether the top line or the badge sends people, and stays the same
+# so Apple's counts compare before and after.
+#
+# It opens one of two ways, by what the visitor can use. A show with a dated
+# next episode leads with that episode (TVmaze's day, credited to TVmaze) and
+# the reminder the app can set for it. Every other show, ended or between
+# seasons, leads with the reason the visitor came: checking a show before
+# starting it. Both then say how many shows the app covers, a number computed
+# from the snapshot on every build (``catalog_phrase``), and the price.
+APP_LINE_PRICE = f"a one-time purchase ({PRICE_US}), no subscription."
+APP_LINE_CHECKING = "Checking a show before you start it?"
 APP_LINE_LINK_TEXT = "See it on the App Store"
+# The catalog count is rounded down to a whole step, the way the store
+# listing's promotional text counts shows. Below one step there is no honest
+# round number, so the sentence leaves the count out; it never says "0+".
+CATALOG_STEP = 100
 
 
-def get_app_line(campaign: str = "show-top") -> str:
+def catalog_phrase(show_count: object) -> str | None:
+    """The snapshot's number of shows rounded down to a whole
+    ``CATALOG_STEP`` with a plus sign, so never above the real count. None,
+    not a guess, when the count is missing, not a whole number, or under one
+    step."""
+    if isinstance(show_count, bool) or not isinstance(show_count, int):
+        return None
+    floor = show_count // CATALOG_STEP * CATALOG_STEP
+    return f"{floor:,}+" if floor >= CATALOG_STEP else None
+
+
+def app_line_text(next_episode: tuple[str, str | None] | None, show_count: object) -> str:
+    """The sentences of a show page's top line, before its link.
+
+    ``next_episode`` is what ``show_pages.next_episode_line`` returns: (the
+    date as TVmaze gives it, its ISO day) or None. Only a dated episode leads:
+    the app sets a reminder for a dated episode and for no other, so an
+    episode TVmaze lists with no date reads like no episode at all, never as
+    a promise. ``show_count`` is the snapshot's number of shows. Nothing here
+    reads a character or a death record."""
+    count = catalog_phrase(show_count)
+    covers = f"covers {count} shows offline" if count else "works offline"
+    if next_episode is not None and next_episode[1] is not None:
+        lead = f"Next episode: {next_episode[0]}, per TVmaze."
+        what = f"{SITE_NAME_FOR_LINE} for iPhone can remind you when it airs, and it {covers}"
+    else:
+        lead = APP_LINE_CHECKING
+        what = f"{SITE_NAME_FOR_LINE} for iPhone {covers}"
+    return f"{lead} {what}: {APP_LINE_PRICE}"
+
+
+def get_app_line(
+    campaign: str = "show-top",
+    *,
+    next_episode: tuple[str, str | None] | None = None,
+    show_count: object = None,
+) -> str:
     """The one-line App Store mention near the top of a show page."""
     href = html.escape(app_store_link(campaign))
-    return f'<p class="app-line">{APP_LINE_TEXT} <a href="{href}">{APP_LINE_LINK_TEXT}</a>.</p>'
+    text = html.escape(app_line_text(next_episode, show_count))
+    return f'<p class="app-line">{text} <a href="{href}">{APP_LINE_LINK_TEXT}</a>.</p>'
 
 
 # The block brings its own rules rather than relying on the page's

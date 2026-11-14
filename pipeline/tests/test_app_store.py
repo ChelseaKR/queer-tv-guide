@@ -3,7 +3,8 @@
 Off (APP_STORE_LIVE unset, empty or "false"): the assembled site is left
 byte for byte as it was, and no file is added. On: every page carries the
 Smart App Banner tag with Queer Frame's app ID, and the index carries
-Apple's unmodified badge linking to the US listing, with the price.
+Apple's unmodified badge linking to the listing with no country in its path
+(DECISIONS 0058), with the US price named as the US price.
 
 Every negative control asserts that its sabotage changed the input before it
 asserts that the check caught it; a sabotage that silently no-ops would
@@ -28,9 +29,12 @@ DOCS_SITE = REPO / "docs" / "site"
 SNAPSHOT_WORKFLOW = REPO / ".github" / "workflows" / "snapshot.yml"
 
 APP_ID = "6818637465"
-APP_URL = "https://apps.apple.com/us/app/id6818637465"
+APP_URL = "https://apps.apple.com/app/id6818637465"
 BANNER = f'<meta name="apple-itunes-app" content="app-id={APP_ID}">'
-PRICE_COPY = "Queer Frame for iPhone. $4.99 on the App Store."
+PRICE_COPY = (
+    "Queer Frame for iPhone. $4.99 in the US; "
+    "the App Store shows the local price where the app is sold."
+)
 # Apple's artwork as fetched on 2026-10-02. A different hash means the badge
 # was edited, which Apple's guidelines forbid.
 BADGE_SHA256 = "a26fc5b38380272c92e9019a2eb8b45542a66814b3e2b203772db8904b9fb99f"

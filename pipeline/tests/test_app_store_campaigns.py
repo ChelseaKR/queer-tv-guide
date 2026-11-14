@@ -194,23 +194,34 @@ def test_every_app_store_link_on_the_built_site_carries_pt_and_its_page_campaign
 
 
 def test_the_top_line_sits_before_the_answer_and_outside_it(doc, tmp_path, monkeypatch):
+    """DECISIONS 0059: the line is above the "Does she die" paragraph, so on a
+    phone's first screen, and still above the spoiler warning, the sealed
+    answer and the badge."""
     monkeypatch.setattr(app_store, "APP_STORE_PROVIDER_TOKEN", TEST_PT)
     pages = _built_site(doc, tmp_path)
     shows = [r for r in pages if _expected_campaigns(r) == ["show-top", "show"]]
+    assert len(shows) >= 3  # not vacuous: a running, an ended and an unscheduled show
     for rel in shows:
         text = pages[rel]
-        line = app_store.get_app_line("show-top")
-        assert text.count(line) == 1, rel
-        # Above the spoiler warning, the sealed answer and the badge.
+        assert text.count('<p class="app-line">') == 1, rel
+        start = text.index('<p class="app-line">')
+        line = text[start : text.index("</p>", start) + len("</p>")]
+        assert line.count(app_store.app_store_link("show-top").replace("&", "&amp;")) == 1, rel
+        # After the opening; above the paragraph that begins "Does she die
+        # in", the spoiler warning, the sealed answer and the badge.
         assert (
-            text.index(line)
+            text.index('<p class="opening">')
+            < start
+            < text.index("<p>Does she die in ")
             < text.index('class="spoiler-warning"')
+            < text.index('<details class="answer"')
             < text.index('<div class="get-app">')
         )
         page = htmlprobe.parse(text)
         assert not any("App Store" in t or app_store.PRICE in t for t in page.inside), rel
-        # The price it states is the listing's one-time price.
-        assert f"{app_store.PRICE} once" in app_store.APP_LINE_TEXT
+        # The price it states, before the tap, is the listing's one-time
+        # price, named as the US price (DECISIONS 0058).
+        assert f"a one-time purchase ({app_store.PRICE_US}), no subscription." in line, rel
         # The LezWatch.TV credit is untouched.
         assert "LezWatch.TV" in text
 

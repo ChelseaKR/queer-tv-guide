@@ -180,6 +180,14 @@ snapshot, the attribution, and the App Review note in `docs/APP-STORE.md`.
 **Still open:** a trademark screen for "Queer Frame" (the owner's).
 Update 2026-10-02: done, no conflict found (0006).
 
+**Update 2026-11-13 (0058).** "The United States only" describes the first
+release, 1.0.0, and is no longer where the app is sold. The owner widened
+availability in App Store Connect on 2026-11-12. As of 2026-11-13 the app is
+on sale in 125 storefronts; the 27 EU storefronts and 22 others are switched
+off by her choice. With the EU off there is still no Digital Services Act
+trader declaration. The version, the age rating answers and the US price are
+as decided above.
+
 ## 0017 — The system rating prompt may use StoreKit's review API (accepted, 2026-10-12)
 
 **Status: accepted (owner, 2026-10-12). It amends 0003.**
@@ -1831,3 +1839,136 @@ open before it lose weekly impressions, or the site's weekly impressions fall
 below the week to 11-08, revert this batch (empty `INDEX_SECOND_BATCH`).
 
 **Reversible.** Yes: empty `INDEX_SECOND_BATCH`.
+
+## 0058 — App Store links name no country, and the price is named as the US price (2026-11-13)
+
+**Status: accepted (Chelsea, 2026-11-13: "Approve all of it", the wording
+below as written). It updates the storefront line of 0015 and the price
+sentences of 0047 and 0056; nothing else they decided changes.**
+
+**What changed outside the repository.** 0015 put 1.0.0 on sale in the
+United States only. The owner widened availability on 2026-11-12, and as of
+2026-11-13 the app is on sale in 125 storefronts, with the 27 EU storefronts
+and 22 others switched off by her choice (recorded under 0015). Apple sets
+each storefront's price from the US price, in that storefront's currency and
+with its tax, so the figure differs by country.
+
+**Evidence.** Search Console for `sc-domain:queerframe.app`, 2026-10-15 to
+2026-11-11 (`dataState: all`, read-only scope): 16 of 25 clicks came from
+outside the United States. Every App Store link on the site was
+`apps.apple.com/us/app/id6818637465`, which on a desktop or an Android phone
+shows the US page and the US price wherever the visitor is. Every page that
+named a price said "$4.99" with no country. Canada, Australia and New
+Zealand also write prices with a dollar sign, so there the site's figure
+read as a lower price than the App Store then showed.
+
+**Decision.**
+
+- `app_store.APP_STORE_URL` is `https://apps.apple.com/app/id6818637465`,
+  the listing with no country in its path, which Apple opens in the
+  visitor's own storefront. `app_store_link` still adds the same `pt`, `ct`
+  and `mt` parameters (0056), so the provider token and every campaign token
+  are unchanged and Apple's counts compare before and after.
+- The site never prints the price without its country. `app_store.PRICE_US`
+  is "$4.99 in the US". Under the badge, on every page that carries it:
+  "Queer Frame for iPhone. $4.99 in the US; the App Store shows the local
+  price where the app is sold." On a show page's top line: "Queer Frame is
+  also an iPhone app: a one-time purchase ($4.99 in the US), no
+  subscription, no in-app purchases." On `/press/`: "iPhone, $4.99 in the
+  US, one-time purchase."
+- No page says where else the app is sold, or that it is sold everywhere.
+  The list of storefronts is Apple's to show and the owner's to change; a
+  copy of it on the site would go stale.
+
+**Not changed.** The Smart App Banner (`app-id` only, so it never named a
+country), the badge and its block, the 0047 sentence on what the app adds,
+the campaign and provider tokens, the spoiler control, every title and
+description, and the Android copy and its planned countries (0018). The
+site still has no analytics, no cookie, no script but structured data and
+no request to another host.
+
+**Tests.** `pipeline/tests/test_app_store_country_neutral.py` builds the
+whole site with the switch on and fails on an App Store link with a
+storefront in its path, on any currency figure that is not the listing's US
+price followed by "in the US", and on a sentence about the app that says
+"worldwide", "everywhere" or the like. Its negative controls plant a `/us/`
+link, a bare "$4.99", a hand-typed "C$6.99" and three such claims, and
+assert each is caught. `test_app_store.py` pins the new URL and badge copy.
+
+**Reversible.** Yes: restore `/us/` in `APP_STORE_URL` and the two
+sentences.
+
+## 0059 — The show-page App Store line says what the app does for this visitor, on a phone's first screen (2026-11-13)
+
+**Status: accepted (Chelsea, 2026-11-13: "Approve all of it", the wording
+below as written). It replaces the line's sentence (0056, as 0058 left it)
+and the position 0056 gave it; the campaign token and everything else 0056
+decided stay.**
+
+**Evidence.** Search Console for `sc-domain:queerframe.app`, 2026-10-15 to
+2026-11-11 (`dataState: all`, read-only scope): 25 clicks, every one on a
+show page; 8 landed on a show with a next-episode line and 17 on a show
+without one. The line 0056 added gave the price and not what the app does, and on a phone its link sat just below the first screen.
+Measured here on the 2026-11-09 snapshot (364 show pages) in headless
+Chrome, a 390 by 664 viewport with 375 px of layout width: the link ended
+704 to 886 px down, below the first screen on all 364 pages.
+
+**Decision.**
+
+- Two sentences, by what the visitor can use
+  (`app_store.app_line_text`). A show with a dated TVmaze next episode:
+  "Next episode: <date>, per TVmaze. Queer Frame for iPhone can remind you
+  when it airs, and it covers <count> shows offline: a one-time purchase
+  ($4.99 in the US), no subscription." Every other show, ended or between
+  seasons: "Checking a show before you start it? Queer Frame for iPhone
+  covers <count> shows offline: a one-time purchase ($4.99 in the US), no
+  subscription." Then the link, "See it on the App Store", as before. The
+  date is `show_pages.next_episode_line`'s, the day TVmaze gives. An episode
+  TVmaze lists with no date gets the second sentence: the app sets a
+  reminder only for a dated episode, so the line never promises one.
+- The count is computed on every build from the snapshot's number of shows,
+  rounded down to a whole hundred with a plus sign
+  (`app_store.catalog_phrase`), so it is never above the real count and
+  never typed: 2,293 shows on the 2026-11-09 snapshot reads "2,200+", the
+  figure the store listing's promotional text gives. Under 100 shows there
+  is no round number, and the sentence says "works offline" with no count.
+- The line moves from after the "Does she die in <show>?" paragraph to
+  before it, directly under the opening. On the same build and viewport its
+  link now ends 503 to 680 px down: inside the first 664 px on 362 of 364
+  pages, and 16 px past it on two pages with long titles, where the link's
+  first row is still on screen. On that snapshot 24 pages lead with a next
+  episode and 340 with the checking sentence.
+- Every claim is one the site already makes about the approved build:
+  new-episode reminders and offline use (0047), one price, no subscription
+  (0003, 0011). The price is the US price, named as such (0058). The
+  sentence "no in-app purchases" leaves the line to keep it short; it is
+  still true, and the press page still says it.
+
+**Not changed.** The campaign token (`show-top`) and the link, so Apple's
+counts compare before and after. The spoiler control: the line is above the
+spoiler warning, never inside the answer, and reads no character and no
+death record. The "Next episode" line and the badge block lower on the page
+(0047, 0051), where "Get a reminder in the app." stays unlinked. Every
+title, description and heading. The site still has no analytics, no cookie,
+no script but structured data and no request to another host.
+
+**Tests.** `pipeline/tests/test_show_pages_top_line.py`: the rounding table
+and that the count is never above the snapshot's; that neither
+`app_store.py` nor the template holds a typed count; both sentences word
+for word; a running show with a dated episode, an ended show, a show with
+no schedule, a running show between seasons and an undated episode; the
+count on the page following the snapshot at 3, 150, 2,293 and 2,300 shows;
+the line directly under the opening and above the question paragraph, the
+spoiler warning and the answer; the lower line and the badge block
+unchanged; swapping every death record leaves the line byte for byte, and
+a negative control moves the line into the answer and asserts the probe
+sees it; no label for a person, no tracking, review, rating or sales claim,
+and nothing that says the app is sold everywhere.
+
+**The check.** Read App Store Connect > Analytics > Acquisition > Campaigns
+for `show-top` against the days before, once a row passes Apple's floor of
+5. The volumes are small, so a flat result in two weeks says "too few to
+tell", not "it did not work".
+
+**Reversible.** Yes: restore the one sentence in `get_app_line` and the
+line's place in `show.html.j2`.

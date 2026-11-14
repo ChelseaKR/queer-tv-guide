@@ -123,6 +123,14 @@ in the app.", which the block under it offers. No next episode, no
 schedule, or a date before the snapshot's day: no line at all, never "no
 upcoming episodes".
 
+The top line (``app_store.get_app_line``, DECISIONS 0056 and 0059). With the
+App Store switch on, a show page says once, under its opening and above the
+"Does she die" paragraph, what the app does for this visitor. A show with a
+dated next episode leads with that episode and the reminder; every other
+show leads with checking a show before starting it. Both give the snapshot's
+number of shows, rounded down, and the US price, then the link. It reads no
+character and no death record.
+
 Seasons (``seasons_fact``, DECISIONS 0031). For a show TVmaze lists as Ended, when TVmaze's last season number differs from
 LezWatch's season count, the page shows TVmaze's, labeled "per TVmaze".
 For a show LezWatch marks on air and TVmaze does not list as Ended, TVmaze's
@@ -1753,9 +1761,16 @@ def render_show(
         (show["title"], canonical),
     ]
     today = dt.date.fromisoformat(doc["generated_at"][:10])
+    upcoming = next_episode_line(show, today)
     return _ENV.get_template("show.html.j2").render(
         **_common(doc, base_url, app_store_live, campaign="show"),
-        app_store_line=get_app_line("show-top") if app_store_live else None,
+        # The top line (DECISIONS 0059) leads with this show's next episode
+        # when TVmaze dates one, and counts the snapshot's shows itself.
+        app_store_line=(
+            get_app_line("show-top", next_episode=upcoming, show_count=len(doc["shows"]))
+            if app_store_live
+            else None
+        ),
         title=show_title(show["title"], len(cast)),
         description=_description(show["title"], cast),
         opening=opening(show, cast),
@@ -1768,7 +1783,7 @@ def render_show(
         listed=[(c, played_by(c)) for c in _ranked(cast)],
         questions=character_questions(show, cast),
         questions_visible=QUESTIONS_VISIBLE,
-        next_episode=next_episode_line(show, today),
+        next_episode=upcoming,
         answer=_answer(show, cast),
         tvmaze_url=show["schedule"]["tvmaze_url"],
         others=[

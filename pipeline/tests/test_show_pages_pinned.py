@@ -110,7 +110,8 @@ def test_a_pin_missing_from_the_snapshot_is_skipped_logged_and_replaced(doc, tmp
     assert "show_pages: pinned list: skipped Show 3242 (id 4242): not in the snapshot" in notes
     assert notes[0] == (
         "show_pages: selection rule: pinned list (2 of 3 built), then every show with at "
-        "least 5 listed characters and a TVmaze match, most listed first, then lower LezWatch id"
+        "least 5 listed characters (at least 3 for a show in the small-cast batch) and a "
+        "TVmaze match, most listed first, then lower LezWatch id"
     )
     again = show_pages.plan_selection(big, 50, pins)
     assert [s["slug"] for s in again[0]] == [s["slug"] for s in chosen]

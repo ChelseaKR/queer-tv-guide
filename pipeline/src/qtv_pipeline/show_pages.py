@@ -27,7 +27,8 @@ Which shows (``select_shows``, DECISIONS 0021 and 0025), in this order:
 2. Every other show that meets the inclusion rule (``qualifies``): at least
    ``MIN_LISTED`` (5) characters listed in this snapshot (the length of its
    ``characters`` entries, not LezWatch's own tally) and a TVmaze match (a
-   TVmaze page URL). Most listed characters first; ties go to the lower
+   TVmaze page URL). A show in ``SMALL_CAST_BATCH`` (DECISIONS 0060) needs
+   only ``SMALL_CAST_MIN`` (3). Most listed characters first; ties go to the lower
    LezWatch id so a rebuild picks the same shows.
 3. Only if that makes fewer than ``PAGE_FLOOR`` (50) pages: the most-listed
    remaining shows, same order, up to 50. On the real data this never runs;
@@ -342,7 +343,78 @@ INDEX_SECOND_BATCH: frozenset[int] = frozenset(
         40427,  # flack: 2 impressions
     }
 )
-INDEX_EXTRA_IDS: frozenset[int] = INDEX_FIRST_BATCH | INDEX_SECOND_BATCH
+# The small-cast batch (DECISIONS 0060, proposed): shows with 3 or 4 listed
+# characters are built and opened to search only when their LezWatch id is
+# here. Chosen on the 2026-11-13 snapshot by one rule: 3 or 4 listed
+# characters, a TVmaze match by id, the USA among the countries, at least one
+# of the genres in SMALL_CAST_GENRES, no soap opera or telenovela, not already
+# built; 4 listed before 3, then lower LezWatch id; the first 50 of 83,
+# except L.A. Law (id 1011), whose id the test fixtures use, so the next
+# show by the rule (Fastlane) takes its place. In
+# Search Console's 28 days to 2026-11-13, the 20 open pages with those
+# genres and the USA drew 1,452 impressions and 12 of the site's 26 clicks;
+# the other 74 widening-batch pages drew 1,841 and 14. Each comment gives the
+# listed count on that snapshot. A show that no longer lists at least
+# SMALL_CAST_MIN characters, or has lost its TVmaze match, is simply not built.
+SMALL_CAST_MIN = 3
+SMALL_CAST_GENRES = frozenset(
+    {"crime", "mystery", "procedural", "police", "sci-fi", "thriller", "horror"}
+)
+SMALL_CAST_BATCH: frozenset[int] = frozenset(
+    {
+        206,  # gotham: 4 listed
+        456,  # arrow: 4 listed
+        984,  # person-of-interest: 4 listed
+        1346,  # rizzoli-isles: 4 listed
+        1486,  # sons-of-anarchy: 4 listed
+        1792,  # hemlock-grove: 4 listed
+        2107,  # defiance: 4 listed
+        2307,  # scream: 4 listed
+        2535,  # night-court: 4 listed
+        3356,  # cold-case: 4 listed
+        9501,  # the-originals: 4 listed
+        12355,  # ten-days-in-the-valley: 4 listed
+        19150,  # claws: 4 listed
+        21915,  # counterpart: 4 listed
+        31351,  # you: 4 listed
+        48308,  # pandora: 4 listed
+        61268,  # teenage-bounty-hunters: 4 listed
+        62528,  # ratched: 4 listed
+        75347,  # star-trek-lower-decks: 4 listed
+        76372,  # the-girl-in-the-woods: 4 listed
+        76485,  # la-brea: 4 listed
+        81298,  # irma-vep: 4 listed
+        81532,  # the-hardy-boys-2020: 4 listed
+        83548,  # power-book-iii-raising-kanan: 4 listed
+        84330,  # wednesday: 4 listed
+        85952,  # the-afterparty: 4 listed
+        87340,  # special-ops-lioness: 4 listed
+        88623,  # monarch-legacy-of-monsters: 4 listed
+        89521,  # tracker: 4 listed
+        91439,  # matlock-2024: 4 listed
+        94770,  # sheriff-country: 4 listed
+        97795,  # evil: 4 listed
+        98171,  # silo: 4 listed
+        476,  # following: 3 listed
+        641,  # battlestar-galactica: 3 listed
+        716,  # white-collar: 3 listed
+        915,  # dark-angel: 3 listed
+        1360,  # dominion: 3 listed
+        1828,  # rosewood: 3 listed
+        2298,  # blindspot: 3 listed
+        2470,  # fargo: 3 listed
+        3091,  # nash-bridges: 3 listed
+        3656,  # penny-dreadful: 3 listed
+        4589,  # caprica: 3 listed
+        4822,  # guilt: 3 listed
+        5069,  # ncis-new-orleans: 3 listed
+        5815,  # the-exorcist: 3 listed
+        6910,  # lucifer: 3 listed
+        10388,  # gypsy: 3 listed
+        10995,  # fastlane: 3 listed
+    }
+)
+INDEX_EXTRA_IDS: frozenset[int] = INDEX_FIRST_BATCH | INDEX_SECOND_BATCH | SMALL_CAST_BATCH
 INDEX_MIN_LISTED: int | None = None
 ROBOTS_HOLD = "noindex,follow"
 # The airing-now page (airing_page.py, DECISIONS 0033), built with the show pages.
@@ -547,12 +619,17 @@ def qualifies(show: dict[str, Any], listed: dict[str, int]) -> bool:
     """The inclusion rule (DECISIONS 0025): at least ``MIN_LISTED`` listed
     characters, so the answer, the character list and the description have
     substance, and a TVmaze match, so the run status, network and TVmaze
-    credit are real. Nothing about deaths goes into it."""
-    return listed.get(show["id"], 0) >= MIN_LISTED and bool(show["schedule"]["tvmaze_url"])
+    credit are real. A show in ``SMALL_CAST_BATCH`` (DECISIONS 0060) needs only
+    ``SMALL_CAST_MIN`` listed characters. Nothing about deaths goes into it."""
+    if not show["schedule"]["tvmaze_url"]:
+        return False
+    floor = SMALL_CAST_MIN if show["lwtv_id"] in SMALL_CAST_BATCH else MIN_LISTED
+    return listed.get(show["id"], 0) >= floor
 
 
 RULE = (
-    f"every show with at least {MIN_LISTED} listed characters and a TVmaze match, "
+    f"every show with at least {MIN_LISTED} listed characters (at least {SMALL_CAST_MIN} "
+    "for a show in the small-cast batch) and a TVmaze match, "
     "most listed first, then lower LezWatch id"
 )
 

@@ -17,7 +17,10 @@ fingerprints, so it announces nothing.
 
 Three steps, so the selection can be checked before anything is sent:
 
-``manifest`` writes ``lastmod.json`` into the built site.
+``manifest`` writes ``lastmod.json`` into the built site. With
+            ``--carry-dates`` (DECISIONS 0061) it also reads the live
+            ``lastmod.json`` and gives each page the day its fingerprint last
+            changed, and writes that day into the sitemap's ``lastmod``.
 ``select``  compares this build with what is live now (the previous deploy)
             and writes the URLs that are new or changed. Runs after the build
             and before the deploy replaces the live site.
@@ -42,7 +45,7 @@ import socket
 import sys
 from collections.abc import Mapping
 from pathlib import Path
-from typing import Protocol
+from typing import Any, Protocol
 from urllib.parse import urljoin, urlsplit
 from urllib.robotparser import RobotFileParser
 
@@ -328,11 +331,72 @@ def page_manifest(site_dir: Path, base_url: str, ignore: list[str]) -> dict[str,
     return pages
 
 
+_DAY_RE = re.compile(r"\d{4}-\d{2}-\d{2}")
+
+
+def carry_dates(
+    pages: dict[str, dict[str, str]], live_text: str | None, today: str
+) -> dict[str, dict[str, str]]:
+    """Each page with a ``changed`` day (DECISIONS 0061): the live manifest's
+    day when the page's fingerprint is the same as live and that day is a
+    plain date no later than ``today``; otherwise ``today``. An unreadable or
+    malformed live manifest dates every page ``today``, which is what the
+    sitemap said before this rule, so a failure can only make a date newer,
+    never hide a change."""
+    live: dict[str, Any] = {}
+    if live_text:
+        try:
+            parsed = json.loads(live_text)["pages"]
+            live = parsed if isinstance(parsed, dict) else {}
+        except (ValueError, KeyError, TypeError):
+            live = {}
+    out: dict[str, dict[str, str]] = {}
+    for path, entry in pages.items():
+        before = live.get(path)
+        day = today
+        if isinstance(before, dict) and before.get("fingerprint") == entry["fingerprint"]:
+            prior = before.get("changed")
+            if isinstance(prior, str) and _DAY_RE.fullmatch(prior) and prior <= today:
+                day = prior
+        out[path] = {**entry, "changed": day}
+    return out
+
+
+def date_sitemap(xml_text: str, base_url: str, pages: Mapping[str, Mapping[str, str]]) -> str:
+    """The sitemap with each listed page's ``lastmod`` set to its ``changed``
+    day. Entries the manifest does not cover keep the build's date."""
+    base = base_url.rstrip("/")
+
+    def one(match: re.Match[str]) -> str:
+        block = match.group(0)
+        loc = _LOC_RE.search(block)
+        if loc is None:
+            return block
+        url = html.unescape(loc.group(1))
+        entry = pages.get(url[len(base) :]) if url.startswith(base + "/") else None
+        if entry is None:
+            return block
+        return _LASTMOD_RE.sub(f"<lastmod>{entry['changed']}</lastmod>", block, count=1)
+
+    return _URL_RE.sub(one, xml_text)
+
+
 def cmd_manifest(args: argparse.Namespace) -> int:
     site_dir = Path(args.site_dir)
     try:
         snapshot = json.loads(Path(args.snapshot).read_text(encoding="utf-8"))
         pages = page_manifest(site_dir, args.base_url, build_stamps(snapshot))
+        if args.carry_dates:
+            base = args.base_url.rstrip("/")
+            live = fetch_text(f"{base}/lastmod.json", missing_is_empty=True)
+            pages = carry_dates(pages, live, str(snapshot["generated_at"])[:10])
+            sitemap = site_dir / "sitemap.xml"
+            dated = date_sitemap(sitemap.read_text(encoding="utf-8"), base, pages)
+            sitemap.write_text(dated, encoding="utf-8")
+            kept = sum(
+                1 for e in pages.values() if e["changed"] != str(snapshot["generated_at"])[:10]
+            )
+            print(f"IndexNow: {kept} of {len(pages)} sitemap dates carried from the live site")
         manifest = {"schema": 1, "pages": pages}
         (site_dir / "lastmod.json").write_text(
             json.dumps(manifest, indent=1, sort_keys=True) + "\n", encoding="utf-8"
@@ -399,6 +463,11 @@ def main(argv: list[str] | None = None) -> int:
     m.add_argument("--site-dir", required=True)
     m.add_argument("--base-url", required=True)
     m.add_argument("--snapshot", required=True, help="the snapshot the site was built from")
+    m.add_argument(
+        "--carry-dates",
+        action="store_true",
+        help="date each sitemap page by when its fingerprint last changed (DECISIONS 0061)",
+    )
     m.set_defaults(fn=cmd_manifest)
     s = sub.add_parser("select")
     s.add_argument("--site-dir", required=True)

@@ -1972,3 +1972,50 @@ tell", not "it did not work".
 
 **Reversible.** Yes: restore the one sentence in `get_app_line` and the
 line's place in `show.html.j2`.
+
+## 0061 — The sitemap's lastmod is the day a page last changed (2026-11-14)
+
+**Status: proposed (branch `seo/qf-honest-sitemap-lastmod`). Numbered after
+0060, which is proposed on another branch; renumber whichever merges second
+if needed. It touches no page text and no app file.**
+
+**Evidence.** Every sitemap entry's `lastmod` is the snapshot's date (0034,
+0057), so all 149 dates move every night whether or not a page changed.
+Google says it uses `lastmod` only when it is consistently accurate. URL
+Inspection, read-only, on 2026-11-14: the last crawl of every one of the
+top 60 open show pages was 2026-11-04 or 2026-11-05, and of the hand-picked
+pages 2026-10-24 to 2026-11-05. Since then the pages changed for real
+(0058 and 0059 on 2026-11-13, new titles on four pages proposed), and Google
+has not looked. The fingerprints that tell a real change from a rebuild
+already exist: 0034's `lastmod.json`.
+
+**Decision.** `indexnow.py manifest --carry-dates`, in the same workflow
+step as before (after the site is built, before the Pages upload), reads
+the live `lastmod.json`. A page whose fingerprint is the same as live keeps
+the live `changed` day; a new or changed page gets the snapshot's day. The
+day is written into `lastmod.json` (a new `changed` field next to
+`fingerprint`, same schema 1) and into that page's `lastmod` in
+`sitemap.xml`. The airing page changes every build (0033), so it is dated
+every build. An unreadable or malformed live file, a day later than the
+snapshot's, or anything that is not a plain day dates the page with the
+snapshot's day, which is what the sitemap said before: a failure can make a
+date newer, never hide a change. The first deploy with this finds no
+`changed` field and dates every page that night; from the next night the
+dates are carried. IndexNow's selection compares fingerprints only, as
+before, and the footer's "last built" sentence stays.
+
+**Expected effect, honestly.** Indirect and not measurable on its own: it
+gives Google a date it can trust, so a real change (a new title, a new
+batch) is more likely to be recrawled soon. No click estimate. The faster
+way to get the changed pages read is the owner's "Request indexing" in
+Search Console's URL Inspection, a few pages a day.
+
+**Tests.** `pipeline/tests/test_sitemap_lastmod.py`: an unchanged page
+keeps its day, a changed or new page gets today; eight doubtful live files
+all date today; only covered sitemap entries change; two real builds a day
+apart with the same data keep the first day everywhere but the airing page,
+and the manifest agrees with the sitemap; negative controls: a renamed show
+is dated today, an unreadable live site dates every page today, and without
+the flag every date is the snapshot's.
+
+**Reversible.** Yes: drop `--carry-dates` from `snapshot.yml`.

@@ -247,7 +247,7 @@ jobs:
           cp src/qtv_pipeline/assets/9d1bc6716ef0607544eec3bcc2d46956.txt site/
           uv run python -m qtv_pipeline.indexnow manifest \
             --site-dir site --base-url https://queerframe.app \
-            --snapshot out/snapshot.v1.json
+            --snapshot out/snapshot.v1.json --carry-dates
           uv run python -m qtv_pipeline.indexnow select \
             --site-dir site --base-url https://queerframe.app \
             --kind manifest --file lastmod.json --missing-is-empty \

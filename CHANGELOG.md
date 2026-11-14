@@ -202,6 +202,9 @@ consumer of the published snapshot, would notice.
 
 ### Changed
 
+- The website's sitemap now dates each page by the day its content last
+  changed, carried from the live site, instead of the build date on every
+  page every night (DECISIONS 0061).
 - The website's App Store links no longer name the US storefront, so Apple
   opens the listing in the visitor's own country; the campaign tokens are
   unchanged. The price is named as the US price wherever it appears: "$4.99

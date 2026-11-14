@@ -1842,10 +1842,9 @@ below the week to 11-08, revert this batch (empty `INDEX_SECOND_BATCH`).
 
 ## 0058 — App Store links name no country, and the price is named as the US price (2026-11-13)
 
-**Status: proposed (branch `site/links-and-top-line`). Needs Chelsea: the
-two sentences below are drafts for her approval. It updates the storefront
-line of 0015 and the price sentences of 0047 and 0056; nothing else they
-decided changes.**
+**Status: accepted (Chelsea, 2026-11-13: "Approve all of it", the wording
+below as written). It updates the storefront line of 0015 and the price
+sentences of 0047 and 0056; nothing else they decided changes.**
 
 **What changed outside the repository.** 0015 put 1.0.0 on sale in the
 United States only. The owner widened availability on 2026-11-12, and as of
@@ -1901,10 +1900,10 @@ sentences.
 
 ## 0059 — The show-page App Store line says what the app does for this visitor, on a phone's first screen (2026-11-13)
 
-**Status: proposed (branch `site/links-and-top-line`). Needs Chelsea: the
-two sentences below are drafts for her approval. It replaces the line's
-sentence (0056, as 0058 left it) and the position 0056 gave it; the campaign
-token and everything else 0056 decided stay.**
+**Status: accepted (Chelsea, 2026-11-13: "Approve all of it", the wording
+below as written). It replaces the line's sentence (0056, as 0058 left it)
+and the position 0056 gave it; the campaign token and everything else 0056
+decided stay.**
 
 **Evidence.** Search Console for `sc-domain:queerframe.app`, 2026-10-15 to
 2026-11-11 (`dataState: all`, read-only scope): 25 clicks, every one on a

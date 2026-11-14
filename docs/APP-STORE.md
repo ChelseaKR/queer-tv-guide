@@ -432,7 +432,7 @@ https://developer.apple.com/app-store/review/guidelines/ (fetched
   HTTPS GET of a static JSON file published at https://chelseakr.github.io/queer-tv-guide/snapshot.v1.json, sent when the
   app opens or the user pulls to refresh, to check for a newer dataset
   (conditional on an ETag; a 304 response means no data transfers). No
-  accounts, no analytics, no third-party SDKs, no tracking. The bundled
+  accounts, no analytics, no third-party SDKs. The bundled
   snapshot lets the app work fully offline from first launch. Data is a
   nightly mirror of LezWatch.TV (https://lezwatchtv.com/) and TVmaze
   (https://www.tvmaze.com/), attributed on the About screen, per each

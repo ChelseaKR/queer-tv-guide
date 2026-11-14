@@ -46,7 +46,7 @@ struct OnboardingView: View {
             id: "privacy",
             systemImage: "lock.shield",
             title: "Nothing about you leaves this phone",
-            body: "No account, no analytics, no tracking. Favorites stay on this device. The app downloads one data file, the same file for everyone."
+            body: "No account, no analytics, no ads. Favorites stay on this device. The app downloads one data file, the same file for everyone."
         ),
     ]
 

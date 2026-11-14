@@ -146,7 +146,7 @@ final class ForegroundRefreshTests: XCTestCase {
     func testThePrivacyPolicyStillSaysTheAppCollectsNothing() throws {
         let privacy = try page("privacy.html")
         XCTAssertTrue(privacy.contains("collects nothing about you"))
-        XCTAssertTrue(privacy.contains("no analytics, no crash reporting, no advertising, no tracking"))
+        XCTAssertTrue(privacy.contains("no analytics, no crash reporting, no advertising, and no third-party code"))
         XCTAssertTrue(privacy.contains("no account, no cookie and no identifier created by the app"))
         let dated = try XCTUnwrap(privacy.range(of: #"Last updated (\d{4}-\d{2}-\d{2})\."#, options: .regularExpression), "the policy carries its date")
         XCTAssertGreaterThanOrEqual(String(privacy[dated].dropFirst("Last updated ".count).prefix(10)), "2026-09-19", "a changed policy carries a new date")

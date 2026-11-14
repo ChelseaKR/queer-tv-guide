@@ -311,7 +311,7 @@ consumer of the published snapshot, would notice.
   under `set -u`. The workflow checks now reject that pattern in any
   `run:` step.
 
-## [1.0.1] - 2026-11-11
+## [1.0.1] - 2026-11-13
 
 The first update to Queer Frame for iPhone: version 1.0.1, build 2. It
 changes the app's look and what it says about deaths and trigger warnings,

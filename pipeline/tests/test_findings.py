@@ -32,7 +32,7 @@ from pathlib import Path
 import pytest
 
 from qtv_pipeline import findings, show_pages, site_index
-from qtv_pipeline.app_store import APP_STORE_URL, PRICE, app_store_link
+from qtv_pipeline.app_store import APP_STORE_URL, PRICE_US, app_store_link
 from tests import htmlprobe
 
 REPO = Path(__file__).resolve().parents[2]
@@ -55,7 +55,7 @@ def _findings(doc: dict, data: dict) -> str:
 
 
 def _press(doc: dict, data: dict, **kw) -> str:
-    kw.setdefault("price", PRICE)
+    kw.setdefault("price", PRICE_US)
     kw.setdefault("platform", "iPhone")
     return findings.render_press(doc, data, base_url=BASE, **kw)
 
@@ -353,7 +353,8 @@ def test_titles_h1_and_descriptions_are_their_own(doc, data):
 def test_press_page_facts(doc, data):
     text = _press(doc, data)
     main = _main_text(text)
-    assert PRICE in main and "iPhone" in main and "one-time purchase" in main
+    # The figure is the US price and the page says so (DECISIONS 0058).
+    assert f"iPhone, {PRICE_US}, one-time purchase." in main
     assert f'href="mailto:{findings.CONTACT_EMAIL}"' in text
     assert findings.headline(findings.view(data)) in main
     assert "None." in main  # data collected

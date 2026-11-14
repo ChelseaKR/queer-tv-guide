@@ -209,8 +209,9 @@ def test_the_top_line_sits_before_the_answer_and_outside_it(doc, tmp_path, monke
         )
         page = htmlprobe.parse(text)
         assert not any("App Store" in t or app_store.PRICE in t for t in page.inside), rel
-        # The price it states is the listing's one-time price.
-        assert f"{app_store.PRICE} once" in app_store.APP_LINE_TEXT
+        # The price it states is the listing's one-time price, named as the
+        # US price (DECISIONS 0058).
+        assert f"a one-time purchase ({app_store.PRICE_US})" in app_store.APP_LINE_TEXT
         # The LezWatch.TV credit is untouched.
         assert "LezWatch.TV" in text
 

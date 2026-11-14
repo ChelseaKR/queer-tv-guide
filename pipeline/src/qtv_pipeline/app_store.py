@@ -12,7 +12,9 @@ file is added. On ("true") every page gets Safari's Smart App Banner tag,
 and the home page's "coming soon" line (INDEX_SLOT) is replaced by the
 "Get the iPhone app" block (``get_app_block``): one sentence on what the app
 adds over the website, then Apple's "Download on the App Store" badge linking
-to the app's US listing, with its price. The show pages, the shows index,
+to the app's App Store listing, with its US price named as the US price. The
+link names no country (DECISIONS 0058), so Apple opens the listing in the
+visitor's own storefront. The show pages, the shows index,
 the airing page and the 404 page render the same block themselves
 (DECISIONS 0047), with the badge's address absolute so it resolves from any
 directory. Any other value is refused (exit 1), so a
@@ -39,7 +41,12 @@ from pathlib import Path
 from urllib.parse import urlencode
 
 APP_STORE_ID = "6818637465"
-APP_STORE_URL = f"https://apps.apple.com/us/app/id{APP_STORE_ID}"
+# The listing with no country in its path (DECISIONS 0058). The app is sold in
+# more storefronts than the United States since 2026-11-12, and a link with
+# /us/ in it shows the US page and the US price to a desktop or Android
+# visitor anywhere. Apple resolves this form in the visitor's own storefront.
+# It does not promise the app is sold there: where it is not, Apple says so.
+APP_STORE_URL = f"https://apps.apple.com/app/id{APP_STORE_ID}"
 
 # App Store Connect campaign links (DECISIONS 0056). Apple counts App Store
 # impressions, product page views and downloads per campaign token (ct) in
@@ -115,10 +122,22 @@ INDEX_SLOT = (
     '<p class="app-soon">The Queer Frame iPhone app is coming soon. '
     "It is not on the App Store yet.</p>"
 )
-# The one-time price (docs/app-store-listing.json price_usd), also on /press/.
+# The one-time price in the United States (docs/app-store-listing.json
+# price_usd). Apple sets every other storefront's price from it, in that
+# storefront's currency and with its tax, so the site never prints the figure
+# without its country (DECISIONS 0058): "$4.99" alone reads as a lower price
+# than the App Store then shows in Canada, Australia or New Zealand.
 PRICE = "$4.99"
+PRICE_US = f"{PRICE} in the US"
 SITE_NAME_FOR_LINE = "Queer Frame"
-PRICE_COPY = f"Queer Frame for iPhone. {PRICE} on the App Store."
+# Under the badge on every page that carries it, and on /press/ (PRICE_US).
+# True in every storefront: it names the one price the site knows, and says
+# Apple shows the local one only where the app is sold, never that it is sold
+# everywhere.
+PRICE_COPY = (
+    f"Queer Frame for iPhone. {PRICE_US}; "
+    "the App Store shows the local price where the app is sold."
+)
 
 # What the app adds over the website, in one sentence. Every claim is a
 # feature of the approved 1.0.0 build (docs/app-store-listing.json, the
@@ -157,12 +176,13 @@ BADGE_BLOCK = get_app_block(BADGE_FILE, "home")
 
 # A show page's one line near the top (DECISIONS 0056). The badge sits below
 # the character questions, out of sight on a phone for a visitor who came
-# from search; this line says the app exists and what it costs, once, before
-# the spoiler warning and never inside the answer. Its own campaign token
+# from search; this line says the app exists and what it costs in the US
+# (PRICE_US, DECISIONS 0058), once, before the spoiler warning and never
+# inside the answer. Its own campaign token
 # (show-top) shows in App Store Connect whether the top line or the badge
 # sends people.
 APP_LINE_TEXT = (
-    f"{SITE_NAME_FOR_LINE} is also an iPhone app: {PRICE} once, "
+    f"{SITE_NAME_FOR_LINE} is also an iPhone app: a one-time purchase ({PRICE_US}), "
     "no subscription, no in-app purchases."
 )
 APP_LINE_LINK_TEXT = "See it on the App Store"

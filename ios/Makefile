@@ -23,9 +23,14 @@ generate:
 	xcodegen generate
 
 # GuideCore (the data/decoding/search/favorites layer) is a plain Swift
-# package and the fastest test loop: no simulator boot, runs on macOS.
+# package and the fastest test loop: no simulator boot, runs on macOS. The
+# vendored AgeAssurance package (app-store age signal) runs here too, with
+# its negative control: a missing age range rewritten to read as an adult
+# must make its tests fail.
 package-test: $(BUNDLED_SNAPSHOT)
 	cd GuideCore && swift test
+	cd AgeAssurance && swift test
+	AgeAssurance/scripts/negative-control.sh
 
 # Full app build for the simulator.
 build: $(BUNDLED_SNAPSHOT)
@@ -75,6 +80,7 @@ test-a11y: $(BUNDLED_SNAPSHOT)
 clean:
 	xcodebuild -project $(PROJECT) -scheme $(SCHEME) clean
 	cd GuideCore && rm -rf .build
+	cd AgeAssurance && rm -rf .build
 
 # The bundled snapshot is gitignored (see the root .gitignore): fetch it the
 # first time anything needs it. `make bundle-snapshot` refreshes it on demand.

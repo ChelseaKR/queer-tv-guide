@@ -27,8 +27,8 @@ Store search, 2026-11-07):
 | Name | **Queer Frame** | 11 / 30 | DECISIONS 0006 |
 | Subtitle | "Does she die? Lesbian TV guide" | 30 / 30 | §App Store search 2026-09-18 (was "Does she die? Is it worth it?", research §6 rank 1); kept 2026-11-07 |
 | Promotional text | see the JSON | 169 / 170 | §Promotional text, 2026-11-14 (was §App Store search 2026-11-07) |
-| Keywords | see §App Store search 2026-11-07 | 100 / 100 | §App Store search 2026-11-07 |
-| Description | see the JSON | 1,431 / 4,000 | first paragraph rewritten and the widget/reminders line added, §App Store search 2026-11-07 |
+| Keywords | see the JSON | 100 / 100 | §Version 1.0.2 keywords and description, 2026-11-14 (was §App Store search 2026-11-07) |
+| Description | see the JSON | 1,418 / 4,000 | first paragraph shortened, §Version 1.0.2 keywords and description, 2026-11-14 (was rewritten, with the widget/reminders line added, §App Store search 2026-11-07) |
 | Category | Entertainment (primary), Reference (secondary) | — | §App Store search, Categories |
 | Price | **$4.99**, one-time. No IAP, no subscription. Apple Small Business Program (15%). | — | DECISIONS 0003, 0011 |
 | Devices | **iPhone only** (`TARGETED_DEVICE_FAMILY = 1`). Screenshots: iPhone only (6.9" set). iPads can still run it in iPhone compatibility mode, and App Review may test it there (2.4.1). | — | DECISIONS 0009 |
@@ -77,6 +77,30 @@ in-app purchase (DECISIONS 0003, 0011). It names no price (Apple: "avoid
 including specific prices in your app description"). The 1.0.1 version
 page still carries the 2026-11-13 text while it waits for review; paste
 this one there once 1.0.1 is released.
+
+### Version 1.0.2 keywords and description, 2026-11-14
+
+Chelsea approved two changes for the 1.0.2 version page on 2026-11-14.
+Keywords and the description change only with a new version, so both go
+in with 1.0.2.
+
+| | Value | Count / limit |
+|---|---|---|
+| Keywords before (1.0.1) | `lgbtq,lgbt,gay,sapphic,wlw,trans,bisexual,characters,spoiler,trigger,warning,bury,death,show,watch` | 98 / 100 |
+| Keywords now (1.0.2) | `lgbtq,lgbt,gay,sapphic,wlw,trans,non binary,characters,spoiler,trigger,warning,bury,death,show,watch` | 100 / 100 |
+| Description now (1.0.2) | first paragraph ends at "No account." | 1,418 / 4,000 |
+
+`non binary` replaces `bisexual`. The app covers non-binary characters,
+and `bisexual` had the fewest Google search impressions of any audience
+word on the website. The space is inside one keyword phrase, which Apple
+allows; there is no space after a comma. `gay` stays a hidden search term
+only, as approved on 2026-11-13. Keywords are never shown, and it is not
+a label on any screen (DECISIONS 0027).
+
+The description's first paragraph loses the two words after "No account."
+A later paragraph already says "No account. No analytics. No ads. No
+third-party SDKs." Nothing else in the description changes. The
+promotional text stays the 2026-11-14 text above.
 
 ### App Store search (ASO), 2026-11-07
 

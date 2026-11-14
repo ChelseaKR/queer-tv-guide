@@ -1,9 +1,13 @@
+import AgeAssurance
 import SwiftUI
 
 @main
 struct QueerTVGuideApp: App {
     @State private var model = AppModel.live()
     @Environment(\.scenePhase) private var scenePhase
+    /// This launch's app-store age signal, in memory only. See
+    /// `AgeAssuranceSettings.swift`; nothing reads it but the session.
+    @StateObject private var ageAssurance = AppAgeAssurance.makeSession()
 
     var body: some Scene {
         WindowGroup {
@@ -21,6 +25,10 @@ struct QueerTVGuideApp: App {
                     await model.refresh()
                     UpNextPublisher.publish(model)
                     await ReminderScheduler.reschedule(model)
+                }
+                .task {
+                    // "When the application is downloaded and launched."
+                    await ageAssurance.requestOnLaunch()
                 }
                 // The widget's copy of the favorites' next episodes is
                 // rewritten as the app leaves the foreground, so a star

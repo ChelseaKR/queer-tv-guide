@@ -153,7 +153,12 @@ final class SourceTreeGuardTests: XCTestCase {
         // WidgetKit: Apple's, for the home-screen widget and the app's one
         // call asking it to redraw.
         // StoreKit: in `storeKitFile` only, for the review prompt.
-        let allowed: Set<String> = ["Foundation", "SwiftUI", "XCTest", "Observation", "GuideCore", "QueerTVGuide", "PackageDescription", "UIKit", "UserNotifications", "WidgetKit"]
+        // AgeAssurance: ours, the vendored app-store age-signal package
+        // (ios/AgeAssurance). DeclaredAgeRange and PermissionKit: Apple's,
+        // which that package calls to ask Apple for the age range a state
+        // law requires; the answer stays in memory. Combine: Apple's, for
+        // its ObservableObject session.
+        let allowed: Set<String> = ["Foundation", "SwiftUI", "XCTest", "Observation", "GuideCore", "QueerTVGuide", "PackageDescription", "UIKit", "UserNotifications", "WidgetKit", "AgeAssurance", "DeclaredAgeRange", "PermissionKit", "Combine"]
         let importLine = try NSRegularExpression(pattern: #"^\s*(?:@testable\s+)?import\s+([A-Za-z_][A-Za-z0-9_]*)"#, options: [.anchorsMatchLines])
         var offenders: [String] = []
         for file in swiftFiles() {

@@ -174,24 +174,72 @@ def get_app_block(badge_src: str, campaign: str) -> str:
 
 BADGE_BLOCK = get_app_block(BADGE_FILE, "home")
 
-# A show page's one line near the top (DECISIONS 0056). The badge sits below
-# the character questions, out of sight on a phone for a visitor who came
-# from search; this line says the app exists and what it costs in the US
+# A show page's one line near the top (DECISIONS 0056 added it, 0059 says
+# what the app does for this visitor and moves it above the "Does she die"
+# paragraph, onto a phone's first screen). The badge sits below the character
+# questions, out of sight on a phone for a visitor who came from search; this
+# line says what the app does for this visitor and what it costs in the US
 # (PRICE_US, DECISIONS 0058), once, before the spoiler warning and never
-# inside the answer. Its own campaign token
-# (show-top) shows in App Store Connect whether the top line or the badge
-# sends people.
-APP_LINE_TEXT = (
-    f"{SITE_NAME_FOR_LINE} is also an iPhone app: a one-time purchase ({PRICE_US}), "
-    "no subscription, no in-app purchases."
-)
+# inside the answer. Its own campaign token (show-top) shows in App Store
+# Connect whether the top line or the badge sends people, and stays the same
+# so Apple's counts compare before and after.
+#
+# It opens one of two ways, by what the visitor can use. A show with a dated
+# next episode leads with that episode (TVmaze's day, credited to TVmaze) and
+# the reminder the app can set for it. Every other show, ended or between
+# seasons, leads with the reason the visitor came: checking a show before
+# starting it. Both then say how many shows the app covers, a number computed
+# from the snapshot on every build (``catalog_phrase``), and the price.
+APP_LINE_PRICE = f"a one-time purchase ({PRICE_US}), no subscription."
+APP_LINE_CHECKING = "Checking a show before you start it?"
 APP_LINE_LINK_TEXT = "See it on the App Store"
+# The catalog count is rounded down to a whole step, the way the store
+# listing's promotional text counts shows. Below one step there is no honest
+# round number, so the sentence leaves the count out; it never says "0+".
+CATALOG_STEP = 100
 
 
-def get_app_line(campaign: str = "show-top") -> str:
+def catalog_phrase(show_count: object) -> str | None:
+    """The snapshot's number of shows rounded down to a whole
+    ``CATALOG_STEP`` with a plus sign, so never above the real count. None,
+    not a guess, when the count is missing, not a whole number, or under one
+    step."""
+    if isinstance(show_count, bool) or not isinstance(show_count, int):
+        return None
+    floor = show_count // CATALOG_STEP * CATALOG_STEP
+    return f"{floor:,}+" if floor >= CATALOG_STEP else None
+
+
+def app_line_text(next_episode: tuple[str, str | None] | None, show_count: object) -> str:
+    """The sentences of a show page's top line, before its link.
+
+    ``next_episode`` is what ``show_pages.next_episode_line`` returns: (the
+    date as TVmaze gives it, its ISO day) or None. Only a dated episode leads:
+    the app sets a reminder for a dated episode and for no other, so an
+    episode TVmaze lists with no date reads like no episode at all, never as
+    a promise. ``show_count`` is the snapshot's number of shows. Nothing here
+    reads a character or a death record."""
+    count = catalog_phrase(show_count)
+    covers = f"covers {count} shows offline" if count else "works offline"
+    if next_episode is not None and next_episode[1] is not None:
+        lead = f"Next episode: {next_episode[0]}, per TVmaze."
+        what = f"{SITE_NAME_FOR_LINE} for iPhone can remind you when it airs, and it {covers}"
+    else:
+        lead = APP_LINE_CHECKING
+        what = f"{SITE_NAME_FOR_LINE} for iPhone {covers}"
+    return f"{lead} {what}: {APP_LINE_PRICE}"
+
+
+def get_app_line(
+    campaign: str = "show-top",
+    *,
+    next_episode: tuple[str, str | None] | None = None,
+    show_count: object = None,
+) -> str:
     """The one-line App Store mention near the top of a show page."""
     href = html.escape(app_store_link(campaign))
-    return f'<p class="app-line">{APP_LINE_TEXT} <a href="{href}">{APP_LINE_LINK_TEXT}</a>.</p>'
+    text = html.escape(app_line_text(next_episode, show_count))
+    return f'<p class="app-line">{text} <a href="{href}">{APP_LINE_LINK_TEXT}</a>.</p>'
 
 
 # The block brings its own rules rather than relying on the page's

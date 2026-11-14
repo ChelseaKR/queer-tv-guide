@@ -209,6 +209,13 @@ consumer of the published snapshot, would notice.
   under the badge, "a one-time purchase ($4.99 in the US)" on a show page's
   top line, and "$4.99 in the US" on the press page. DRAFT wording until
   approved (DECISIONS 0058).
+- The App Store line on a show page now says what the app does for the
+  visitor and sits directly under the opening, above the "Does she die"
+  paragraph, so its link is on a phone's first screen. A show with a dated
+  TVmaze next episode leads with that episode and the reminder; every other
+  show leads with "Checking a show before you start it?". Both give the
+  number of shows the app covers, computed from the snapshot and rounded
+  down, and the US price. DRAFT wording until approved (DECISIONS 0059).
 - A death date for a character LezWatch.TV lists as alive is no longer counted
   as a death in the apps, as on the website (DECISIONS 0052, 0053). The
   snapshot carries a new optional `death.counted`; the apps say "LezWatch.TV

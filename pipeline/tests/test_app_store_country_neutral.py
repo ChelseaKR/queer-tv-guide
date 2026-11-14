@@ -47,6 +47,12 @@ EVERYWHERE = (
     "your country",
 )
 
+# Both forms of a show page's top line (DECISIONS 0059), with a count.
+_TOP_LINES = (
+    app_store.app_line_text(None, 2293),
+    app_store.app_line_text(("Sunday, September 20, 2026", "2026-09-20"), 2293),
+)
+
 
 @pytest.fixture
 def doc() -> dict:
@@ -124,7 +130,7 @@ def test_the_price_is_the_listings_us_price_and_says_so():
     assert f"${listing['price_usd']}" == app_store.PRICE
     assert app_store.PRICE_US.startswith(app_store.PRICE)
     assert app_store.PRICE_US.removeprefix(app_store.PRICE) == " in the US"
-    for copy in (app_store.PRICE_COPY, app_store.APP_LINE_TEXT):
+    for copy in (app_store.PRICE_COPY, *_TOP_LINES):
         assert copy.count(app_store.PRICE) == copy.count(app_store.PRICE_US) == 1, copy
 
 
@@ -160,7 +166,7 @@ def test_every_price_on_the_built_site_is_the_us_price_with_its_country(pages):
 
 def test_no_page_says_the_app_is_sold_everywhere(pages):
     assert [p for rel, text in pages.items() for p in everywhere_problems(rel, text)] == []
-    for copy in (app_store.PRICE_COPY, app_store.APP_LINE_TEXT, app_store.APP_PITCH):
+    for copy in (app_store.PRICE_COPY, app_store.APP_PITCH, *_TOP_LINES):
         assert not any(word in copy.lower() for word in EVERYWHERE), copy
 
 

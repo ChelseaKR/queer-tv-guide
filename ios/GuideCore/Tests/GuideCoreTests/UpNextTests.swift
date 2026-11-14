@@ -213,12 +213,24 @@ final class UpNextTests: XCTestCase {
     }
 
     /// The App Group both entitlements files name is the one the code uses.
+    /// The app alone also carries Declared Age Range (ios/AgeAssurance, the
+    /// app-store age signal); the widget carries nothing else.
     func testBothTargetsShareTheAppGroupTheCodeNames() throws {
-        for path in ["QueerTVGuide/QueerTVGuide.entitlements", "QueerTVGuideWidgets/QueerTVGuideWidgets.entitlements"] {
+        let alsoAllowed = [
+            "QueerTVGuide/QueerTVGuide.entitlements": ["com.apple.developer.declared-age-range"],
+            "QueerTVGuideWidgets/QueerTVGuideWidgets.entitlements": [],
+        ]
+        for (path, extra) in alsoAllowed {
             let data = try Data(contentsOf: Repo.iosRoot.appendingPathComponent(path))
             let plist = try XCTUnwrap(PropertyListSerialization.propertyList(from: data, format: nil) as? [String: Any])
             XCTAssertEqual(plist["com.apple.security.application-groups"] as? [String], [UpNext.appGroupIdentifier], path)
-            XCTAssertEqual(plist.count, 1, "\(path) asks for more than the App Group")
+            XCTAssertEqual(
+                Set(plist.keys), Set(["com.apple.security.application-groups"] + extra),
+                "\(path) asks for more than the App Group\(extra.isEmpty ? "" : " and Declared Age Range")"
+            )
+            for key in extra {
+                XCTAssertEqual(plist[key] as? Bool, true, "\(path): \(key)")
+            }
         }
     }
 }

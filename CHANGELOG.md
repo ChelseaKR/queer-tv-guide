@@ -311,6 +311,28 @@ consumer of the published snapshot, would notice.
   under `set -u`. The workflow checks now reject that pattern in any
   `run:` step.
 
+## [1.0.2] - TBD
+
+The second update to Queer Frame for iPhone: version 1.0.2, build 3. Where
+Apple says a state law requires it, the app asks Apple for the person's age
+range when it opens, and does nothing with the answer. The app still
+collects no data, and the price, the age rating and the store listing's
+promises are unchanged.
+
+### Added
+
+- **App-store age assurance (iPhone).** On iOS 26.2 and later the app asks
+  Apple's Declared Age Range for the person's age range when it opens, only
+  where Apple says a state law requires it (Texas now; California, Alabama,
+  Utah and Louisiana in 2027). The answer stays in memory, is never stored or
+  sent, and changes nothing in the app; a missing or declined answer is
+  never treated as an adult. iOS 26.5's `confirmed` answer, which replaces
+  the payment and ID "checked" answers of iOS 26.2 to 26.4, reads as checked
+  by Apple, like those did. The vendored `ios/AgeAssurance` package carries
+  the logic, its tests and a negative control; the privacy policy and the
+  About screen say so, and the Definition of Done gains the
+  significant-change rule.
+
 ## [1.0.1] - 2026-11-13
 
 The first update to Queer Frame for iPhone: version 1.0.1, build 2. It

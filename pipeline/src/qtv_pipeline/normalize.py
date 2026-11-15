@@ -149,6 +149,15 @@ def _alternate_names(raw: Any) -> list[str]:
     return []
 
 
+def _rendered_title(raw: dict[str, Any]) -> str:
+    """A post's rendered title, entities decoded and edge whitespace trimmed.
+    LezWatch.TV ends some show titles and character names with a no-break
+    space (2026-11-15: 4 titles, 16 names), so a sentence built around one
+    read "Does Eva  die?". `str.strip()` removes U+00A0 and every other
+    Unicode space separator, as well as ordinary spaces, tabs and newlines."""
+    return html.unescape((raw.get("title") or {}).get("rendered", "")).strip()
+
+
 _IMDB_RE = re.compile(r"^tt\d+$")
 
 
@@ -177,7 +186,7 @@ def normalize_show(
         "id": f"lwtv:show:{lwtv_id}",
         "lwtv_id": lwtv_id,
         "slug": raw["slug"],
-        "title": html.unescape((raw.get("title") or {}).get("rendered", "")),
+        "title": _rendered_title(raw),
         "alternate_names": _alternate_names(fields.acf(raw, "lezshows_show_names")),
         "source_url": raw["link"],
         "summary": html_to_text(fields.acf(raw, "excerpt")),
@@ -287,7 +296,7 @@ def normalize_character(
         "id": f"lwtv:character:{lwtv_id}",
         "lwtv_id": lwtv_id,
         "slug": raw["slug"],
-        "name": html.unescape((raw.get("title") or {}).get("rendered", "")),
+        "name": _rendered_title(raw),
         "source_url": raw["link"],
         "gender": gender,
         "sexuality": sexuality,

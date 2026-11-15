@@ -110,6 +110,37 @@ def test_actor_name_is_null_when_unresolved():
     assert char["actors"] == [{"lwtv_id": 98058, "slug": None, "name": None}]
 
 
+# ---- titles and names: edge whitespace, including no-break spaces, is trimmed ----
+# LezWatch.TV ends some titles and names with U+00A0 (2026-11-15: 4 titles, 16
+# names), which put a double gap in "Does Eva\u00a0 die?".
+
+
+@pytest.mark.parametrize(
+    "rendered",
+    ["Derry Girls\u00a0", "Derry Girls&nbsp;", "\u00a0Derry Girls \u2009\n", "Derry Girls"],
+)
+def test_show_title_is_trimmed_of_no_break_and_other_spaces(rendered):
+    raw = _load("lezwatch_show_derry_girls.json")
+    raw["title"] = {"rendered": rendered}
+    assert normalize.normalize_show(raw, TAX)["title"] == "Derry Girls"
+
+
+@pytest.mark.parametrize(
+    "rendered",
+    ["Marielle Sinclair\u00a0", "Marielle Sinclair&#160;", "\u3000Marielle Sinclair\u202f"],
+)
+def test_character_name_is_trimmed_of_no_break_and_other_spaces(rendered):
+    raw = _load("lezwatch_character_marielle.json")
+    raw["title"] = {"rendered": rendered}
+    assert normalize.normalize_character(raw, TAX, {})["name"] == "Marielle Sinclair"
+
+
+def test_inner_no_break_space_in_a_name_is_kept():
+    raw = _load("lezwatch_character_marielle.json")
+    raw["title"] = {"rendered": "Marielle\u00a0Sinclair\u00a0"}
+    assert normalize.normalize_character(raw, TAX, {})["name"] == "Marielle\u00a0Sinclair"
+
+
 # ---- watch links: empty list, never a guessed link -----------------------------
 
 

@@ -253,6 +253,10 @@ consumer of the published snapshot, would notice.
   LezWatch.TV's data ends some of them with, so the character screen no longer
   asks "Does Eva  die?" with a gap before "die". 4 titles and 16 names on the
   2026-11-15 snapshot.
+- Snapshot: show titles and character names are trimmed of leading and
+  trailing spaces, including that non-breaking space, when the pipeline builds
+  the snapshot, so the website and the Android app lose the gap too. It takes
+  effect with the next nightly snapshot.
 - iPhone: a data refresh cancelled before it was answered, which can happen
   when the screen it was pulled on goes away, no longer leaves "Refresh failed:
   cancelled." under the data date. Nothing failed, so the line stays as it was.

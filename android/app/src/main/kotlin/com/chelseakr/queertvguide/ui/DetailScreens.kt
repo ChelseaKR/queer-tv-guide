@@ -116,8 +116,12 @@ fun FavoriteButton(model: AppModel, kind: FavoritesStore.Kind, id: String) {
 @Composable
 fun ShowScreen(model: AppModel, state: AppModel.State, id: String, canGoBack: Boolean, onBack: () -> Unit, open: (Destination) -> Unit) {
     val snapshot = state.snapshot
-    val show = snapshot?.show(id)
-    if (snapshot == null || show == null) {
+    if (snapshot == null) {
+        NotReady(state, canGoBack, onBack)
+        return
+    }
+    val show = snapshot.show(id)
+    if (show == null) {
         NotFound("Show not found", canGoBack, onBack)
         return
     }
@@ -273,8 +277,12 @@ private fun AttributionFooter(model: AppModel, snapshot: Snapshot, state: AppMod
 @Composable
 fun CharacterScreen(model: AppModel, state: AppModel.State, id: String, canGoBack: Boolean, onBack: () -> Unit, open: (Destination) -> Unit) {
     val snapshot = state.snapshot
-    val character = snapshot?.character(id)
-    if (snapshot == null || character == null) {
+    if (snapshot == null) {
+        NotReady(state, canGoBack, onBack)
+        return
+    }
+    val character = snapshot.character(id)
+    if (character == null) {
         NotFound("Character not found", canGoBack, onBack)
         return
     }
@@ -333,6 +341,24 @@ private fun RowButton(onClick: () -> Unit, content: @Composable () -> Unit) {
             }
             .padding(vertical = 8.dp),
     ) { content() }
+}
+
+/**
+ * A show or character opened before the catalog has loaded (a reminder or a
+ * widget row tapped at launch): it says it is loading, not "not found", and
+ * becomes the screen as soon as the data is there.
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun NotReady(state: AppModel.State, canGoBack: Boolean, onBack: () -> Unit) {
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {},
+                navigationIcon = { if (canGoBack) IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back") } },
+            )
+        },
+    ) { padding -> CatalogNotReady(state, Modifier.padding(padding)) }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)

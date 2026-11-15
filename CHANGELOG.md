@@ -249,6 +249,29 @@ consumer of the published snapshot, would notice.
 
 ### Fixed
 
+- Android: show titles, character names and actor names lose the
+  non-breaking space LezWatch.TV's data starts or ends some of them with, as
+  on iPhone, so the character screen no longer asks "Does Eva  die?" and
+  "Played by" no longer puts a gap before a comma. 4 titles, 16 character
+  names and 16 actor names on the 2026-11-15 snapshot; it holds for a
+  downloaded file and the bundled one, whatever the pipeline writes.
+- Android: a data refresh whose screen goes away before it is answered (a
+  pull to refresh, then another tab) no longer leaves "Couldn't reach the data
+  server." under the data date. Nothing failed: the check now finishes, and a
+  newer file it found reaches the screen at once instead of after a restart.
+- Android: the catalog loads after Android has stopped the app in the
+  background and the person comes back to it. Before, it showed "Loading
+  catalog…" until the app was closed, and turning the phone during the first
+  load could leave "Couldn't load the catalog".
+- Android: while the catalog loads, Favorites shows the same labeled
+  "Loading catalog…" spinner as Search, which TalkBack reads, and if the
+  catalog cannot load it says so instead of spinning; a show or character
+  opened from a reminder at launch says it is loading instead of "Show not
+  found" for a moment. As on iPhone.
+- Android: with a search and a filter both on, the count under "N filters on"
+  says "Top 50 matches" only when search held more matches back; exactly 50
+  matches reads "50 matches". The "Showing the first 50 of …" note's total has
+  a thousands separator. As on iPhone.
 - iPhone: show titles and character names lose the non-breaking space
   LezWatch.TV's data ends some of them with, so the character screen no longer
   asks "Does Eva  die?" with a gap before "die". 4 titles and 16 names on the

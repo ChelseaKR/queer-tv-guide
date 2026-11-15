@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.chelseakr.queertvguide.core.AppLink
+import com.chelseakr.queertvguide.core.LauncherShortcut
 
 /** A screen pushed over a tab's list. */
 sealed interface Destination {
@@ -25,6 +26,9 @@ class Router {
     val stacks: Map<Tab, MutableList<Destination>> = Tab.entries.associateWith { mutableStateListOf() }
     var pendingLink by mutableStateOf<AppLink?>(null)
 
+    /** A launcher shortcut that arrived, waiting as [pendingLink] does. */
+    var pendingShortcut by mutableStateOf<LauncherShortcut?>(null)
+
     fun stack(tab: Tab = this.tab): MutableList<Destination> = stacks.getValue(tab)
 
     fun push(destination: Destination, tab: Tab = this.tab) {
@@ -44,6 +48,15 @@ class Router {
         if (stack.isEmpty()) return false
         stack.removeAt(stack.lastIndex)
         return true
+    }
+
+    /** A launcher shortcut opens its tab at the list, as tapping the tab you are on does. */
+    fun open(shortcut: LauncherShortcut) {
+        tab = when (shortcut) {
+            LauncherShortcut.SEARCH -> Tab.SEARCH
+            LauncherShortcut.FAVORITES -> Tab.FAVORITES
+        }
+        stack(tab).clear()
     }
 
     fun open(link: AppLink) {

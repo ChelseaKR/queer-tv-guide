@@ -19,7 +19,6 @@ import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -35,10 +34,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalHapticFeedback
@@ -62,6 +64,9 @@ class SearchState {
     var filters by mutableStateOf(SearchIndex.Filters())
     var showingFilters by mutableStateOf(false)
 
+    /** Put the cursor in the search box once, on the next draw (the "Search" launcher shortcut). */
+    var focusPending by mutableStateOf(false)
+
     /** The hits for [key], worked out off the main thread so typing never waits. */
     var results by mutableStateOf(Results())
 
@@ -72,12 +77,20 @@ class SearchState {
 fun filterSummary(active: Int): String = if (active == 1) "1 filter on" else "$active filters on"
 fun showCount(count: Int): String = if (count == 1) "1 show" else "${NumberFormat.getIntegerInstance().format(count)} shows"
 
-/** Search returns at most 50 hits, so a full page says "top 50". */
-fun matchCount(count: Int): String = when {
+/**
+ * "Top 50 matches" only when search held matches back (the note above the
+ * rows then says how many there are). Exactly 50 matches is "50 matches":
+ * "Top" there implied more that were not shown. As iOS's `matchCount`.
+ */
+fun matchCount(count: Int, isCapped: Boolean): String = when {
     count == 1 -> "1 match"
-    count >= 50 -> "Top $count matches"
+    isCapped -> "Top $count matches"
     else -> "$count matches"
 }
+
+/** The note above a capped list, its total with a thousands separator ("of 1,204"). */
+fun cappedNote(shown: Int, total: Int, format: NumberFormat = NumberFormat.getIntegerInstance()): String =
+    "Showing the first ${format.format(shown)} of ${format.format(total)} matches. Type more to narrow them."
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -99,6 +112,13 @@ fun SearchScreen(model: AppModel, state: AppModel.State, search: SearchState, op
     val scope = rememberCoroutineScope()
     val haptics = LocalHapticFeedback.current
     val focus = LocalFocusManager.current
+    val field = remember { FocusRequester() }
+    LaunchedEffect(search.focusPending) {
+        if (search.focusPending) {
+            search.focusPending = false
+            runCatching { field.requestFocus() }
+        }
+    }
     RefreshHaptics(state)
 
     Scaffold(
@@ -126,7 +146,7 @@ fun SearchScreen(model: AppModel, state: AppModel.State, search: SearchState, op
             OutlinedTextField(
                 value = search.query,
                 onValueChange = { search.query = it },
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp).testTag("search-field"),
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp).focusRequester(field).testTag("search-field"),
                 placeholder = { Text("Shows, characters, actors") },
                 leadingIcon = { Icon(Icons.Filled.Search, contentDescription = null) },
                 trailingIcon = {
@@ -139,13 +159,7 @@ fun SearchScreen(model: AppModel, state: AppModel.State, search: SearchState, op
                 keyboardActions = KeyboardActions(onSearch = { focus.clearFocus() }),
             )
             when (state.load) {
-                AppModel.LoadState.LOADING -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                        CircularProgressIndicator()
-                        Text("Loading catalog…")
-                    }
-                }
-                AppModel.LoadState.FAILED -> EmptyState("Couldn't load the catalog", message = state.loadError)
+                AppModel.LoadState.LOADING, AppModel.LoadState.FAILED -> CatalogNotReady(state)
                 AppModel.LoadState.LOADED -> {
                     val snapshot = state.snapshot ?: return@Column
                     val settled = search.results.key == key
@@ -162,7 +176,7 @@ fun SearchScreen(model: AppModel, state: AppModel.State, search: SearchState, op
                             }
                             if (!search.filters.isEmpty) {
                                 item {
-                                    ActiveFiltersRow(search, trimmed, if (settled) hits.size else null)
+                                    ActiveFiltersRow(search, trimmed, if (settled) hits.size else null, isCapped = settled && total > hits.size)
                                 }
                             }
                             if (settled && hits.isEmpty()) {
@@ -170,11 +184,12 @@ fun SearchScreen(model: AppModel, state: AppModel.State, search: SearchState, op
                             } else {
                                 if (settled && total > hits.size) {
                                     item {
+                                        val note = cappedNote(hits.size, total)
                                         Text(
-                                            "Showing the first ${hits.size} of $total matches. Type more to narrow them.",
+                                            note,
                                             style = MaterialTheme.typography.bodyMedium,
                                             color = subdued,
-                                            modifier = Modifier.padding(16.dp).semantics { contentDescription = "Showing the first ${hits.size} of $total matches" },
+                                            modifier = Modifier.padding(16.dp).semantics { contentDescription = note.substringBefore(". ") },
                                         )
                                     }
                                 }
@@ -217,7 +232,7 @@ fun SearchScreen(model: AppModel, state: AppModel.State, search: SearchState, op
 
 /** Above the results while any filter is on: how many there are, and a way to change or clear them. */
 @Composable
-private fun ActiveFiltersRow(search: SearchState, query: String, count: Int?) {
+private fun ActiveFiltersRow(search: SearchState, query: String, count: Int?, isCapped: Boolean) {
     Row(
         Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -231,7 +246,7 @@ private fun ActiveFiltersRow(search: SearchState, query: String, count: Int?) {
             verticalArrangement = Arrangement.Center,
         ) {
             Text(filterSummary(search.filters.activeCount), style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
-            count?.let { Text(if (query.isEmpty()) showCount(it) else matchCount(it), style = MaterialTheme.typography.bodyMedium, color = subdued) }
+            count?.let { Text(if (query.isEmpty()) showCount(it) else matchCount(it, isCapped), style = MaterialTheme.typography.bodyMedium, color = subdued) }
         }
         OutlinedButton(
             onClick = { search.filters = SearchIndex.Filters() },

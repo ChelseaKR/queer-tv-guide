@@ -35,7 +35,6 @@ import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -163,7 +162,7 @@ fun FavoritesScreen(model: AppModel, state: AppModel.State, open: (Destination) 
         val snapshot = state.snapshot
         Box(Modifier.padding(padding).fillMaxSize()) {
             when {
-                snapshot == null -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
+                snapshot == null -> CatalogNotReady(state)
                 entries.isEmpty() -> EmptyState("No favorites yet", message = "Tap the star on a show or character to save it here. Favorites stay on this device. To move them to " +
                         "another one, use the More options menu (⋮) at the top of this screen to export a backup file, then import it there.",
                 )

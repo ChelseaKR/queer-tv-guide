@@ -8,11 +8,13 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
@@ -318,6 +320,31 @@ fun CharacterRowContent(character: Character, snapshot: Snapshot) {
                 maxLines = if (large) Int.MAX_VALUE else 1,
                 overflow = TextOverflow.Ellipsis,
             )
+        }
+    }
+}
+
+/**
+ * Before the catalog is on screen, on every screen that needs it (Search,
+ * Favorites, a show or character opened from a reminder at launch): a
+ * spinner with its words, read by TalkBack as one, or why it could not load.
+ * As iOS's `CatalogNotReady`; before, Favorites had an unlabeled spinner that
+ * never stopped after a failed load.
+ */
+@Composable
+fun CatalogNotReady(state: AppModel.State, modifier: Modifier = Modifier) {
+    if (state.load == AppModel.LoadState.FAILED) {
+        EmptyState("Couldn't load the catalog", modifier.testTag("catalog-failed"), message = state.loadError)
+        return
+    }
+    Box(modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        Column(
+            Modifier.semantics(mergeDescendants = true) {}.testTag("catalog-loading"),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            CircularProgressIndicator()
+            Text("Loading catalog…")
         }
     }
 }

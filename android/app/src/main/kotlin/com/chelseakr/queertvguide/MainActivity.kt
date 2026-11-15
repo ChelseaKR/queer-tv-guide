@@ -13,6 +13,7 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import com.chelseakr.queertvguide.core.AppLink
 import com.chelseakr.queertvguide.core.RefreshProblem
+import com.chelseakr.queertvguide.shortcuts.LauncherShortcuts
 import com.chelseakr.queertvguide.ui.QueerFrameTheme
 import com.chelseakr.queertvguide.ui.RootScreen
 import com.chelseakr.queertvguide.ui.Router
@@ -21,11 +22,11 @@ import kotlinx.coroutines.launch
 import java.time.Instant
 
 /**
- * The one activity. At launch: load the snapshot, hand the widget its file,
- * look once for new data, set any reminders. Leaving the foreground rewrites
- * the widget's file and the reminders, so a star added or removed anywhere
- * reaches both. Coming back re-reads the clock and, if the data is old
- * enough, looks once for new data (ForegroundRefreshGate).
+ * The one activity. At launch ([AppModel.startOnce]): load the snapshot, hand
+ * the widget its file, look once for new data, set any reminders. Leaving the
+ * foreground rewrites the widget's file and the reminders, so a star added or
+ * removed anywhere reaches both. Coming back re-reads the clock and, if the
+ * data is old enough, looks once for new data (ForegroundRefreshGate).
  */
 class MainActivity : ComponentActivity() {
     /** Survives rotation and resizing (a ViewModel), so the tab, the stacks and the search stay put. */
@@ -45,20 +46,16 @@ class MainActivity : ComponentActivity() {
         // A recreated activity (rotation) keeps its screens; only a fresh
         // launch acts on the link it was started with.
         if (savedInstanceState == null) handleLink(intent)
+        LauncherShortcuts.sync(this)
         setContent {
             QueerFrameTheme {
                 RootScreen(model = model, router = router, search = navigation.search)
             }
         }
-        if (savedInstanceState == null) {
-            lifecycleScope.launch {
-                model.loadInitial()
-                model.publishUpNext()
-                model.refresh()
-                model.publishUpNext()
-                model.rescheduleReminders()
-            }
-        }
+        // Every creation, not only a fresh launch: after Android stops the
+        // process in the background, the activity comes back with saved
+        // state and a new, empty model, which must still load. Once per process.
+        model.startOnce()
         lifecycle.addObserver(object : DefaultLifecycleObserver {
             private var started = false
 
@@ -85,8 +82,12 @@ class MainActivity : ComponentActivity() {
         handleLink(intent)
     }
 
-    /** A `queerframe://` link from a widget row, a reminder, or elsewhere. Anything else is ignored. */
+    /** A `queerframe://` link from a widget row, a reminder, or elsewhere, or a launcher shortcut. Anything else is ignored. */
     private fun handleLink(intent: Intent?) {
+        LauncherShortcuts.from(intent)?.let {
+            router.pendingShortcut = it
+            return
+        }
         val data = intent?.data ?: return
         val link = AppLink.parse(data.toString()) ?: return
         router.pendingLink = link

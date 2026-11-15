@@ -22,11 +22,18 @@ import com.chelseakr.queertvguide.core.UpNext
 import com.chelseakr.queertvguide.core.UpNextStore
 import com.chelseakr.queertvguide.reminders.ReminderScheduler
 import com.chelseakr.queertvguide.widget.UpNextWidget
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -78,6 +85,10 @@ class AppModel(
     private val gate = ForegroundRefreshGate()
     private val refreshLock = Mutex()
 
+    /** As long as the process: the launch sequence runs here, not in an activity's scope. */
+    private val appScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
+    private var started = false
+
     init {
         favorites.addListener { _state.update { it.copy(favoritesVersion = it.favoritesVersion + 1) } }
     }
@@ -96,6 +107,26 @@ class AppModel(
     fun freshnessWarning(snapshot: Snapshot): Presentation.FreshnessWarning? =
         Presentation.freshnessWarning(snapshot.generatedAt, freshness(snapshot), dateText())
 
+    /**
+     * The launch sequence, once per process: load the snapshot, hand the
+     * widget its file, look once for new data, set any reminders. Called by
+     * every activity creation, so a process Android stopped in the background
+     * and later restored (the activity comes back with saved state) still
+     * loads its data. It runs in [appScope], so rotating during the first
+     * decode does not cancel it halfway. Main thread only.
+     */
+    fun startOnce() {
+        if (started) return
+        started = true
+        appScope.launch {
+            loadInitial()
+            publishUpNext()
+            refresh()
+            publishUpNext()
+            rescheduleReminders()
+        }
+    }
+
     /** Decodes the snapshot (megabytes of real data) and builds the index off the main thread. */
     suspend fun loadInitial() {
         if (state.value.load == LoadState.LOADED) return
@@ -107,6 +138,9 @@ class AppModel(
             _state.update {
                 it.copy(snapshot = loaded.snapshot, index = index, origin = loaded.origin, load = LoadState.LOADED, clock = now())
             }
+        } catch (e: CancellationException) {
+            // Not a failed load: the catalog is not "unloadable" because its caller went away.
+            throw e
         } catch (e: Exception) {
             _state.update { it.copy(load = LoadState.FAILED, loadError = e.message ?: e.toString()) }
         }
@@ -135,15 +169,32 @@ class AppModel(
      * One GET, conditional on the stored ETag. On a real change, swaps in the
      * new snapshot. On any failure the last good snapshot stays exactly as it
      * was; only [State.problem] changes.
+     *
+     * A refresh, once started, finishes even if the screen that asked goes
+     * away (a pull to refresh, then a tab change): the GET cannot be stopped
+     * midway, and a file it saved must also reach the screen, or the next
+     * look gets "not modified" and the new data waits for a restart. A
+     * cancelled caller is not a failure, so no "Couldn't reach the data
+     * server" appears for it, and the caller still stops once it is done.
      */
     suspend fun refresh() {
         if (!refreshLock.tryLock()) return
+        try {
+            withContext(NonCancellable) { refreshHoldingLock() }
+        } finally {
+            refreshLock.unlock()
+        }
+        // The work is done and shown; a caller cancelled meanwhile still stops here.
+        currentCoroutineContext().ensureActive()
+    }
+
+    private suspend fun refreshHoldingLock() {
         try {
             _state.update { it.copy(refreshing = true) }
             gate.recordAttempt(now())
             val forced = forcedProblem()
             if (forced != null) {
-                _state.update { it.copy(problem = forced, refreshing = false, clock = now()) }
+                _state.update { it.copy(problem = forced) }
                 return
             }
             try {
@@ -155,12 +206,13 @@ class AppModel(
                     }
                 }
                 _state.update { it.copy(problem = null) }
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
                 _state.update { it.copy(problem = RefreshProblem.from(e)) }
             }
-            _state.update { it.copy(refreshing = false, clock = now()) }
         } finally {
-            refreshLock.unlock()
+            _state.update { it.copy(refreshing = false, clock = now()) }
         }
     }
 

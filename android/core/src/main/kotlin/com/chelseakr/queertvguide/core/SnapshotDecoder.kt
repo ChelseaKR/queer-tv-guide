@@ -76,11 +76,37 @@ object SnapshotDecoder {
             attribution = wire.attribution,
             coverage = wire.coverage,
             taxonomies = wire.taxonomies,
-            shows = wire.shows,
-            characters = wire.characters,
+            shows = wire.shows.map(::trimmed),
+            characters = wire.characters.map(::trimmed),
         )
         requireEachCredit(snapshot)
         return snapshot
+    }
+
+    /**
+     * Edge whitespace off a show's title, as GuideCore's decoder does:
+     * LezWatch.TV's rendered titles can end in a no-break space (`&nbsp;`),
+     * 4 shows on the 2026-11-15 snapshot. Kotlin's `trim()` counts U+00A0 as
+     * whitespace. Inner spaces are kept.
+     */
+    private fun trimmed(show: Show): Show {
+        val title = show.title.trim()
+        return if (title == show.title) show else show.copy(title = title)
+    }
+
+    /**
+     * The same for a character's name (16 on the 2026-11-15 snapshot, so the
+     * character screen asked "Does Eva  die?") and its actors' names (16
+     * more, so "Played by" put a gap before a comma).
+     */
+    private fun trimmed(character: Character): Character {
+        val name = character.name.trim()
+        val actorsTrimmed = character.actors.any { a -> a.name != null && a.name != a.name.trim() }
+        if (name == character.name && !actorsTrimmed) return character
+        return character.copy(
+            name = name,
+            actors = if (actorsTrimmed) character.actors.map { a -> a.copy(name = a.name?.trim()) } else character.actors,
+        )
     }
 
     /**

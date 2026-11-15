@@ -31,6 +31,14 @@ class BundledSnapshotTest {
         assertEquals(Snapshot.SUPPORTED_SCHEMA_VERSION, snapshot.schemaVersion)
     }
 
+    /** No title or name on screen starts or ends with a space, a no-break one included, whatever the file holds. */
+    @Test
+    fun noTitleOrNameHasEdgeSpaces() {
+        val untrimmed = snapshot.shows.map { it.title } + snapshot.characters.map { it.name } +
+            snapshot.characters.flatMap { c -> c.actors.mapNotNull { it.name } }
+        assertEquals(emptyList<String>(), untrimmed.filter { it != it.trim() })
+    }
+
     /** With every show starred: at most 60, soonest first, all in the future, no episode name, no word about death. */
     @Test
     fun aPlanOnRealDataIsCappedSortedAndSpoilerFree() {

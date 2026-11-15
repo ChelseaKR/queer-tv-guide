@@ -99,6 +99,31 @@ class SnapshotDecoderTest {
         assertNull(s.shows[0].summary)
     }
 
+    /**
+     * LezWatch.TV's rendered "Rojst&nbsp;" arrives as "Rojst " (4 titles,
+     * 16 character names and 16 actor names on the 2026-11-15 snapshot).
+     * Untrimmed, the character screen asked "Does Eva  die?". As
+     * GuideCore's `testTrailingNonBreakingSpaceIsTrimmedFromTitlesAndNames`.
+     */
+    @Test
+    fun edgeNoBreakSpacesAreTrimmedFromTitlesAndNames() {
+        val root = Repo.fixtureJson()
+            .editArray("shows", 0) { it.with("title", JsonPrimitive("Harbor Lights ")) }
+            .editArray("characters", 0) { c ->
+                val actor = (c["actors"]!!.jsonArray[0] as JsonObject).with("name", JsonPrimitive(" Example Actor One "))
+                c.with("name", JsonPrimitive(" Mara Quill ")).with("actors", JsonArray(listOf(actor)))
+            }
+        val s = SnapshotDecoder.decode(Repo.bytes(root))
+        // Inner spaces are kept, no-break ones included.
+        assertEquals("Harbor Lights", s.shows[0].title)
+        assertEquals("Mara Quill", s.characters[0].name)
+        assertEquals("Example Actor One", s.characters[0].actors[0].name)
+        assertTrue(Presentation.death(s.characters[0].death, s.characters[0].name).endsWith("for Mara Quill."))
+        // A record with nothing to trim is the same object, not a copy.
+        val plain = Repo.fixture()
+        assertEquals(plain.shows[1], s.shows[1])
+    }
+
     @Test
     fun unknownFieldsAreIgnoredAsTheContractAllows() {
         val s = SnapshotDecoder.decode(Repo.bytes(Repo.fixtureJson().with("added_later", JsonPrimitive("x")).editArray("shows", 0) { it.with("new_field", JsonPrimitive(1)) }))
@@ -158,5 +183,19 @@ class AppLinkTest {
         )) {
             assertNull(text, AppLink.parse(text))
         }
+    }
+}
+
+class LauncherShortcutTest {
+    @Test
+    fun eachShortcutReadsBackFromItsIdAndNothingElseDoes() {
+        for (shortcut in LauncherShortcut.entries) assertEquals(shortcut, LauncherShortcut.from(shortcut.id))
+        for (text in listOf(null, "", "Search", "about", "queerframe://show/lwtv:show:1")) assertNull(text, LauncherShortcut.from(text))
+    }
+
+    /** Ids are the launcher's keys for pinned copies; labels are the tab names, so they add no new words. */
+    @Test
+    fun idsAndLabelsAreTheShippedOnes() {
+        assertEquals(listOf("search" to "Search", "favorites" to "Favorites"), LauncherShortcut.entries.map { it.id to it.label })
     }
 }

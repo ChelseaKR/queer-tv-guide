@@ -43,6 +43,7 @@ import androidx.compose.ui.input.key.type
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import com.chelseakr.queertvguide.AppModel
+import com.chelseakr.queertvguide.core.LauncherShortcut
 import kotlinx.coroutines.launch
 import androidx.compose.runtime.rememberCoroutineScope
 
@@ -70,6 +71,14 @@ fun RootScreen(model: AppModel, router: Router, search: SearchState) {
         if (pending != null && onboardingSeen) {
             router.open(pending)
             router.pendingLink = null
+        }
+    }
+    val shortcut = router.pendingShortcut
+    LaunchedEffect(shortcut, onboardingSeen) {
+        if (shortcut != null && onboardingSeen) {
+            router.open(shortcut)
+            if (shortcut == LauncherShortcut.SEARCH) search.focusPending = true
+            router.pendingShortcut = null
         }
     }
     Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {

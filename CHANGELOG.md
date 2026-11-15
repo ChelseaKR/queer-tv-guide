@@ -13,6 +13,10 @@ consumer of the published snapshot, would notice.
 
 ### Added
 
+- Android: a long press on Queer Frame's icon offers "Search", which opens
+  Search with the keyboard up, and "Favorites", which opens Favorites and its
+  next episodes. The shortcuts are set on the phone by the app; they need no
+  permission and send nothing.
 - The website's App Store links now carry the account's provider token, so
   App Store Connect's Campaigns view starts counting which kind of page sends
   people to the listing. The token is in every campaign link and is not a

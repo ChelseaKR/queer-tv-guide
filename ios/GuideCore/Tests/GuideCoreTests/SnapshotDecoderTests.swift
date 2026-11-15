@@ -113,6 +113,18 @@ final class SnapshotDecoderTests: XCTestCase {
         XCTAssertEqual(Presentation.worthIt(s.shows[0].ratings.worthIt), "Extremely")
     }
 
+    func testTrailingNonBreakingSpaceIsTrimmedFromTitlesAndNames() throws {
+        // LezWatch.TV's rendered "Rojst&nbsp;" arrives as "Rojst\u{a0}"
+        // (4 titles and 16 names on the 2026-11-15 snapshot). Untrimmed,
+        // the character screen asked "Does Eva\u{a0} die?".
+        var data = try JSONEdit.editShow(try Repo.fixtureData(), index: 0) { $0["title"] = "Harbor Lights\u{a0}" }
+        data = try JSONEdit.editCharacter(data, index: 0) { $0["name"] = " Mara Quill\u{a0}" }
+        let s = try SnapshotDecoder().decode(data)
+        XCTAssertEqual(s.shows[0].title, "Harbor Lights")
+        XCTAssertEqual(s.characters[0].name, "Mara Quill")
+        XCTAssertTrue(Presentation.death(s.characters[0].death, name: s.characters[0].name).hasSuffix("for Mara Quill."))
+    }
+
     func testCharacterOptionalTaxonomyTermsAbsence() throws {
         let s = try Repo.fixture()
         let juno = try XCTUnwrap(s.character(id: "lwtv:character:205"))

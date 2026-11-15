@@ -187,6 +187,10 @@ final class AppModel {
                 apply(fresh, origin: .downloaded, index: index)
             }
             lastRefreshError = nil
+        } catch is CancellationError {
+            // Cancelled before an answer came, which is not a failure: the
+            // footer keeps whatever it said before, rather than
+            // "Refresh failed: cancelled".
         } catch {
             lastRefreshError = error.localizedDescription
         }

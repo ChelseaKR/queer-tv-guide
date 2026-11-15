@@ -509,7 +509,10 @@ public struct Show: Codable, Equatable, Sendable, Identifiable {
         id = try c.decode(ID.self, forKey: .id)
         lwtvID = try c.decode(Int.self, forKey: .lwtvID)
         slug = try c.decode(String.self, forKey: .slug)
-        title = try c.decode(String.self, forKey: .title)
+        // Trimmed: LezWatch.TV's rendered titles can end in a non-breaking
+        // space (`&nbsp;`), 4 shows on the 2026-11-15 snapshot, which
+        // showed as a gap before the punctuation that follows a title.
+        title = try c.decode(String.self, forKey: .title).trimmingCharacters(in: .whitespacesAndNewlines)
         alternateNames = try c.decode([String].self, forKey: .alternateNames)
         sourceURL = try c.decode(URL.self, forKey: .sourceURL)
         summary = try c.decodeIfPresent(String.self, forKey: .summary)
@@ -656,7 +659,10 @@ public struct Character: Codable, Equatable, Sendable, Identifiable {
         id = try c.decode(ID.self, forKey: .id)
         lwtvID = try c.decode(Int.self, forKey: .lwtvID)
         slug = try c.decode(String.self, forKey: .slug)
-        name = try c.decode(String.self, forKey: .name)
+        // Trimmed, as `Show.title` is: 16 names on the 2026-11-15 snapshot
+        // end in a non-breaking space, so the character screen asked
+        // "Does Eva  die?" and a name in a list sat apart from its comma.
+        name = try c.decode(String.self, forKey: .name).trimmingCharacters(in: .whitespacesAndNewlines)
         sourceURL = try c.decode(URL.self, forKey: .sourceURL)
         gender = try c.decodeIfPresent(Term.self, forKey: .gender)
         sexuality = try c.decodeIfPresent(Term.self, forKey: .sexuality)

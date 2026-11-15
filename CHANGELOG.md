@@ -249,6 +249,16 @@ consumer of the published snapshot, would notice.
 
 ### Fixed
 
+- iPhone: show titles and character names lose the non-breaking space
+  LezWatch.TV's data ends some of them with, so the character screen no longer
+  asks "Does Eva  die?" with a gap before "die". 4 titles and 16 names on the
+  2026-11-15 snapshot.
+- iPhone: a data refresh cancelled before it was answered, which can happen
+  when the screen it was pulled on goes away, no longer leaves "Refresh failed:
+  cancelled." under the data date. Nothing failed, so the line stays as it was.
+- iPhone: with a search and a filter both on, the count under "N filters on"
+  says "Top 50 matches" only when search held more matches back; exactly 50
+  matches now reads "50 matches".
 - iPhone: a character whose only listed actor has no name in LezWatch.TV's
   data no longer shows a bare "Played by" line on the character screen; the
   line is left out, as on Android. 17 characters on the 2026-11-14 snapshot.

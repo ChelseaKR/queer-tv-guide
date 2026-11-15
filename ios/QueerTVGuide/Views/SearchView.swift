@@ -80,7 +80,7 @@ struct SearchView: View {
             }
             if !filters.isEmpty {
                 Section {
-                    activeFiltersRow(count: settled ? hits.count : nil)
+                    activeFiltersRow(count: settled ? hits.count : nil, isCapped: settled && isCapped)
                 }
             }
             if settled, hits.isEmpty {
@@ -117,7 +117,7 @@ struct SearchView: View {
 
     /// Above the results while any filter is on: how many there are, and a
     /// way to change or clear the filters without hunting for the button.
-    private func activeFiltersRow(count: Int?) -> some View {
+    private func activeFiltersRow(count: Int?, isCapped: Bool) -> some View {
         HStack(spacing: 12) {
             Button {
                 showingFilters = true
@@ -126,7 +126,7 @@ struct SearchView: View {
                     Text(Self.filterSummary(filters.activeCount))
                         .font(.subheadline.weight(.semibold))
                     if let count {
-                        Text(trimmedQuery.isEmpty ? Self.showCount(count) : Self.matchCount(count))
+                        Text(trimmedQuery.isEmpty ? Self.showCount(count) : Self.matchCount(count, isCapped: isCapped))
                             .font(.subheadline)
                             .foregroundStyle(.subdued)
                     }
@@ -183,13 +183,12 @@ struct SearchView: View {
         count == 1 ? "1 show" : "\(count.formatted()) shows"
     }
 
-    /// Search returns at most 50 hits, so a full page says "top 50".
-    static func matchCount(_ count: Int) -> String {
-        switch count {
-        case 1: return "1 match"
-        case 50...: return "Top \(count) matches"
-        default: return "\(count) matches"
-        }
+    /// "Top 50 matches" only when search held matches back (the note above
+    /// the rows then says how many there are). Exactly 50 matches is "50
+    /// matches": "Top" there implied more that were not shown.
+    static func matchCount(_ count: Int, isCapped: Bool) -> String {
+        if count == 1 { return "1 match" }
+        return isCapped ? "Top \(count) matches" : "\(count) matches"
     }
 
     @ViewBuilder

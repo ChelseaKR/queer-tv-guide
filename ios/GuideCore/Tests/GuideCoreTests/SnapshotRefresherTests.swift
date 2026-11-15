@@ -113,6 +113,25 @@ final class SnapshotRefresherTests: XCTestCase {
         XCTAssertEqual(try Data(contentsOf: store.snapshotFileURL), good)
     }
 
+    func testACancelledRequestIsACancellationNotAFailure() async throws {
+        // A pull to refresh whose screen went away mid-request: URLSession
+        // says "cancelled", which the footer showed as "Refresh failed:
+        // cancelled".
+        let good = try Repo.fixtureData()
+        try store.replace(with: good, etag: "\"v1\"")
+        StubURLProtocol.failure = .cancelled
+        do {
+            _ = try await refresher().refresh()
+            XCTFail("expected an error")
+        } catch is CancellationError {
+            // expected
+        } catch {
+            XCTFail("a cancelled request must not read as a failed refresh: \(error)")
+        }
+        XCTAssertEqual(try Data(contentsOf: store.snapshotFileURL), good)
+        XCTAssertEqual(store.readETag(), "\"v1\"")
+    }
+
     func testExactlyOneRequestPerRefreshAndNoCookieHeader() async throws {
         StubURLProtocol.handler = { _ in .init(status: 304, headers: [:], body: Data()) }
         _ = try await refresher().refresh()

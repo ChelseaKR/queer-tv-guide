@@ -102,10 +102,13 @@ final class StubURLProtocol: URLProtocol {
 
     nonisolated(unsafe) static var handler: ((URLRequest) -> Response)?
     nonisolated(unsafe) static var recorded: [URLRequest] = []
+    /// How the request fails while `handler` is nil.
+    nonisolated(unsafe) static var failure: URLError.Code = .notConnectedToInternet
 
     static func reset() {
         handler = nil
         recorded = []
+        failure = .notConnectedToInternet
     }
 
     override class func canInit(with request: URLRequest) -> Bool { true }
@@ -114,7 +117,7 @@ final class StubURLProtocol: URLProtocol {
     override func startLoading() {
         Self.recorded.append(request)
         guard let handler = Self.handler else {
-            client?.urlProtocol(self, didFailWithError: URLError(.notConnectedToInternet))
+            client?.urlProtocol(self, didFailWithError: URLError(Self.failure))
             return
         }
         let r = handler(request)

@@ -75,11 +75,20 @@ public final class SnapshotRefresher: @unchecked Sendable {
 
     /// Performs the GET. On success the store is updated; on any failure the
     /// store is untouched and the error is thrown for the UI to state.
+    ///
+    /// A request cancelled before it answered (SwiftUI cancels a pull to
+    /// refresh's task when its screen goes away) throws `CancellationError`,
+    /// not a `RefreshError`: nothing failed, and URLSession's own wording
+    /// for it is the bare word "cancelled".
     public func refresh() async throws -> Outcome {
         let request = makeRequest(etag: store.readETag())
         let (data, response): (Data, URLResponse)
         do {
             (data, response) = try await session.data(for: request)
+        } catch let error as URLError where error.code == .cancelled {
+            throw CancellationError()
+        } catch let error as CancellationError {
+            throw error
         } catch {
             throw RefreshError.transport(error.localizedDescription)
         }

@@ -13,6 +13,10 @@ consumer of the published snapshot, would notice.
 
 ### Added
 
+- The website builds and opens to search 50 more show pages: mainstream US
+  crime, mystery, police, sci-fi, thriller and horror shows that list 3 or 4
+  queer characters on LezWatch.TV, such as Wednesday, Lucifer, Fargo and
+  Silo. Every other show still needs 5 listed characters (DECISIONS 0060).
 - The website's App Store links now carry the account's provider token, so
   App Store Connect's Campaigns view starts counting which kind of page sends
   people to the listing. The token is in every campaign link and is not a

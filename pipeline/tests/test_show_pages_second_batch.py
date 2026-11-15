@@ -77,8 +77,10 @@ def test_the_second_batch_adds_44_new_shows():
     # batch would be a no-op that makes the batch look larger than it is.
     assert not second & pinned_ids
     assert not second & show_pages.INDEX_FIRST_BATCH
-    assert show_pages.INDEX_FIRST_BATCH | second == show_pages.INDEX_EXTRA_IDS
-    assert len(show_pages.INDEX_EXTRA_IDS) == 94
+    # The small-cast batch (DECISIONS 0060) is the only other widening.
+    widened = show_pages.INDEX_EXTRA_IDS - show_pages.SMALL_CAST_BATCH
+    assert show_pages.INDEX_FIRST_BATCH | second == widened
+    assert len(widened) == 94
     assert show_pages.INDEX_MIN_LISTED is None  # still a list, not a rule
 
 

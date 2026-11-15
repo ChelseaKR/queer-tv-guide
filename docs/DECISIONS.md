@@ -1972,3 +1972,69 @@ tell", not "it did not work".
 
 **Reversible.** Yes: restore the one sentence in `get_app_line` and the
 line's place in `show.html.j2`.
+
+## 0060 — Pages for 50 mainstream US shows with 3 or 4 listed characters (2026-11-14)
+
+**Status: proposed (branch `seo/qf-mainstream-small-cast-pages`). Needs
+Chelsea: it lowers 0025's bar of 5 listed characters for one named list,
+against 0028's caution about many similar pages. Merging is the decision;
+the recommended timing is after the 0057 two-week check (about 11-23) and
+after a fresh URL Inspection read (see "Risk").**
+
+**Evidence.** Search Console for `sc-domain:queerframe.app`, 2026-10-16 to
+2026-11-13 (`dataState: all`, read-only scope): 26 clicks and 3,845
+impressions. The 50 hand-picked pages, mostly shows made for a queer
+audience, drew 180 impressions and no click (16 of them none at all, though
+URL Inspection calls all 16 indexed). The 94 widening-batch pages,
+mostly mainstream shows with a few queer characters, drew 3,293 impressions
+and all 26 clicks. Within those 94, the 20 US shows with at least one of the
+genres crime, mystery, procedural, police, sci-fi, thriller or horror drew
+1,452 impressions (median 38 a page) and 12 clicks; the other 74 drew 1,841
+(median 18) and 14 clicks. Pages listing exactly 5 characters did as well as
+any (29 pages, 1,288 impressions), so the count above 5 is not what earns.
+Searchers ask whether a mainstream show has a queer character at all, and few
+other sites answer that. On the 2026-11-13 snapshot, 83 US shows with those
+genres list 3 or 4 characters, have a TVmaze match by id, and have no page.
+
+**Decision.** `show_pages.SMALL_CAST_BATCH` lists 50 of them: 3 or 4 listed
+characters, a TVmaze match by id (`TVMAZE_ID_JOINS`), the USA among the
+countries, one of `SMALL_CAST_GENRES`, no soap opera or telenovela, not
+already built; 4 listed before 3, then lower LezWatch id. L.A. Law (id 1011)
+is left out because the test fixtures use that id; Fastlane, next by the
+rule, takes its place. `qualifies` builds a show in the list from
+`SMALL_CAST_MIN` (3) listed characters; every other show still needs 5.
+The list is also in `INDEX_EXTRA_IDS` (144 ids), so these pages are open to
+search from the start. On the 2026-11-13 snapshot 414 pages are built (364
+before) and the sitemap goes from 149 to 199 URLs. Examples: Wednesday,
+Lucifer, Fargo, Gotham, Arrow, Person of Interest, You, Evil, Silo, Tracker,
+Matlock (2024), Battlestar Galactica, Star Trek: Lower Decks. The other 33
+(Arcane, High Potential, The Haunting of Hill House, Mare of Easttown and
+more) wait for a later batch.
+
+**No new wording.** The pages use the existing template and sentences: the
+title says "3 LGBTQ characters in <show>" or "4 ...", the description names
+up to three, and the answer stays closed. The death rules (0030, 0052, 0053),
+the credit and the no-script rule are unchanged.
+
+**Expected effect, honestly.** If the 50 pages draw what the comparable open
+pages drew (median 38 impressions in 28 days) at the site's 0.68% CTR, about
+13 clicks in 28 days, or 3 a week. Pages with fewer characters say less, and
+the hand-picked pages with 2 to 4 characters drew almost nothing (though
+those are flagship queer shows, where the competition is different), so the
+honest range is 0 to about 3 a week. It is the only change found on
+2026-11-14 that can add more than one click a week.
+
+**Risk.** On 2026-11-14, URL Inspection called 32 of the top 60 open show
+pages "Crawled - currently not indexed", including Will Trent and The
+Mentalist, while their impressions held level through 11-11. Google had not
+recrawled any of them since 11-05. If those labels turn into lost
+impressions, Google is judging the template pages thin, and 50 more would
+add to the problem 0028 hedged against. Read URL Inspection again before
+merging.
+
+**The check.** Two weeks after it goes live: if the pages open before it
+lose weekly impressions, or the site's weekly impressions fall, empty
+`SMALL_CAST_BATCH`.
+
+**Reversible.** Yes: empty `SMALL_CAST_BATCH`. The 50 URLs then answer 404,
+as 0025 allows for a removed page.

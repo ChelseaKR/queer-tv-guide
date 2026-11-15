@@ -102,6 +102,23 @@ final class AppModelIntegrationTests: XCTestCase {
         XCTAssertEqual(model.freshnessWarning(for: snapshot)?.title, "This data is out of date")
     }
 
+    /// With no snapshot to load, the model ends in `.failed`, and the view
+    /// Search and Favorites both show for it states the failure; while
+    /// loading it shows the labeled spinner. Before, Favorites drew an
+    /// unlabeled spinner in both states and never stopped.
+    func testAFailedLoadIsStatedNotLeftSpinning() async throws {
+        let model = AppModel(store: SnapshotStore(directory: try Self.emptyDirectory(), bundledURL: nil))
+        XCTAssertEqual(model.loadState, .loading)
+        XCTAssertNil(CatalogNotReady.failureTitle(for: model.loadState), "still loading is not a failure")
+        await model.loadInitial()
+        guard case .failed(let message) = model.loadState else {
+            return XCTFail("no snapshot anywhere must fail the load, got \(model.loadState)")
+        }
+        XCTAssertFalse(message.isEmpty)
+        XCTAssertNil(model.snapshot)
+        XCTAssertEqual(CatalogNotReady.failureTitle(for: model.loadState), "Couldn't load the catalog")
+    }
+
     /// A fresh directory per test, so a snapshot some earlier run downloaded
     /// into Application Support can never stand in for the bundled one.
     private static func emptyDirectory() throws -> URL {

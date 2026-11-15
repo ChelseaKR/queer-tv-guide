@@ -8,7 +8,9 @@ These tests read the colors from the Swift and Kotlin sources and hold:
 - the same accent pair on all four surfaces, and no blue left;
 - WCAG AA (4.5:1) for every text, link and selected-tab use of the accent,
   and for text drawn on an accent or container fill, in light and dark;
-- coral used only as an edge (a stroke or border), never as text.
+- coral used only as an edge (a stroke or border), never as text;
+- no iOS text in the system grays (`.secondary`, `.tertiary`, `.gray`),
+  which measure about 3.4:1 on white; `.subdued` is the AA replacement.
 
 Each checker has a negative control that sabotages the real source text,
 asserts the text actually changed, and expects the checker to fail.
@@ -246,6 +248,27 @@ def check_coral_edge_only(sources: dict[str, str]) -> list[str]:
     return problems
 
 
+# The system's de-emphasis styles, under 4.5:1 on the app's backgrounds
+# (AccessibleStyle.swift). `.subdued` replaces them.
+SYSTEM_GRAY_STYLE = re.compile(
+    r"\.(?:foregroundStyle|foregroundColor)\(\s*(?:Color)?\.(?:secondary|tertiary|quaternary|gray)\b"
+)
+
+
+def check_ios_no_system_gray_text(sources: dict[str, str]) -> list[str]:
+    """No iOS view draws in a system gray: the audit only measures the screens it visits."""
+    problems = []
+    for path, text in sources.items():
+        if not path.endswith(".swift"):
+            continue
+        for n, line in enumerate(text.splitlines(), 1):
+            if line.strip().startswith(("//", "*", "/*")):
+                continue
+            if SYSTEM_GRAY_STYLE.search(line):
+                problems.append(f"{path}:{n}: system gray text, use .subdued: {line.strip()}")
+    return problems
+
+
 def app_sources() -> dict[str, str]:
     files = [
         *IOS_SOURCES.glob("QueerTVGuide/**/*.swift"),
@@ -347,6 +370,19 @@ class AccentContrastTest(unittest.TestCase):
             sources[key], "night = Color(0xFFD9B8FF)", "night = Color(0xFFFF8A6B)"
         )
         self.assertTrue(any("coral FF8A6B" in p for p in check_coral_edge_only(sources)))
+
+    def test_ios_text_is_never_a_system_gray(self) -> None:
+        self.assertEqual(check_ios_no_system_gray_text(app_sources()), [])
+
+    def test_system_gray_check_fails_on_secondary_text(self) -> None:
+        sources = app_sources()
+        key = "ios/QueerTVGuide/Views/SearchView.swift"
+        sources[key] = sabotage(
+            sources[key], ".foregroundStyle(.subdued)", ".foregroundStyle(.secondary)"
+        )
+        self.assertTrue(
+            any("SearchView.swift" in p for p in check_ios_no_system_gray_text(sources))
+        )
 
 
 if __name__ == "__main__":

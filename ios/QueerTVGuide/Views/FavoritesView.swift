@@ -57,7 +57,7 @@ struct FavoritesView: View {
                         .refreshable { await model.refresh() }
                     }
                 } else {
-                    ProgressView()
+                    CatalogNotReady(loadState: model.loadState)
                 }
             }
             .navigationTitle("Favorites")

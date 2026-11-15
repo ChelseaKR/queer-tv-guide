@@ -399,4 +399,34 @@ final class PresentationTests: XCTestCase {
         XCTAssertEqual(Presentation.showDeaths(cast: [], show: show).notes, ["LezWatch.TV lists no tropes for this show (“None!”)."])
         XCTAssertEqual(Presentation.showDeaths(cast: s.characters(inShow: show.id), show: show).notes.last, "LezWatch.TV lists no tropes for this show (“None!”).")
     }
+
+    // MARK: Actors
+
+    /// An actor whose name did not resolve has no name; a character listing
+    /// only such actors gets no "Played by" line at all, never a bare
+    /// "Played by".
+    func testPlayedByLeavesOutActorsWithNoNameAndTheLineWithNone() {
+        let named = CharacterActor(lwtvID: 1, slug: "a", name: "Jordan Todosey")
+        let second = CharacterActor(lwtvID: 2, slug: "b", name: "Ali Liebert")
+        let unresolved = CharacterActor(lwtvID: 3, slug: nil, name: nil)
+        let blank = CharacterActor(lwtvID: 4, slug: nil, name: "  ")
+        XCTAssertEqual(Presentation.playedBy([named]), "Played by Jordan Todosey")
+        XCTAssertEqual(Presentation.playedBy([named, unresolved, second]), "Played by Jordan Todosey, Ali Liebert")
+        XCTAssertNil(Presentation.playedBy([]))
+        XCTAssertNil(Presentation.playedBy([unresolved]))
+        XCTAssertNil(Presentation.playedBy([unresolved, blank]))
+    }
+
+    /// On the real bundled data: every character's line names someone or is
+    /// left out (17 characters on the 2026-11-14 snapshot). No count is
+    /// asserted, so a later snapshot that resolves those actors still passes.
+    func testPlayedByOnTheBundledSnapshotNeverEndsWithoutAName() throws {
+        let snapshot = try SnapshotDecoder().decode(try Data(contentsOf: Repo.bundledSnapshot))
+        for character in snapshot.characters {
+            guard let line = Presentation.playedBy(character.actors) else { continue }
+            XCTAssertTrue(line.hasPrefix("Played by "), "\(character.id): \(line)")
+            XCTAssertFalse(line.dropFirst("Played by ".count).trimmingCharacters(in: .whitespaces).isEmpty, "\(character.id): \(line)")
+            XCTAssertFalse(line.hasSuffix(", "), "\(character.id): \(line)")
+        }
+    }
 }

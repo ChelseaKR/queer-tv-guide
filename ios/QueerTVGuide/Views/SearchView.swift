@@ -46,16 +46,10 @@ struct SearchView: View {
 
     @ViewBuilder
     private var content: some View {
-        switch model.loadState {
-        case .loading:
-            ProgressView("Loading catalog…")
-                .accessibilityLabel("Loading catalog")
-        case .failed(let message):
-            EmptyState(title: "Couldn't load the catalog", systemImage: "exclamationmark.triangle", message: message)
-        case .loaded:
-            if let snapshot = model.snapshot {
-                resultsList(snapshot: snapshot)
-            }
+        if model.loadState == .loaded, let snapshot = model.snapshot {
+            resultsList(snapshot: snapshot)
+        } else {
+            CatalogNotReady(loadState: model.loadState)
         }
     }
 
@@ -97,10 +91,14 @@ struct SearchView: View {
             } else {
                 if settled && isCapped {
                     Section {
-                        Text("Showing the first \(hits.count) of \(totalCount) matches. Type more to narrow them.")
+                        // `.subdued`, not `.secondary`: the system gray is
+                        // 3.4:1 on white (AccessibleStyle.swift), and this
+                        // was the one text left in it.
+                        Text("Showing the first \(hits.count) of \(totalCount.formatted()) matches. Type more to narrow them.")
                             .font(.subheadline)
-                            .foregroundStyle(.secondary)
-                            .accessibilityLabel("Showing the first \(hits.count) of \(totalCount) matches")
+                            .foregroundStyle(.subdued)
+                            .accessibilityLabel("Showing the first \(hits.count) of \(totalCount.formatted()) matches")
+                            .accessibilityIdentifier("search-capped-note")
                     }
                 }
                 Section {

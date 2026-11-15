@@ -199,3 +199,27 @@ struct EmptyState: View {
         .accessibilityElement(children: .combine)
     }
 }
+
+/// What a tab that needs the catalog shows until it has one: the labeled
+/// "Loading catalog" spinner, or why the catalog could not load. Search and
+/// Favorites share it. Favorites had a bare spinner, which VoiceOver gave no
+/// name, and which kept spinning after a failed load while Search said what
+/// went wrong.
+struct CatalogNotReady: View {
+    let loadState: AppModel.LoadState
+
+    /// The failure's title, or nil while the catalog is still loading.
+    static func failureTitle(for loadState: AppModel.LoadState) -> String? {
+        if case .failed = loadState { return "Couldn't load the catalog" }
+        return nil
+    }
+
+    var body: some View {
+        if case .failed(let message) = loadState, let title = Self.failureTitle(for: loadState) {
+            EmptyState(title: title, systemImage: "exclamationmark.triangle", message: message)
+        } else {
+            ProgressView("Loading catalog…")
+                .accessibilityLabel("Loading catalog")
+        }
+    }
+}

@@ -402,6 +402,19 @@ public enum Presentation {
     public static let noCharacters = "No characters listed for this show."
     public static let noPlot = "No plot notes in this snapshot."
 
+    /// The character screen's actor line, "Played by Jordan Todosey", or
+    /// `nil` when no listed actor has a name. An actor id that did not
+    /// resolve in LezWatch.TV's actor export has no name (`CharacterActor`),
+    /// and 17 characters on the 2026-11-14 snapshot list only such an actor:
+    /// their screen read "Played by" and stopped. The Android port already
+    /// leaves the line out (`DetailScreens.kt`).
+    public static func playedBy(_ actors: [CharacterActor]) -> String? {
+        let names = actors
+            .compactMap { $0.name?.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { !$0.isEmpty }
+        return names.isEmpty ? nil : "Played by " + names.joined(separator: ", ")
+    }
+
     /// `scheduleKnown == false` ("TVmaze was never matched") and
     /// `scheduleKnown == true` with `nextEpisode == nil` ("TVmaze confirms
     /// nothing is upcoming") are different facts and must read differently.

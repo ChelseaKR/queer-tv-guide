@@ -408,6 +408,23 @@ final class AccessibilityAuditTests: XCTestCase {
         try audit(app)
     }
 
+    /// A query with more matches than the list holds: the "Showing the first
+    /// 50 of …" note above the rows. It was drawn in the system gray (3.4:1)
+    /// and no other test reached it.
+    @MainActor
+    func testCappedSearchResultsPassTheAudit() throws {
+        let app = launch()
+        let search = app.searchFields.firstMatch
+        XCTAssertTrue(search.waitForExistence(timeout: 30))
+        search.tap()
+        // "the" is in hundreds of titles on any real snapshot.
+        search.typeText("the\n")
+        let note = app.staticTexts["search-capped-note"]
+        XCTAssertTrue(note.waitForExistence(timeout: 30), "no capped-results note for \"the\"")
+        XCTAssertTrue(note.label.hasPrefix("Showing the first 50 of "), note.label)
+        try audit(app)
+    }
+
     @MainActor
     func testShowScreenPassesTheAuditBeforeAndAfterTheReveal() throws {
         let app = launch()

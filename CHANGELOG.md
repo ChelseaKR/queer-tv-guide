@@ -249,6 +249,16 @@ consumer of the published snapshot, would notice.
 
 ### Fixed
 
+- iPhone: a character whose only listed actor has no name in LezWatch.TV's
+  data no longer shows a bare "Played by" line on the character screen; the
+  line is left out, as on Android. 17 characters on the 2026-11-14 snapshot.
+- iPhone: the "Showing the first 50 of …" note above a long Search result list
+  is drawn in the app's high-contrast gray instead of the system gray (about
+  3.4:1 on white, under WCAG AA), and its total has a thousands separator.
+- iPhone: while the catalog loads, Favorites shows the same labeled
+  "Loading catalog" spinner as Search, which VoiceOver can name, and if the
+  catalog cannot load it says so, as Search does, instead of spinning.
+
 - One slow LezWatch.TV response no longer costs the night's snapshot: a request
   that fails its three quick tries gets one more try 15 minutes later, once a
   run. If LezWatch.TV stays unavailable the run still fails and yesterday's

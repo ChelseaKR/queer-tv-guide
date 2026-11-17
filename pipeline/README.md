@@ -192,6 +192,23 @@ mirror, fetches incrementally, builds, and then:
    pages cannot be built it prints a `::notice::` and the snapshot still
    publishes.
 
+Two Pages sites (DECISIONS 0062). With the `DOMAIN_SITE_REPO` repository
+variable set, the workflow also pushes that same website to the `gh-pages`
+branch of the repository the variable names, which serves it on
+https://queerframe.app. Once the domain is seen to serve the run's website
+from there, this repository's Pages site becomes a small one
+(`qtv_pipeline/github_io.py`): `snapshot.v1.json` and its `.sha256` byte for
+byte, the privacy, support and terms pages, and for every other page a
+pointer to the same page on the domain. It has no custom domain, so
+the app's data request stays on one host. With the variable unset, the
+workflow publishes one site, as before.
+
+| Name | Kind | What it is |
+|---|---|---|
+| `DOMAIN_SITE_REPO` | variable | The website's repository, `owner/name`. Unset: nothing is pushed. |
+| `DOMAIN_SITE_DEPLOY_KEY` | secret | The private half of a deploy key with write access to that repository only. |
+| `DOMAIN_SITE_LIVE` | variable | `true` once that repository's Pages settings hold the domain. The push also keeps a `CNAME` file it finds on the branch, so the domain survives if this is forgotten. |
+
 Why both. Pages gives the app one plain static URL with an ETag, chosen while
 the repository was private (a release asset on a private repository needs a
 token to download), and publishing the file openly is also what CC BY-SA's

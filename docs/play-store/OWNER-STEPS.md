@@ -262,7 +262,7 @@ assembled site.
 1. `gh variable set PLAY_STORE_LIVE --repo ChelseaKR/queer-tv-guide --body true`
 2. `gh workflow run snapshot.yml --repo ChelseaKR/queer-tv-guide` to
    republish now instead of at the next nightly run.
-3. Check: `curl -s https://chelseakr.github.io/queer-tv-guide/ | grep -c play.google.com`
+3. Check: `curl -s https://queerframe.app/ | grep -c play.google.com`
    prints 1, and the index shows "Queer Frame on Google Play: for
    Android, $4.99."
 

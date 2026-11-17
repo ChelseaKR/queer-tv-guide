@@ -257,7 +257,7 @@ on the App Store, so it stays off until then.
 1. `gh variable set APP_STORE_LIVE --repo ChelseaKR/queer-tv-guide --body true`
 2. `gh workflow run snapshot.yml --repo ChelseaKR/queer-tv-guide` to
    republish now instead of at the next nightly run.
-3. Check: `curl -s https://chelseakr.github.io/queer-tv-guide/ | grep -c apple-itunes-app`
+3. Check: `curl -s https://queerframe.app/ | grep -c apple-itunes-app`
    prints 1, and the index shows Apple's black badge with "Queer Frame for
    iPhone. $4.99 on the App Store."
 

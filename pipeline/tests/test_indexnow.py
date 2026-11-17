@@ -333,7 +333,9 @@ def test_workflow_selects_before_the_deploy_and_submits_in_a_job_after_it() -> N
     assert positions == sorted(positions)
     assert build.index("indexnow manifest") < build.index("indexnow select")
     job = _block(text, "\n  indexnow:\n", None)
-    assert "    needs: deploy\n" in job
+    assert "    needs: [build, deploy]\n" in job
+    # Not when the domain was seen not to serve this run's website (DECISIONS 0062).
+    assert "    if: needs.build.outputs.domain_serving != 'false'\n" in job
     assert "indexnow.py submit" in job
     assert "indexnow.py submit" not in build
     assert "write" not in job.split("steps:")[0]  # read-only permissions

@@ -210,9 +210,9 @@ from qtv_pipeline.app_store import (
 )
 from qtv_pipeline.normalize import DEAD_STATUS_CLICHES, SEASON_IS_A_YEAR, tvmaze_last_season
 
-# The site's own domain (DECISIONS 0020). Pages serves the project path with a
-# 301 to it, so every canonical URL, internal link, breadcrumb item and
-# sitemap entry names this host and no github.io address.
+# The site's own domain (DECISIONS 0020, 0062). Every canonical URL, internal
+# link, breadcrumb item and sitemap entry names this host and no github.io
+# address.
 DEFAULT_BASE_URL = "https://queerframe.app"
 # The most pages one build writes (DECISIONS 0025). The rule picks about 350
 # today; the cap keeps a surprise in LezWatch's data from multiplying the

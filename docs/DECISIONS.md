@@ -1972,3 +1972,89 @@ tell", not "it did not work".
 
 **Reversible.** Yes: restore the one sentence in `get_app_line` and the
 line's place in `show.html.j2`.
+
+## 0062 — The website publishes from a repository of its own; this one serves the data file (2026-11-17)
+
+**Status: accepted (owner, 2026-11-17). It replaces 0020's "the custom domain
+is attached to the Pages site". The site's address, the pages and everything
+else in 0020 stand.**
+
+**Decision.** There are two Pages sites.
+
+- **The website's repository** (named by the `DOMAIN_SITE_REPO` repository
+  variable) holds the custom domain and serves `https://queerframe.app`: the
+  home page, the show pages, `sitemap.xml`, `robots.txt`, the privacy,
+  support and terms pages, and a copy of the data file. It publishes from
+  its `gh-pages` branch. `snapshot.yml` replaces that branch with each
+  run's website as one commit.
+- **This repository's Pages site** has no custom domain. It serves, at
+  `https://chelseakr.github.io/queer-tv-guide/`: `snapshot.v1.json` and its
+  `.sha256` byte for byte; `privacy.html`, `support.html` and `terms.html`,
+  each the website's own page with one line added to its head; and for
+  every other page of the website a small page at the same path that points
+  to that page on the domain (`qtv_pipeline/github_io.py`).
+
+**Why.** The data file's address is fixed in the shipped apps (0007), and so
+are the privacy and support addresses the apps and the store listings open.
+A Pages site that has a custom domain serves everything on that domain. With
+the website in a repository of its own, the app's data request stays on one
+host, and the data file does not depend on the domain's registration, DNS
+or certificate.
+
+**Search.** Every queerframe.app URL is unchanged, and so are the sitemap,
+`robots.txt` and each page's canonical URL. Nothing on github.io is an
+indexable second copy:
+
+- the three kept pages name their queerframe.app address as canonical. The
+  build adds that one `rel="canonical"` line to the github.io copy; the
+  pages in `docs/site/` are unchanged and still load nothing. Canonical, not
+  `noindex`: the two together send a search engine opposite signals, and
+  the canonical is the one that files the page under the domain;
+- a pointer page carries the same canonical URL as the page it stands for
+  and a refresh of 0 seconds to it, which search engines read as a permanent
+  move. It has no script, style or image;
+- `404.html` links to the domain and carries `noindex`;
+- there is no sitemap or `robots.txt` on github.io (a robots file below a
+  host's root is not read).
+
+**How the workflow keeps both sites safe.**
+
+- Unset, `DOMAIN_SITE_REPO` changes nothing: one site, as before.
+- The push uses a deploy key (`DOMAIN_SITE_DEPLOY_KEY`) that can write to the
+  website's repository only. The key goes from the secret into `ssh-agent`
+  on stdin and is never written to disk, and github.com's host key is
+  pinned.
+- The domain is set in the website repository's Pages settings, which keep
+  it as a `CNAME` file on the branch. The push never removes a domain and
+  never sets one by itself: it carries the `CNAME` file over when the branch
+  has one, and writes one when the owner has set `DOMAIN_SITE_LIVE` to
+  `true`. It is refused if the branch moved after it was read.
+- This repository's Pages site becomes the small one only in a run where
+  the domain serves that run's own data file, byte for byte, over HTTPS and
+  without a redirect. In any other run it gets the full website, as before,
+  so the domain is never left pointing at the small site.
+- The data file never waits on the domain. If the website's repository
+  holds the domain and the domain does not serve the run's website within
+  11 minutes, the deploy still happens and a `domain-site` job turns the run
+  red afterwards.
+
+**Not changed.** The apps' addresses (0020's "not decided here" is settled:
+they stay on github.io). The data file's bytes, its checksum and its
+`ETag`-based refresh. The privacy policy's wording. The rolling release.
+
+**Tests.** `pipeline/tests/test_github_io.py`: the data file byte for byte,
+each kept page equal to the website's page plus its canonical line, a page
+at every path of the website, no page that could
+be indexed as a second copy (with negative controls), nothing but the data
+file and pages published, and a refusal that writes nothing when a file the
+apps rely on is missing. `tests/test_domain_site_workflow.py`: the wiring,
+each rule with a negative control; the push step's own script run against a
+local repository (a first push, a replaced branch, a domain saved in the
+settings kept, another domain refused, a branch that moved not overwritten,
+the key never printed); and the wait step's own script run against a
+stand-in for the domain (this run's file, the previous deploy, a matching
+checksum over other bytes, no answer).
+
+**Reversible.** Yes: unset `DOMAIN_SITE_REPO`, run the workflow so this
+repository's Pages site is the full website again, then move the domain back
+in the two repositories' Pages settings.

@@ -83,9 +83,10 @@ class ShowPagesStepTests(unittest.TestCase):
         self.assertLess(build.text.index(STEP_NAME), build.text.index("upload-pages-artifact"))
 
     def test_the_snapshot_publishing_is_untouched(self) -> None:
-        # The artifact is still the one directory the snapshot files go in, and
-        # the deploy still waits on the build and on nothing else.
-        self.assertIn("          path: pipeline/site\n", self.text)
+        # The artifact is still one directory with the snapshot files in it
+        # (which one is DECISIONS 0062, tests/test_domain_site_workflow.py),
+        # and the deploy still waits on the build and on nothing else.
+        self.assertIn("&& 'pipeline/site-github-io' || 'pipeline/site' }}\n", self.text)
         self.assertEqual(self.text.count("actions/upload-pages-artifact@"), 1)
         deploy = workflow_model.load(SNAPSHOT).jobs["deploy"]
         self.assertIn("needs: build", deploy.text)

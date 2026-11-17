@@ -206,6 +206,12 @@ consumer of the published snapshot, would notice.
 
 ### Changed
 
+- The website can publish from a repository of its own. With the
+  `DOMAIN_SITE_REPO` variable set, the nightly workflow pushes the website
+  there, and this repository's Pages site serves the data file, the privacy,
+  support and terms pages, and pointers to queerframe.app, with no custom
+  domain, so the app's data request stays on one host. Every queerframe.app
+  address is unchanged (DECISIONS 0062).
 - The website's App Store links no longer name the US storefront, so Apple
   opens the listing in the visitor's own country; the campaign tokens are
   unchanged. The price is named as the US price wherever it appears: "$4.99

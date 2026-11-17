@@ -1972,3 +1972,73 @@ tell", not "it did not work".
 
 **Reversible.** Yes: restore the one sentence in `get_app_line` and the
 line's place in `show.html.j2`.
+
+## 0063 — iPhone 1.0.2: what someone follows or looks up stays out of sight, and every link is https (2026-11-17)
+
+**Status: accepted (owner, 2026-11-17: all five, with tests). The wording
+marked below is the owner's to approve.**
+
+**Decision.** Five small changes to the iPhone app, none of which adds a
+feature or a request.
+
+1. **The data request stays on one host.** The app's one `URLSession` has a
+   delegate, `SameHostRedirects`, that follows a redirect only when it
+   stays on the endpoint's own scheme, host and port. Any other redirect is
+   not followed: no request is made to the other host, and the refresh is
+   "no update" (the stored data stays, and nothing is shown as an error). It keeps 0002's "the app talks to one host" true whatever
+   a server answers.
+2. **The Up Next widget on a locked iPhone.** A show's title and its
+   episode line are `.privacySensitive()`, so the system draws them as
+   blank bars while the iPhone is locked (StandBy, the Today view). The
+   header, the counts and the data's date name no show and stay.
+   VoiceOver reads "Hidden while locked" for a hidden row *(new spoken
+   wording, for the owner's approval)*.
+3. **Search and the keyboard.** Both search fields set
+   `.autocorrectionDisabled()`, so a title or a name typed there is not
+   learned by the keyboard.
+4. **Links from the data file.** The app only hands links to the system
+   (`openURL`); it never fetches them. From 1.0.2 every one is https
+   (`SecureLink`):
+   - an `https` link is kept as recorded;
+   - an `http` link opens as `https`, same host and path. On the 2026-11-14
+     snapshot 44 of 1,371 where-to-watch links are recorded as plain HTTP
+     (amazon.com, youtube.com, cwtv.com and others). Leaving them out would
+     tell the person a show has no where-to-watch link when LezWatch.TV
+     records one, so they are kept and opened over https; a site that does
+     not answer over https shows Safari's own error;
+   - anything else (a phone number, a message, another app's scheme, a
+     file, a link with a user name in it) is not opened. For a
+     where-to-watch entry it is left out and the show's other entries
+     stand. For the file's own links (the credits, the licenses, a source
+     page, a TVmaze schedule page) the file is refused whole and the last
+     good data stays, as for any other broken file.
+   - a where-to-watch entry's `host`, which the "Watch on …" label is built
+     from, must be the host its link opens (case ignored). An entry
+     labelled with another host is left out.
+5. **The privacy policy's widget sentence.** The app writes the widget's
+   small file whether or not the widget is added (so a widget added later
+   has something to show at once). The policy said "If you add the Up Next
+   widget"; it now says "whether or not you add the widget" *(wording for
+   the owner's approval)*. The code is unchanged: writing the file only
+   when a widget exists would leave a newly added widget empty until the
+   app is next opened.
+
+**Not decided here.** Whether favorites and the widget's file should be
+kept out of device backups (the owner decides after 1.0.2). A size limit
+on the downloaded file and a signature on it. Pinning the sources' own
+links to their hosts in the app (the pipeline's license gate already does).
+The Android app, which is not part of this release.
+
+**Tests.** `RedirectTests` runs the refresher against a real HTTP server on
+the loopback interface that answers with a real redirect to another host
+name: one request is made, the outcome is "no update", the stored file and
+its ETag are untouched; a redirect on the same host is followed; and a
+control shows a plain session following the same redirect to the second
+host. `LinkSafetyTests` holds every link field of the fixture to https
+(found by reflection, so a field added later is covered), refuses a file
+for each field in turn, and checks that no where-to-watch link in the
+bundled snapshot is lost. `PrivacySurfaceGuardTests` reads the widget and
+search sources, with negative controls. `WidgetRenderTests` draws the
+widget as a locked iPhone does.
+
+**Reversible.** Yes, each on its own.

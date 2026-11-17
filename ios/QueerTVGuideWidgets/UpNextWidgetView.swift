@@ -18,8 +18,15 @@ struct UpNextWidgetView: View {
     var familyOverride: WidgetFamily? = nil
 
     @Environment(\.widgetFamily) private var environmentFamily
+    /// Holds `.privacy` while the widget is drawn on a locked iPhone.
+    @Environment(\.redactionReasons) private var redactionReasons
 
     private var family: WidgetFamily { familyOverride ?? environmentFamily }
+
+    /// A show's title and its episode line are marked privacy-sensitive, so
+    /// the system draws them as blank bars while the iPhone is locked.
+    /// VoiceOver must not read them then either.
+    private var hidden: Bool { redactionReasons.contains(.privacy) }
 
     /// How many shows fit: one on the small widget, three on the medium.
     private var capacity: Int { family == .systemSmall ? 1 : 3 }
@@ -68,7 +75,7 @@ struct UpNextWidgetView: View {
         ForEach(ordered.prefix(capacity)) { item in
             row(item)
                 .accessibilityElement(children: .ignore)
-                .accessibilityLabel(UpNextPresentation.spoken(item, today: entry.date))
+                .accessibilityLabel(UpNextPresentation.spoken(item, today: entry.date, hidden: hidden))
         }
         if let more = UpNextPresentation.more(ordered.count - capacity, missing: upNext.missingShowCount) {
             Text(more)
@@ -78,7 +85,8 @@ struct UpNextWidgetView: View {
     }
 
     /// Small: the title over its episode line. Medium: one line each, the
-    /// title giving way first.
+    /// title giving way first. Both say which shows someone follows, so
+    /// both are privacy-sensitive: hidden while the iPhone is locked.
     @ViewBuilder
     private func row(_ item: UpNext.Item) -> some View {
         let line = Text(UpNextPresentation.line(item, today: entry.date))
@@ -89,17 +97,22 @@ struct UpNextWidgetView: View {
                 Text(item.title)
                     .font(.subheadline.weight(.semibold))
                     .lineLimit(2)
-                line.lineLimit(2)
+                    .privacySensitive()
+                line
+                    .lineLimit(2)
+                    .privacySensitive()
             }
         } else {
             HStack(alignment: .firstTextBaseline, spacing: 8) {
                 Text(item.title)
                     .font(.subheadline.weight(.semibold))
                     .lineLimit(1)
+                    .privacySensitive()
                 Spacer(minLength: 4)
                 line
                     .lineLimit(1)
                     .layoutPriority(1)
+                    .privacySensitive()
             }
         }
     }

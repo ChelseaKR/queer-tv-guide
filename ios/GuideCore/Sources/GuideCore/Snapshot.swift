@@ -357,10 +357,41 @@ public struct ExternalIDs: Codable, Equatable, Sendable {
 
 public struct WatchLink: Codable, Equatable, Sendable, Identifiable {
     public var id: String { url.absoluteString }
+    /// Always https (`SecureLink`).
     public let url: URL
-    /// Registrable host, e.g. "netflix.com" — the label the app shows.
-    /// Never a guessed service name.
+    /// The link's own host, e.g. "www.netflix.com": the label the app shows.
+    /// Never a guessed service name, and never a host the link does not
+    /// open: an entry whose recorded host differs from its URL's is not
+    /// decoded.
     public let host: String
+
+    /// A where-to-watch entry as the file records it, before it is checked.
+    struct Recorded: Decodable {
+        let url: String
+        let host: String
+    }
+}
+
+extension WatchLink {
+    /// `nil` when the entry is not a link the app will open (`SecureLink`),
+    /// or when its label would name a host other than the one it opens.
+    init?(recorded: Recorded) {
+        guard let url = SecureLink.https(recorded.url), let parts = URLComponents(url: url, resolvingAgainstBaseURL: false) else { return nil }
+        let claimed = recorded.host.lowercased()
+        let actual = [parts.host, parts.encodedHost].compactMap { $0?.lowercased() }
+        guard !claimed.isEmpty, actual.contains(claimed) else { return nil }
+        self.init(url: url, host: recorded.host)
+    }
+
+    /// One entry on its own is held to the same rule, and says so.
+    /// `Show` decodes its list through `Recorded`, so one bad entry is left
+    /// out of the list instead of refusing the file.
+    public init(from decoder: Decoder) throws {
+        guard let checked = WatchLink(recorded: try Recorded(from: decoder)) else {
+            throw DecodingError.dataCorrupted(.init(codingPath: decoder.codingPath, debugDescription: "a where-to-watch link must be an https address on its recorded host"))
+        }
+        self = checked
+    }
 }
 
 public struct ShowNotes: Codable, Equatable, Sendable {
@@ -529,7 +560,9 @@ public struct Show: Codable, Equatable, Sendable, Identifiable {
         ratings = try c.decode(Ratings.self, forKey: .ratings)
         counts = try c.decode(Counts.self, forKey: .counts)
         externalIDs = try c.decode(ExternalIDs.self, forKey: .externalIDs)
-        watchLinks = try c.decode([WatchLink].self, forKey: .watchLinks)
+        // An entry the app will not open, or whose label would name another
+        // host than it opens, is left out; the others stand (`WatchLink`).
+        watchLinks = try c.decode([WatchLink.Recorded].self, forKey: .watchLinks).compactMap(WatchLink.init(recorded:))
         similarShowIDs = try c.decode([Show.ID].self, forKey: .similarShowIDs)
         notes = try c.decode(ShowNotes.self, forKey: .notes)
         schedule = try c.decode(Schedule.self, forKey: .schedule)

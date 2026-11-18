@@ -5,10 +5,10 @@
 A no-account, no-telemetry iOS guide to queer TV: *does she die, is it worth
 it, where to watch, when's the next episode.*
 
-**Status:** In build. Not yet on the App Store; public repository.
+**Status:** Live on the App Store since November 2026 (iPhone, $4.99).
+Website: queerframe.app.
 
-Chosen on 2026-09-13 from [moved to private strategy notes]. The
-product's premise is that the App Store label **"Data Not Collected"** is
+The product's premise is that the App Store label **"Data Not Collected"** is
 literally true: no accounts, no analytics, no third-party SDKs, favorites kept
 on the device. That is a per-product choice, recorded as the analytics posture
 "none" in `docs/DECISIONS.md` 0002. (The portfolio control it cites, DG-20 in

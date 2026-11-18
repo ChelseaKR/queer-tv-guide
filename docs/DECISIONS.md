@@ -2117,3 +2117,38 @@ with negative controls.
 **Reversible.** Yes, each part alone: call `neighbors` and `related`
 without the open set; remove the tag block from the three templates; drop
 `imdb_url` and `wikidata_url` from `_series`.
+
+## 0065 — The home page names twelve more shows, "Some of the other shows" (2026-11-17)
+
+**Status: proposed (branch `seo/home-other-shows-2026-11`). The owner chose
+the heading and the twelve titles on 2026-11-17; merging it is the last
+step. It extends 0026 and changes nothing 0026 decided.**
+
+**Decision.** Below "Some of the hand-picked shows" the home page gains a
+second list under the heading "Some of the other shows": FROM, Will Trent,
+The Mentalist, The Fosters, The Owl House, The Vampire Diaries, Helluva
+Boss, SWAT, Elsbeth, Manifest, The Loud House and Craig of the Creek, in
+that order. The list is fixed in the repository as LezWatch.TV ids
+(`site_index.OTHER_ON_HOME`). Each title is read from the snapshot, so it is
+spelled exactly as the show's own page spells it.
+
+**Why.** These twelve pages drew the most searches of any page that is not
+hand-picked, and Google stopped showing most of them on 2026-11-12. The home
+page is the one page Google still indexes and re-reads, and until now it
+linked by name only to hand-picked shows. This gives the twelve a direct
+link from it. It is a link, not a promise that Google will index them again.
+
+**Rules.** A show is named only when it is in the snapshot and its page was
+published, so every link resolves. A hand-picked show is never named a
+second time. With no show to name there is no heading. With no hand-picked
+list above it there is no second list, since "other" means other than those.
+On the 2026-11-17 snapshot all twelve pages are built, open to search
+engines and in the sitemap, and none is hand-picked.
+
+**Spoiler rule.** Unchanged from 0026: the list holds show titles and
+nothing about any character.
+
+**Tests.** `pipeline/tests/test_home_other_shows.py`, read with
+`html.parser`, with negative controls.
+
+**Reversible.** Yes: empty `OTHER_ON_HOME`, or remove the template block.

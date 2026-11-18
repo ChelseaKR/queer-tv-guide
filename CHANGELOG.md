@@ -13,6 +13,10 @@ consumer of the published snapshot, would notice.
 
 ### Added
 
+- Website: the home page names twelve more shows under "Some of the other
+  shows", below the hand-picked ones: FROM, Will Trent, The Mentalist and
+  nine others that are not hand-picked. Titles only, each linking to the
+  show's page (DECISIONS 0065, proposed).
 - Website: a show page, the shows index and the airing page now carry
   link-preview tags, so a link pasted into a message or a post shows the
   page's own title and description instead of a bare address. The tags

@@ -34,6 +34,17 @@
 <li><a href="{{ s.url }}">{{ s.title }}</a></li>
 {%- endfor %}
 </ul>
+{#- The second list (DECISIONS 0065): a fixed list of shows that are not
+    hand-picked. Titles only, as above, so the page still names no character
+    and no answer. #}
+{%- if others %}
+<h3>Some of the other shows</h3>
+<ul class="shows">
+{%- for s in others %}
+<li><a href="{{ s.url }}">{{ s.title }}</a></li>
+{%- endfor %}
+</ul>
+{%- endif %}
 {%- endif %}
 {%- endif %}
 <h2 id="how-it-works">How it works</h2>

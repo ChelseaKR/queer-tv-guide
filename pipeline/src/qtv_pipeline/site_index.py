@@ -44,7 +44,14 @@ from pathlib import Path
 from typing import Any
 
 from qtv_pipeline import findings
-from qtv_pipeline.app_store import INDEX_SLOT, PRICE_US, live_or_false
+from qtv_pipeline.app_store import (
+    APP_LINE_PRICE,
+    INDEX_SLOT,
+    PRICE_US,
+    app_store_link,
+    catalog_phrase,
+    live_or_false,
+)
 from qtv_pipeline.show_pages import (
     _ENV,
     AIRING_PATH,
@@ -212,11 +219,20 @@ def render_llms(
     shows_total: int = 0,
     airing_link: bool = False,
     base_url: str = DEFAULT_BASE_URL,
+    app_store_live: bool = False,
 ) -> str:
     """/llms.txt: an H1, a blockquote summary, plain text, then H2 sections of
     ``[name](url): note`` links (llmstxt.org). It names no show and no
     character, so it cannot give an answer away, and it links only to pages
-    published beside it."""
+    published beside it.
+
+    With the App Store switch on (``app_store_live``) it says the app is out
+    and links it, with the campaign token ``llms`` so App Store Connect counts
+    what assistants send, and it links the findings and press pages, which
+    ``write_site`` publishes in every build (the owner's wording W1, approved
+    2026-11-18). The app line is the show pages' top line without its lead:
+    the same rounded show count (``catalog_phrase``) and the same price. Off,
+    the file is byte for byte what it was before."""
     base = _clean_base_url(base_url)
     linked = shows_link and shows_total > 0
     snapshot = doc["licence"]["snapshot"]
@@ -242,8 +258,7 @@ def render_llms(
         "Privacy: the website sets no cookies, runs no analytics and loads nothing from "
         "any other site. The app has no account, no analytics and no ads.",
         "",
-        "Update cadence: the data is rebuilt once a day (09:17 UTC). The iPhone app is "
-        "linked from the home page once it is on the App Store.",
+        LLMS_CADENCE + ("" if app_store_live else " " + LLMS_APP_SOON),
         "",
         f"How to cite: name {SITE_NAME} and link the show page, and credit LezWatch.TV "
         f"and TVmaze. The data file is published under {snapshot['name']} "
@@ -266,6 +281,7 @@ def render_llms(
         f"- [Data]({base}/data/): the snapshot file, its license and this build's counts",
         f"- [Privacy policy]({base}/privacy.html)",
         f"- [Support]({base}/support.html)",
+        *(_llms_app_lines(doc, base) if app_store_live else []),
         "",
         "## Sources",
         "",
@@ -277,6 +293,27 @@ def render_llms(
         )
     lines.append("")
     return "\n".join(lines)
+
+
+LLMS_CADENCE = "Update cadence: the data is rebuilt once a day (09:17 UTC)."
+LLMS_APP_SOON = "The iPhone app is linked from the home page once it is on the App Store."
+LLMS_FINDINGS_NOTE = "a dated analysis of LezWatch.TV and TVmaze data"
+
+
+def _llms_app_lines(doc: dict[str, Any], base: str) -> list[str]:
+    """The ``## Pages`` lines llms.txt gains while the app is on the App Store:
+    the app, the findings page and the press page. The app's note says what
+    a show page's top line says (``app_store.app_line_text``) without the
+    sentence that leads it, and without its full stop, as the other notes."""
+    count = catalog_phrase(len(doc["shows"]))
+    covers = f"covers {count} shows offline" if count else "works offline"
+    price = APP_LINE_PRICE.removesuffix(".")
+    return [
+        f"- [{SITE_NAME} for iPhone]({app_store_link('llms')}): {covers}: {price}",
+        f"- [{findings.FINDINGS_TITLE}]({base}/{findings.FINDINGS_PATH.removesuffix('index.html')}): "
+        f"{LLMS_FINDINGS_NOTE}",
+        f"- [Press]({base}/{findings.PRESS_PATH.removesuffix('index.html')})",
+    ]
 
 
 def favicon() -> str:
@@ -386,6 +423,7 @@ def write_site(
         shows_total=total,
         airing_link=(site_dir / AIRING_PATH).is_file(),
         base_url=base,
+        app_store_live=app_store_live,
     )
     (site_dir / LLMS_PATH).write_text(llms, encoding="utf-8")
     return [

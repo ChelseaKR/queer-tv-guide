@@ -13,6 +13,14 @@ consumer of the published snapshot, would notice.
 
 ### Added
 
+- Website: while the app is on the App Store, `/llms.txt` (the file written
+  for AI assistants) no longer says the app will be linked "once it is on
+  the App Store". It links the app, with the price and the rounded show
+  count a show page's top line gives, under its own App Store campaign
+  token, `llms`, so App Store Connect counts what assistants send. It also
+  links the findings page and the press page. With the switch off the file
+  is unchanged, byte for byte. It still names no show and no character
+  (the owner's wording, approved 2026-11-18).
 - Website: the home page names twelve more shows under "Some of the other
   shows", below the hand-picked ones: FROM, Will Trent, The Mentalist and
   nine others that are not hand-picked. Titles only, each linking to the

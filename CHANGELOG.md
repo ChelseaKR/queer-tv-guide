@@ -13,6 +13,15 @@ consumer of the published snapshot, would notice.
 
 ### Added
 
+- Website: a show page, the shows index and the airing page now carry
+  link-preview tags, so a link pasted into a message or a post shows the
+  page's own title and description instead of a bare address. The tags
+  repeat what the page already says: no answer, no image (DECISIONS 0064,
+  proposed).
+- Website: a show page's structured data now also names the show's IMDb
+  page and, where the snapshot holds one, its Wikidata item, so a search
+  engine can tell which series a title means. Nothing shows on the page
+  (DECISIONS 0064, proposed).
 - Android: a long press on Queer Frame's icon offers "Search", which opens
   Search with the keyboard up, and "Favorites", which opens Favorites and its
   next episodes. The shortcuts are set on the phone by the app; they need no
@@ -206,6 +215,10 @@ consumer of the published snapshot, would notice.
 
 ### Changed
 
+- Website: the two "More shows" links on a show page now lead to the
+  nearest shows before and after it whose pages are open to search engines,
+  so every open page is linked from at least two other open pages. The list
+  still holds show titles only (DECISIONS 0064, proposed).
 - The website can publish from a repository of its own. With the
   `DOMAIN_SITE_REPO` variable set, the nightly workflow pushes the website
   there, and this repository's Pages site serves the data file, the privacy,

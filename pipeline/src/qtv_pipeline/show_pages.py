@@ -169,10 +169,12 @@ While the switch is off, a show page says in one fixed sentence that
 Queer Frame is also an iPhone app that is not on the App Store yet, with no
 link (there is no listing to link to).
 
-Links between pages. Each show page links to the shows before and after it
-in the published order (the order of the shows index and the sitemap,
-wrapping at the ends) and to the shows index, so every page is reachable
-from two others as well as from the index. It also links to up to four
+Links between pages. Each show page links to the nearest show before it and
+the nearest after it, in the published order (the order of the shows index,
+wrapping at the ends), whose page is open to search engines, and to the shows
+index. So every open page is linked from two other open pages as well as from
+the index, and a held-back page links on to two open ones (``neighbors``,
+DECISIONS 0064). It also links to up to four
 similar shows (``related``): LezWatch.TV's own similar shows that have a
 page, then the pages sharing the most genres. Tropes are never used, since
 LezWatch's death trope would make "similar" a hint. The link text is the
@@ -189,7 +191,7 @@ import re
 import sys
 import unicodedata
 import urllib.parse
-from collections.abc import Iterable
+from collections.abc import Iterable, Set
 from dataclasses import dataclass
 from html.parser import HTMLParser
 from pathlib import Path
@@ -351,6 +353,10 @@ AIRING_PATH = "airing/index.html"
 # always lists them (DECISIONS 0042): the findings page and the press page.
 ALWAYS_LISTED = ("findings/finales/", "press/")
 RELATED_LIMIT = 4
+# "More shows" links go to the nearest open pages only when at least this many
+# pages are open (DECISIONS 0064): with three, every page has an open page on
+# each side that is not itself, and the two are different pages.
+OPEN_RING_MIN = 3
 # A chosen show whose slug is unsafe or repeated is left out and logged; more
 # than this share of them left out refuses the build (``_drop_bad_slugs``).
 SKIP_MAX_SHARE = 0.05
@@ -1648,13 +1654,51 @@ def opening(show: dict[str, Any], cast: list[CharacterView]) -> str:
     return f"{first} {episodes}" if episodes else first
 
 
+# An IMDb title id as IMDb writes it: "tt" and seven or more digits.
+IMDB_TITLE_ID = re.compile(r"tt\d{7,10}")
+
+
+def imdb_url(show: dict[str, Any]) -> str | None:
+    """The show's IMDb page, from the IMDb title id LezWatch.TV records
+    (``external_ids.imdb``), for the structured data's ``sameAs`` only: it
+    tells a search engine which series a title like "FROM" or "Ghosts" means.
+    None when there is no id or it is not a title id, so nothing is guessed.
+    The page shows no IMDb link and loads nothing from IMDb (DECISIONS 0064)."""
+    value = (show.get("external_ids") or {}).get("imdb")
+    if not isinstance(value, str) or not IMDB_TITLE_ID.fullmatch(value):
+        return None
+    return f"https://www.imdb.com/title/{value}/"
+
+
+WIKIDATA_ITEM = re.compile(r"Q[1-9]\d*")
+
+
+def wikidata_url(show: dict[str, Any]) -> str | None:
+    """The show's Wikidata item, for ``sameAs`` only, when the snapshot has
+    one. It has one only where LezWatch.TV's id and a second id named the same
+    item (DECISIONS 0055), so this never rests on a title match."""
+    item = (show.get("wikidata") or {}).get("item")
+    if not isinstance(item, str) or not WIKIDATA_ITEM.fullmatch(item):
+        return None
+    return f"https://www.wikidata.org/wiki/{item}"
+
+
 def _series(show: dict[str, Any], canonical: str, cast: list[CharacterView]) -> dict[str, Any]:
     """schema.org TVSeries from snapshot facts only; nothing about deaths."""
     series: dict[str, Any] = {
         "@type": "TVSeries",
         "name": show["title"],
         "url": canonical,
-        "sameAs": [u for u in (show["source_url"], show["schedule"]["tvmaze_url"]) if u],
+        "sameAs": [
+            u
+            for u in (
+                show["source_url"],
+                show["schedule"]["tvmaze_url"],
+                imdb_url(show),
+                wikidata_url(show),
+            )
+            if u
+        ],
     }
     years = shown_years(show, earliest_character_year(cast))[0]
     if years["start"] is not None:
@@ -1707,24 +1751,50 @@ def _common(
     }
 
 
-def neighbors(shows: list[dict[str, Any]], index: int) -> list[dict[str, Any]]:
+def neighbors(
+    shows: list[dict[str, Any]], index: int, open_ids: Set[str] | None = None
+) -> list[dict[str, Any]]:
     """The shows before and after ``shows[index]`` in the published order,
-    wrapping at the ends; never the show itself and never one twice."""
+    wrapping at the ends; never the show itself and never one twice.
+
+    With ``open_ids`` (the ids ``indexed_show_ids`` returns; DECISIONS 0064),
+    the nearest show before and the nearest show after whose page is open to
+    search engines. Every page's two "More shows" links then lead to a page in
+    the sitemap, and every open page is linked from the open page before it
+    and the open page after it. With fewer than three open pages there is no
+    such pair for every page, so the plain neighbors are used."""
     n = len(shows)
     if n < 2:
         return []
+    if open_ids is not None and sum(s["id"] in open_ids for s in shows) >= OPEN_RING_MIN:
+        before = _nearest_open(shows, index, -1, open_ids)
+        after = _nearest_open(shows, index, 1, open_ids)
+        return [before, after]
     before, after = shows[(index - 1) % n], shows[(index + 1) % n]
     return [before] if before is after else [before, after]
 
 
-def related(shows: list[dict[str, Any]], index: int) -> list[dict[str, Any]]:
+def _nearest_open(
+    shows: list[dict[str, Any]], index: int, step: int, open_ids: Set[str]
+) -> dict[str, Any]:
+    """The first show from ``shows[index]`` in direction ``step`` (wrapping,
+    never the show itself) whose page is open. ``neighbors`` calls this only
+    when at least ``OPEN_RING_MIN`` pages are open, so one is always found."""
+    n = len(shows)
+    return next(s for k in range(1, n) if (s := shows[(index + step * k) % n])["id"] in open_ids)
+
+
+def related(
+    shows: list[dict[str, Any]], index: int, open_ids: Set[str] | None = None
+) -> list[dict[str, Any]]:
     """Up to RELATED_LIMIT other built shows like ``shows[index]``: LezWatch.TV's
     own similar shows first (its order), then those sharing the most genres
     (ties in published order). Never the show itself, its two neighbors (they
-    are linked already) or a show sharing nothing. Tropes are not used: the
-    death trope would turn "similar" into a hint."""
+    are linked already; ``open_ids`` as in ``neighbors``) or a show sharing
+    nothing. Tropes are not used: the death trope would turn "similar" into a
+    hint."""
     me = shows[index]
-    skip = {me["id"], *(s["id"] for s in neighbors(shows, index))}
+    skip = {me["id"], *(s["id"] for s in neighbors(shows, index, open_ids))}
     position = {s["id"]: i for i, s in enumerate(shows)}
     picked: list[dict[str, Any]] = []
     for sid in me["similar_show_ids"]:
@@ -2078,8 +2148,8 @@ def render_site(
             show,
             base_url=base,
             app_store_live=app_store_live,
-            others=neighbors(shows, i),
-            similar=related(shows, i),
+            others=neighbors(shows, i, indexed),
+            similar=related(shows, i, indexed),
             total=len(shows),
             index=index,
             indexed=show["id"] in indexed,

@@ -2058,3 +2058,62 @@ checksum over other bytes, no answer).
 **Reversible.** Yes: unset `DOMAIN_SITE_REPO`, run the workflow so this
 repository's Pages site is the full website again, then move the domain back
 in the two repositories' Pages settings.
+
+## 0064 — Three search and sharing fixes that add no sentence to any page (2026-11-17)
+
+**Status: proposed (branch `seo/traffic-2026-11`). Needs Chelsea: merging it
+is the decision. Numbered 0064 because 0060 and 0061 are taken by open pull
+requests and 0063 by the 1.0.2 privacy branch. Site generation only: no app
+code, no workflow, no snapshot field.**
+
+**Why now.** Search Console shows the site's Google impressions falling from
+about 500 a day to almost none between 2026-11-12 and 2026-11-13, on every
+page at once, with no deploy in that window. The cause is on Google's side
+and this change does not claim to fix it. These three are the changes that
+are worth having whatever Google does next, and none of them adds or changes
+a sentence a visitor reads.
+
+**1. "More shows" links lead to open pages.** A show page's two "More shows"
+links were the shows before and after it in the published order, held back
+or not (0023). They are now the nearest show before it and the nearest after
+it whose page is open to search engines, the same set the sitemap lists
+(0028's `indexed_show_ids`). On the 2026-11-17 snapshot, 144 show pages are
+open: before, 29 of them were linked from no other open show page and 52
+from fewer than two, and 309 of the 863 show-to-show links on open pages led
+to a held-back page; after, every open page is linked from at least two
+other open pages and 165 links lead to a held-back page (all of them
+"Shows like" links, whose rule is unchanged). A held-back page links on to
+two open pages. With fewer than three open pages the plain neighbors are
+used. The list still holds show titles only.
+
+**2. Link-preview tags on the show pages, the shows index and the airing
+page.** The home, findings and press pages carried Open Graph tags; the
+pages people are most likely to share did not, so a pasted show link drew a
+bare address. Each of these pages now carries the same six tags and
+`twitter:card`, filled from the page's own title, description and canonical
+address. The spoiler rule holds because the title and the description
+already hold no answer (0027, 0045); a test checks the tags against the
+sealed answer as well. As on the home page (0026), there is no `og:image`.
+
+**3. `sameAs` names IMDb and Wikidata.** The TVSeries structured data
+already named the show's LezWatch.TV and TVmaze pages. It now also names the
+show's IMDb page, built from the IMDb title id LezWatch.TV records
+(`external_ids.imdb`, only when it has the form of a title id), and the
+show's Wikidata item where the snapshot holds one (0055: only where two ids
+agreed). On the 2026-11-17 snapshot that is all 364 built shows for IMDb and
+89 for Wikidata. It tells a search engine which series a title such as
+"FROM" or "Ghosts" means. Nothing is matched by title. The page shows no
+IMDb or Wikidata link and loads nothing from either.
+
+**Not done, on purpose.** No new page, no page opened to search and no
+sitemap change: adding template pages while Google is showing none of them
+is the wrong direction. No FAQPage (0051 stands). No image. Nothing about a
+real person is added: the structured data still names characters only.
+
+**Tests.** `pipeline/tests/test_show_pages_open_links.py`,
+`test_show_pages_link_previews.py` and `test_show_pages_same_as.py`, each
+with negative controls.
+
+**Reversible.** Yes, each part alone: call `neighbors` and `related`
+without the open set; remove the tag block from the three templates; drop
+`imdb_url` and `wikidata_url` from `_series`.

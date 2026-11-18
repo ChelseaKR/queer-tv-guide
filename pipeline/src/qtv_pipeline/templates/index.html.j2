@@ -1,4 +1,15 @@
 {% extends "base.html.j2" %}
+{#- Link-preview tags: this page's own title, description and address
+    (DECISIONS 0064). No image. #}
+{% block head_extra %}
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="{{ site_name }}">
+<meta property="og:title" content="{{ title }}">
+<meta property="og:description" content="{{ description }}">
+<meta property="og:url" content="{{ canonical }}">
+<meta property="og:locale" content="en_US">
+<meta name="twitter:card" content="summary">
+{%- endblock %}
 {% block content %}
 <h1>Do queer characters die? Queer TV shows, spoiler-free</h1>
 <p>Before you start a show, check whether it falls into the bury-your-gays trope. Pick a show to see its LGBTQ characters. Each page keeps the full answer to "does she die" closed until you open it, so you decide whether to be spoiled. The answers come from the records of LezWatch.TV.</p>

@@ -1654,13 +1654,51 @@ def opening(show: dict[str, Any], cast: list[CharacterView]) -> str:
     return f"{first} {episodes}" if episodes else first
 
 
+# An IMDb title id as IMDb writes it: "tt" and seven or more digits.
+IMDB_TITLE_ID = re.compile(r"tt\d{7,10}")
+
+
+def imdb_url(show: dict[str, Any]) -> str | None:
+    """The show's IMDb page, from the IMDb title id LezWatch.TV records
+    (``external_ids.imdb``), for the structured data's ``sameAs`` only: it
+    tells a search engine which series a title like "FROM" or "Ghosts" means.
+    None when there is no id or it is not a title id, so nothing is guessed.
+    The page shows no IMDb link and loads nothing from IMDb (DECISIONS 0064)."""
+    value = (show.get("external_ids") or {}).get("imdb")
+    if not isinstance(value, str) or not IMDB_TITLE_ID.fullmatch(value):
+        return None
+    return f"https://www.imdb.com/title/{value}/"
+
+
+WIKIDATA_ITEM = re.compile(r"Q[1-9]\d*")
+
+
+def wikidata_url(show: dict[str, Any]) -> str | None:
+    """The show's Wikidata item, for ``sameAs`` only, when the snapshot has
+    one. It has one only where LezWatch.TV's id and a second id named the same
+    item (DECISIONS 0055), so this never rests on a title match."""
+    item = (show.get("wikidata") or {}).get("item")
+    if not isinstance(item, str) or not WIKIDATA_ITEM.fullmatch(item):
+        return None
+    return f"https://www.wikidata.org/wiki/{item}"
+
+
 def _series(show: dict[str, Any], canonical: str, cast: list[CharacterView]) -> dict[str, Any]:
     """schema.org TVSeries from snapshot facts only; nothing about deaths."""
     series: dict[str, Any] = {
         "@type": "TVSeries",
         "name": show["title"],
         "url": canonical,
-        "sameAs": [u for u in (show["source_url"], show["schedule"]["tvmaze_url"]) if u],
+        "sameAs": [
+            u
+            for u in (
+                show["source_url"],
+                show["schedule"]["tvmaze_url"],
+                imdb_url(show),
+                wikidata_url(show),
+            )
+            if u
+        ],
     }
     years = shown_years(show, earliest_character_year(cast))[0]
     if years["start"] is not None:

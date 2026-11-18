@@ -5,7 +5,8 @@
 writes these next to the snapshot files:
 
 - ``index.html``, the home page: what Queer Frame is, how the answer stays
-  closed, the privacy and data-source lines, links into the show pages, and
+  closed, the privacy and data-source lines, links into the show pages (some
+  hand-picked titles, then the fixed ``OTHER_ON_HOME`` list, DECISIONS 0065), and
   one line saying the iPhone app is coming soon. That line is
   ``app_store.INDEX_SLOT``; with APP_STORE_LIVE on, ``app_store.apply``
   replaces it with the App Store badge, so this module never links to the
@@ -60,6 +61,23 @@ from qtv_pipeline.show_pages import (
 
 # The hand-picked shows the home page names by title (the rest are one link away).
 FEATURED_ON_HOME = 12
+# The home page's second list, "Some of the other shows" (DECISIONS 0065):
+# LezWatch.TV ids, in the order the page names them. Titles come from the
+# snapshot, so each is spelled as its own page spells it. None is hand-picked.
+OTHER_ON_HOME: tuple[int, ...] = (
+    98062,  # FROM
+    84706,  # Will Trent
+    91890,  # The Mentalist
+    77,  # The Fosters
+    61062,  # The Owl House
+    1432,  # The Vampire Diaries
+    72838,  # Helluva Boss
+    17014,  # SWAT
+    90168,  # Elsbeth
+    32468,  # Manifest
+    18740,  # The Loud House
+    50486,  # Craig of the Creek
+)
 HOME_TITLE = "Queer Frame: Do queer characters die? Spoiler-free TV guide"
 HOME_OG_TITLE = "Queer Frame: queer TV, spoiler-free"
 # Names the source, since the searches that find the home page so far are for
@@ -101,15 +119,19 @@ def render_index(
     featured_total: int = 0,
     base_url: str = DEFAULT_BASE_URL,
     airing_link: bool = False,
+    others: list[dict[str, str]] | None = None,
 ) -> str:
     """The home page. ``shows_link`` is whether the shows index is published
     beside it; without it there is no link into the show pages at all.
     ``featured`` is the hand-picked shows to name (``{"title", "url"}``),
     ``featured_total`` how many hand-picked pages there are in all.
+    ``others`` is the second list (DECISIONS 0065), in the same shape; it is
+    shown only below a hand-picked list, since "other" means other than those.
     ``airing_link`` is whether the airing-now page (DECISIONS 0033) is
     published beside it; it is linked only then, and only with the shows."""
     base = _clean_base_url(base_url)
     linked = shows_link and shows_total > 0
+    named = (featured or [])[:FEATURED_ON_HOME] if linked else []
     return _ENV.get_template("home.html.j2").render(
         **_common(doc, base, False, campaign=None),
         title=HOME_TITLE,
@@ -119,7 +141,8 @@ def render_index(
         crumbs=[],
         breadcrumb=None,
         shows_total=shows_total if linked else 0,
-        featured=(featured or [])[:FEATURED_ON_HOME] if linked else [],
+        featured=named,
+        others=(others or []) if named else [],
         featured_total=featured_total if linked else 0,
         airing_link=linked and airing_link,
         lezwatch_url=_source_url(doc, "lezwatch"),
@@ -284,12 +307,41 @@ def published_shows(
     return total, featured, len(featured)
 
 
+def other_shows(
+    doc: dict[str, Any],
+    site_dir: Path,
+    ids: tuple[int, ...] = OTHER_ON_HOME,
+    *,
+    hand_picked: list[dict[str, str]] | None = None,
+) -> list[dict[str, str]]:
+    """The shows the home page names under "Some of the other shows"
+    (DECISIONS 0065): ``ids`` in their own order, as title and slug. Like
+    ``published_shows``, it names only a show that is in the snapshot and
+    whose page exists under ``site_dir/shows``, so every link resolves and
+    every title is the snapshot's own. A show in ``hand_picked`` is left out:
+    it is not an "other" show."""
+    shows_dir = site_dir / "shows"
+    by_id = {s["lwtv_id"]: s for s in doc["shows"]}
+    taken = {f["slug"] for f in hand_picked or []}
+    found: list[dict[str, str]] = []
+    for lwtv_id in ids:
+        show = by_id.get(lwtv_id)
+        if show is None or show["slug"] in taken:
+            continue
+        if not (shows_dir / show["slug"] / "index.html").is_file():
+            continue
+        taken.add(show["slug"])
+        found.append({"title": show["title"], "slug": show["slug"]})
+    return found
+
+
 def write_site(
     doc: dict[str, Any],
     target: Path,
     *,
     base_url: str = DEFAULT_BASE_URL,
     pinned_path: Path = DEFAULT_PINNED_PATH,
+    other_ids: tuple[int, ...] = OTHER_ON_HOME,
     findings_path: Path = findings.DEFAULT_FINDINGS_PATH,
     repo_root: Path = findings.REPO_ROOT,
     app_store_live: bool = False,
@@ -303,6 +355,7 @@ def write_site(
     total, featured, featured_total = (
         published_shows(doc, site_dir, pinned_path) if shows_link else (0, [], 0)
     )
+    others = other_shows(doc, site_dir, other_ids, hand_picked=featured) if shows_link else []
     home = render_index(
         doc,
         shows_link=shows_link,
@@ -311,6 +364,7 @@ def write_site(
         featured_total=featured_total,
         base_url=base,
         airing_link=(site_dir / AIRING_PATH).is_file(),
+        others=[{"title": o["title"], "url": f"{base}/shows/{o['slug']}/"} for o in others],
     )
     data = render_data_page(doc, base_url=base)
     data_target = site_dir / DATA_PATH

@@ -233,7 +233,7 @@ def run_build(
             {
                 "lwtv_id": int(t["id"]),
                 "slug": t["slug"],
-                "name": t["name"],
+                "name": fields.term_name(t),
                 "count": t.get("count"),
             }
             for t in terms_list

@@ -62,20 +62,24 @@ final class QueerTVGuideUITests: XCTestCase {
         XCTAssertTrue(email.isEnabled)
     }
 
+    /// Waits for the tab before tapping it: since 1.0.2 the app does more
+    /// at launch, and a tab tapped before it exists is never hit.
+    @MainActor
     func testFavoritesTabShowsEmptyStateOnFirstLaunch() throws {
-        let app = XCUIApplication.guide()
-        app.launch()
+        let app = XCUIApplication.launchedGuide()
 
-        app.tabBars.buttons["Favorites"].tap()
-        XCTAssertTrue(app.staticTexts["No favorites yet"].waitForExistence(timeout: 30))
+        let favorites = app.tabBars.buttons["Favorites"]
+        XCTAssertTrue(favorites.waitForExistence(timeout: 30))
+        XCTAssertTrue(favorites.tap(reaching: app.staticTexts["No favorites yet"]))
     }
 
+    @MainActor
     func testAboutScreenStatesThePrivacyPosture() throws {
-        let app = XCUIApplication.guide()
-        app.launch()
+        let app = XCUIApplication.launchedGuide()
 
-        app.tabBars.buttons["About"].tap()
-        XCTAssertTrue(app.staticTexts["Privacy"].waitForExistence(timeout: 30))
+        let about = app.tabBars.buttons["About"]
+        XCTAssertTrue(about.waitForExistence(timeout: 30))
+        XCTAssertTrue(about.tap(reaching: app.staticTexts["Privacy"]))
     }
 
     /// `ShowRow` shows the title, worth-it verdict, AND network to sighted

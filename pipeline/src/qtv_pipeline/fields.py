@@ -10,6 +10,7 @@ None/empty consistently so absence never silently becomes 0, "", or false.
 
 from __future__ import annotations
 
+import html
 from typing import Any
 
 
@@ -58,7 +59,15 @@ def term_ref(term_id: int | None, terms_by_id: dict[int, dict[str, Any]]) -> dic
     term = terms_by_id.get(term_id)
     if term is None:
         return None
-    return {"slug": term["slug"], "name": term["name"]}
+    return {"slug": term["slug"], "name": term_name(term)}
+
+
+def term_name(term: dict[str, Any]) -> str:
+    """A taxonomy term's name with HTML entities decoded. WordPress returns
+    term names escaped, so LezWatch.TV's networks came through as "A&amp;E"
+    and "Seed &amp; Spark" (2026-11-18 snapshot). Titles are decoded the same
+    way in normalize."""
+    return html.unescape(term["name"])
 
 
 def terms_by_id(term_list: list[dict[str, Any]]) -> dict[int, dict[str, Any]]:

@@ -287,6 +287,11 @@ consumer of the published snapshot, would notice.
 
 ### Fixed
 
+- Snapshot: network names, and the other LezWatch.TV category names, have
+  their HTML entities decoded when the pipeline builds the snapshot, so the
+  apps and the website show "A&E" and "Seed & Spark" rather than `A&amp;E`
+  and `Seed &amp; Spark` (5 shows on the 2026-11-18 snapshot). It takes
+  effect with the next nightly snapshot.
 - Android: show titles, character names and actor names lose the
   non-breaking space LezWatch.TV's data starts or ends some of them with, as
   on iPhone, so the character screen no longer asks "Does Eva  die?" and

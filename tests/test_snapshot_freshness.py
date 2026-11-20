@@ -317,7 +317,8 @@ class WorkflowWiringTests(unittest.TestCase):
         self.assertIn("gh issue create", text)
         self.assertIn("--label incident", text)
         self.assertIn("github.event_name == 'schedule'", text)
-        self.assertIn(freshness.TITLE_PREFIX, text)
+        # Which issue, and what to say on it: tests/test_freshness_issue.py.
+        self.assertIn("scripts/freshness_issue.py decide", text)
 
 
 if __name__ == "__main__":

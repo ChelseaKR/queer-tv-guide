@@ -2199,3 +2199,41 @@ nothing about any character.
 `html.parser`, with negative controls.
 
 **Reversible.** Yes: empty `OTHER_ON_HOME`, or remove the template block.
+
+## 0066 — The freshness incident issue closes itself and speaks only on a change (2026-11-19)
+
+**Status: accepted. Chelsea approved it on 2026-11-19 (delivery audit,
+problem 4). It changes how `freshness.yml` handles its issue, not what
+counts as stale.**
+
+**Why.** The alarm opened #91 on 2026-10-21 for one failed nightly run. The
+file was fresh again the next morning, but the old steps added a "Fresh
+again" comment every time a new snapshot was published and left closing to
+a person after the postmortem. Four weeks later #91 had 36 comments, and a
+real alarm (two on 2026-11-08) sat between daily recovery notes where it
+was easy to miss.
+
+**Decision.** `scripts/freshness_issue.py` decides, and the workflow only
+carries out its answer. At most one `snapshot freshness:` issue is open. An
+alarm with none open opens one, or reopens the last one this workflow closed
+if that was under 72 hours ago, since a relapse that soon is most likely the
+same incident. While it is open, a comment goes up only when the state
+changes: a new severity or a new set of reasons. Another failed nightly run
+for the same reason, or a file that is merely older, is not news. A move to
+SEV2 swaps the `sev3` label for `sev2`; a move back keeps `sev2`. When the
+file is fresh again the issue gets one comment and closes itself.
+
+**What this departs from.** INCIDENT-RESPONSE-STANDARD IR-03 says an
+incident is not closed until its postmortem is committed. Here the issue
+closes on recovery, so its open and close times measure the outage, and the
+postmortem is still owed afterwards, within IR-06's cadence. The standard's
+weekly check flags a closed `incident` issue with no postmortem, so a
+missing one is still caught.
+
+**Tests.** `tests/test_freshness_issue.py`: one issue, quiet on a repeat,
+one comment per change, close on recovery, reopen inside the window and not
+after it, never reopen an issue a person closed, issues written before this
+change, the command line, and that the workflow acts on every answer, with
+negative controls.
+
+**Reversible.** Yes: revert the workflow step and the script.

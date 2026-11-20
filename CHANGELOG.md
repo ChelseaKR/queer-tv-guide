@@ -227,6 +227,12 @@ consumer of the published snapshot, would notice.
 
 ### Changed
 
+- The staleness alarm's `incident` issue now speaks only when something
+  changes. It comments when the alarm's severity or reason changes, not on
+  every run; once the published file is fresh again it says so once and
+  closes itself, and an alarm within 72 hours reopens it. Before, the one
+  issue stayed open for weeks with a "Fresh again" note every day
+  (DECISIONS 0066).
 - Website: the two "More shows" links on a show page now lead to the
   nearest shows before and after it whose pages are open to search engines,
   so every open page is linked from at least two other open pages. The list

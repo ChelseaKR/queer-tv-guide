@@ -21,9 +21,13 @@ How this repository handles an incident, following INCIDENT-RESPONSE-STANDARD
 `freshness.yml` opens a `snapshot freshness:` issue, labeled `incident` and
 its severity, when the published snapshot is older than 30 hours (a missed
 nightly run, SEV3), older than the 48-hour SLA (SEV2), cannot be read or
-dated (SEV2), or the last nightly run failed (SEV3). It comments on that
-issue when the situation changes and again when the file is fresh, and
-leaves closing it, after the postmortem, to a person.
+dated (SEV2), or the last nightly run failed (SEV3). There is only ever one
+open. It comments on that issue only when the state changes (a new severity
+or a new reason), and when the file is fresh again it says so once and
+closes the issue itself, so the issue's open and close times are the
+outage's. If the alarm returns within 72 hours it reopens that issue instead
+of opening another. The postmortem is still owed after it closes, within the
+cadence below (`docs/DECISIONS.md` 0066).
 
 ## What the severities mean here
 

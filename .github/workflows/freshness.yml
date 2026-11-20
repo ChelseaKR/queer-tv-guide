@@ -11,17 +11,23 @@ name: freshness
 #   - the file cannot be fetched or dated, or there is no run history: an
 #     alarm too, because an unknown age is never "fresh".
 #
-# An alarm turns this run red and, on a scheduled or dispatched run, opens an
-# `incident` issue with its severity label, as docs/incidents/README.md asks.
-# While that issue is open, later runs comment only when the situation
-# changes (a new file, a new nightly run, a new severity), and once the file
-# is fresh again they note it there. Closing the issue is a person's job,
-# after the postmortem.
+# An alarm turns this run red. On a scheduled or dispatched run,
+# scripts/freshness_issue.py then decides what happens to the one
+# `snapshot freshness:` incident issue (DECISIONS 0066):
+#
+#   - stale and none open: open one with `incident` and its severity, or
+#     reopen the last one this workflow closed if that was under 72 hours ago;
+#   - stale and one open: comment only when the state changes (a new
+#     severity or a new reason), never because the file got older;
+#   - fresh and one open: say so once and close it. The postmortem is still
+#     owed (docs/incidents/README.md);
+#   - fresh and none open: nothing.
 #
 # The script's thresholds are tested against snapshot.yml's schedule and the
-# data cards (tests/test_snapshot_freshness.py, run by `make policy`). Before
-# it checks anything, the job proves it can fail: a planted 2020 snapshot
-# must make the script exit 1.
+# data cards (tests/test_snapshot_freshness.py), and the issue decisions in
+# tests/test_freshness_issue.py, both run by `make policy`. Before it checks
+# anything, the job proves it can fail: a planted 2020 snapshot must make the
+# script exit 1.
 
 on:
   schedule:
@@ -34,13 +40,17 @@ on:
     paths:
       - ".github/workflows/freshness.yml"
       - "scripts/check_snapshot_freshness.py"
+      - "scripts/freshness_issue.py"
       - "tests/test_snapshot_freshness.py"
+      - "tests/test_freshness_issue.py"
   push:
     branches: [main]
     paths:
       - ".github/workflows/freshness.yml"
       - "scripts/check_snapshot_freshness.py"
+      - "scripts/freshness_issue.py"
       - "tests/test_snapshot_freshness.py"
+      - "tests/test_freshness_issue.py"
 
 permissions:
   contents: read
@@ -67,7 +77,10 @@ jobs:
           persist-credentials: false
 
       - name: self-test the checker
-        run: python3 -m unittest discover --start-directory tests --pattern test_snapshot_freshness.py --verbose
+        run: |
+          set -euo pipefail
+          python3 -m unittest discover --start-directory tests --pattern test_snapshot_freshness.py --verbose
+          python3 -m unittest discover --start-directory tests --pattern test_freshness_issue.py --verbose
 
       - name: negative control (a planted 2020 snapshot must raise the alarm)
         run: |
@@ -117,72 +130,60 @@ jobs:
           cat "$RUNNER_TEMP/report.md" >> "$GITHUB_STEP_SUMMARY"
           exit "$rc"
 
-      - name: open or update the incident issue
-        if: ${{ failure() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}
+      - name: open, update or close the freshness incident issue
+        if: ${{ !cancelled() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}
         env:
           GH_TOKEN: ${{ github.token }}
+          ALARM: ${{ steps.verdict.outputs.alarm }}
           SEVERITY: ${{ steps.verdict.outputs.severity }}
+          CODES: ${{ steps.verdict.outputs.codes }}
           TITLE: ${{ steps.verdict.outputs.title }}
-          FINGERPRINT: ${{ steps.verdict.outputs.fingerprint }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
           set -euo pipefail
-          report="$RUNNER_TEMP/report.md"
-          # A job that failed before reaching a verdict (a broken self-test,
-          # a crashed checker) is a silenced gate: SEV3, per the README.
-          if [ -z "$SEVERITY" ] || [ ! -s "$report" ]; then
-            SEVERITY="sev3"
-            TITLE="snapshot freshness: the check could not reach a verdict"
-            FINGERPRINT="no-verdict-$GITHUB_RUN_ID"
-            printf '## Snapshot freshness: no verdict\n\nThe freshness job failed before it could judge the published snapshot, so its age is unknown.\n\n<!-- freshness-fingerprint: %s -->\n' \
-              "$FINGERPRINT" > "$report"
-          fi
-          printf '\nRun: %s\n' "$RUN_URL" >> "$report"
-          open_issues="$RUNNER_TEMP/open-incidents.json"
-          gh issue list --repo "$GITHUB_REPOSITORY" --state open --label incident --limit 100 \
-            --json number,title > "$open_issues"
-          existing="$(jq -r '[.[] | select(.title | startswith("snapshot freshness:"))][0].number // empty' "$open_issues")"
-          if [ -z "$existing" ]; then
-            gh issue create --repo "$GITHUB_REPOSITORY" --title "$TITLE" \
-              --label incident --label "$SEVERITY" --body-file "$report"
-            exit 0
-          fi
-          history="$RUNNER_TEMP/issue-history.txt"
-          gh issue view "$existing" --repo "$GITHUB_REPOSITORY" --json body,comments,labels \
-            --jq '.body, .comments[].body, (.labels[].name | "label: " + .)' > "$history"
-          if grep -qF "freshness-fingerprint: $FINGERPRINT" "$history"; then
-            echo "#$existing already records this state; no new comment"
+          # No verdict at all (a broken self-test, a crashed checker) is a
+          # silenced gate: the script files it as SEV3, per the README.
+          case "$ALARM" in
+            true) state=alarm ;;
+            false) state=fresh ;;
+            *) state=no-verdict ;;
+          esac
+          gh issue list --repo "$GITHUB_REPOSITORY" --state all --label incident --limit 100 \
+            --json number,title,state,closedAt > "$RUNNER_TEMP/incidents.json"
+          number="$(python3 scripts/freshness_issue.py pick --issues "$RUNNER_TEMP/incidents.json")"
+          if [ -n "$number" ]; then
+            gh issue view "$number" --repo "$GITHUB_REPOSITORY" \
+              --json number,state,closedAt,labels,body,comments > "$RUNNER_TEMP/issue.json"
           else
-            gh issue comment "$existing" --repo "$GITHUB_REPOSITORY" --body-file "$report"
+            echo null > "$RUNNER_TEMP/issue.json"
           fi
-          if [ "$SEVERITY" = "sev2" ] && ! grep -qx "label: sev2" "$history"; then
-            gh issue edit "$existing" --repo "$GITHUB_REPOSITORY" --add-label sev2 --remove-label sev3
+          body="$RUNNER_TEMP/issue-body.md"
+          decision="$RUNNER_TEMP/decision.json"
+          python3 scripts/freshness_issue.py decide --issue "$RUNNER_TEMP/issue.json" \
+            --state "$state" --severity "$SEVERITY" --codes "$CODES" --title "$TITLE" \
+            --report "$RUNNER_TEMP/report.md" --run-url "$RUN_URL" \
+            --body "$body" --decision "$decision"
+          action="$(jq -r .action "$decision")"
+          case "$action" in
+            none)
+              echo "nothing to change: ${number:+#$number }already records this state" ;;
+            create)
+              gh issue create --repo "$GITHUB_REPOSITORY" --title "$(jq -r .title "$decision")" \
+                --label incident --label "$(jq -r .severity "$decision")" --body-file "$body" ;;
+            comment)
+              gh issue comment "$number" --repo "$GITHUB_REPOSITORY" --body-file "$body" ;;
+            reopen)
+              gh issue reopen "$number" --repo "$GITHUB_REPOSITORY"
+              gh issue comment "$number" --repo "$GITHUB_REPOSITORY" --body-file "$body" ;;
+            close)
+              gh issue comment "$number" --repo "$GITHUB_REPOSITORY" --body-file "$body"
+              gh issue close "$number" --repo "$GITHUB_REPOSITORY" --reason completed ;;
+            *)
+              echo "freshness_issue.py returned an unknown action: $action" >&2
+              exit 1 ;;
+          esac
+          add_label="$(jq -r .add_label "$decision")"
+          if [ -n "$add_label" ]; then
+            gh issue edit "$number" --repo "$GITHUB_REPOSITORY" \
+              --add-label "$add_label" --remove-label "$(jq -r .remove_label "$decision")"
           fi
-
-      - name: note recovery on an open freshness incident
-        if: ${{ success() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}
-        env:
-          GH_TOKEN: ${{ github.token }}
-          GENERATED_AT: ${{ steps.verdict.outputs.generated_at }}
-          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-        run: |
-          set -euo pipefail
-          open_issues="$RUNNER_TEMP/open-incidents.json"
-          gh issue list --repo "$GITHUB_REPOSITORY" --state open --label incident --limit 100 \
-            --json number,title > "$open_issues"
-          existing="$(jq -r '[.[] | select(.title | startswith("snapshot freshness:"))][0].number // empty' "$open_issues")"
-          if [ -z "$existing" ]; then
-            echo "no open freshness incident"
-            exit 0
-          fi
-          marker="freshness-fingerprint: recovered-$GENERATED_AT"
-          history="$RUNNER_TEMP/issue-history.txt"
-          gh issue view "$existing" --repo "$GITHUB_REPOSITORY" --json body,comments \
-            --jq '.body, .comments[].body' > "$history"
-          if grep -qF "$marker" "$history"; then
-            echo "#$existing already records this recovery"
-            exit 0
-          fi
-          printf 'Fresh again: the published snapshot was generated at %s and the last nightly run succeeded (%s). Close this issue once the postmortem is in docs/incidents/.\n\n<!-- %s -->\n' \
-            "$GENERATED_AT" "$RUN_URL" "$marker" > "$RUNNER_TEMP/recovered.md"
-          gh issue comment "$existing" --repo "$GITHUB_REPOSITORY" --body-file "$RUNNER_TEMP/recovered.md"

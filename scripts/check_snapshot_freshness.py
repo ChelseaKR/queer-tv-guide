@@ -33,7 +33,8 @@ databaseId,status,conclusion,event,createdAt,url`. A path that does not
 exist means the fetch failed, and is judged as unknown.
 
 Exit 0: fresh, and the last nightly run succeeded. Exit 1: an alarm; the
-report says why.
+report says why. What the alarm does to the incident issue is
+`freshness_issue.py`'s job.
 """
 
 from __future__ import annotations
@@ -93,8 +94,9 @@ class Verdict:
     def fingerprint(self) -> str:
         """Changes when the situation does, not as the file merely ages.
 
-        The incident issue gets a new comment only when this changes: a new
-        severity, a new reason, a newly published file, or a new nightly run.
+        A new severity, a new reason, a newly published file, or a new nightly
+        run. It marks the report; whether the incident issue hears about a
+        change is `freshness_issue.py`'s call, on severity and reasons only.
         """
         run_id = (self.last_run or {}).get("databaseId")
         parts = [
@@ -212,8 +214,8 @@ def render_report(verdict: Verdict) -> str:
         lines += [
             "",
             "Handle it as `docs/incidents/README.md` says. Recovery is a `snapshot.yml` "
-            "dispatch (RTO about an hour, `docs/ROADMAP.md`). Close this issue once the "
-            "published file is fresh again and the postmortem is written.",
+            "dispatch (RTO about an hour, `docs/ROADMAP.md`). This issue closes itself once "
+            "the published file is fresh again; the postmortem is still owed.",
         ]
     lines += ["", f"<!-- freshness-fingerprint: {verdict.fingerprint} -->", ""]
     return "\n".join(lines)
@@ -243,6 +245,7 @@ def write_outputs(path: Path, verdict: Verdict) -> None:
         "severity": verdict.severity,
         "title": verdict.title,
         "fingerprint": verdict.fingerprint,
+        "codes": ",".join(sorted(f.code for f in verdict.findings)),
         "generated_at": generated,
     }
     with path.open("a", encoding="utf-8") as out:

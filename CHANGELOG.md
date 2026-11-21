@@ -227,6 +227,10 @@ consumer of the published snapshot, would notice.
 
 ### Changed
 
+- The 44 show pages of the second widening batch are held back from search
+  again (`noindex,follow`, out of the sitemap) after Google stopped showing
+  the site from 2026-11-13. The pages are still built and linked
+  (DECISIONS 0067).
 - The staleness alarm's `incident` issue now speaks only when something
   changes. It comments when the alarm's severity or reason changes, not on
   every run; once the published file is fresh again it says so once and

@@ -1,6 +1,9 @@
-"""The second widening batch (DECISIONS 0057).
+"""The second widening batch (DECISIONS 0057), rolled back by 0067.
 
-44 held-back show pages join the sitemap and lose ``noindex,follow``: every
+0057 opened 44 held-back show pages; 0067 (2026-11-21) holds them back again
+under 0028's rollback rule, and keeps the list as a record. The tests below
+check the rollback, and that a batch page would still be sound if the batch
+were reopened (``reopened``). 0057 chose them as every
 page still held back that, in Search Console's 28 days to 2026-11-08, Google
 showed at least 5 times, or for a query it reported, or that earned a click.
 Only the indexing changes: each page keeps its LezWatch.TV and TVmaze credit,
@@ -67,25 +70,40 @@ def _load_problems(page: htmlprobe.Page) -> list[str]:
 # ---- the list ----------------------------------------------------------------
 
 
-def test_the_second_batch_adds_44_new_shows():
+def test_the_second_batch_is_kept_on_record_and_left_out_of_the_indexed_set():
     pins = show_pages.load_pinned(show_pages.DEFAULT_PINNED_PATH)
     assert pins is not None
     pinned_ids = {p.lezwatch_id for p in pins}
     second = show_pages.INDEX_SECOND_BATCH
     assert len(second) == 44
-    # Every entry must widen the set: an id already pinned or in the first
-    # batch would be a no-op that makes the batch look larger than it is.
     assert not second & pinned_ids
     assert not second & show_pages.INDEX_FIRST_BATCH
-    assert show_pages.INDEX_FIRST_BATCH | second == show_pages.INDEX_EXTRA_IDS
-    assert len(show_pages.INDEX_EXTRA_IDS) == 94
+    # Rolled back (DECISIONS 0067): only the first batch widens the set.
+    assert show_pages.INDEX_EXTRA_IDS == show_pages.INDEX_FIRST_BATCH
+    assert not second & show_pages.INDEX_EXTRA_IDS
+    assert len(show_pages.INDEX_EXTRA_IDS) == 50
     assert show_pages.INDEX_MIN_LISTED is None  # still a list, not a rule
+
+
+def test_a_rolled_back_page_is_held_and_out_of_the_sitemap(tmp_path):
+    _, before, after = _batched(tmp_path)
+    assert _robots(_page(after, HELD)) == ["noindex,follow"]
+    assert _locs(after) == _locs(before)
+    assert show_pages.index_problems(after, base_url=BASE) == []
+
+
+@pytest.fixture
+def reopened(monkeypatch):
+    """The second batch added back to the indexed set, as reopening would."""
+    monkeypatch.setattr(
+        show_pages, "INDEX_EXTRA_IDS", show_pages.INDEX_EXTRA_IDS | show_pages.INDEX_SECOND_BATCH
+    )
 
 
 # ---- a batch page --------------------------------------------------------------
 
 
-def test_a_batch_page_is_indexed_with_the_snapshot_date(tmp_path):
+def test_a_batch_page_is_indexed_with_the_snapshot_date(tmp_path, reopened):
     doc, before, after = _batched(tmp_path)
     assert _robots(_page(before, HELD)) == ["noindex,follow"]
     assert _robots(_page(after, HELD)) == []
@@ -96,7 +114,7 @@ def test_a_batch_page_is_indexed_with_the_snapshot_date(tmp_path):
     assert show_pages.index_problems(after, base_url=BASE) == []
 
 
-def test_a_batch_page_keeps_the_credit_loads_nothing_and_says_unknown(tmp_path):
+def test_a_batch_page_keeps_the_credit_loads_nothing_and_says_unknown(tmp_path, reopened):
     doc, before, after = _batched(tmp_path)
     page = _page(after, HELD)
     assert _credit_problems(doc, page) == []
@@ -114,11 +132,15 @@ def test_a_batch_page_keeps_the_credit_loads_nothing_and_says_unknown(tmp_path):
 # ---- negative controls ----------------------------------------------------------
 
 
-def test_negative_control_an_id_left_out_of_the_batch_stays_held(tmp_path, monkeypatch):
-    monkeypatch.setattr(show_pages, "INDEX_EXTRA_IDS", show_pages.INDEX_EXTRA_IDS - {BATCH_ID})
+def test_negative_control_the_rollback_is_what_holds_the_page(tmp_path, monkeypatch):
     _, before, after = _batched(tmp_path)
     assert _robots(_page(after, HELD)) == ["noindex,follow"]
-    assert _locs(after) == _locs(before)
+    monkeypatch.setattr(
+        show_pages, "INDEX_EXTRA_IDS", show_pages.INDEX_EXTRA_IDS | show_pages.INDEX_SECOND_BATCH
+    )
+    _, _, reopened_site = _batched(tmp_path)
+    assert _robots(_page(reopened_site, HELD)) == []  # without the rollback it is open
+    assert set(_locs(reopened_site)) - set(_locs(before)) == {_url(HELD)}
 
 
 @pytest.mark.parametrize(
@@ -133,7 +155,7 @@ def test_negative_control_an_id_left_out_of_the_batch_stays_held(tmp_path, monke
         (">Unknown.", ">0.", "unknown"),
     ],
 )
-def test_negative_control_each_check_catches_its_sabotage(tmp_path, old, new, check):
+def test_negative_control_each_check_catches_its_sabotage(tmp_path, reopened, old, new, check):
     doc, _, after = _batched(tmp_path)
     html = after[f"shows/{HELD}/index.html"]
     broken = html.replace(old, new)

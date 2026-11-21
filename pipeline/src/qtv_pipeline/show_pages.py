@@ -344,7 +344,13 @@ INDEX_SECOND_BATCH: frozenset[int] = frozenset(
         40427,  # flack: 2 impressions
     }
 )
-INDEX_EXTRA_IDS: frozenset[int] = INDEX_FIRST_BATCH | INDEX_SECOND_BATCH
+# Rolled back (DECISIONS 0067, 2026-11-21): 0028's rule says to stop and roll
+# back the last batch when the hand-picked pages' impressions fall, and from
+# 2026-11-13 the site's impressions fell from about 600 a day to about 1. The
+# second batch is kept above as a record and left out of the indexed set, so
+# its 44 pages are held back again (noindex,follow, out of the sitemap). To
+# reopen it, add INDEX_SECOND_BATCH back here.
+INDEX_EXTRA_IDS: frozenset[int] = INDEX_FIRST_BATCH
 INDEX_MIN_LISTED: int | None = None
 ROBOTS_HOLD = "noindex,follow"
 # The airing-now page (airing_page.py, DECISIONS 0033), built with the show pages.

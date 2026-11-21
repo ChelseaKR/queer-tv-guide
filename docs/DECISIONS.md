@@ -1800,6 +1800,9 @@ the second widening batch of 0028 before 0046's two-week check (about
 11-21). Merging it is the decision; holding it until that check passes is the
 other choice.**
 
+**Rolled back by 0067 (owner, 2026-11-21).** The list stays in the code as a
+record; its 44 pages are held back again.
+
 **What decides a page.** Two rules, and this changes only the second. A show
 gets a page when it has at least 5 characters listed in the snapshot and a
 TVmaze match, or is hand-picked (0021, 0025). That is the quality bar, and it
@@ -2237,3 +2240,36 @@ change, the command line, and that the workflow acts on every answer, with
 negative controls.
 
 **Reversible.** Yes: revert the workflow step and the script.
+
+## 0067 — Roll back the second widening batch (2026-11-21)
+
+**Status: accepted (owner, 2026-11-21: "Roll back batch 2"). It reverses the
+indexing in 0057 under 0028's own rule ("Stop and roll back the last batch if
+the hand-picked pages' impressions fall"). It keeps 0057's list as a record.**
+
+**Evidence.** Search Console for `sc-domain:queerframe.app` (`dataState: all`,
+read-only scope). Daily impressions: 616 on 11-08, 607, 556, 519, 259 on
+11-12, then 21, 17, 1, 1 and 1 from 11-13 to 11-19; no click since 11-12.
+URL Inspection on 2026-11-21 over the 60 open show pages with the most
+impressions: 57 "Crawled - currently not indexed" (32 on 11-14) and 3
+indexed. None of the 60 had been crawled since 2026-11-04 or 2026-11-05.
+Live on 11-21: `robots.txt` allows all, the pages checked return 200 with a
+self-canonical and no robots tag, and the sitemap lists 149 URLs, so no
+technical fault on the site explains it. Google dropping a young site's
+similar template pages without a recrawl is the risk 0028 hedged against.
+Not known: whether a Google update landed near 11-12, or whether Search
+Console shows a manual action (only the owner can read that page).
+
+**Decision.** `INDEX_EXTRA_IDS` is `INDEX_FIRST_BATCH` again (50 ids);
+`INDEX_SECOND_BATCH` stays in `show_pages.py`, unused. Its 44 pages are
+still built and linked, carry `noindex,follow` and leave the sitemap. On the
+current snapshot the sitemap goes from 149 to 105 URLs. Page content does
+not change. The proposed small-cast batch (0060, PR #149) and the proposed
+third batch of 46 stay unmerged.
+
+**The check.** Read Search Console and URL Inspection again on about
+2026-12-05. Reopen the batch only after the remaining pages are indexed and
+earning again.
+
+**Reversible.** Yes: `INDEX_EXTRA_IDS = INDEX_FIRST_BATCH | INDEX_SECOND_BATCH`.
+

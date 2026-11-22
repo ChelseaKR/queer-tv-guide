@@ -2243,6 +2243,8 @@ negative controls.
 
 ## 0067 — Roll back the second widening batch (2026-11-21)
 
+**Reverted before it deployed (owner, 2026-11-21, 16:50 PT).** A Search Console read the same afternoon found the site-wide drop (3,458 impressions in the 7 days to 11-11, 3 in the 7 days to 11-21) began on 11-12, during Google's November 2026 core update, and Google had last crawled the batch-2 pages on 11-04/05, before the hold-back went live. Rolling the batch back would change pages Google has not yet re-read, mid-update, and muddy the recovery read. The site stays as Google last saw it; the decision below is kept for the record and re-read on 2026-12-05 (`_agent-tools/growth/qf-visibility-2026-11-21/README.md`).
+
 **Status: accepted (owner, 2026-11-21: "Roll back batch 2"). It reverses the
 indexing in 0057 under 0028's own rule ("Stop and roll back the last batch if
 the hand-picked pages' impressions fall"). It keeps 0057's list as a record.**

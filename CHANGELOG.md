@@ -11,6 +11,10 @@ consumer of the published snapshot, would notice.
 
 ## [Unreleased]
 
+### Changed
+
+- The second widening batch's rollback (DECISIONS 0067) was reverted before it went live: the site stays as Google last crawled it while Google's November core update rolls out. Re-read on 2026-12-05.
+
 ### Added
 
 - Website: while the app is on the App Store, `/llms.txt` (the file written

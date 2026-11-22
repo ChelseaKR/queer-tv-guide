@@ -108,6 +108,47 @@ final class FavoritesBackupTests: XCTestCase {
         XCTAssertEqual(try FavoritesBackup.export(entries), data, "the same favorites export to the same bytes")
     }
 
+    /// From 1.0.2 the share sheet suggests the American spelling. The
+    /// format tag and the JSON key keep the old spelling, so the file a
+    /// 1.0.1 user saved, under its old name, still imports.
+    func testABackupSavedUnderThePre102FileNameStillImports() throws {
+        XCTAssertEqual(FavoritesBackup.suggestedFileName, "favorites-backup.json")
+        XCTAssertEqual(FavoritesBackup.format, "favourites-backup", "the format tag is what import checks; it must not change")
+
+        let snapshot = try Repo.fixture()
+        let show = snapshot.shows[0].id
+        let character = snapshot.characters[1].id
+        // The bytes 1.0.1 wrote, saved under the name 1.0.1 suggested.
+        let old = """
+        {
+          "favourites" : [
+            {
+              "added_at" : "2026-09-18T09:44:42Z",
+              "id" : "\(show)",
+              "kind" : "show"
+            },
+            {
+              "added_at" : "2026-09-19T10:00:00Z",
+              "id" : "\(character)",
+              "kind" : "character"
+            }
+          ],
+          "format" : "favourites-backup",
+          "version" : 1
+        }
+        """
+        let file = try Repo.temporaryDirectory().appendingPathComponent("favourites-backup.json")
+        try Data(old.utf8).write(to: file)
+
+        let parsed = try FavoritesBackup.parse(try Data(contentsOf: file), now: now, isKnown: isKnown(in: snapshot))
+        XCTAssertEqual(parsed.entries.map(\.id), [show, character])
+        XCTAssertEqual(parsed.entries.map(\.kind), [.show, .character])
+        XCTAssertEqual(parsed.notInSnapshot, 0)
+        XCTAssertEqual(parsed.unreadable, 0)
+        let restored = freshStore()
+        XCTAssertEqual(restored.merge(parsed.entries).added, 2)
+    }
+
     // MARK: Validation
 
     func testFilesThatAreNotABackupAreRefused() throws {

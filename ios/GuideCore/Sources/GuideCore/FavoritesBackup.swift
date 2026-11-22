@@ -39,8 +39,10 @@ public enum FavoritesBackup {
     /// The most entries import will look at.
     public static let maxEntries = 50_000
 
-    // Published file name (docs, support page, ADR 0014): kept to match the format tag.
-    public static let suggestedFileName = "favourites-backup.json"
+    // The name the share sheet suggests, in American spelling from 1.0.2.
+    // Import never reads the file name, only `format` and `version`, so a
+    // file saved by 1.0.1 or earlier as "favourites-backup.json" still imports.
+    public static let suggestedFileName = "favorites-backup.json"
 
     public enum ImportError: Error, Equatable, LocalizedError {
         case tooLarge(bytes: Int)

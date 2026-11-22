@@ -38,7 +38,8 @@ Three options:
 ## Decision
 
 - Favorites are backed up as a file, option 3. The … menu on Favorites has
-  Export favorites (a `ShareLink` of `favourites-backup.json`) and Import
+  Export favorites (a `ShareLink` of `favorites-backup.json`; 1.0.1 and
+  earlier suggested `favourites-backup.json`) and Import
   favorites (the system file picker).
 - The format is JSON, `{"format": "favourites-backup", "version": 1,
   "favourites": [{"kind", "id", "added_at"}]}`, holding only what

@@ -13,6 +13,12 @@ consumer of the published snapshot, would notice.
 
 ### Changed
 
+- iPhone app: Export favorites suggests the file name `favorites-backup.json`
+  (American spelling) instead of `favourites-backup.json`. The file's format
+  tag and JSON key are unchanged, and import never reads the file name, so a
+  backup saved by 1.0.1 or earlier under the old name still imports; a test
+  covers that. Ships in 1.0.2.
+
 - The second widening batch's rollback (DECISIONS 0067) was reverted before it went live: the site stays as Google last crawled it while Google's November core update rolls out. Re-read on 2026-12-05.
 
 ### Added

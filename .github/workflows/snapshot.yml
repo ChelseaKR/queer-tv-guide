@@ -12,6 +12,13 @@ name: snapshot
 # "Publishing" for the full rationale. The rolling GitHub Release
 # `snapshot-latest` is kept alongside it for the mirror cache and for
 # `gh release download` during development; it is not the app's URL.
+#
+# The website (the home page, the show pages, the sitemap) is the same build.
+# With the DOMAIN_SITE_REPO variable set, it is also pushed to a repository of
+# its own, which serves it on the domain; this repository's Pages site then
+# serves the data file, three pages and pointers to the domain, with no custom
+# domain of its own, so the app's data request stays on one host (DECISIONS
+# 0062). Unset, nothing new is published.
 
 on:
   schedule:
@@ -44,6 +51,8 @@ concurrency:
 
 env:
   RELEASE_TAG: snapshot-latest
+  # The website's address (DECISIONS 0020), the show-page generator's default.
+  SITE_URL: https://queerframe.app
 
 jobs:
   build:
@@ -53,6 +62,9 @@ jobs:
       contents: write # upload the rolling release's assets
     outputs:
       digest: ${{ steps.build.outputs.digest }}
+      # "true" or "false" when the website's repository holds the domain;
+      # empty when it does not (DECISIONS 0062).
+      domain_serving: ${{ steps.domain-serving.outputs.serving }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -247,7 +259,7 @@ jobs:
           cp src/qtv_pipeline/assets/9d1bc6716ef0607544eec3bcc2d46956.txt site/
           uv run python -m qtv_pipeline.indexnow manifest \
             --site-dir site --base-url https://queerframe.app \
-            --snapshot out/snapshot.v1.json
+            --snapshot out/snapshot.v1.json --carry-dates
           uv run python -m qtv_pipeline.indexnow select \
             --site-dir site --base-url https://queerframe.app \
             --kind manifest --file lastmod.json --missing-is-empty \
@@ -261,9 +273,156 @@ jobs:
           retention-days: 1
           if-no-files-found: warn
 
+      - name: build this repository's own Pages site (the data file, three pages, pointers to the domain)
+        # DECISIONS 0062. What this repository's Pages site serves once the
+        # website's repository holds the domain: the data file and its
+        # checksum byte for byte, the privacy, support and terms pages (each
+        # with one added line naming its address on the domain as
+        # canonical), and for every other page a pointer to the same page
+        # on the domain
+        # (qtv_pipeline/github_io.py, tested). Built on every run, so a
+        # problem shows before the build is needed. It is uploaded only by
+        # the last step of this job, and only when the domain is seen to
+        # serve this run's website.
+        working-directory: pipeline
+        run: |
+          set -euo pipefail
+          uv run python -m qtv_pipeline.github_io site site-github-io
+          cmp site/snapshot.v1.json site-github-io/snapshot.v1.json
+          cmp site/snapshot.v1.json.sha256 site-github-io/snapshot.v1.json.sha256
+
+      - name: push the website to its own Pages repository (only when DOMAIN_SITE_REPO is set)
+        # DECISIONS 0062. The website's repository (DOMAIN_SITE_REPO, Pages
+        # "Deploy from a branch", gh-pages, root) gets this run's website as
+        # one fresh commit, pushed over SSH with a deploy key that can write
+        # to that repository only. The key goes from the secret into
+        # ssh-agent on stdin and is never written to disk; the agent is
+        # killed when the step ends. github.com's host key is pinned, so the
+        # push cannot be answered by another host.
+        #
+        # The custom domain is set in that repository's Pages settings, which
+        # keeps it as a CNAME file on the branch. This step never removes a
+        # domain and never sets one by itself: it carries the CNAME file over
+        # when the branch has one (it must name SITE_URL's host), and writes
+        # one when the owner has set DOMAIN_SITE_LIVE to "true". The push is
+        # refused if the branch moved after it was read, so a domain saved
+        # in the settings during a run is not overwritten. .nojekyll makes
+        # Pages serve the build as it is.
+        #
+        # The files are staged from a NUL-separated list, not a wildcard: it
+        # is a fresh repository in RUNNER_TEMP holding only the build, never
+        # this checkout.
+        id: domain-site
+        if: vars.DOMAIN_SITE_REPO != ''
+        env:
+          DOMAIN_SITE_REPO: ${{ vars.DOMAIN_SITE_REPO }}
+          DOMAIN_SITE_LIVE: ${{ vars.DOMAIN_SITE_LIVE }}
+          DOMAIN_SITE_DEPLOY_KEY: ${{ secrets.DOMAIN_SITE_DEPLOY_KEY }}
+        run: |
+          set -euo pipefail
+          if [[ ! "$DOMAIN_SITE_REPO" =~ ^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$ ]]; then
+            echo "::error::the DOMAIN_SITE_REPO variable must name the website's repository as owner/name"
+            exit 1
+          fi
+          if [ "$DOMAIN_SITE_REPO" = "$GITHUB_REPOSITORY" ]; then
+            echo "::error::DOMAIN_SITE_REPO must name a different repository from this one"
+            exit 1
+          fi
+          case "$DOMAIN_SITE_LIVE" in
+            true | false | "") ;;
+            *)
+              echo "::error::the DOMAIN_SITE_LIVE variable is neither 'true' nor 'false'"
+              exit 1
+              ;;
+          esac
+          if [ -z "$DOMAIN_SITE_DEPLOY_KEY" ]; then
+            echo "::error::DOMAIN_SITE_REPO is set, so the DOMAIN_SITE_DEPLOY_KEY secret is required"
+            exit 1
+          fi
+          test -f pipeline/site/index.html
+          test -f pipeline/site/snapshot.v1.json
+          test -f pipeline/site/snapshot.v1.json.sha256
+          host="${SITE_URL#https://}"
+          known="$RUNNER_TEMP/github-known-hosts"
+          # github.com's ed25519 host key, as published at https://api.github.com/meta
+          printf '%s\n' "github.com ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOMqqnkVzrm0SdG6UOoqKLsabgH5C9okWi0dh2l9GKJl" > "$known"
+          eval "$(ssh-agent -s)" > /dev/null
+          trap 'ssh-agent -k > /dev/null' EXIT
+          printf '%s\n' "$DOMAIN_SITE_DEPLOY_KEY" | ssh-add -q -
+          export GIT_SSH_COMMAND="ssh -o UserKnownHostsFile=${known} -o StrictHostKeyChecking=yes"
+          remote="git@github.com:${DOMAIN_SITE_REPO}.git"
+          work="$RUNNER_TEMP/domain-site"
+          cp -R pipeline/site "$work"
+          : > "$work/.nojekyll"
+          git -C "$work" init -q -b gh-pages
+          git -C "$work" config user.name "github-actions[bot]"
+          git -C "$work" config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          tip="$(git -C "$work" ls-remote "$remote" refs/heads/gh-pages | cut -f1)"
+          cname=absent
+          if [ "$DOMAIN_SITE_LIVE" = "true" ]; then
+            cname=present
+          fi
+          if [ -n "$tip" ]; then
+            git -C "$work" fetch -q --depth 1 "$remote" gh-pages
+            if git -C "$work" cat-file -e FETCH_HEAD:CNAME 2> /dev/null; then
+              held="$(git -C "$work" show FETCH_HEAD:CNAME | tr -d '[:space:]')"
+              if [ "$held" != "$host" ]; then
+                echo "::error::the CNAME file on ${DOMAIN_SITE_REPO} gh-pages does not name ${host}; nothing was pushed"
+                exit 1
+              fi
+              cname=present
+            fi
+          fi
+          if [ "$cname" = "present" ]; then
+            printf '%s\n' "$host" > "$work/CNAME"
+          fi
+          (cd "$work" && find . -path ./.git -prune -o -type f -print0 | git add --pathspec-from-file=- --pathspec-file-nul)
+          git -C "$work" commit -q -m "site: ${GITHUB_REPOSITORY} run ${GITHUB_RUN_ID}"
+          git -C "$work" push --force-with-lease="gh-pages:${tip}" "$remote" gh-pages
+          echo "pushed this run's website to ${DOMAIN_SITE_REPO} gh-pages (CNAME file ${cname})"
+          echo "cname=${cname}" >> "$GITHUB_OUTPUT"
+
+      - name: wait for the domain to serve this run's website (only when its repository holds the domain)
+        # This repository's Pages site may become the small one only while
+        # the domain serves the full website from the other repository.
+        # The proof is the data file: the domain must serve this run's own
+        # copy, byte for byte, over valid HTTPS and without a redirect. The
+        # previous deploy never matches, because every run's file carries
+        # its own time. Tried for 11 minutes, longer than the 10 minutes
+        # Pages lets a cache keep a file. This step never fails the job: it
+        # records the answer, the next step uploads the full website when the
+        # answer is no, and the domain-site job below turns the run red after
+        # the deploy, so the data file is published either way.
+        id: domain-serving
+        if: steps.domain-site.outputs.cname == 'present'
+        run: |
+          set -euo pipefail
+          want="$(sha256sum pipeline/site/snapshot.v1.json | cut -d' ' -f1)"
+          serving=false
+          for i in $(seq 1 44); do
+            q="run=${GITHUB_RUN_ID}-${i}"
+            if listed="$(curl -fsS --proto '=https' --max-time 20 "${SITE_URL}/snapshot.v1.json.sha256?${q}")" \
+              && [ "${listed%% *}" = "$want" ] \
+              && got="$(curl -fsS --proto '=https' --max-time 120 "${SITE_URL}/snapshot.v1.json?${q}" | sha256sum)" \
+              && [ "${got%% *}" = "$want" ]; then
+              serving=true
+              break
+            fi
+            sleep 15
+          done
+          if [ "$serving" = "true" ]; then
+            echo "${SITE_URL} serves this run's data file (sha256 ${want})"
+          else
+            echo "::error::${SITE_URL} did not serve this run's data file (sha256 ${want}) within 11 minutes; this repository's Pages site gets the full website this run"
+          fi
+          echo "serving=${serving}" >> "$GITHUB_OUTPUT"
+
       - uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3.0.1
         with:
-          path: pipeline/site
+          # The small site only when the domain was seen to serve this run's
+          # website from its own repository; the full website otherwise, as
+          # before DECISIONS 0062. Either one carries the data file.
+          path: ${{ steps.domain-serving.outputs.serving == 'true' && 'pipeline/site-github-io' || 'pipeline/site' }}
 
   deploy:
     needs: build
@@ -279,13 +438,31 @@ jobs:
       - id: deployment
         uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4.0.5
 
+  # Red when the website's repository holds the domain and the domain did not
+  # serve this run's website in time (DECISIONS 0062). It runs after the
+  # deploy, so the data file is already published; the website on the domain
+  # is what is behind. Skipped in every other case. No permission, no secret.
+  domain-site:
+    needs: [build, deploy]
+    if: needs.build.outputs.domain_serving == 'false'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions: {}
+    steps:
+      - name: the domain did not serve this run's website
+        run: |
+          echo "::error::${SITE_URL} did not serve this run's website; see the build job's wait step and the Pages build of the website's repository"
+          exit 1
+
   # Tell IndexNow which pages are new or changed, only after the deploy
-  # succeeded (a skipped or failed deploy skips this job). Never fails the
-  # run: indexnow.py exits 0 on any problem and prints a notice, and the
-  # sitemap still gets the pages crawled. No write permission, no secret.
+  # succeeded (a skipped or failed deploy skips this job) and never when the
+  # domain was seen not to serve this run's website (DECISIONS 0062). Never
+  # fails the run: indexnow.py exits 0 on any problem and prints a notice, and
+  # the sitemap still gets the pages crawled. No write permission, no secret.
   # https://www.indexnow.org/documentation
   indexnow:
-    needs: deploy
+    needs: [build, deploy]
+    if: needs.build.outputs.domain_serving != 'false'
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:

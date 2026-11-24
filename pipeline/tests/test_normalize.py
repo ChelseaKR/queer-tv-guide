@@ -141,6 +141,33 @@ def test_inner_no_break_space_in_a_name_is_kept():
     assert normalize.normalize_character(raw, TAX, {})["name"] == "Marielle\u00a0Sinclair"
 
 
+# ---- network (taxonomy term) names: HTML entities are decoded ----------------
+# WordPress returns term names escaped; the 2026-11-18 snapshot had "A&amp;E"
+# (5 shows) and "Seed &amp; Spark" (2), and the app showed them as written.
+
+
+@pytest.mark.parametrize(
+    ("escaped", "plain"),
+    [
+        ("A&amp;E", "A&E"),
+        ("Seed &amp; Spark", "Seed & Spark"),
+        ("Channel 4", "Channel 4"),
+    ],
+)
+def test_network_names_have_entities_decoded(escaped, plain):
+    raw = _load("lezwatch_show_derry_girls.json")
+    taxonomies = dict(TAX)
+    taxonomies["stations"] = {102: {"id": 102, "slug": "channel-4", "name": escaped}}
+    networks = normalize.normalize_show(raw, taxonomies)["networks"]
+    assert networks == [{"slug": "channel-4", "name": plain}]
+
+
+def test_term_name_decodes_once_and_leaves_plain_text_alone():
+    assert fields.term_name({"name": "A&amp;E"}) == "A&E"
+    assert fields.term_name({"name": "A&E"}) == "A&E"
+    assert fields.term_name({"name": "Q&amp;amp;A"}) == "Q&amp;A"
+
+
 # ---- watch links: empty list, never a guessed link -----------------------------
 
 

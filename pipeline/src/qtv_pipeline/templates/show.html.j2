@@ -1,6 +1,17 @@
 {% extends "base.html.j2" %}
+{#- The link-preview tags (DECISIONS 0064) repeat this page's own title,
+    description and address, so a shared link shows what a search result
+    shows and nothing more: no answer, and no image. #}
 {% block head_extra %}{% if robots %}
-<meta name="robots" content="{{ robots }}">{% endif %}{% endblock %}
+<meta name="robots" content="{{ robots }}">{% endif %}
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="{{ site_name }}">
+<meta property="og:title" content="{{ title }}">
+<meta property="og:description" content="{{ description }}">
+<meta property="og:url" content="{{ canonical }}">
+<meta property="og:locale" content="en_US">
+<meta name="twitter:card" content="summary">
+{%- endblock %}
 {#- One character's two questions (DECISIONS 0051). The identity answer links
     LezWatch.TV's page for the character; the death question only points at
     the sealed answer and never carries a status. #}

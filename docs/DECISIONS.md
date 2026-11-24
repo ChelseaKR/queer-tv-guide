@@ -1800,6 +1800,9 @@ the second widening batch of 0028 before 0046's two-week check (about
 11-21). Merging it is the decision; holding it until that check passes is the
 other choice.**
 
+**Rolled back by 0067 (owner, 2026-11-21).** The list stays in the code as a
+record; its 44 pages are held back again.
+
 **What decides a page.** Two rules, and this changes only the second. A show
 gets a page when it has at least 5 characters listed in the snapshot and a
 TVmaze match, or is hand-picked (0021, 0025). That is the quality bar, and it
@@ -1973,6 +1976,139 @@ tell", not "it did not work".
 **Reversible.** Yes: restore the one sentence in `get_app_line` and the
 line's place in `show.html.j2`.
 
+## 0061 — The sitemap's lastmod is the day a page last changed (2026-11-14)
+
+**Status: proposed (branch `seo/qf-honest-sitemap-lastmod`). Numbered after
+0060, which is proposed on another branch; renumber whichever merges second
+if needed. It touches no page text and no app file.**
+
+**Evidence.** Every sitemap entry's `lastmod` is the snapshot's date (0034,
+0057), so all 149 dates move every night whether or not a page changed.
+Google says it uses `lastmod` only when it is consistently accurate. URL
+Inspection, read-only, on 2026-11-14: the last crawl of every one of the
+top 60 open show pages was 2026-11-04 or 2026-11-05, and of the hand-picked
+pages 2026-10-24 to 2026-11-05. Since then the pages changed for real
+(0058 and 0059 on 2026-11-13, new titles on four pages proposed), and Google
+has not looked. The fingerprints that tell a real change from a rebuild
+already exist: 0034's `lastmod.json`.
+
+**Decision.** `indexnow.py manifest --carry-dates`, in the same workflow
+step as before (after the site is built, before the Pages upload), reads
+the live `lastmod.json`. A page whose fingerprint is the same as live keeps
+the live `changed` day; a new or changed page gets the snapshot's day. The
+day is written into `lastmod.json` (a new `changed` field next to
+`fingerprint`, same schema 1) and into that page's `lastmod` in
+`sitemap.xml`. The airing page changes every build (0033), so it is dated
+every build. An unreadable or malformed live file, a day later than the
+snapshot's, or anything that is not a plain day dates the page with the
+snapshot's day, which is what the sitemap said before: a failure can make a
+date newer, never hide a change. The first deploy with this finds no
+`changed` field and dates every page that night; from the next night the
+dates are carried. IndexNow's selection compares fingerprints only, as
+before, and the footer's "last built" sentence stays.
+
+**Expected effect, honestly.** Indirect and not measurable on its own: it
+gives Google a date it can trust, so a real change (a new title, a new
+batch) is more likely to be recrawled soon. No click estimate. The faster
+way to get the changed pages read is the owner's "Request indexing" in
+Search Console's URL Inspection, a few pages a day.
+
+**Tests.** `pipeline/tests/test_sitemap_lastmod.py`: an unchanged page
+keeps its day, a changed or new page gets today; eight doubtful live files
+all date today; only covered sitemap entries change; two real builds a day
+apart with the same data keep the first day everywhere but the airing page,
+and the manifest agrees with the sitemap; negative controls: a renamed show
+is dated today, an unreadable live site dates every page today, and without
+the flag every date is the snapshot's.
+
+**Reversible.** Yes: drop `--carry-dates` from `snapshot.yml`.
+
+## 0062 — The website publishes from a repository of its own; this one serves the data file (2026-11-17)
+
+**Status: accepted (owner, 2026-11-17). It replaces 0020's "the custom domain
+is attached to the Pages site". The site's address, the pages and everything
+else in 0020 stand.**
+
+**Decision.** There are two Pages sites.
+
+- **The website's repository** (named by the `DOMAIN_SITE_REPO` repository
+  variable) holds the custom domain and serves `https://queerframe.app`: the
+  home page, the show pages, `sitemap.xml`, `robots.txt`, the privacy,
+  support and terms pages, and a copy of the data file. It publishes from
+  its `gh-pages` branch. `snapshot.yml` replaces that branch with each
+  run's website as one commit.
+- **This repository's Pages site** has no custom domain. It serves, at
+  `https://chelseakr.github.io/queer-tv-guide/`: `snapshot.v1.json` and its
+  `.sha256` byte for byte; `privacy.html`, `support.html` and `terms.html`,
+  each the website's own page with one line added to its head; and for
+  every other page of the website a small page at the same path that points
+  to that page on the domain (`qtv_pipeline/github_io.py`).
+
+**Why.** The data file's address is fixed in the shipped apps (0007), and so
+are the privacy and support addresses the apps and the store listings open.
+A Pages site that has a custom domain serves everything on that domain. With
+the website in a repository of its own, the app's data request stays on one
+host, and the data file does not depend on the domain's registration, DNS
+or certificate.
+
+**Search.** Every queerframe.app URL is unchanged, and so are the sitemap,
+`robots.txt` and each page's canonical URL. Nothing on github.io is an
+indexable second copy:
+
+- the three kept pages name their queerframe.app address as canonical. The
+  build adds that one `rel="canonical"` line to the github.io copy; the
+  pages in `docs/site/` are unchanged and still load nothing. Canonical, not
+  `noindex`: the two together send a search engine opposite signals, and
+  the canonical is the one that files the page under the domain;
+- a pointer page carries the same canonical URL as the page it stands for
+  and a refresh of 0 seconds to it, which search engines read as a permanent
+  move. It has no script, style or image;
+- `404.html` links to the domain and carries `noindex`;
+- there is no sitemap or `robots.txt` on github.io (a robots file below a
+  host's root is not read).
+
+**How the workflow keeps both sites safe.**
+
+- Unset, `DOMAIN_SITE_REPO` changes nothing: one site, as before.
+- The push uses a deploy key (`DOMAIN_SITE_DEPLOY_KEY`) that can write to the
+  website's repository only. The key goes from the secret into `ssh-agent`
+  on stdin and is never written to disk, and github.com's host key is
+  pinned.
+- The domain is set in the website repository's Pages settings, which keep
+  it as a `CNAME` file on the branch. The push never removes a domain and
+  never sets one by itself: it carries the `CNAME` file over when the branch
+  has one, and writes one when the owner has set `DOMAIN_SITE_LIVE` to
+  `true`. It is refused if the branch moved after it was read.
+- This repository's Pages site becomes the small one only in a run where
+  the domain serves that run's own data file, byte for byte, over HTTPS and
+  without a redirect. In any other run it gets the full website, as before,
+  so the domain is never left pointing at the small site.
+- The data file never waits on the domain. If the website's repository
+  holds the domain and the domain does not serve the run's website within
+  11 minutes, the deploy still happens and a `domain-site` job turns the run
+  red afterwards.
+
+**Not changed.** The apps' addresses (0020's "not decided here" is settled:
+they stay on github.io). The data file's bytes, its checksum and its
+`ETag`-based refresh. The privacy policy's wording. The rolling release.
+
+**Tests.** `pipeline/tests/test_github_io.py`: the data file byte for byte,
+each kept page equal to the website's page plus its canonical line, a page
+at every path of the website, no page that could
+be indexed as a second copy (with negative controls), nothing but the data
+file and pages published, and a refusal that writes nothing when a file the
+apps rely on is missing. `tests/test_domain_site_workflow.py`: the wiring,
+each rule with a negative control; the push step's own script run against a
+local repository (a first push, a replaced branch, a domain saved in the
+settings kept, another domain refused, a branch that moved not overwritten,
+the key never printed); and the wait step's own script run against a
+stand-in for the domain (this run's file, the previous deploy, a matching
+checksum over other bytes, no answer).
+
+**Reversible.** Yes: unset `DOMAIN_SITE_REPO`, run the workflow so this
+repository's Pages site is the full website again, then move the domain back
+in the two repositories' Pages settings.
+
 ## 0063 — iPhone 1.0.2: what someone follows or looks up stays out of sight, and every link is https (2026-11-17)
 
 **Status: accepted (owner, 2026-11-17: all five, with tests). The wording
@@ -2042,3 +2178,170 @@ search sources, with negative controls. `WidgetRenderTests` draws the
 widget as a locked iPhone does.
 
 **Reversible.** Yes, each on its own.
+
+## 0064 — Three search and sharing fixes that add no sentence to any page (2026-11-17)
+
+**Status: proposed (branch `seo/traffic-2026-11`). Needs Chelsea: merging it
+is the decision. Numbered 0064 because 0060 and 0061 are taken by open pull
+requests and 0063 by the 1.0.2 privacy branch. Site generation only: no app
+code, no workflow, no snapshot field.**
+
+**Why now.** Search Console shows the site's Google impressions falling from
+about 500 a day to almost none between 2026-11-12 and 2026-11-13, on every
+page at once, with no deploy in that window. The cause is on Google's side
+and this change does not claim to fix it. These three are the changes that
+are worth having whatever Google does next, and none of them adds or changes
+a sentence a visitor reads.
+
+**1. "More shows" links lead to open pages.** A show page's two "More shows"
+links were the shows before and after it in the published order, held back
+or not (0023). They are now the nearest show before it and the nearest after
+it whose page is open to search engines, the same set the sitemap lists
+(0028's `indexed_show_ids`). On the 2026-11-17 snapshot, 144 show pages are
+open: before, 29 of them were linked from no other open show page and 52
+from fewer than two, and 309 of the 863 show-to-show links on open pages led
+to a held-back page; after, every open page is linked from at least two
+other open pages and 165 links lead to a held-back page (all of them
+"Shows like" links, whose rule is unchanged). A held-back page links on to
+two open pages. With fewer than three open pages the plain neighbors are
+used. The list still holds show titles only.
+
+**2. Link-preview tags on the show pages, the shows index and the airing
+page.** The home, findings and press pages carried Open Graph tags; the
+pages people are most likely to share did not, so a pasted show link drew a
+bare address. Each of these pages now carries the same six tags and
+`twitter:card`, filled from the page's own title, description and canonical
+address. The spoiler rule holds because the title and the description
+already hold no answer (0027, 0045); a test checks the tags against the
+sealed answer as well. As on the home page (0026), there is no `og:image`.
+
+**3. `sameAs` names IMDb and Wikidata.** The TVSeries structured data
+already named the show's LezWatch.TV and TVmaze pages. It now also names the
+show's IMDb page, built from the IMDb title id LezWatch.TV records
+(`external_ids.imdb`, only when it has the form of a title id), and the
+show's Wikidata item where the snapshot holds one (0055: only where two ids
+agreed). On the 2026-11-17 snapshot that is all 364 built shows for IMDb and
+89 for Wikidata. It tells a search engine which series a title such as
+"FROM" or "Ghosts" means. Nothing is matched by title. The page shows no
+IMDb or Wikidata link and loads nothing from either.
+
+**Not done, on purpose.** No new page, no page opened to search and no
+sitemap change: adding template pages while Google is showing none of them
+is the wrong direction. No FAQPage (0051 stands). No image. Nothing about a
+real person is added: the structured data still names characters only.
+
+**Tests.** `pipeline/tests/test_show_pages_open_links.py`,
+`test_show_pages_link_previews.py` and `test_show_pages_same_as.py`, each
+with negative controls.
+
+**Reversible.** Yes, each part alone: call `neighbors` and `related`
+without the open set; remove the tag block from the three templates; drop
+`imdb_url` and `wikidata_url` from `_series`.
+
+## 0065 — The home page names twelve more shows, "Some of the other shows" (2026-11-17)
+
+**Status: proposed (branch `seo/home-other-shows-2026-11`). The owner chose
+the heading and the twelve titles on 2026-11-17; merging it is the last
+step. It extends 0026 and changes nothing 0026 decided.**
+
+**Decision.** Below "Some of the hand-picked shows" the home page gains a
+second list under the heading "Some of the other shows": FROM, Will Trent,
+The Mentalist, The Fosters, The Owl House, The Vampire Diaries, Helluva
+Boss, SWAT, Elsbeth, Manifest, The Loud House and Craig of the Creek, in
+that order. The list is fixed in the repository as LezWatch.TV ids
+(`site_index.OTHER_ON_HOME`). Each title is read from the snapshot, so it is
+spelled exactly as the show's own page spells it.
+
+**Why.** These twelve pages drew the most searches of any page that is not
+hand-picked, and Google stopped showing most of them on 2026-11-12. The home
+page is the one page Google still indexes and re-reads, and until now it
+linked by name only to hand-picked shows. This gives the twelve a direct
+link from it. It is a link, not a promise that Google will index them again.
+
+**Rules.** A show is named only when it is in the snapshot and its page was
+published, so every link resolves. A hand-picked show is never named a
+second time. With no show to name there is no heading. With no hand-picked
+list above it there is no second list, since "other" means other than those.
+On the 2026-11-17 snapshot all twelve pages are built, open to search
+engines and in the sitemap, and none is hand-picked.
+
+**Spoiler rule.** Unchanged from 0026: the list holds show titles and
+nothing about any character.
+
+**Tests.** `pipeline/tests/test_home_other_shows.py`, read with
+`html.parser`, with negative controls.
+
+**Reversible.** Yes: empty `OTHER_ON_HOME`, or remove the template block.
+
+## 0066 — The freshness incident issue closes itself and speaks only on a change (2026-11-19)
+
+**Status: accepted. Chelsea approved it on 2026-11-19 (delivery audit,
+problem 4). It changes how `freshness.yml` handles its issue, not what
+counts as stale.**
+
+**Why.** The alarm opened #91 on 2026-10-21 for one failed nightly run. The
+file was fresh again the next morning, but the old steps added a "Fresh
+again" comment every time a new snapshot was published and left closing to
+a person after the postmortem. Four weeks later #91 had 36 comments, and a
+real alarm (two on 2026-11-08) sat between daily recovery notes where it
+was easy to miss.
+
+**Decision.** `scripts/freshness_issue.py` decides, and the workflow only
+carries out its answer. At most one `snapshot freshness:` issue is open. An
+alarm with none open opens one, or reopens the last one this workflow closed
+if that was under 72 hours ago, since a relapse that soon is most likely the
+same incident. While it is open, a comment goes up only when the state
+changes: a new severity or a new set of reasons. Another failed nightly run
+for the same reason, or a file that is merely older, is not news. A move to
+SEV2 swaps the `sev3` label for `sev2`; a move back keeps `sev2`. When the
+file is fresh again the issue gets one comment and closes itself.
+
+**What this departs from.** INCIDENT-RESPONSE-STANDARD IR-03 says an
+incident is not closed until its postmortem is committed. Here the issue
+closes on recovery, so its open and close times measure the outage, and the
+postmortem is still owed afterwards, within IR-06's cadence. The standard's
+weekly check flags a closed `incident` issue with no postmortem, so a
+missing one is still caught.
+
+**Tests.** `tests/test_freshness_issue.py`: one issue, quiet on a repeat,
+one comment per change, close on recovery, reopen inside the window and not
+after it, never reopen an issue a person closed, issues written before this
+change, the command line, and that the workflow acts on every answer, with
+negative controls.
+
+**Reversible.** Yes: revert the workflow step and the script.
+
+## 0067 — Roll back the second widening batch (2026-11-21)
+
+**Reverted before it deployed (owner, 2026-11-21, 16:50 PT).** A Search Console read the same afternoon found the site-wide drop (3,458 impressions in the 7 days to 11-11, 3 in the 7 days to 11-21) began on 11-12, during Google's November 2026 core update, and Google had last crawled the batch-2 pages on 11-04/05, before the hold-back went live. Rolling the batch back would change pages Google has not yet re-read, mid-update, and muddy the recovery read. The site stays as Google last saw it; the decision below is kept for the record and re-read on 2026-12-05 (`_agent-tools/growth/qf-visibility-2026-11-21/README.md`).
+
+**Status: accepted (owner, 2026-11-21: "Roll back batch 2"). It reverses the
+indexing in 0057 under 0028's own rule ("Stop and roll back the last batch if
+the hand-picked pages' impressions fall"). It keeps 0057's list as a record.**
+
+**Evidence.** Search Console for `sc-domain:queerframe.app` (`dataState: all`,
+read-only scope). Daily impressions: 616 on 11-08, 607, 556, 519, 259 on
+11-12, then 21, 17, 1, 1 and 1 from 11-13 to 11-19; no click since 11-12.
+URL Inspection on 2026-11-21 over the 60 open show pages with the most
+impressions: 57 "Crawled - currently not indexed" (32 on 11-14) and 3
+indexed. None of the 60 had been crawled since 2026-11-04 or 2026-11-05.
+Live on 11-21: `robots.txt` allows all, the pages checked return 200 with a
+self-canonical and no robots tag, and the sitemap lists 149 URLs, so no
+technical fault on the site explains it. Google dropping a young site's
+similar template pages without a recrawl is the risk 0028 hedged against.
+Not known: whether a Google update landed near 11-12, or whether Search
+Console shows a manual action (only the owner can read that page).
+
+**Decision.** `INDEX_EXTRA_IDS` is `INDEX_FIRST_BATCH` again (50 ids);
+`INDEX_SECOND_BATCH` stays in `show_pages.py`, unused. Its 44 pages are
+still built and linked, carry `noindex,follow` and leave the sitemap. On the
+current snapshot the sitemap goes from 149 to 105 URLs. Page content does
+not change. The proposed small-cast batch (0060, PR #149) and the proposed
+third batch of 46 stay unmerged.
+
+**The check.** Read Search Console and URL Inspection again on about
+2026-12-05. Reopen the batch only after the remaining pages are indexed and
+earning again.
+
+**Reversible.** Yes: `INDEX_EXTRA_IDS = INDEX_FIRST_BATCH | INDEX_SECOND_BATCH`.
+

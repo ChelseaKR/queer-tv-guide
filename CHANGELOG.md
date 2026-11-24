@@ -11,8 +11,33 @@ consumer of the published snapshot, would notice.
 
 ## [Unreleased]
 
+### Changed
+
+- The second widening batch's rollback (DECISIONS 0067) was reverted before it went live: the site stays as Google last crawled it while Google's November core update rolls out. Re-read on 2026-12-05.
+
 ### Added
 
+- Website: while the app is on the App Store, `/llms.txt` (the file written
+  for AI assistants) no longer says the app will be linked "once it is on
+  the App Store". It links the app, with the price and the rounded show
+  count a show page's top line gives, under its own App Store campaign
+  token, `llms`, so App Store Connect counts what assistants send. It also
+  links the findings page and the press page. With the switch off the file
+  is unchanged, byte for byte. It still names no show and no character
+  (the owner's wording, approved 2026-11-18).
+- Website: the home page names twelve more shows under "Some of the other
+  shows", below the hand-picked ones: FROM, Will Trent, The Mentalist and
+  nine others that are not hand-picked. Titles only, each linking to the
+  show's page (DECISIONS 0065, proposed).
+- Website: a show page, the shows index and the airing page now carry
+  link-preview tags, so a link pasted into a message or a post shows the
+  page's own title and description instead of a bare address. The tags
+  repeat what the page already says: no answer, no image (DECISIONS 0064,
+  proposed).
+- Website: a show page's structured data now also names the show's IMDb
+  page and, where the snapshot holds one, its Wikidata item, so a search
+  engine can tell which series a title means. Nothing shows on the page
+  (DECISIONS 0064, proposed).
 - Android: a long press on Queer Frame's icon offers "Search", which opens
   Search with the keyboard up, and "Favorites", which opens Favorites and its
   next episodes. The shortcuts are set on the phone by the app; they need no
@@ -206,6 +231,29 @@ consumer of the published snapshot, would notice.
 
 ### Changed
 
+- The 44 show pages of the second widening batch are held back from search
+  again (`noindex,follow`, out of the sitemap) after Google stopped showing
+  the site from 2026-11-13. The pages are still built and linked
+  (DECISIONS 0067).
+- The staleness alarm's `incident` issue now speaks only when something
+  changes. It comments when the alarm's severity or reason changes, not on
+  every run; once the published file is fresh again it says so once and
+  closes itself, and an alarm within 72 hours reopens it. Before, the one
+  issue stayed open for weeks with a "Fresh again" note every day
+  (DECISIONS 0066).
+- Website: the two "More shows" links on a show page now lead to the
+  nearest shows before and after it whose pages are open to search engines,
+  so every open page is linked from at least two other open pages. The list
+  still holds show titles only (DECISIONS 0064, proposed).
+- The website can publish from a repository of its own. With the
+  `DOMAIN_SITE_REPO` variable set, the nightly workflow pushes the website
+  there, and this repository's Pages site serves the data file, the privacy,
+  support and terms pages, and pointers to queerframe.app, with no custom
+  domain, so the app's data request stays on one host. Every queerframe.app
+  address is unchanged (DECISIONS 0062).
+- The website's sitemap now dates each page by the day its content last
+  changed, carried from the live site, instead of the build date on every
+  page every night (DECISIONS 0061).
 - The website's App Store links no longer name the US storefront, so Apple
   opens the listing in the visitor's own country; the campaign tokens are
   unchanged. The price is named as the US price wherever it appears: "$4.99
@@ -268,6 +316,11 @@ consumer of the published snapshot, would notice.
 - iPhone: the app's data request stays on one host.
 - The privacy policy now says the app keeps the Up Next widget's small file
   whether or not the widget is added, which is what the app has always done.
+- Snapshot: network names, and the other LezWatch.TV category names, have
+  their HTML entities decoded when the pipeline builds the snapshot, so the
+  apps and the website show "A&E" and "Seed & Spark" rather than `A&amp;E`
+  and `Seed &amp; Spark` (5 shows on the 2026-11-18 snapshot). It takes
+  effect with the next nightly snapshot.
 - Android: show titles, character names and actor names lose the
   non-breaking space LezWatch.TV's data starts or ends some of them with, as
   on iPhone, so the character screen no longer asks "Does Eva  die?" and

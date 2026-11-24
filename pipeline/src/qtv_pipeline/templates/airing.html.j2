@@ -1,4 +1,15 @@
 {% extends "base.html.j2" %}
+{#- Link-preview tags: this page's own title, description and address
+    (DECISIONS 0064). No image. #}
+{% block head_extra %}
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="{{ site_name }}">
+<meta property="og:title" content="{{ title }}">
+<meta property="og:description" content="{{ description }}">
+<meta property="og:url" content="{{ canonical }}">
+<meta property="og:locale" content="en_US">
+<meta name="twitter:card" content="summary">
+{%- endblock %}
 {%- macro line(a) -%}
 <li>{% if a.own_page %}<a href="{{ a.url }}">{{ a.title }}</a>{% else %}{{ a.title }} (<a href="{{ a.url }}">on LezWatch.TV</a>){% endif %}{% if a.network %}, {{ a.network }}{% endif %}.
 {%- if a.kind == "premiere" %} Season {{ a.season }} premieres <time datetime="{{ a.airdate }}">{{ a.when }}</time>.

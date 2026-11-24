@@ -932,7 +932,12 @@ def test_tvseries_structured_data_has_facts_and_no_answer(doc, tmp_path):
     show = _show(doc, "the-cartographers")
     series = htmlprobe.ld_node(page, "TVSeries")
     assert series["url"] == page.canonical
-    assert series["sameAs"] == [show["source_url"], show["schedule"]["tvmaze_url"]]
+    # LezWatch.TV, TVmaze, then IMDb from the recorded title id (DECISIONS 0064).
+    assert series["sameAs"] == [
+        show["source_url"],
+        show["schedule"]["tvmaze_url"],
+        f"https://www.imdb.com/title/{show['external_ids']['imdb']}/",
+    ]
     assert series["startDate"] == "2016" and series["endDate"] == "2018"
     assert series["numberOfSeasons"] == 2
     assert [c["name"] for c in series["character"]] == ["Odile Brandt", "Thea Marsh"]

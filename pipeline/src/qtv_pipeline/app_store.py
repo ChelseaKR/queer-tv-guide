@@ -77,6 +77,7 @@ CAMPAIGNS = frozenset(
         "airing",  # the airing-now page
         "notfound",  # the 404 page
         "press",  # the press page's "On the App Store" link
+        "llms",  # /llms.txt, the file written for AI assistants (the owner's W1, 2026-11-18)
     }
 )
 CAMPAIGN_MAX = 30  # Apple: "up to 30 alphanumeric characters and spaces"

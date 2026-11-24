@@ -56,7 +56,9 @@ release declaration (REL-01). Values live here; the rigor lives in
 - **Staleness alarm (DG-04):** `freshness.yml` checks the published snapshot
   every 6 hours and opens an `incident` issue when it is older than 30 hours
   (SEV3), older than the 48-hour SLA (SEV2), or the last nightly run failed
-  (SEV3). An unreadable file or missing run history is an alarm too.
+  (SEV3). An unreadable file or missing run history is an alarm too. The
+  issue speaks only when the state changes and closes itself on recovery
+  (`docs/DECISIONS.md` 0066).
 - **No credentials or personal data in logs** (OBS-11, never N/A): the semgrep
   rule above, over Python and Swift.
 

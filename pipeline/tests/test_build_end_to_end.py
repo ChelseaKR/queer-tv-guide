@@ -110,6 +110,28 @@ def test_no_death_ever_serializes_as_false(built_doc):
         assert char["death"]["died"] is not False
 
 
+def test_network_names_are_unescaped_in_shows_and_taxonomies(tmp_path, mock_transport, no_sleep):
+    """WordPress escapes term names ("A&amp;E"). The snapshot carries them
+    decoded, in each show's networks and in the stations taxonomy alike."""
+    sleep, _ = no_sleep
+    _doc, cache_dir, _out = _run(tmp_path, mock_transport, sleep)
+    stations_path = cache_dir / "lezwatch" / "taxonomies" / "station.json"
+    stations = json.loads(stations_path.read_text())
+    for term in stations:
+        if term["id"] == 102:
+            term["name"] = "A&amp;E"
+    stations_path.write_text(json.dumps(stations))
+
+    doc = build_mod.run_build(
+        cache_dir, tmp_path / "out2", git_sha="deadbeef", workflow_run_id="123", log=lambda _m: None
+    )
+    derry = next(s for s in doc["shows"] if s["slug"] == "derry-girls")
+    assert [n["name"] for n in derry["networks"]] == ["A&E"]
+    names = [t["name"] for t in doc["taxonomies"]["stations"]]
+    assert "A&E" in names
+    assert "A&amp;E" not in names
+
+
 # ---- negative control: prove the schema actually rejects died: false ----------
 
 

@@ -31,11 +31,16 @@ final class WidgetRenderTests: XCTestCase {
         return UpNext(favoriteShowIDs: Array(upcoming) + unknown + ["lwtv:show:not-in-this-data"], snapshot: snapshot)
     }
 
-    private func render(_ entry: UpNextEntry, family: WidgetFamily, size: CGSize, scheme: ColorScheme, type: DynamicTypeSize, name: String) throws {
+    /// `locked` draws the widget as the system does on a locked iPhone:
+    /// redacted for privacy, which blanks what the view marks
+    /// privacy-sensitive.
+    @discardableResult
+    private func render(_ entry: UpNextEntry, family: WidgetFamily, size: CGSize, scheme: ColorScheme, type: DynamicTypeSize, name: String, locked: Bool = false) throws -> UIImage {
         let view = UpNextWidgetView(entry: entry, familyOverride: family)
             .padding(16)
             .frame(width: size.width, height: size.height)
             .background(Color(uiColor: .systemBackground))
+            .redacted(reason: locked ? .privacy : [])
             .environment(\.colorScheme, scheme)
             .environment(\.dynamicTypeSize, type)
         let renderer = ImageRenderer(content: view)
@@ -46,6 +51,7 @@ final class WidgetRenderTests: XCTestCase {
         attachment.name = "widget-\(name)"
         attachment.lifetime = .keepAlways
         add(attachment)
+        return image
     }
 
     func testEveryStateRendersAtBothSizesInBothAppearancesAndTextSizes() throws {
@@ -65,6 +71,30 @@ final class WidgetRenderTests: XCTestCase {
                     }
                 }
             }
+        }
+    }
+
+    /// A locked iPhone can still show the widget (StandBy, the Today view).
+    /// Drawn as the system draws it then, the favorites are not the plain
+    /// drawing (their titles and episode lines are blank bars), and the two
+    /// states that name no show are drawn exactly as before. Each locked
+    /// image is attached, to look at.
+    func testALockedIPhoneShowsNoShowTitleOrEpisodeLine() throws {
+        let upNext = try realUpNext()
+        let now = upNext.snapshotGeneratedAt.addingTimeInterval(3600)
+        let favorites = UpNextEntry(date: now, upNext: upNext)
+        let empty = UpNextEntry(date: now, upNext: UpNext(snapshotGeneratedAt: upNext.snapshotGeneratedAt, items: [], missingShowCount: 0))
+        let notLoaded = UpNextEntry(date: now, upNext: nil)
+        for (family, size, sizeName) in Self.sizes {
+            func pixels(_ entry: UpNextEntry, _ state: String, locked: Bool) throws -> Data {
+                let name = "\(state)-\(sizeName)-\(locked ? "locked" : "unlocked")"
+                let image = try render(entry, family: family, size: size, scheme: .light, type: .large, name: name, locked: locked)
+                return try XCTUnwrap(image.pngData(), name)
+            }
+            XCTAssertEqual(try pixels(favorites, "favorites", locked: false), try pixels(favorites, "favorites", locked: false), "\(sizeName): the same drawing twice gives the same image, so a difference below means something")
+            XCTAssertNotEqual(try pixels(favorites, "favorites", locked: true), try pixels(favorites, "favorites", locked: false), "\(sizeName): locked, the favorites are redacted")
+            XCTAssertEqual(try pixels(empty, "empty", locked: true), try pixels(empty, "empty", locked: false), "\(sizeName): nothing to hide when no show is starred")
+            XCTAssertEqual(try pixels(notLoaded, "not-loaded", locked: true), try pixels(notLoaded, "not-loaded", locked: false), "\(sizeName): nothing to hide before the first file")
         }
     }
 

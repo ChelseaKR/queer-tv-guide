@@ -219,6 +219,16 @@ public enum UpNextPresentation {
         }
     }
 
+    /// What VoiceOver reads for a row in place of its show while the widget
+    /// hides the show's title and episode line (a locked iPhone).
+    public static let hiddenWhileLocked = "Hidden while locked"
+
+    /// What VoiceOver reads for a row: the show and its episode, or, while
+    /// the row is `hidden`, only that it is hidden.
+    public static func spoken(_ item: UpNext.Item, today: Date, hidden: Bool) -> String {
+        hidden ? hiddenWhileLocked : spoken(item, today: today)
+    }
+
     /// What VoiceOver reads for a row: whole words, no "S23E1".
     public static func spoken(_ item: UpNext.Item, today: Date) -> String {
         var episode = "Next episode"

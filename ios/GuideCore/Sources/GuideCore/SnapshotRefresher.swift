@@ -9,9 +9,14 @@ import Foundation
 ///   (URLSession's default `User-Agent` names the bundle and CFNetwork
 ///   version; that is the platform's, not ours, and identifies nobody.)
 /// - Ephemeral configuration: no credential store, no on-disk session state.
+/// - One host: a redirect is followed only when it stays on the endpoint's
+///   own scheme, host and port (`SameHostRedirects`). A redirect to anywhere
+///   else is not followed, so no request is ever made to another host.
 public final class SnapshotRefresher: @unchecked Sendable {
     public enum Outcome: Equatable, Sendable {
-        /// Server answered 304: the stored snapshot is already current.
+        /// Nothing new was taken and nothing failed: the stored snapshot
+        /// stays. Either the server answered 304 (it is already current), or
+        /// it answered with a redirect that was not followed.
         case unchanged
         /// A new snapshot decoded and was swapped in.
         case updated(Snapshot)
@@ -40,7 +45,7 @@ public final class SnapshotRefresher: @unchecked Sendable {
     public init(store: SnapshotStore, endpoint: URL = SnapshotEndpoint.url, protocolClasses: [AnyClass]? = nil) {
         self.store = store
         self.endpoint = endpoint
-        self.session = URLSession(configuration: Self.makeConfiguration(protocolClasses: protocolClasses))
+        self.session = URLSession(configuration: Self.makeConfiguration(protocolClasses: protocolClasses), delegate: SameHostRedirects(endpoint: endpoint), delegateQueue: nil)
     }
 
     /// The single `URLSessionConfiguration` in the app. Exposed so tests can
@@ -80,6 +85,10 @@ public final class SnapshotRefresher: @unchecked Sendable {
     /// refresh's task when its screen goes away) throws `CancellationError`,
     /// not a `RefreshError`: nothing failed, and URLSession's own wording
     /// for it is the bare word "cancelled".
+    ///
+    /// A redirect that `SameHostRedirects` did not follow arrives here as
+    /// the redirect's own 3xx answer. It is `.unchanged`: no update, and no
+    /// error for the UI to state.
     public func refresh() async throws -> Outcome {
         let request = makeRequest(etag: store.readETag())
         let (data, response): (Data, URLResponse)
@@ -96,6 +105,8 @@ public final class SnapshotRefresher: @unchecked Sendable {
         switch http.statusCode {
         case 304:
             return .unchanged
+        case 300..<400:
+            return .unchanged
         case 200:
             let etag = http.value(forHTTPHeaderField: "ETag")
             do {
@@ -109,5 +120,35 @@ public final class SnapshotRefresher: @unchecked Sendable {
         default:
             throw RefreshError.httpStatus(http.statusCode)
         }
+    }
+}
+
+/// Keeps the data request on one host. URLSession follows any redirect
+/// unless its delegate says otherwise; this delegate lets one through only
+/// when it stays on the endpoint's own scheme, host and port. For any other
+/// redirect the request stops where it is, no request is made to the other
+/// host, and the redirect's own answer is what `refresh()` sees.
+public final class SameHostRedirects: NSObject, URLSessionTaskDelegate, Sendable {
+    private let endpoint: URL
+
+    public init(endpoint: URL) {
+        self.endpoint = endpoint
+    }
+
+    /// Whether a redirect to `target` stays on `endpoint`'s scheme, host and
+    /// port. Host names compare without case; a missing port is the
+    /// scheme's own.
+    public static func allows(_ target: URL?, from endpoint: URL) -> Bool {
+        guard let target,
+              let scheme = target.scheme?.lowercased(), scheme == endpoint.scheme?.lowercased(),
+              let host = target.host?.lowercased(), !host.isEmpty, host == endpoint.host?.lowercased(),
+              target.user == nil, target.password == nil
+        else { return false }
+        let standard = scheme == "https" ? 443 : 80
+        return (target.port ?? standard) == (endpoint.port ?? standard)
+    }
+
+    public func urlSession(_ session: URLSession, task: URLSessionTask, willPerformHTTPRedirection response: HTTPURLResponse, newRequest request: URLRequest) async -> URLRequest? {
+        Self.allows(request.url, from: endpoint) ? request : nil
     }
 }

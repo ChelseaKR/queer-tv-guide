@@ -295,6 +295,8 @@ struct FilterTermPicker: View {
         .legibleTopScrollEdge()
         .navigationTitle(title)
         .searchable(text: $query, placement: .navigationBarDrawer(displayMode: .always), prompt: "Find in \(title.lowercased())")
+        // As on Search: what is typed here is not for the keyboard to learn.
+        .autocorrectionDisabled()
         .toolbar {
             if !selection.isEmpty {
                 ToolbarItem(placement: .topBarTrailing) {

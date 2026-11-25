@@ -307,6 +307,21 @@ consumer of the published snapshot, would notice.
 
 ### Fixed
 
+- iPhone: the Up Next widget hides each show's title and episode line while
+  the iPhone is locked (StandBy, the Today view), and VoiceOver reads
+  "Hidden while locked" for those rows instead of the show (DECISIONS 0063).
+- iPhone: the two search fields turn autocorrection off, so what is typed
+  there is not learned by the keyboard or offered as a suggestion in other
+  apps.
+- iPhone: every link the app opens from its data is an https link. A
+  where-to-watch link recorded as plain HTTP opens as https on the same
+  host and path (44 of 1,371 on the 2026-11-14 snapshot), and one that is
+  not a web link, or whose "Watch on" label would name another site than it
+  opens, is left out. A file whose own links (credits, licenses, source
+  pages) are not web links is refused, and the last good data stays.
+- iPhone: the app's data request stays on one host.
+- The privacy policy now says the app keeps the Up Next widget's small file
+  whether or not the widget is added, which is what the app has always done.
 - Snapshot: network names, and the other LezWatch.TV category names, have
   their HTML entities decoded when the pipeline builds the snapshot, so the
   apps and the website show "A&E" and "Seed & Spark" rather than `A&amp;E`

@@ -32,6 +32,9 @@ struct SearchView: View {
             content
                 .navigationTitle("Search")
                 .searchable(text: $query, prompt: "Shows, characters, actors")
+                // What someone looks up here stays out of the keyboard's
+                // learned words and its suggestions in other apps.
+                .autocorrectionDisabled()
                 .toolbar {
                     ToolbarItem(placement: .topBarTrailing) { filterButton }
                 }
